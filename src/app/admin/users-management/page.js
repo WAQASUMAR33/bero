@@ -1,0 +1,744 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
+import Notification from '../components/Notification';
+
+export default function UsersManagementPage() {
+  const [user, setUser] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
+  const router = useRouter();
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    phoneNo: '',
+    role: 'CAREWORKER',
+    status: 'CURRENT',
+    password: '',
+    permissions: []
+  });
+
+  const allPermissions = [
+    'dashboard.view',
+    'users.manage',
+    'staff.manage',
+    'service-users.manage',
+    'shifts.manage',
+    'daily-tasks.manage',
+    'documents.manage',
+    'regions.manage',
+    'finance.manage',
+    'reports.view',
+    'settings.manage',
+    'roles.manage',
+    'audit.view',
+    'calendar.manage',
+    'clock-in-out.manage',
+    'cqc-inspection.manage',
+    'quality-assurance.manage',
+    'holidays.manage',
+    'handover.manage',
+    'maintenance.manage',
+    'agenda.manage',
+    'setup.manage',
+    'incidents.manage',
+    'temperature-monitoring.manage',
+    'well-being.manage'
+  ];
+
+  const roles = ['ADMIN', 'CAREWORKER', 'DIRECTOR', 'HR', 'REGISTER_MANAGER', 'SUPPORT_WORKER'];
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      fetchUsers();
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
+
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        setShowAddModal(false);
+        resetForm();
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error adding user:', error);
+    }
+  };
+
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        setShowEditModal(false);
+        resetForm();
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (confirm('Are you sure you want to delete this user?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          fetchUsers();
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      username: '',
+      phoneNo: '',
+      role: 'CAREWORKER',
+      status: 'CURRENT',
+      password: '',
+      permissions: []
+    });
+    setSelectedUser(null);
+  };
+
+  const openEditModal = (user) => {
+    setSelectedUser(user);
+    setFormData({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      username: user.username || '',
+      phoneNo: user.phoneNo || '',
+      role: user.role || 'CAREWORKER',
+      status: user.status || 'CURRENT',
+      password: '',
+      permissions: user.permissions?.map(p => p.key) || []
+    });
+    setShowEditModal(true);
+  };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === 'all' || user.role === filterRole;
+    return matchesSearch && matchesRole;
+  });
+
+  const getRoleBadgeColor = (role) => {
+    switch (role) {
+      case 'ADMIN': return 'bg-red-100 text-red-800';
+      case 'DIRECTOR': return 'bg-purple-100 text-purple-800';
+      case 'HR': return 'bg-blue-100 text-blue-800';
+      case 'REGISTER_MANAGER': return 'bg-green-100 text-green-800';
+      case 'CAREWORKER': return 'bg-yellow-100 text-yellow-800';
+      case 'SUPPORT_WORKER': return 'bg-indigo-100 text-indigo-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusBadgeColor = (status) => {
+    switch (status) {
+      case 'CURRENT': return 'bg-green-100 text-green-800';
+      case 'FORMER': return 'bg-gray-100 text-gray-800';
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (!user) {
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#224fa6]"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      <Sidebar user={user} />
+      <div className="flex-1 flex flex-col lg:ml-64">
+        <Header user={user} />
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Users Management</h1>
+            <p className="text-gray-600">Manage users, roles, and permissions</p>
+          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <span>Add User</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Users</p>
+              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Active Users</p>
+              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.status === 'CURRENT').length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Admins</p>
+              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'ADMIN').length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Care Workers</p>
+              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'CAREWORKER').length}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+              />
+            </div>
+          </div>
+          <div>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+            >
+              <option value="all">All Roles</option>
+              {roles.map(role => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Users Table */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Permissions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {filteredUsers.map((user) => (
+                <tr key={user.id} className="hover:bg-gray-50 transition-colors duration-200">
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-12 w-12">
+                        <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center shadow-lg">
+                          <span className="text-white font-semibold text-sm">
+                            {user.firstName?.[0]}{user.lastName?.[0]}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-semibold text-gray-900">
+                          {user.firstName} {user.lastName}
+                        </div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(user.role)}`}>
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(user.status)}`}>
+                      {user.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{user.permissions?.length || 0} permissions</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end space-x-3">
+                      <button
+                        onClick={() => openEditModal(user)}
+                        className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Add User Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">Add New User</h3>
+                  <p className="text-sm text-gray-600 mt-1">Create a new user account with permissions</p>
+                </div>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleAddUser} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.username}
+                      onChange={(e) => setFormData({...formData, username: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={formData.phoneNo}
+                      onChange={(e) => setFormData({...formData, phoneNo: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                    <select
+                      value={formData.role}
+                      onChange={(e) => setFormData({...formData, role: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                    >
+                      {roles.map(role => (
+                        <option key={role} value={role}>{role}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({...formData, status: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                    >
+                      <option value="CURRENT">Current</option>
+                      <option value="FORMER">Former</option>
+                      <option value="PENDING">Pending</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
+                    {allPermissions.map(permission => (
+                      <label key={permission} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={formData.permissions.includes(permission)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData({...formData, permissions: [...formData.permissions, permission]});
+                            } else {
+                              setFormData({...formData, permissions: formData.permissions.filter(p => p !== permission)});
+                            }
+                          }}
+                          className="rounded border-gray-300 text-[#224fa6] focus:ring-[#224fa6] w-4 h-4"
+                        />
+                        <span className="text-xs text-gray-700 font-medium">{permission}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
+                  >
+                    Add User
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">Edit User</h3>
+                  <p className="text-sm text-gray-600 mt-1">Update user information and permissions</p>
+                </div>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleEditUser} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.username}
+                      onChange={(e) => setFormData({...formData, username: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={formData.phoneNo}
+                      onChange={(e) => setFormData({...formData, phoneNo: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">New Password (optional)</label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                      placeholder="Leave empty to keep current password"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                    <select
+                      value={formData.role}
+                      onChange={(e) => setFormData({...formData, role: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                    >
+                      {roles.map(role => (
+                        <option key={role} value={role}>{role}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({...formData, status: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                    >
+                      <option value="CURRENT">Current</option>
+                      <option value="FORMER">Former</option>
+                      <option value="PENDING">Pending</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
+                    {allPermissions.map(permission => (
+                      <label key={permission} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={formData.permissions.includes(permission)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData({...formData, permissions: [...formData.permissions, permission]});
+                            } else {
+                              setFormData({...formData, permissions: formData.permissions.filter(p => p !== permission)});
+                            }
+                          }}
+                          className="rounded border-gray-300 text-[#224fa6] focus:ring-[#224fa6] w-4 h-4"
+                        />
+                        <span className="text-xs text-gray-700 font-medium">{permission}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
+                  >
+                    Update User
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+        </main>
+      </div>
+    </div>
+  );
+}

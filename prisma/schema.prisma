@@ -1,0 +1,219 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+//
+// ENUMS
+//
+enum Role {
+  ADMIN
+  CAREWORKER
+  DIRECTOR
+  HR
+  REGISTER_MANAGER
+  SUPPORT_WORKER
+}
+
+enum UserStatus {
+  ARCHIVED
+  CURRENT
+}
+
+enum ServiceSeekerStatus {
+  LIVE
+  PRE_ADMISSION
+  ARCHIVED
+  ARCHIVED_PRE_ADMISSION
+  ON_HOLD_HOSPITAL
+}
+
+enum ChargeType {
+  PER_HOUR
+  PER_SHIFT
+}
+
+enum FunderPaymentType {
+  PER_SHIFT
+  BY_PERCENTAGE_SPENT
+}
+
+//
+// MODELS
+//
+
+model User {
+  id               String       @id @default(cuid())
+  firstName        String
+  lastName         String
+  username         String       @unique
+  phoneNo          String
+  email            String       @unique
+  role             Role
+  password         String
+  isEmailVerified  Boolean      @default(false)
+  lastLoggedIn     DateTime?
+  profilePic       String?
+  employeeNumber   String?      @unique
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  startDate        DateTime?
+  leaveDate        DateTime?
+  regionId         String?
+  emergencyName    String?
+  emergencyContact String?
+  postalCode       String?
+  contractedHours  Int?
+  status           UserStatus
+  niNumber         String?
+
+  // Relations
+  region           Region?      @relation(fields: [regionId], references: [id])
+  documents        Document[]   @relation("UserDocuments")
+  uploadedDocs     Document[]   @relation("UploadedByUser")
+  standByShifts    StandByShift[]
+
+  permissions      UserPermission[]
+}
+
+model UserPermission {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String   // flexible permission key (admin defines)
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, key]) // prevent duplicate permissions for same user
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  userId     String   // document belongs to this user
+  uploadedBy String   // uploaded by which user
+
+  fileUrl    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user       User     @relation("UserDocuments", fields: [userId], references: [id])
+  uploader   User     @relation("UploadedByUser", fields: [uploadedBy], references: [id])
+}
+
+model Region {
+  id        String   @id @default(cuid())
+  title     String
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+}
+
+model DailyTask {
+  id        String   @id @default(cuid())
+  taskTitle String
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceSeeker {
+  id             String   @id @default(cuid())
+  firstName      String
+  lastName       String
+  postalCode     String?
+  address        String?
+  latitude       Float?
+  longitude      Float?
+  photoUrl       String?
+  title          String?
+  preferredName  String?
+  dateOfBirth    DateTime?
+  gender         String?
+  genderAtBirth  String?
+  pronouns       String?
+  dnar           Boolean?
+  sexuality      String?
+  status         ServiceSeekerStatus
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  shifts         Shift[]
+}
+
+model Shift {
+  id                 String    @id @default(cuid())
+  serviceSeekerId    String
+  fromDate           DateTime
+  untilDate          DateTime?
+  every              String?   // "day" | "week"
+  startTime          DateTime
+  endTime            DateTime
+  shiftType          String
+  totalStaffReq      Int
+  funderId           String?
+  chargesPer         ChargeType
+  charges            Float
+  chargesBankHoliday Float?
+  timeCritical       Boolean   @default(false)
+  shiftRunId         String?
+  noteCaretaker      String?
+  noteManager        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker      ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  funder             Funder?       @relation(fields: [funderId], references: [id])
+  shiftRun           ShiftRun?     @relation(fields: [shiftRunId], references: [id])
+}
+
+model Funder {
+  id              String   @id @default(cuid())
+  fundingSource   String
+  contractNumber  String
+  serviceType     String
+  costNotes       String?
+  paymentType     FunderPaymentType
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  shifts          Shift[]
+}
+
+model ShiftRun {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shifts    Shift[]
+}
+
+model StandByShift {
+  id                   String   @id @default(cuid())
+  caretakerId          String
+  date                 DateTime
+  startTime            DateTime
+  endTime              DateTime
+  workDetail           String
+  stay                 Boolean
+  caretakerPayRegular  Float
+  caretakerPayBankHoliday Float
+  carerPayBy           ChargeType
+
+  // Relations
+  caretaker            User     @relation(fields: [caretakerId], references: [id])
+}

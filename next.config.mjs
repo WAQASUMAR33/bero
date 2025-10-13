@@ -25,11 +25,7 @@ const nextConfig = {
     return config;
   },
   // Explicitly set the base path to current directory
-  basePath: '',
-  // Disable automatic static optimization that might scan filesystem
-  experimental: {
-    optimizePackageImports: ['@/generated/prisma'],
-  }
+  basePath: ''
 };
 
 export default nextConfig;

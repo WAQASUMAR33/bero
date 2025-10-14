@@ -20,8 +20,6 @@ export default function StaffManagementPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
-  const [isCreatingRole, setIsCreatingRole] = useState(false);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -50,12 +48,6 @@ export default function StaffManagementPage() {
 
   const [regions, setRegions] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [newRoleData, setNewRoleData] = useState({
-    name: '',
-    displayName: '',
-    description: '',
-    permissions: []
-  });
 
   const allPermissions = [
     'dashboard.view',
@@ -280,49 +272,6 @@ export default function StaffManagementPage() {
   const handleDeleteCancel = () => {
     setShowDeleteConfirm(false);
     setStaffToDelete(null);
-  };
-
-  const handleCreateRole = async (e) => {
-    e.preventDefault();
-    setIsCreatingRole(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/roles', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newRoleData)
-      });
-
-      if (response.ok) {
-        const createdRole = await response.json();
-        setShowCreateRoleModal(false);
-        setNewRoleData({ name: '', displayName: '', description: '', permissions: [] });
-        await fetchRoles();
-        // Set the newly created role as selected
-        setFormData(prev => ({ ...prev, roleId: createdRole.id }));
-        showNotification('Role created successfully!', 'success');
-      } else {
-        const error = await response.json();
-        showNotification(error.error || 'Error creating role. Please try again.', 'error');
-      }
-    } catch (error) {
-      console.error('Error creating role:', error);
-      showNotification('Error creating role. Please try again.', 'error');
-    } finally {
-      setIsCreatingRole(false);
-    }
-  };
-
-  const toggleNewRolePermission = (permissionKey) => {
-    setNewRoleData(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(permissionKey)
-        ? prev.permissions.filter(p => p !== permissionKey)
-        : [...prev.permissions, permissionKey]
-    }));
   };
 
   const resetForm = () => {
@@ -748,26 +697,17 @@ export default function StaffManagementPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Role *</label>
-                      <div className="flex gap-2">
-                        <select
-                          value={formData.roleId}
-                          onChange={(e) => {
-                            if (e.target.value === 'CREATE_NEW') {
-                              setShowCreateRoleModal(true);
-                            } else {
-                              setFormData({...formData, roleId: e.target.value});
-                            }
-                          }}
-                          className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
-                          required
-                        >
-                          <option value="">Select Role</option>
-                          {roles.map(role => (
-                            <option key={role.id} value={role.id}>{role.displayName}</option>
-                          ))}
-                          <option value="CREATE_NEW" className="text-[#224fa6] font-semibold">+ Create New Role</option>
-                        </select>
-                      </div>
+                      <select
+                        value={formData.roleId}
+                        onChange={(e) => setFormData({...formData, roleId: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                        required
+                      >
+                        <option value="">Select Role</option>
+                        {roles.map(role => (
+                          <option key={role.id} value={role.id}>{role.displayName}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 )}
@@ -1041,13 +981,7 @@ export default function StaffManagementPage() {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
                     <select
                       value={formData.roleId}
-                      onChange={(e) => {
-                        if (e.target.value === 'CREATE_NEW') {
-                          setShowCreateRoleModal(true);
-                        } else {
-                          setFormData({...formData, roleId: e.target.value});
-                        }
-                      }}
+                      onChange={(e) => setFormData({...formData, roleId: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
                       required
                     >
@@ -1055,7 +989,6 @@ export default function StaffManagementPage() {
                       {roles.map(role => (
                         <option key={role.id} value={role.id}>{role.displayName}</option>
                       ))}
-                      <option value="CREATE_NEW" className="text-[#224fa6] font-semibold">+ Create New Role</option>
                     </select>
                   </div>
                   <div>
@@ -1153,126 +1086,6 @@ export default function StaffManagementPage() {
                   Delete
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Role Modal */}
-      {showCreateRoleModal && (
-        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">Create New Role</h3>
-                  <p className="text-sm text-gray-600 mt-1">Add a new role to assign to users</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowCreateRoleModal(false);
-                    setNewRoleData({ name: '', displayName: '', description: '', permissions: [] });
-                  }}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateRole} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Role Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newRoleData.name}
-                      onChange={(e) => setNewRoleData({ ...newRoleData, name: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      placeholder="e.g., NURSE"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">Will be converted to uppercase</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Display Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newRoleData.displayName}
-                      onChange={(e) => setNewRoleData({ ...newRoleData, displayName: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      placeholder="e.g., Nurse"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={newRoleData.description}
-                    onChange={(e) => setNewRoleData({ ...newRoleData, description: e.target.value })}
-                    rows="3"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                    placeholder="Brief description of this role..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Permissions (Select the key permissions for this role)
-                  </label>
-                  <div className="border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {allPermissions.slice(0, 12).map((permission) => (
-                        <div key={permission} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id={`new-${permission}`}
-                            checked={newRoleData.permissions.includes(permission)}
-                            onChange={() => toggleNewRolePermission(permission)}
-                            className="h-4 w-4 text-[#224fa6] focus:ring-[#224fa6] border-gray-300 rounded"
-                          />
-                          <label htmlFor={`new-${permission}`} className="ml-2 text-sm text-gray-700">
-                            {permission.replace(/[.-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="mt-3 text-xs text-gray-500">
-                      For advanced permission configuration, go to Role Management page
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-4 pt-4 border-t">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCreateRoleModal(false);
-                      setNewRoleData({ name: '', displayName: '', description: '', permissions: [] });
-                    }}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreatingRole}
-                    className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isCreatingRole ? 'Creating...' : 'Create Role'}
-                  </button>
-                </div>
-              </form>
             </div>
           </div>
         </div>

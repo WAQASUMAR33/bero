@@ -8,6 +8,12 @@ import Header from '../components/Header';
 export default function SettingsPage() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalFunders: 0,
+    activeRegions: 0,
+    totalShifts: 0,
+    activeUsers: 0
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -19,6 +25,52 @@ export default function SettingsPage() {
     }
     setIsLoading(false);
   }, [router]);
+
+  // Fetch stats data
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // Fetch all stats in parallel
+        const [fundersRes, regionsRes, shiftsRes, usersRes] = await Promise.all([
+          fetch('/api/funders', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('/api/regions', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('/api/shift-runs', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('/api/users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        const [funders, regions, shifts, users] = await Promise.all([
+          fundersRes.json(),
+          regionsRes.json(),
+          shiftsRes.json(),
+          usersRes.json()
+        ]);
+
+        setStats({
+          totalFunders: funders.length || 0,
+          activeRegions: regions.length || 0,
+          totalShifts: shifts.length || 0,
+          activeUsers: users.filter(user => user.status === 'ACTIVE').length || 0
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
 
   if (isLoading) {
     return (
@@ -118,7 +170,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Funders</p>
-                  <p className="text-3xl font-bold text-gray-900">12</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.totalFunders}</p>
                 </div>
                 <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,7 +184,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Active Regions</p>
-                  <p className="text-3xl font-bold text-gray-900">8</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.activeRegions}</p>
                 </div>
                 <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +199,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Shifts</p>
-                  <p className="text-3xl font-bold text-gray-900">156</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.totalShifts}</p>
                 </div>
                 <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,7 +213,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Active Users</p>
-                  <p className="text-3xl font-bold text-gray-900">45</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.activeUsers}</p>
                 </div>
                 <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

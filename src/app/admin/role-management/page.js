@@ -363,7 +363,7 @@ export default function RoleManagementPage() {
                       placeholder="Search roles..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200 text-gray-900"
                     />
                   </div>
                 </div>
@@ -492,7 +492,7 @@ export default function RoleManagementPage() {
                           required
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200 text-gray-900"
                           placeholder="e.g., NURSE"
                         />
                         <p className="mt-1 text-xs text-gray-500">Will be converted to uppercase</p>
@@ -507,7 +507,7 @@ export default function RoleManagementPage() {
                           required
                           value={formData.displayName}
                           onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200 text-gray-900"
                           placeholder="e.g., Nurse"
                         />
                       </div>
@@ -521,7 +521,7 @@ export default function RoleManagementPage() {
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         rows="3"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200 text-gray-900"
                         placeholder="Brief description of this role..."
                       />
                     </div>
@@ -619,7 +619,7 @@ export default function RoleManagementPage() {
                           required
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200 text-gray-900"
                           placeholder="e.g., NURSE"
                         />
                       </div>
@@ -633,7 +633,7 @@ export default function RoleManagementPage() {
                           required
                           value={formData.displayName}
                           onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200 text-gray-900"
                           placeholder="e.g., Nurse"
                         />
                       </div>
@@ -647,7 +647,7 @@ export default function RoleManagementPage() {
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         rows="3"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all duration-200 text-gray-900"
                         placeholder="Brief description of this role..."
                       />
                     </div>

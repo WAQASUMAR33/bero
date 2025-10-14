@@ -17,6 +17,8 @@ export default function UsersManagementPage() {
   const [filterRole, setFilterRole] = useState('all');
   const [currentStep, setCurrentStep] = useState(1);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -198,25 +200,42 @@ export default function UsersManagementPage() {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/users/${userId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+  const handleDeleteClick = (user) => {
+    setUserToDelete(user);
+    setShowDeleteConfirm(true);
+  };
 
-        if (response.ok) {
-          fetchUsers();
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/users/${userToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      } catch (error) {
-        console.error('Error deleting user:', error);
+      });
+
+      if (response.ok) {
+        fetchUsers();
+        showNotification('User deleted successfully!', 'success');
+      } else {
+        showNotification('Error deleting user. Please try again.', 'error');
       }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      showNotification('Error deleting user. Please try again.', 'error');
+    } finally {
+      setShowDeleteConfirm(false);
+      setUserToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setUserToDelete(null);
   };
 
   const resetForm = () => {
@@ -475,7 +494,7 @@ export default function UsersManagementPage() {
                         </svg>
                       </button>
                       <button
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => handleDeleteClick(user)}
                         className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -981,6 +1000,45 @@ export default function UsersManagementPage() {
       )}
         </main>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                Delete User
+              </h3>
+              
+              <p className="text-sm text-gray-600 text-center mb-6">
+                Are you sure you want to delete <span className="font-medium text-gray-900">&quot;{userToDelete?.firstName} {userToDelete?.lastName}&quot;</span>? 
+                This action cannot be undone and will remove all associated data.
+              </p>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleDeleteCancel}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Notification Component */}
       <Notification

@@ -200,7 +200,7 @@ export async function DELETE(request, { params }) {
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: id }
+      where: { id }
     });
 
     if (!existingUser) {
@@ -210,9 +210,25 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Delete user (this will cascade delete permissions due to foreign key)
+    // Delete related records first to avoid foreign key constraint errors
+    // Delete permissions
+    await prisma.userPermission.deleteMany({
+      where: { userId: id }
+    });
+
+    // Delete documents owned by user
+    await prisma.document.deleteMany({
+      where: { userId: id }
+    });
+
+    // Delete standby shifts
+    await prisma.standByShift.deleteMany({
+      where: { caretakerId: id }
+    });
+
+    // Now delete the user
     await prisma.user.delete({
-      where: { id: id }
+      where: { id }
     });
 
     return NextResponse.json({ message: 'User deleted successfully' });

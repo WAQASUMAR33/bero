@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function Sidebar({ user }) {
   const [activeItem, setActiveItem] = useState('Dashboard');
   const [expandedItems, setExpandedItems] = useState({});
   const [showLogoutDropdown, setShowLogoutDropdown] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -24,12 +25,42 @@ export default function Sidebar({ user }) {
     };
   }, []);
 
+  // Set active item based on current pathname
+  useEffect(() => {
+    const currentPath = pathname;
+    
+    // Check main menu items
+    const mainItem = allMenuItems.find(item => item.path === currentPath);
+    if (mainItem) {
+      setActiveItem(mainItem.name);
+      return;
+    }
+    
+    // Check submenu items
+    for (const item of allMenuItems) {
+      if (item.subItems) {
+        const subItem = item.subItems.find(sub => sub.path === currentPath);
+        if (subItem) {
+          setActiveItem(subItem.name);
+          setExpandedItems(prev => ({ ...prev, [item.id]: true }));
+          return;
+        }
+      }
+    }
+    
+    // Default to Dashboard if no match found
+    if (currentPath === '/admin') {
+      setActiveItem('Dashboard');
+    }
+  }, [pathname]);
+
   // Role-based menu items
   const allMenuItems = [
     {
       id: 'dashboard',
       name: 'Dashboard',
       permission: 'dashboard.view',
+      path: '/admin',
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
@@ -291,26 +322,16 @@ export default function Sidebar({ user }) {
   return (
     <div className="fixed left-0 top-0 w-64 bg-white shadow-lg h-screen flex flex-col z-10 hidden lg:flex">
       {/* Logo Section */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-center">
           <Image
             src="/assets/logo2.png"
             alt="BEERU Logo"
-            width={120}
-            height={60}
+            width={140}
+            height={70}
             className="object-contain"
           />
         </div>
-      </div>
-
-      {/* Dashboard Button */}
-      <div className="p-4">
-        <button className="w-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white py-3 px-4 rounded-lg flex items-center justify-center font-medium">
-          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-          </svg>
-          Dashboard
-        </button>
       </div>
 
       {/* Menu Items */}

@@ -50,15 +50,33 @@ export default function StaffManagementPage() {
 
   const allPermissions = [
     'dashboard.view',
-    'daily-tasks.manage',
+    'users.manage',
+    'staff.manage',
+    'service-users.manage',
     'shifts.manage',
-    'handover.manage',
-    'clock-in-out.manage',
+    'daily-tasks.manage',
     'documents.manage',
-    'calendar.manage'
+    'regions.manage',
+    'finance.manage',
+    'reports.view',
+    'settings.manage',
+    'roles.manage',
+    'audit.view',
+    'calendar.manage',
+    'clock-in-out.manage',
+    'cqc-inspection.manage',
+    'quality-assurance.manage',
+    'holidays.manage',
+    'handover.manage',
+    'maintenance.manage',
+    'agenda.manage',
+    'setup.manage',
+    'incidents.manage',
+    'temperature-monitoring.manage',
+    'well-being.manage'
   ];
 
-  const staffRoles = ['CAREWORKER', 'SUPPORT_WORKER', 'REGISTER_MANAGER'];
+  const staffRoles = ['ADMIN', 'DIRECTOR', 'HR', 'CAREWORKER', 'SUPPORT_WORKER', 'REGISTER_MANAGER'];
 
   const showNotification = (message, type = 'success') => {
     setNotification({ show: true, message, type });
@@ -116,9 +134,8 @@ export default function StaffManagementPage() {
       
       if (response.ok) {
         const data = await response.json();
-        // Filter to only show staff roles
-        const staffOnly = data.filter(u => staffRoles.includes(u.role));
-        setStaff(staffOnly);
+        // Show all users
+        setStaff(data);
       }
     } catch (error) {
       console.error('Error fetching staff:', error);
@@ -150,9 +167,9 @@ export default function StaffManagementPage() {
         resetForm();
         setCurrentStep(1);
         fetchStaff();
-        showNotification('Staff member added successfully!', 'success');
+        showNotification('User added successfully!', 'success');
       } else {
-        showNotification('Error adding staff member. Please try again.', 'error');
+        showNotification('Error adding user. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Error adding staff:', error);
@@ -183,9 +200,9 @@ export default function StaffManagementPage() {
         setShowEditModal(false);
         resetForm();
         fetchStaff();
-        showNotification('Staff member updated successfully!', 'success');
+        showNotification('User updated successfully!', 'success');
       } else {
-        showNotification('Error updating staff member. Please try again.', 'error');
+        showNotification('Error updating user. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Error updating staff:', error);
@@ -215,9 +232,9 @@ export default function StaffManagementPage() {
 
       if (response.ok) {
         fetchStaff();
-        showNotification('Staff member deleted successfully!', 'success');
+        showNotification('User deleted successfully!', 'success');
       } else {
-        showNotification('Error deleting staff member. Please try again.', 'error');
+        showNotification('Error deleting user. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Error deleting staff:', error);
@@ -333,7 +350,7 @@ export default function StaffManagementPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Staff Management</h1>
-            <p className="text-gray-600">Manage careworkers, support workers, and register managers</p>
+            <p className="text-gray-600">Manage all users, roles, and permissions</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -342,7 +359,7 @@ export default function StaffManagementPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            <span>Add Staff Member</span>
+            <span>Add User</span>
           </button>
         </div>
       </div>
@@ -357,7 +374,7 @@ export default function StaffManagementPage() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Staff</p>
+              <p className="text-sm font-medium text-gray-600">Total Users</p>
               <p className="text-2xl font-bold text-gray-900">{staff.length}</p>
             </div>
           </div>
@@ -370,7 +387,7 @@ export default function StaffManagementPage() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Staff</p>
+              <p className="text-sm font-medium text-gray-600">Active Users</p>
               <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.status === 'CURRENT').length}</p>
             </div>
           </div>
@@ -383,8 +400,8 @@ export default function StaffManagementPage() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Careworkers</p>
-              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.role === 'CAREWORKER').length}</p>
+              <p className="text-sm font-medium text-gray-600">Admin Users</p>
+              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => ['ADMIN', 'DIRECTOR', 'HR'].includes(s.role)).length}</p>
             </div>
           </div>
         </div>
@@ -396,8 +413,8 @@ export default function StaffManagementPage() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Support Workers</p>
-              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.role === 'SUPPORT_WORKER').length}</p>
+              <p className="text-sm font-medium text-gray-600">Care Staff</p>
+              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => ['CAREWORKER', 'SUPPORT_WORKER', 'REGISTER_MANAGER'].includes(s.role)).length}</p>
             </div>
           </div>
         </div>
@@ -521,8 +538,8 @@ export default function StaffManagementPage() {
             <div className="p-8">
               <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Add New Staff Member</h3>
-                    <p className="text-sm text-gray-600 mt-1">Create a new staff account with permissions</p>
+                    <h3 className="text-2xl font-bold text-gray-900">Add New User</h3>
+                    <p className="text-sm text-gray-600 mt-1">Create a new user account with role and permissions</p>
                   </div>
                 <button
                   onClick={() => { setShowAddModal(false); resetForm(); }}
@@ -837,7 +854,7 @@ export default function StaffManagementPage() {
                       disabled={isSubmitting && currentStep === 3}
                       className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {currentStep === 3 ? (isSubmitting ? 'Creating...' : 'Create Staff Member') : 'Next'}
+                      {currentStep === 3 ? (isSubmitting ? 'Creating...' : 'Create User') : 'Next'}
                     </button>
                   </div>
                 </div>
@@ -854,8 +871,8 @@ export default function StaffManagementPage() {
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Edit Staff Member</h3>
-                    <p className="text-sm text-gray-600 mt-1">Update staff information and permissions</p>
+                    <h3 className="text-2xl font-bold text-gray-900">Edit User</h3>
+                    <p className="text-sm text-gray-600 mt-1">Update user information and permissions</p>
                   </div>
                 <button
                   onClick={() => setShowEditModal(false)}
@@ -996,7 +1013,7 @@ export default function StaffManagementPage() {
                     disabled={isSubmitting}
                     className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? 'Updating...' : 'Update Staff Member'}
+                    {isSubmitting ? 'Updating...' : 'Update User'}
                   </button>
                 </div>
               </form>
@@ -1019,7 +1036,7 @@ export default function StaffManagementPage() {
               </div>
               
               <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
-                Delete Staff Member
+                Delete User
               </h3>
               
               <p className="text-sm text-gray-600 text-center mb-6">

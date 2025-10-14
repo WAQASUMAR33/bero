@@ -141,7 +141,7 @@ export default function Header({ user }) {
                     
                     <button
                       onClick={() => {
-                        router.push('/admin/users-management');
+                        router.push('/admin/staff-management');
                         setShowSettingsDropdown(false);
                       }}
                       className="w-full flex items-center px-3 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:text-orange-700 rounded-lg transition-all duration-200 group"

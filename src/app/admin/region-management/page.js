@@ -403,7 +403,6 @@ export default function RegionManagementPage() {
                 </table>
               </div>
             </div>
-          </div>
               </>
             )}
           </div>

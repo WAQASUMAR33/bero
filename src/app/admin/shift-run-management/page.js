@@ -364,7 +364,6 @@ export default function ShiftRunManagementPage() {
                 </table>
               </div>
             </div>
-          </div>
               </>
             )}
           </div>

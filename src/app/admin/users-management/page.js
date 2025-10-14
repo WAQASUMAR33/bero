@@ -15,19 +15,35 @@ export default function UsersManagementPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [currentStep, setCurrentStep] = useState(1);
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    // Step 1: Basic Info
     email: '',
     username: '',
+    firstName: '',
+    lastName: '',
+    password: '',
     phoneNo: '',
     role: 'HR',
+    // Step 2: Employment Details
+    employeeNumber: '',
+    startDate: '',
+    leaveDate: '',
+    regionId: '',
+    // Step 3: Emergency & Additional Info
+    emergencyName: '',
+    emergencyContact: '',
+    postalCode: '',
+    contractedHours: '',
     status: 'CURRENT',
-    password: '',
+    niNumber: '',
     permissions: []
   });
+
+  const [regions, setRegions] = useState([]);
 
   const allPermissions = [
     'dashboard.view',
@@ -59,15 +75,36 @@ export default function UsersManagementPage() {
 
   const roles = ['ADMIN', 'DIRECTOR', 'HR'];
 
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+  };
+
+  const hideNotification = () => {
+    setNotification({ show: false, message: '', type: 'success' });
+  };
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
       fetchUsers();
+      fetchRegions();
     } else {
       router.push('/login');
     }
   }, [router]);
+
+  const fetchRegions = async () => {
+    try {
+      const response = await fetch('/api/regions');
+      const result = await response.json();
+      if (result.success) {
+        setRegions(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching regions:', error);
+    }
+  };
 
   const adminRoles = ['ADMIN', 'DIRECTOR', 'HR'];
 
@@ -95,6 +132,18 @@ export default function UsersManagementPage() {
     }
   };
 
+  const nextStep = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const previousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
@@ -105,16 +154,24 @@ export default function UsersManagementPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          contractedHours: formData.contractedHours ? parseInt(formData.contractedHours) : null
+        })
       });
 
       if (response.ok) {
         setShowAddModal(false);
         resetForm();
+        setCurrentStep(1);
         fetchUsers();
+        showNotification('Admin user added successfully!', 'success');
+      } else {
+        showNotification('Error adding user. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Error adding user:', error);
+      showNotification('Error adding user. Please try again.', 'error');
     }
   };
 
@@ -164,30 +221,49 @@ export default function UsersManagementPage() {
 
   const resetForm = () => {
     setFormData({
-      firstName: '',
-      lastName: '',
       email: '',
       username: '',
-      phoneNo: '',
-      role: 'CAREWORKER',
-      status: 'CURRENT',
+      firstName: '',
+      lastName: '',
       password: '',
+      phoneNo: '',
+      role: 'HR',
+      employeeNumber: '',
+      startDate: '',
+      leaveDate: '',
+      regionId: '',
+      emergencyName: '',
+      emergencyContact: '',
+      postalCode: '',
+      contractedHours: '',
+      status: 'CURRENT',
+      niNumber: '',
       permissions: []
     });
     setSelectedUser(null);
+    setCurrentStep(1);
   };
 
   const openEditModal = (user) => {
     setSelectedUser(user);
     setFormData({
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
       email: user.email || '',
       username: user.username || '',
-      phoneNo: user.phoneNo || '',
-      role: user.role || 'CAREWORKER',
-      status: user.status || 'CURRENT',
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
       password: '',
+      phoneNo: user.phoneNo || '',
+      role: user.role || 'HR',
+      employeeNumber: user.employeeNumber || '',
+      startDate: user.startDate ? new Date(user.startDate).toISOString().split('T')[0] : '',
+      leaveDate: user.leaveDate ? new Date(user.leaveDate).toISOString().split('T')[0] : '',
+      regionId: user.regionId || '',
+      emergencyName: user.emergencyName || '',
+      emergencyContact: user.emergencyContact || '',
+      postalCode: user.postalCode || '',
+      contractedHours: user.contractedHours?.toString() || '',
+      status: user.status || 'CURRENT',
+      niNumber: user.niNumber || '',
       permissions: user.permissions?.map(p => p.key) || []
     });
     setShowEditModal(true);
@@ -420,13 +496,13 @@ export default function UsersManagementPage() {
         <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
           <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
             <div className="p-8">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">Add New Admin User</h3>
                     <p className="text-sm text-gray-600 mt-1">Create admin, director, or HR account with permissions</p>
                   </div>
                 <button
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => { setShowAddModal(false); resetForm(); }}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,136 +511,311 @@ export default function UsersManagementPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleAddUser} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.firstName}
-                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
+              {/* Progress Indicator */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between">
+                  {[1, 2, 3].map((step) => (
+                    <div key={step} className="flex items-center flex-1">
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                        currentStep >= step 
+                          ? 'border-[#224fa6] bg-[#224fa6] text-white' 
+                          : 'border-gray-300 bg-white text-gray-400'
+                      }`}>
+                        {currentStep > step ? (
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <span className="font-semibold">{step}</span>
+                        )}
+                      </div>
+                      {step < 3 && (
+                        <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
+                          currentStep > step ? 'bg-[#224fa6]' : 'bg-gray-300'
+                        }`}></div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.username}
-                      onChange={(e) => setFormData({...formData, username: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={formData.phoneNo}
-                      onChange={(e) => setFormData({...formData, phoneNo: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                    <input
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={(e) => setFormData({...formData, password: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
+                <div className="flex justify-between mt-3">
+                  <p className={`text-xs font-medium ${currentStep >= 1 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Basic Info</p>
+                  <p className={`text-xs font-medium ${currentStep >= 2 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Employment Details</p>
+                  <p className={`text-xs font-medium ${currentStep >= 3 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Emergency & Additional</p>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
-                    <select
-                      value={formData.role}
-                      onChange={(e) => setFormData({...formData, role: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
-                    >
-                      {roles.map(role => (
-                        <option key={role} value={role}>{role}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({...formData, status: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
-                    >
-                      <option value="CURRENT">Current</option>
-                      <option value="FORMER">Former</option>
-                      <option value="PENDING">Pending</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
-                    {allPermissions.map(permission => (
-                      <label key={permission} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (currentStep < 3) {
+                  nextStep();
+                } else {
+                  handleAddUser(e);
+                }
+              }} className="space-y-6">
+                
+                {/* Step 1: Basic Info */}
+                {currentStep === 1 && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
                         <input
-                          type="checkbox"
-                          checked={formData.permissions.includes(permission)}
+                          type="email"
+                          required
+                          value={formData.email}
                           onChange={(e) => {
-                            if (e.target.checked) {
-                              setFormData({...formData, permissions: [...formData.permissions, permission]});
-                            } else {
-                              setFormData({...formData, permissions: formData.permissions.filter(p => p !== permission)});
-                            }
+                            const email = e.target.value;
+                            const username = email.split('@')[0];
+                            setFormData({...formData, email, username});
                           }}
-                          className="rounded border-gray-300 text-[#224fa6] focus:ring-[#224fa6] w-4 h-4"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="user@example.com"
                         />
-                        <span className="text-xs text-gray-700 font-medium">{permission}</span>
-                      </label>
-                    ))}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Username (Auto-generated)</label>
+                        <input
+                          type="text"
+                          value={formData.username}
+                          readOnly
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                          placeholder="Auto-generated from email"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.firstName}
+                          onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="First name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.lastName}
+                          onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="Last name"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
+                        <input
+                          type="password"
+                          required
+                          value={formData.password}
+                          onChange={(e) => setFormData({...formData, password: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="Enter secure password"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                        <input
+                          type="tel"
+                          required
+                          value={formData.phoneNo}
+                          onChange={(e) => setFormData({...formData, phoneNo: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="+44 123 456 7890"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Role *</label>
+                      <select
+                        value={formData.role}
+                        onChange={(e) => setFormData({...formData, role: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                      >
+                        {roles.map(role => (
+                          <option key={role} value={role}>{role}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                {/* Step 2: Employment Details */}
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Employee Number</label>
+                        <input
+                          type="text"
+                          value={formData.employeeNumber}
+                          onChange={(e) => setFormData({...formData, employeeNumber: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="EMP-001"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Region</label>
+                        <select
+                          value={formData.regionId}
+                          onChange={(e) => setFormData({...formData, regionId: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                        >
+                          <option value="">Select Region</option>
+                          {regions.map(region => (
+                            <option key={region.id} value={region.id}>{region.title}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
+                        <input
+                          type="date"
+                          value={formData.startDate}
+                          onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Leave Date</label>
+                        <input
+                          type="date"
+                          value={formData.leaveDate}
+                          onChange={(e) => setFormData({...formData, leaveDate: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Emergency & Additional Info */}
+                {currentStep === 3 && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Name</label>
+                        <input
+                          type="text"
+                          value={formData.emergencyName}
+                          onChange={(e) => setFormData({...formData, emergencyName: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="Emergency contact name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Number</label>
+                        <input
+                          type="tel"
+                          value={formData.emergencyContact}
+                          onChange={(e) => setFormData({...formData, emergencyContact: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="+44 123 456 7890"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
+                        <input
+                          type="text"
+                          value={formData.postalCode}
+                          onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="SW1A 1AA"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Contracted Hours</label>
+                        <input
+                          type="number"
+                          value={formData.contractedHours}
+                          onChange={(e) => setFormData({...formData, contractedHours: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                          placeholder="40"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+                        <select
+                          value={formData.status}
+                          onChange={(e) => setFormData({...formData, status: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                        >
+                          <option value="CURRENT">Current</option>
+                          <option value="ARCHIVED">Archived</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">NI Number</label>
+                      <input
+                        type="text"
+                        value={formData.niNumber}
+                        onChange={(e) => setFormData({...formData, niNumber: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                        placeholder="AB123456C"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
+                        {allPermissions.map(permission => (
+                          <label key={permission} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={formData.permissions.includes(permission)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFormData({...formData, permissions: [...formData.permissions, permission]});
+                                } else {
+                                  setFormData({...formData, permissions: formData.permissions.filter(p => p !== permission)});
+                                }
+                              }}
+                              className="rounded border-gray-300 text-[#224fa6] focus:ring-[#224fa6] w-4 h-4"
+                            />
+                            <span className="text-xs text-gray-700 font-medium">{permission}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                   <button
                     type="button"
-                    onClick={() => setShowAddModal(false)}
+                    onClick={() => { setShowAddModal(false); resetForm(); }}
                     className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
-                  >
-                    Add User
-                  </button>
+                  <div className="flex space-x-3">
+                    {currentStep > 1 && (
+                      <button
+                        type="button"
+                        onClick={previousStep}
+                        className="px-6 py-3 text-[#224fa6] bg-blue-50 rounded-xl hover:bg-blue-100 transition-all duration-200 font-medium"
+                      >
+                        Previous
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
+                    >
+                      {currentStep === 3 ? 'Create User' : 'Next'}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -730,6 +981,14 @@ export default function UsersManagementPage() {
       )}
         </main>
       </div>
+
+      {/* Notification Component */}
+      <Notification
+        show={notification.show}
+        message={notification.message}
+        type={notification.type}
+        onClose={hideNotification}
+      />
     </div>
   );
 }

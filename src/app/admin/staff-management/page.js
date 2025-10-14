@@ -19,6 +19,7 @@ export default function StaffManagementPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -129,6 +130,7 @@ export default function StaffManagementPage() {
 
   const handleAddStaff = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('/api/users', {
@@ -155,11 +157,14 @@ export default function StaffManagementPage() {
     } catch (error) {
       console.error('Error adding staff:', error);
       showNotification('Error adding staff member. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEditStaff = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`/api/users/${selectedStaff.id}`, {
@@ -168,7 +173,10 @@ export default function StaffManagementPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          contractedHours: formData.contractedHours ? parseInt(formData.contractedHours) : null
+        })
       });
 
       if (response.ok) {
@@ -182,6 +190,8 @@ export default function StaffManagementPage() {
     } catch (error) {
       console.error('Error updating staff:', error);
       showNotification('Error updating staff member. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -303,20 +313,21 @@ export default function StaffManagementPage() {
     return null;
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#224fa6]"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
       <div className="flex-1 flex flex-col lg:ml-64">
         <Header user={user} />
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#224fa6] mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading staff...</p>
+              </div>
+            </div>
+          ) : (
+            <>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -500,6 +511,8 @@ export default function StaffManagementPage() {
           </table>
         </div>
       </div>
+            </>
+          )}
 
       {/* Add Staff Modal */}
       {showAddModal && (
@@ -821,9 +834,10 @@ export default function StaffManagementPage() {
                     )}
                     <button
                       type="submit"
-                      className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
+                      disabled={isSubmitting && currentStep === 3}
+                      className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {currentStep === 3 ? 'Create Staff Member' : 'Next'}
+                      {currentStep === 3 ? (isSubmitting ? 'Creating...' : 'Create Staff Member') : 'Next'}
                     </button>
                   </div>
                 </div>
@@ -979,9 +993,10 @@ export default function StaffManagementPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
+                    disabled={isSubmitting}
+                    className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Update Staff Member
+                    {isSubmitting ? 'Updating...' : 'Update Staff Member'}
                   </button>
                 </div>
               </form>

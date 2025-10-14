@@ -17,6 +17,7 @@ export default function ShiftRunManagementPage() {
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [shiftRunToDelete, setShiftRunToDelete] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -63,6 +64,7 @@ export default function ShiftRunManagementPage() {
 
   const handleAddShiftRun = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const response = await fetch('/api/shift-runs', {
         method: 'POST',
@@ -87,11 +89,14 @@ export default function ShiftRunManagementPage() {
     } catch (error) {
       console.error('Error adding shift run:', error);
       showNotification('Error adding shift run. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEditShiftRun = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const response = await fetch(`/api/shift-runs/${selectedShiftRun.id}`, {
         method: 'PUT',
@@ -118,6 +123,8 @@ export default function ShiftRunManagementPage() {
     } catch (error) {
       console.error('Error updating shift run:', error);
       showNotification('Error updating shift run. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -181,17 +188,6 @@ export default function ShiftRunManagementPage() {
     avgShiftsPerRun: shiftRuns.length > 0 ? Math.round(shiftRuns.reduce((sum, sr) => sum + (sr.totalShifts || 0), 0) / shiftRuns.length) : 0
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#224fa6] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading shift runs...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
@@ -201,6 +197,15 @@ export default function ShiftRunManagementPage() {
         
         <main className="flex-1 overflow-auto">
           <div className="p-4 lg:p-6">
+            {isLoading ? (
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#224fa6] mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading shift runs...</p>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Header */}
             <div className="mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -360,6 +365,9 @@ export default function ShiftRunManagementPage() {
               </div>
             </div>
           </div>
+              </>
+            )}
+          </div>
 
           {/* Add Shift Run Modal */}
           {showAddModal && (
@@ -404,9 +412,10 @@ export default function ShiftRunManagementPage() {
                       </button>
                       <button
                         type="submit"
-                        className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
+                        disabled={isSubmitting}
+                        className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Add Shift Run
+                        {isSubmitting ? 'Adding...' : 'Add Shift Run'}
                       </button>
                     </div>
                   </form>
@@ -458,9 +467,10 @@ export default function ShiftRunManagementPage() {
                       </button>
                       <button
                         type="submit"
-                        className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
+                        disabled={isSubmitting}
+                        className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Update Shift Run
+                        {isSubmitting ? 'Updating...' : 'Update Shift Run'}
                       </button>
                     </div>
                   </form>

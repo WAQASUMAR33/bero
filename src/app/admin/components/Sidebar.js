@@ -351,6 +351,32 @@ export default function Sidebar({ user }) {
                   </svg>
                 )}
               </button>
+              
+              {/* Submenu Items */}
+              {item.subItems && expandedItems[item.id] && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {item.subItems
+                    .filter(subItem => 
+                      userPermissions.includes(subItem.permission) || user?.role?.name === 'ADMIN'
+                    )
+                    .map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={() => {
+                        setActiveItem(subItem.name);
+                        router.push(subItem.path);
+                      }}
+                      className={`w-full flex items-center py-2 px-3 rounded-lg text-left text-sm transition-colors ${
+                        activeItem === subItem.name
+                          ? 'bg-blue-50 text-[#224fa6]'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="ml-6">{subItem.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </nav>

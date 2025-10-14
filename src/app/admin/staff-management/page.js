@@ -6,15 +6,16 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
 
-export default function UsersManagementPage() {
+export default function StaffManagementPage() {
   const [user, setUser] = useState(null);
-  const [users, setUsers] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedStaff, setSelectedStaff] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -23,7 +24,7 @@ export default function UsersManagementPage() {
     email: '',
     username: '',
     phoneNo: '',
-    role: 'HR',
+    role: 'CAREWORKER',
     status: 'CURRENT',
     password: '',
     permissions: []
@@ -31,47 +32,35 @@ export default function UsersManagementPage() {
 
   const allPermissions = [
     'dashboard.view',
-    'users.manage',
-    'staff.manage',
-    'service-users.manage',
-    'shifts.manage',
     'daily-tasks.manage',
-    'documents.manage',
-    'regions.manage',
-    'finance.manage',
-    'reports.view',
-    'settings.manage',
-    'roles.manage',
-    'audit.view',
-    'calendar.manage',
-    'clock-in-out.manage',
-    'cqc-inspection.manage',
-    'quality-assurance.manage',
-    'holidays.manage',
+    'shifts.manage',
     'handover.manage',
-    'maintenance.manage',
-    'agenda.manage',
-    'setup.manage',
-    'incidents.manage',
-    'temperature-monitoring.manage',
-    'well-being.manage'
+    'clock-in-out.manage',
+    'documents.manage',
+    'calendar.manage'
   ];
 
-  const roles = ['ADMIN', 'DIRECTOR', 'HR'];
+  const staffRoles = ['CAREWORKER', 'SUPPORT_WORKER', 'REGISTER_MANAGER'];
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+  };
+
+  const hideNotification = () => {
+    setNotification({ show: false, message: '', type: 'success' });
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-      fetchUsers();
+      fetchStaff();
     } else {
       router.push('/login');
     }
   }, [router]);
 
-  const adminRoles = ['ADMIN', 'DIRECTOR', 'HR'];
-
-  const fetchUsers = async () => {
+  const fetchStaff = async () => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
@@ -84,18 +73,19 @@ export default function UsersManagementPage() {
       
       if (response.ok) {
         const data = await response.json();
-        // Filter to only show admin roles
-        const adminOnly = data.filter(u => adminRoles.includes(u.role));
-        setUsers(adminOnly);
+        // Filter to only show staff roles
+        const staffOnly = data.filter(u => staffRoles.includes(u.role));
+        setStaff(staffOnly);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching staff:', error);
+      showNotification('Error fetching staff. Please try again.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAddUser = async (e) => {
+  const handleAddStaff = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
@@ -111,18 +101,22 @@ export default function UsersManagementPage() {
       if (response.ok) {
         setShowAddModal(false);
         resetForm();
-        fetchUsers();
+        fetchStaff();
+        showNotification('Staff member added successfully!', 'success');
+      } else {
+        showNotification('Error adding staff member. Please try again.', 'error');
       }
     } catch (error) {
-      console.error('Error adding user:', error);
+      console.error('Error adding staff:', error);
+      showNotification('Error adding staff member. Please try again.', 'error');
     }
   };
 
-  const handleEditUser = async (e) => {
+  const handleEditStaff = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/users/${selectedUser.id}`, {
+      const response = await fetch(`/api/users/${selectedStaff.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -134,18 +128,22 @@ export default function UsersManagementPage() {
       if (response.ok) {
         setShowEditModal(false);
         resetForm();
-        fetchUsers();
+        fetchStaff();
+        showNotification('Staff member updated successfully!', 'success');
+      } else {
+        showNotification('Error updating staff member. Please try again.', 'error');
       }
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error('Error updating staff:', error);
+      showNotification('Error updating staff member. Please try again.', 'error');
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (confirm('Are you sure you want to delete this user?')) {
+  const handleDeleteStaff = async (staffId) => {
+    if (confirm('Are you sure you want to delete this staff member?')) {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`/api/users/${userId}`, {
+        const response = await fetch(`/api/users/${staffId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -154,10 +152,14 @@ export default function UsersManagementPage() {
         });
 
         if (response.ok) {
-          fetchUsers();
+          fetchStaff();
+          showNotification('Staff member deleted successfully!', 'success');
+        } else {
+          showNotification('Error deleting staff member. Please try again.', 'error');
         }
       } catch (error) {
-        console.error('Error deleting user:', error);
+        console.error('Error deleting staff:', error);
+        showNotification('Error deleting staff member. Please try again.', 'error');
       }
     }
   };
@@ -174,41 +176,38 @@ export default function UsersManagementPage() {
       password: '',
       permissions: []
     });
-    setSelectedUser(null);
+    setSelectedStaff(null);
   };
 
-  const openEditModal = (user) => {
-    setSelectedUser(user);
+  const openEditModal = (staffMember) => {
+    setSelectedStaff(staffMember);
     setFormData({
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      email: user.email || '',
-      username: user.username || '',
-      phoneNo: user.phoneNo || '',
-      role: user.role || 'CAREWORKER',
-      status: user.status || 'CURRENT',
+      firstName: staffMember.firstName || '',
+      lastName: staffMember.lastName || '',
+      email: staffMember.email || '',
+      username: staffMember.username || '',
+      phoneNo: staffMember.phoneNo || '',
+      role: staffMember.role || 'CAREWORKER',
+      status: staffMember.status || 'CURRENT',
       password: '',
-      permissions: user.permissions?.map(p => p.key) || []
+      permissions: staffMember.permissions?.map(p => p.key) || []
     });
     setShowEditModal(true);
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
+  const filteredStaff = staff.filter(member => {
+    const matchesSearch = member.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === 'all' || member.role === filterRole;
     return matchesSearch && matchesRole;
   });
 
   const getRoleBadgeColor = (role) => {
     switch (role) {
-      case 'ADMIN': return 'bg-red-100 text-red-800';
-      case 'DIRECTOR': return 'bg-purple-100 text-purple-800';
-      case 'HR': return 'bg-blue-100 text-blue-800';
-      case 'REGISTER_MANAGER': return 'bg-green-100 text-green-800';
-      case 'CAREWORKER': return 'bg-yellow-100 text-yellow-800';
-      case 'SUPPORT_WORKER': return 'bg-indigo-100 text-indigo-800';
+      case 'CAREWORKER': return 'bg-blue-100 text-blue-800';
+      case 'SUPPORT_WORKER': return 'bg-green-100 text-green-800';
+      case 'REGISTER_MANAGER': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -234,10 +233,6 @@ export default function UsersManagementPage() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
@@ -248,8 +243,8 @@ export default function UsersManagementPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Users Management</h1>
-            <p className="text-gray-600">Manage admin accounts, directors, and HR personnel</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Staff Management</h1>
+            <p className="text-gray-600">Manage careworkers, support workers, and register managers</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -258,13 +253,39 @@ export default function UsersManagementPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            <span>Add Admin User</span>
+            <span>Add Staff Member</span>
           </button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Staff</p>
+              <p className="text-2xl font-bold text-gray-900">{staff.length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Active Staff</p>
+              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.status === 'CURRENT').length}</p>
+            </div>
+          </div>
+        </div>
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
           <div className="flex items-center">
             <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
@@ -273,34 +294,21 @@ export default function UsersManagementPage() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Admins</p>
-              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'ADMIN').length}</p>
+              <p className="text-sm font-medium text-gray-600">Careworkers</p>
+              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.role === 'CAREWORKER').length}</p>
             </div>
           </div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
           <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Directors</p>
-              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'DIRECTOR').length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
+            <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">HR Personnel</p>
-              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'HR').length}</p>
+              <p className="text-sm font-medium text-gray-600">Support Workers</p>
+              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.role === 'SUPPORT_WORKER').length}</p>
             </div>
           </div>
         </div>
@@ -316,7 +324,7 @@ export default function UsersManagementPage() {
               </svg>
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder="Search staff..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
@@ -330,7 +338,7 @@ export default function UsersManagementPage() {
               className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
             >
               <option value="all">All Roles</option>
-              {roles.map(role => (
+              {staffRoles.map(role => (
                 <option key={role} value={role}>{role}</option>
               ))}
             </select>
@@ -338,13 +346,13 @@ export default function UsersManagementPage() {
         </div>
       </div>
 
-      {/* Users Table */}
+      {/* Staff Table */}
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Staff Member</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Permissions</th>
@@ -353,45 +361,45 @@ export default function UsersManagementPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 transition-colors duration-200">
+              {filteredStaff.map((member) => (
+                <tr key={member.id} className="hover:bg-gray-50 transition-colors duration-200">
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-12 w-12">
                         <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center shadow-lg">
                           <span className="text-white font-semibold text-sm">
-                            {user.firstName?.[0]}{user.lastName?.[0]}
+                            {member.firstName?.[0]}{member.lastName?.[0]}
                           </span>
                         </div>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-semibold text-gray-900">
-                          {user.firstName} {user.lastName}
+                          {member.firstName} {member.lastName}
                         </div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="text-sm text-gray-500">{member.email}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(user.role)}`}>
-                      {user.role}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(member.role)}`}>
+                      {member.role}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(user.status)}`}>
-                      {user.status}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(member.status)}`}>
+                      {member.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{user.permissions?.length || 0} permissions</div>
+                    <div className="text-sm text-gray-900">{member.permissions?.length || 0} permissions</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString()}
+                    {new Date(member.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-3">
                       <button
-                        onClick={() => openEditModal(user)}
+                        onClick={() => openEditModal(member)}
                         className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -399,7 +407,7 @@ export default function UsersManagementPage() {
                         </svg>
                       </button>
                       <button
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => handleDeleteStaff(member.id)}
                         className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,15 +423,15 @@ export default function UsersManagementPage() {
         </div>
       </div>
 
-      {/* Add User Modal */}
+      {/* Add Staff Modal */}
       {showAddModal && (
         <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
           <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Add New Admin User</h3>
-                    <p className="text-sm text-gray-600 mt-1">Create admin, director, or HR account with permissions</p>
+                    <h3 className="text-2xl font-bold text-gray-900">Add New Staff Member</h3>
+                    <p className="text-sm text-gray-600 mt-1">Create a new staff account with permissions</p>
                   </div>
                 <button
                   onClick={() => setShowAddModal(false)}
@@ -435,7 +443,7 @@ export default function UsersManagementPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleAddUser} className="space-y-4">
+              <form onSubmit={handleAddStaff} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
@@ -509,7 +517,7 @@ export default function UsersManagementPage() {
                       onChange={(e) => setFormData({...formData, role: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
                     >
-                      {roles.map(role => (
+                      {staffRoles.map(role => (
                         <option key={role} value={role}>{role}</option>
                       ))}
                     </select>
@@ -563,7 +571,7 @@ export default function UsersManagementPage() {
                     type="submit"
                     className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
                   >
-                    Add User
+                    Add Staff Member
                   </button>
                 </div>
               </form>
@@ -572,15 +580,15 @@ export default function UsersManagementPage() {
         </div>
       )}
 
-      {/* Edit User Modal */}
+      {/* Edit Staff Modal */}
       {showEditModal && (
         <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
           <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Edit Admin User</h3>
-                    <p className="text-sm text-gray-600 mt-1">Update admin user information and permissions</p>
+                    <h3 className="text-2xl font-bold text-gray-900">Edit Staff Member</h3>
+                    <p className="text-sm text-gray-600 mt-1">Update staff information and permissions</p>
                   </div>
                 <button
                   onClick={() => setShowEditModal(false)}
@@ -592,7 +600,7 @@ export default function UsersManagementPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleEditUser} className="space-y-4">
+              <form onSubmit={handleEditStaff} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
@@ -666,7 +674,7 @@ export default function UsersManagementPage() {
                       onChange={(e) => setFormData({...formData, role: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
                     >
-                      {roles.map(role => (
+                      {staffRoles.map(role => (
                         <option key={role} value={role}>{role}</option>
                       ))}
                     </select>
@@ -720,7 +728,7 @@ export default function UsersManagementPage() {
                     type="submit"
                     className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5"
                   >
-                    Update User
+                    Update Staff Member
                   </button>
                 </div>
               </form>
@@ -730,6 +738,15 @@ export default function UsersManagementPage() {
       )}
         </main>
       </div>
+
+      {/* Notification Component */}
+      <Notification
+        show={notification.show}
+        message={notification.message}
+        type={notification.type}
+        onClose={hideNotification}
+      />
     </div>
   );
 }
+

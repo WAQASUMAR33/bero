@@ -101,7 +101,8 @@ export default function Sidebar({ user }) {
           <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
         </svg>
       ),
-      hasArrow: true,
+      hasArrow: false,
+      path: '/admin/staff-management',
     },
     {
       id: 'clock-in-out',
@@ -307,7 +308,9 @@ export default function Sidebar({ user }) {
               <button
                 onClick={() => {
                   setActiveItem(item.name);
-                  if (item.hasArrow) {
+                  if (item.path) {
+                    router.push(item.path);
+                  } else if (item.hasArrow) {
                     toggleExpanded(item.id);
                   }
                 }}

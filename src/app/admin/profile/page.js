@@ -22,15 +22,16 @@ export default function ProfilePage() {
     phoneNo: '',
     username: '',
     role: '',
+    employeeNumber: '',
+    startDate: '',
+    leaveDate: '',
     region: '',
-    address: '',
-    city: '',
     postalCode: '',
-    country: '',
-    dateOfBirth: '',
+    emergencyName: '',
     emergencyContact: '',
-    emergencyPhone: '',
-    bio: ''
+    contractedHours: '',
+    status: '',
+    niNumber: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -61,15 +62,16 @@ export default function ProfilePage() {
         phoneNo: userData.phoneNo || '',
         username: userData.username || '',
         role: userData.role || '',
-        region: userData.region?.name || '',
-        address: userData.address || '',
-        city: userData.city || '',
+        employeeNumber: userData.employeeNumber || '',
+        startDate: userData.startDate ? new Date(userData.startDate).toISOString().split('T')[0] : '',
+        leaveDate: userData.leaveDate ? new Date(userData.leaveDate).toISOString().split('T')[0] : '',
+        region: userData.region?.title || '',
         postalCode: userData.postalCode || '',
-        country: userData.country || '',
-        dateOfBirth: userData.dateOfBirth || '',
+        emergencyName: userData.emergencyName || '',
         emergencyContact: userData.emergencyContact || '',
-        emergencyPhone: userData.emergencyPhone || '',
-        bio: userData.bio || ''
+        contractedHours: userData.contractedHours?.toString() || '',
+        status: userData.status || '',
+        niNumber: userData.niNumber || ''
       });
     } else {
       router.push('/login');
@@ -288,48 +290,115 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
-                          <input
-                            type="date"
-                            value={profileData.dateOfBirth}
-                            disabled
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
-                          />
+                      <div className="border-t border-gray-200 pt-6 mt-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Employment Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Employee Number</label>
+                            <input
+                              type="text"
+                              value={profileData.employeeNumber}
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                            <input
+                              type="text"
+                              value={profileData.status}
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact</label>
-                          <input
-                            type="text"
-                            value={profileData.emergencyContact}
-                            onChange={(e) => setProfileData({...profileData, emergencyContact: e.target.value})}
-                            disabled={!isEditing}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
+                            <input
+                              type="date"
+                              value={profileData.startDate}
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Leave Date</label>
+                            <input
+                              type="date"
+                              value={profileData.leaveDate}
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Contracted Hours</label>
+                            <input
+                              type="text"
+                              value={profileData.contractedHours}
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Phone</label>
-                          <input
-                            type="tel"
-                            value={profileData.emergencyPhone}
-                            onChange={(e) => setProfileData({...profileData, emergencyPhone: e.target.value})}
-                            disabled={!isEditing}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Region</label>
+                            <input
+                              type="text"
+                              value={profileData.region}
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">NI Number</label>
+                            <input
+                              type="text"
+                              value={profileData.niNumber}
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
-                        <textarea
-                          value={profileData.bio}
-                          onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
-                          disabled={!isEditing}
-                          rows={4}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
-                          placeholder="Tell us about yourself..."
-                        />
+                      <div className="border-t border-gray-200 pt-6 mt-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Name</label>
+                            <input
+                              type="text"
+                              value={profileData.emergencyName}
+                              onChange={(e) => setProfileData({...profileData, emergencyName: e.target.value})}
+                              disabled={!isEditing}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Number</label>
+                            <input
+                              type="tel"
+                              value={profileData.emergencyContact}
+                              onChange={(e) => setProfileData({...profileData, emergencyContact: e.target.value})}
+                              disabled={!isEditing}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
+                            <input
+                              type="text"
+                              value={profileData.postalCode}
+                              onChange={(e) => setProfileData({...profileData, postalCode: e.target.value})}
+                              disabled={!isEditing}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                            />
+                          </div>
+                        </div>
                       </div>
 
                       {isEditing && (

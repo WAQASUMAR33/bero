@@ -217,7 +217,7 @@ export default function ProfilePage() {
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">{user.firstName} {user.lastName}</h3>
-                          <p className="text-gray-600 capitalize">{user.role}</p>
+                          <p className="text-gray-600">{user?.role?.displayName || user?.role?.name || 'User'}</p>
                           {isEditing && (
                             <button type="button" className="mt-2 text-[#224fa6] hover:text-[#3270e9] text-sm font-medium">
                               Change Photo

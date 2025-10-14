@@ -267,7 +267,7 @@ export default function Sidebar({ user }) {
   // Filter menu items based on user permissions
   const userPermissions = user?.permissions?.map(p => p.key) || [];
   const menuItems = allMenuItems.filter(item => 
-    userPermissions.includes(item.permission) || user?.role === 'ADMIN'
+    userPermissions.includes(item.permission) || user?.role?.name === 'ADMIN'
   );
 
   // Don't render sidebar if user is not loaded
@@ -369,7 +369,7 @@ export default function Sidebar({ user }) {
           </div>
           <div className="flex-1 text-left">
             <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>
-            <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+            <p className="text-xs text-gray-500">{user?.role?.displayName || user?.role?.name || 'User'}</p>
           </div>
           <svg className={`w-4 h-4 text-gray-400 transition-transform ${showLogoutDropdown ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />

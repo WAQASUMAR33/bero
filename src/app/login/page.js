@@ -87,7 +87,7 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="mb-12">
             <Image
-              src="/asstes/logo2.png"
+              src="/assets/logo2.png"
               alt="Logo"
               width={200}
               height={200}

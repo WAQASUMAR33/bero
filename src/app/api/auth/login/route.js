@@ -33,6 +33,7 @@ export async function POST(request) {
       where: { email },
       include: {
         region: true,
+        role: true,
         permissions: true,
       },
     });

@@ -30,7 +30,7 @@ export default function StaffManagementPage() {
     lastName: '',
     password: '',
     phoneNo: '',
-    role: 'CAREWORKER',
+    roleId: '',
     // Step 2: Employment Details
     employeeNumber: '',
     startDate: '',
@@ -47,6 +47,7 @@ export default function StaffManagementPage() {
   });
 
   const [regions, setRegions] = useState([]);
+  const [roles, setRoles] = useState([]);
 
   const allPermissions = [
     'dashboard.view',
@@ -76,7 +77,6 @@ export default function StaffManagementPage() {
     'well-being.manage'
   ];
 
-  const staffRoles = ['ADMIN', 'DIRECTOR', 'HR', 'CAREWORKER', 'SUPPORT_WORKER', 'REGISTER_MANAGER'];
 
   const showNotification = (message, type = 'success') => {
     setNotification({ show: true, message, type });
@@ -92,6 +92,7 @@ export default function StaffManagementPage() {
       setUser(JSON.parse(storedUser));
       fetchStaff();
       fetchRegions();
+      fetchRoles();
     } else {
       router.push('/login');
     }
@@ -106,6 +107,29 @@ export default function StaffManagementPage() {
       }
     } catch (error) {
       console.error('Error fetching regions:', error);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/roles', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRoles(data);
+        // Set default role to first role if available
+        if (data.length > 0 && !formData.roleId) {
+          setFormData(prev => ({ ...prev, roleId: data[0].id }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching roles:', error);
     }
   };
 
@@ -258,7 +282,7 @@ export default function StaffManagementPage() {
       lastName: '',
       password: '',
       phoneNo: '',
-      role: 'CAREWORKER',
+      roleId: roles.length > 0 ? roles[0].id : '',
       employeeNumber: '',
       startDate: '',
       leaveDate: '',
@@ -284,7 +308,7 @@ export default function StaffManagementPage() {
       lastName: staffMember.lastName || '',
       password: '',
       phoneNo: staffMember.phoneNo || '',
-      role: staffMember.role || 'CAREWORKER',
+      roleId: staffMember.roleId || (roles.length > 0 ? roles[0].id : ''),
       employeeNumber: staffMember.employeeNumber || '',
       startDate: staffMember.startDate ? new Date(staffMember.startDate).toISOString().split('T')[0] : '',
       leaveDate: staffMember.leaveDate ? new Date(staffMember.leaveDate).toISOString().split('T')[0] : '',
@@ -304,7 +328,7 @@ export default function StaffManagementPage() {
     const matchesSearch = member.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          member.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          member.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || member.role === filterRole;
+    const matchesRole = filterRole === 'all' || member.roleId === filterRole;
     return matchesSearch && matchesRole;
   });
 
@@ -444,8 +468,8 @@ export default function StaffManagementPage() {
               className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
             >
               <option value="all">All Roles</option>
-              {staffRoles.map(role => (
-                <option key={role} value={role}>{role}</option>
+              {roles.map(role => (
+                <option key={role.id} value={role.id}>{role.displayName}</option>
               ))}
             </select>
           </div>
@@ -487,8 +511,8 @@ export default function StaffManagementPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(member.role)}`}>
-                      {member.role}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(member.role?.name)}`}>
+                      {member.role?.displayName || 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -674,12 +698,14 @@ export default function StaffManagementPage() {
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Role *</label>
                       <select
-                        value={formData.role}
-                        onChange={(e) => setFormData({...formData, role: e.target.value})}
+                        value={formData.roleId}
+                        onChange={(e) => setFormData({...formData, roleId: e.target.value})}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                        required
                       >
-                        {staffRoles.map(role => (
-                          <option key={role} value={role}>{role}</option>
+                        <option value="">Select Role</option>
+                        {roles.map(role => (
+                          <option key={role.id} value={role.id}>{role.displayName}</option>
                         ))}
                       </select>
                     </div>
@@ -954,12 +980,14 @@ export default function StaffManagementPage() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
                     <select
-                      value={formData.role}
-                      onChange={(e) => setFormData({...formData, role: e.target.value})}
+                      value={formData.roleId}
+                      onChange={(e) => setFormData({...formData, roleId: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                      required
                     >
-                      {staffRoles.map(role => (
-                        <option key={role} value={role}>{role}</option>
+                      <option value="">Select Role</option>
+                      {roles.map(role => (
+                        <option key={role.id} value={role.id}>{role.displayName}</option>
                       ))}
                     </select>
                   </div>

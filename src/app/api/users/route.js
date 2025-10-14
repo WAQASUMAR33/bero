@@ -19,6 +19,7 @@ export async function GET(request) {
     const users = await prisma.user.findMany({
       include: {
         region: true,
+        role: true,
         permissions: true,
       },
       orderBy: {
@@ -58,7 +59,7 @@ export async function POST(request) {
       email,
       username,
       phoneNo,
-      role,
+      roleId,
       status,
       password,
       permissions = [],
@@ -109,7 +110,7 @@ export async function POST(request) {
         email,
         username,
         phoneNo,
-        role,
+        roleId,
         status,
         password: hashedPassword,
         isEmailVerified: true,

@@ -17,15 +17,6 @@ datasource db {
 //
 // ENUMS
 //
-enum Role {
-  ADMIN
-  CAREWORKER
-  DIRECTOR
-  HR
-  REGISTER_MANAGER
-  SUPPORT_WORKER
-}
-
 enum UserStatus {
   ARCHIVED
   CURRENT
@@ -53,6 +44,19 @@ enum FunderPaymentType {
 // MODELS
 //
 
+model RoleDefinition {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "ADMIN", "CAREWORKER"
+  displayName String   // e.g., "Administrator", "Care Worker"
+  description String?
+  permissions Json     // Array of permission strings
+  isSystem    Boolean  @default(false) // System roles cannot be deleted
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+}
+
 model User {
   id               String       @id @default(cuid())
   firstName        String
@@ -60,7 +64,7 @@ model User {
   username         String       @unique
   phoneNo          String
   email            String       @unique
-  role             Role
+  roleId           String
   password         String
   isEmailVerified  Boolean      @default(false)
   lastLoggedIn     DateTime?
@@ -79,6 +83,7 @@ model User {
   niNumber         String?
 
   // Relations
+  role             RoleDefinition @relation(fields: [roleId], references: [id])
   region           Region?      @relation(fields: [regionId], references: [id])
   documents        Document[]   @relation("UserDocuments")
   uploadedDocs     Document[]   @relation("UploadedByUser")

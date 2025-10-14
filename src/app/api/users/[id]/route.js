@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
     const { id } = params;
 
     const user = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
       include: {
         region: true,
         permissions: true,
@@ -63,12 +63,21 @@ export async function PUT(request, { params }) {
       role,
       status,
       password,
-      permissions = []
+      permissions = [],
+      employeeNumber,
+      startDate,
+      leaveDate,
+      regionId,
+      emergencyName,
+      emergencyContact,
+      postalCode,
+      contractedHours,
+      niNumber
     } = body;
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: parseInt(id) }
+      where: { id: id }
     });
 
     if (!existingUser) {
@@ -83,7 +92,7 @@ export async function PUT(request, { params }) {
       const duplicateUser = await prisma.user.findFirst({
         where: {
           AND: [
-            { id: { not: parseInt(id) } },
+            { id: { not: id } },
             {
               OR: [
                 { email },
@@ -111,6 +120,15 @@ export async function PUT(request, { params }) {
       phoneNo,
       role,
       status,
+      employeeNumber: employeeNumber || null,
+      startDate: startDate ? new Date(startDate) : null,
+      leaveDate: leaveDate ? new Date(leaveDate) : null,
+      regionId: regionId || null,
+      emergencyName: emergencyName || null,
+      emergencyContact: emergencyContact || null,
+      postalCode: postalCode || null,
+      contractedHours: contractedHours || null,
+      niNumber: niNumber || null
     };
 
     // Only hash and update password if provided
@@ -120,7 +138,7 @@ export async function PUT(request, { params }) {
 
     // Update user
     const user = await prisma.user.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: updateData,
       include: {
         region: true,
@@ -132,20 +150,20 @@ export async function PUT(request, { params }) {
     if (permissions.length >= 0) {
       // Delete existing permissions
       await prisma.userPermission.deleteMany({
-        where: { userId: parseInt(id) }
+        where: { userId: id }
       });
 
       // Create new permissions
       await prisma.userPermission.createMany({
         data: permissions.map(permission => ({
-          userId: parseInt(id),
+          userId: id,
           key: permission
         }))
       });
 
       // Fetch updated user with permissions
       const updatedUser = await prisma.user.findUnique({
-        where: { id: parseInt(id) },
+        where: { id: id },
         include: {
           region: true,
           permissions: true,
@@ -182,7 +200,7 @@ export async function DELETE(request, { params }) {
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: parseInt(id) }
+      where: { id: id }
     });
 
     if (!existingUser) {
@@ -194,7 +212,7 @@ export async function DELETE(request, { params }) {
 
     // Delete user (this will cascade delete permissions due to foreign key)
     await prisma.user.delete({
-      where: { id: parseInt(id) }
+      where: { id: id }
     });
 
     return NextResponse.json({ message: 'User deleted successfully' });

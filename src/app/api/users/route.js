@@ -61,11 +61,20 @@ export async function POST(request) {
       role,
       status,
       password,
-      permissions = []
+      permissions = [],
+      employeeNumber,
+      startDate,
+      leaveDate,
+      regionId,
+      emergencyName,
+      emergencyContact,
+      postalCode,
+      contractedHours,
+      niNumber
     } = body;
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !username || !password) {
+    if (!firstName || !lastName || !email || !username || !password || !phoneNo) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -104,6 +113,15 @@ export async function POST(request) {
         status,
         password: hashedPassword,
         isEmailVerified: true,
+        employeeNumber: employeeNumber || null,
+        startDate: startDate ? new Date(startDate) : null,
+        leaveDate: leaveDate ? new Date(leaveDate) : null,
+        regionId: regionId || null,
+        emergencyName: emergencyName || null,
+        emergencyContact: emergencyContact || null,
+        postalCode: postalCode || null,
+        contractedHours: contractedHours || null,
+        niNumber: niNumber || null,
         permissions: {
           create: permissions.map(permission => ({
             key: permission

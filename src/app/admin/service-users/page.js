@@ -20,6 +20,8 @@ export default function ServiceUsersPage() {
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [seekerToDelete, setSeekerToDelete] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewData, setViewData] = useState(null);
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
     firstName: '',
@@ -198,6 +200,19 @@ export default function ServiceUsersPage() {
     } catch { return '-'; }
   };
 
+  const openView = async (s) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/service-seekers/${s.id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setViewData(data);
+      setShowViewModal(true);
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Failed to load details.', type: 'error' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
@@ -329,6 +344,9 @@ export default function ServiceUsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end space-x-2">
+                          <button title="View" onClick={() => openView(s)} className="p-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                          </button>
                           <button title="Edit" onClick={() => openEdit(s)} className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                           </button>
@@ -502,6 +520,80 @@ export default function ServiceUsersPage() {
                   <div className="flex space-x-3">
                     <button onClick={handleDeleteCancel} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
                     <button onClick={handleDeleteConfirm} className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* View Details Modal */}
+          {showViewModal && viewData && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full mx-4">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-gray-900">{viewData.firstName} {viewData.lastName}</h3>
+                    <button onClick={()=>setShowViewModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500">Preferred Name</p>
+                      <p className="text-gray-900">{viewData.preferredName || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Title</p>
+                      <p className="text-gray-900">{viewData.title || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Date of Birth</p>
+                      <p className="text-gray-900">{viewData.dateOfBirth ? new Date(viewData.dateOfBirth).toLocaleDateString() : '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Age</p>
+                      <p className="text-gray-900">{calculateAge(viewData.dateOfBirth)}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="text-xs text-gray-500">Address</p>
+                      <p className="text-gray-900">{viewData.address || '-'} {viewData.postalCode ? `(${viewData.postalCode})` : ''}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Latitude</p>
+                      <p className="text-gray-900">{viewData.latitude ?? '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Longitude</p>
+                      <p className="text-gray-900">{viewData.longitude ?? '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Gender</p>
+                      <p className="text-gray-900">{viewData.gender || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Gender at Birth</p>
+                      <p className="text-gray-900">{viewData.genderAtBirth || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Pronouns</p>
+                      <p className="text-gray-900">{viewData.pronouns || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Sexuality</p>
+                      <p className="text-gray-900">{viewData.sexuality || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">DNAR</p>
+                      <p className="text-gray-900">{viewData.dnar ? 'Yes' : 'No'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Status</p>
+                      <p className="text-gray-900">{viewData.status}</p>
+                    </div>
+                  </div>
+                  <div className="mt-6 p-4 border-t border-gray-200">
+                    <p className="text-xs text-gray-500 mb-1">Audit</p>
+                    <div className="text-sm text-gray-700">
+                      <p>Created: <span className="text-gray-900">{viewData.createdAt ? new Date(viewData.createdAt).toLocaleString() : '-'}</span>{' '}by <span className="text-gray-900">{viewData.createdBy ? `${viewData.createdBy.firstName} ${viewData.createdBy.lastName}` : '-'}</span></p>
+                      <p>Last Updated: <span className="text-gray-900">{viewData.updatedAt ? new Date(viewData.updatedAt).toLocaleString() : '-'}</span>{' '}by <span className="text-gray-900">{viewData.updatedBy ? `${viewData.updatedBy.firstName} ${viewData.updatedBy.lastName}` : '-'}</span></p>
+                    </div>
                   </div>
                 </div>
               </div>

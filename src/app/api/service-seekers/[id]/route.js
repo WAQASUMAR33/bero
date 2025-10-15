@@ -15,7 +15,13 @@ export async function GET(request, { params }) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
-    const seeker = await prisma.serviceSeeker.findUnique({ where: { id } });
+    const seeker = await prisma.serviceSeeker.findUnique({
+      where: { id },
+      include: {
+        createdBy: true,
+        updatedBy: true,
+      },
+    });
     if (!seeker) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(seeker, { status: 200 });
   } catch (error) {

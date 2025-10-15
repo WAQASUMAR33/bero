@@ -14,6 +14,8 @@ export default function ServiceUsersPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
     firstName: '',
@@ -150,6 +152,21 @@ export default function ServiceUsersPage() {
 
   const countBy = (key, value) => seekers.filter((s) => s[key] === value).length;
 
+  const totalPages = Math.max(1, Math.ceil(filteredSeekers.length / pageSize));
+  const pageSafe = Math.min(currentPage, totalPages);
+  const startIdx = (pageSafe - 1) * pageSize;
+  const pagedSeekers = filteredSeekers.slice(startIdx, startIdx + pageSize);
+
+  const calculateAge = (dob) => {
+    if (!dob) return '-';
+    try {
+      const d = new Date(dob);
+      const diff = Date.now() - d.getTime();
+      const age = new Date(diff).getUTCFullYear() - 1970;
+      return age < 0 || Number.isNaN(age) ? '-' : age;
+    } catch { return '-'; }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
@@ -242,17 +259,18 @@ export default function ServiceUsersPage() {
           <div className="bg-white rounded-xl shadow border border-gray-100">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-[1]">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service User</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Postal Code</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service User</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Age</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Address</th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredSeekers.map((s) => (
-                    <tr key={s.id} className="hover:bg-gray-50">
+                  {pagedSeekers.map((s, idx) => (
+                    <tr key={s.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
                       <td className="px-6 py-4 text-gray-900">
                         <div className="flex items-center">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white font-semibold mr-3">
@@ -264,6 +282,7 @@ export default function ServiceUsersPage() {
                           </div>
                         </div>
                       </td>
+                      <td className="px-6 py-4 text-gray-700">{calculateAge(s.dateOfBirth)}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 text-xs rounded-full ${
                           s.status === 'LIVE' ? 'bg-green-50 text-green-700' :
@@ -273,10 +292,19 @@ export default function ServiceUsersPage() {
                           'bg-gray-50 text-gray-700'
                         }`}>{s.status}</span>
                       </td>
-                      <td className="px-6 py-4 text-gray-700">{s.postalCode || '-'}</td>
-                      <td className="px-6 py-4 space-x-2">
-                        <button onClick={() => openEdit(s)} className="text-[#224fa6] hover:underline">Edit</button>
-                        <button onClick={() => handleDelete(s)} className="text-red-600 hover:underline">Delete</button>
+                      <td className="px-6 py-4 text-gray-700">
+                        <div className="text-sm text-gray-900 truncate max-w-[260px]">{s.address || '-'}</div>
+                        <div className="text-xs text-gray-500">{s.postalCode || ''}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button title="Edit" onClick={() => openEdit(s)} className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                          </button>
+                          <button title="Delete" onClick={() => handleDelete(s)} className="p-2 rounded-lg text-red-600 hover:bg-red-50">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -289,6 +317,22 @@ export default function ServiceUsersPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+            {/* Pagination */}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+              <div className="text-sm text-gray-600">
+                Showing <span className="font-medium text-gray-900">{Math.min(filteredSeekers.length, startIdx + 1)}</span>-
+                <span className="font-medium text-gray-900">{Math.min(filteredSeekers.length, startIdx + pagedSeekers.length)}</span> of
+                <span className="font-medium text-gray-900"> {filteredSeekers.length}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <select value={pageSize} onChange={(e)=>{ setPageSize(parseInt(e.target.value)||10); setCurrentPage(1); }} className="px-2 py-1 border rounded">
+                  {[10,20,50].map(n => (<option key={n} value={n}>{n} / page</option>))}
+                </select>
+                <button onClick={()=> setCurrentPage(p => Math.max(1, p-1))} disabled={pageSafe===1} className={`px-3 py-1 rounded border ${pageSafe===1? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Prev</button>
+                <span className="text-sm text-gray-700">Page {pageSafe} / {totalPages}</span>
+                <button onClick={()=> setCurrentPage(p => Math.min(totalPages, p+1))} disabled={pageSafe===totalPages} className={`px-3 py-1 rounded border ${pageSafe===totalPages? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Next</button>
+              </div>
             </div>
           </div>
 

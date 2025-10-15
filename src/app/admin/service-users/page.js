@@ -104,7 +104,6 @@ export default function ServiceUsersPage() {
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/service-seekers/${editing.id}` : '/api/service-seekers';
       const token = localStorage.getItem('token');
-      // Prepare payload: coerce latitude/longitude to numbers, empty strings to null
       const payload = {
         ...formData,
         latitude: formData.latitude === '' ? null : Number(formData.latitude),
@@ -120,7 +119,7 @@ export default function ServiceUsersPage() {
         await fetchSeekers();
         setNotification({ show: true, message: editing ? 'Service user updated successfully.' : 'Service user created successfully.', type: 'success' });
       } else {
-        const err = await response.json().catch(()=>({error:'Failed'}));
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
         setNotification({ show: true, message: err?.error || 'Failed to save service user.', type: 'error' });
       }
     } catch (e) {
@@ -145,7 +144,7 @@ export default function ServiceUsersPage() {
         await fetchSeekers();
         setNotification({ show: true, message: 'Service user deleted successfully.', type: 'success' });
       } else {
-        const err = await res.json().catch(()=>({error:'Failed'}));
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
         setNotification({ show: true, message: err?.error || 'Failed to delete service user.', type: 'error' });
       }
     } catch (e) {
@@ -508,16 +507,16 @@ export default function ServiceUsersPage() {
               </div>
             </div>
           )}
+          {/* Notification */}
+          <Notification
+            show={notification.show}
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification({ ...notification, show: false })}
+          />
         </main>
       </div>
     </div>
-    {/* Notification */}
-    <Notification
-      show={notification.show}
-      message={notification.message}
-      type={notification.type}
-      onClose={() => setNotification({ ...notification, show: false })}
-    />
   );
 }
 

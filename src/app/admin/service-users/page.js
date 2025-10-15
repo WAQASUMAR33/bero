@@ -12,6 +12,8 @@ export default function ServiceUsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editing, setEditing] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
     firstName: '',
@@ -134,20 +136,107 @@ export default function ServiceUsersPage() {
     );
   }
 
+  const filteredSeekers = seekers
+    .filter((s) => {
+      if (statusFilter !== 'ALL' && s.status !== statusFilter) return false;
+      if (!searchTerm) return true;
+      const q = searchTerm.toLowerCase();
+      return (
+        s.firstName?.toLowerCase().includes(q) ||
+        s.lastName?.toLowerCase().includes(q) ||
+        s.postalCode?.toLowerCase().includes(q)
+      );
+    });
+
+  const countBy = (key, value) => seekers.filter((s) => s[key] === value).length;
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
       <div className="flex-1 flex flex-col lg:ml-64">
         <Header user={user} />
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">Service Users</h1>
-              <p className="text-gray-600">Manage service users</p>
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Service Users</h1>
+                <p className="text-gray-600">Create and manage all service users</p>
+              </div>
+              <button onClick={openAdd} className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200">
+                Add Service User
+              </button>
             </div>
-            <button onClick={openAdd} className="bg-[#224fa6] text-white px-4 py-2 rounded-lg disabled:opacity-70">
-              Add Service User
-            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold text-gray-900">{seekers.length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">Live</p>
+                  <p className="text-2xl font-bold text-gray-900">{countBy('status','LIVE')}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">Pre-admission</p>
+                  <p className="text-2xl font-bold text-gray-900">{countBy('status','PRE_ADMISSION')}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">Archived</p>
+                  <p className="text-2xl font-bold text-gray-900">{countBy('status','ARCHIVED')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Search by name or postal code" className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900" />
+                </div>
+              </div>
+              <div>
+                <select value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
+                  <option value="ALL">All Statuses</option>
+                  <option value="LIVE">LIVE</option>
+                  <option value="PRE_ADMISSION">PRE_ADMISSION</option>
+                  <option value="ON_HOLD_HOSPITAL">ON_HOLD_HOSPITAL</option>
+                  <option value="ARCHIVED_PRE_ADMISSION">ARCHIVED_PRE_ADMISSION</option>
+                  <option value="ARCHIVED">ARCHIVED</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="bg-white rounded-xl shadow border border-gray-100">
@@ -155,17 +244,35 @@ export default function ServiceUsersPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service User</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Postal Code</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {seekers.map((s) => (
+                  {filteredSeekers.map((s) => (
                     <tr key={s.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-gray-900">{s.firstName} {s.lastName}</td>
-                      <td className="px-6 py-4"><span className="px-2 py-1 text-xs rounded bg-blue-50 text-blue-700">{s.status}</span></td>
+                      <td className="px-6 py-4 text-gray-900">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white font-semibold mr-3">
+                            {(s.firstName?.[0]||'S')}{(s.lastName?.[0]||'U')}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">{s.firstName} {s.lastName}</div>
+                            <div className="text-xs text-gray-500">{s.preferredName || s.title || '-'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          s.status === 'LIVE' ? 'bg-green-50 text-green-700' :
+                          s.status === 'PRE_ADMISSION' ? 'bg-yellow-50 text-yellow-700' :
+                          s.status === 'ON_HOLD_HOSPITAL' ? 'bg-blue-50 text-blue-700' :
+                          s.status === 'ARCHIVED_PRE_ADMISSION' ? 'bg-purple-50 text-purple-700' :
+                          'bg-gray-50 text-gray-700'
+                        }`}>{s.status}</span>
+                      </td>
                       <td className="px-6 py-4 text-gray-700">{s.postalCode || '-'}</td>
                       <td className="px-6 py-4 space-x-2">
                         <button onClick={() => openEdit(s)} className="text-[#224fa6] hover:underline">Edit</button>
@@ -173,9 +280,11 @@ export default function ServiceUsersPage() {
                       </td>
                     </tr>
                   ))}
-                  {seekers.length === 0 && (
+                  {filteredSeekers.length === 0 && (
                     <tr>
-                      <td className="px-6 py-8 text-gray-500" colSpan={4}>No service users found.</td>
+                      <td className="px-6 py-10 text-gray-500 text-center" colSpan={4}>
+                        No service users match your filters.
+                      </td>
                     </tr>
                   )}
                 </tbody>

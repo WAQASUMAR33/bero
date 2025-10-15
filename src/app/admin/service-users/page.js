@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import Notification from '../components/Notification';
 
 export default function ServiceUsersPage() {
   const [user, setUser] = useState(null);
@@ -16,6 +17,9 @@ export default function ServiceUsersPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [seekerToDelete, setSeekerToDelete] = useState(null);
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
     firstName: '',
@@ -52,6 +56,7 @@ export default function ServiceUsersPage() {
       setSeekers(data);
     } catch (e) {
       console.error(e);
+      setNotification({ show: true, message: 'Failed to load service users.', type: 'error' });
     }
   };
 
@@ -105,29 +110,56 @@ export default function ServiceUsersPage() {
         latitude: formData.latitude === '' ? null : Number(formData.latitude),
         longitude: formData.longitude === '' ? null : Number(formData.longitude),
       };
-      await fetch(url, {
+      const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
-      setShowModal(false);
-      await fetchSeekers();
+      if (response.ok) {
+        setShowModal(false);
+        await fetchSeekers();
+        setNotification({ show: true, message: editing ? 'Service user updated successfully.' : 'Service user created successfully.', type: 'success' });
+      } else {
+        const err = await response.json().catch(()=>({error:'Failed'}));
+        setNotification({ show: true, message: err?.error || 'Failed to save service user.', type: 'error' });
+      }
     } catch (e) {
       console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (s) => {
-    if (!confirm('Delete this service user?')) return;
+  const handleDeleteClick = (s) => {
+    setSeekerToDelete(s);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!seekerToDelete) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`/api/service-seekers/${s.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      await fetchSeekers();
+      const res = await fetch(`/api/service-seekers/${seekerToDelete.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        await fetchSeekers();
+        setNotification({ show: true, message: 'Service user deleted successfully.', type: 'success' });
+      } else {
+        const err = await res.json().catch(()=>({error:'Failed'}));
+        setNotification({ show: true, message: err?.error || 'Failed to delete service user.', type: 'error' });
+      }
     } catch (e) {
       console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while deleting.', type: 'error' });
+    } finally {
+      setShowDeleteConfirm(false);
+      setSeekerToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setSeekerToDelete(null);
   };
 
   if (isLoading || !user) {
@@ -301,7 +333,7 @@ export default function ServiceUsersPage() {
                           <button title="Edit" onClick={() => openEdit(s)} className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                           </button>
-                          <button title="Delete" onClick={() => handleDelete(s)} className="p-2 rounded-lg text-red-600 hover:bg-red-50">
+                          <button title="Delete" onClick={() => handleDeleteClick(s)} className="p-2 rounded-lg text-red-600 hover:bg-red-50">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                           </button>
                         </div>
@@ -458,9 +490,34 @@ export default function ServiceUsersPage() {
               </div>
             </div>
           )}
+          {/* Delete Confirmation Modal */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+                <div className="p-6">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Delete Service User</h3>
+                  <p className="text-sm text-gray-600 text-center mb-6">Are you sure you want to delete <span className="font-medium text-gray-900">{seekerToDelete?.firstName} {seekerToDelete?.lastName}</span>? This action cannot be undone.</p>
+                  <div className="flex space-x-3">
+                    <button onClick={handleDeleteCancel} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
+                    <button onClick={handleDeleteConfirm} className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
+    {/* Notification */}
+    <Notification
+      show={notification.show}
+      message={notification.message}
+      type={notification.type}
+      onClose={() => setNotification({ ...notification, show: false })}
+    />
   );
 }
 

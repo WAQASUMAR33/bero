@@ -40,7 +40,6 @@ export async function PUT(request, { params }) {
       data: {
         ...body,
         dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
-        updatedById: decoded?.id || decoded?.userId || null,
       },
     });
 

@@ -74,8 +74,6 @@ export async function POST(request) {
         dnar: typeof dnar === 'boolean' ? dnar : null,
         sexuality: sexuality || null,
         status: status || 'LIVE',
-        createdById: decoded?.id || decoded?.userId || null,
-        updatedById: decoded?.id || decoded?.userId || null,
       },
     });
 

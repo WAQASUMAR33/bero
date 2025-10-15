@@ -29,7 +29,8 @@ export default function ServiceUsersPage() {
 
   const fetchSeekers = async () => {
     try {
-      const res = await fetch('/api/service-seekers');
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/service-seekers', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setSeekers(data);
     } catch (e) {
@@ -65,9 +66,10 @@ export default function ServiceUsersPage() {
     try {
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/service-seekers/${editing.id}` : '/api/service-seekers';
+      const token = localStorage.getItem('token');
       await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(formData),
       });
       setShowModal(false);
@@ -82,7 +84,8 @@ export default function ServiceUsersPage() {
   const handleDelete = async (s) => {
     if (!confirm('Delete this service user?')) return;
     try {
-      await fetch(`/api/service-seekers/${s.id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('token');
+      await fetch(`/api/service-seekers/${s.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       await fetchSeekers();
     } catch (e) {
       console.error(e);
@@ -147,37 +150,37 @@ export default function ServiceUsersPage() {
           </div>
 
           {showModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
               <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">{editing ? 'Edit' : 'Add'} Service User</h2>
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">First Name</label>
-                    <input value={formData.firstName} onChange={e=>setFormData({...formData, firstName:e.target.value})} className="w-full border rounded-lg px-3 py-2" required />
+                    <input value={formData.firstName} onChange={e=>setFormData({...formData, firstName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" required />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Last Name</label>
-                    <input value={formData.lastName} onChange={e=>setFormData({...formData, lastName:e.target.value})} className="w-full border rounded-lg px-3 py-2" required />
+                    <input value={formData.lastName} onChange={e=>setFormData({...formData, lastName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" required />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Preferred Name</label>
-                    <input value={formData.preferredName} onChange={e=>setFormData({...formData, preferredName:e.target.value})} className="w-full border rounded-lg px-3 py-2" />
+                    <input value={formData.preferredName} onChange={e=>setFormData({...formData, preferredName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Date of Birth</label>
-                    <input type="date" value={formData.dateOfBirth} onChange={e=>setFormData({...formData, dateOfBirth:e.target.value})} className="w-full border rounded-lg px-3 py-2" />
+                    <input type="date" value={formData.dateOfBirth} onChange={e=>setFormData({...formData, dateOfBirth:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Postal Code</label>
-                    <input value={formData.postalCode} onChange={e=>setFormData({...formData, postalCode:e.target.value})} className="w-full border rounded-lg px-3 py-2" />
+                    <input value={formData.postalCode} onChange={e=>setFormData({...formData, postalCode:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Address</label>
-                    <input value={formData.address} onChange={e=>setFormData({...formData, address:e.target.value})} className="w-full border rounded-lg px-3 py-2" />
+                    <input value={formData.address} onChange={e=>setFormData({...formData, address:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm text-gray-600 mb-1">Status</label>
-                    <select value={formData.status} onChange={e=>setFormData({...formData, status:e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                    <select value={formData.status} onChange={e=>setFormData({...formData, status:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
                       <option value="LIVE">LIVE</option>
                       <option value="PRE_ADMISSION">PRE_ADMISSION</option>
                       <option value="ARCHIVED">ARCHIVED</option>

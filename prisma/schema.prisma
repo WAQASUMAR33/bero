@@ -90,6 +90,10 @@ model User {
   standByShifts    StandByShift[]
 
   permissions      UserPermission[]
+
+  // Audit relations
+  createdServiceSeekers ServiceSeeker[] @relation("ServiceSeekerCreatedBy")
+  updatedServiceSeekers ServiceSeeker[] @relation("ServiceSeekerUpdatedBy")
 }
 
 model UserPermission {
@@ -154,8 +158,14 @@ model ServiceSeeker {
   status         ServiceSeekerStatus
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  createdById    String?
+  updatedById    String?
 
   shifts         Shift[]
+
+  // Relations
+  createdBy      User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
+  updatedBy      User?    @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Shift {

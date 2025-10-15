@@ -2,12 +2,18 @@
 
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
 // GET /api/service-seekers/[id]
-export async function GET(_request, { params }) {
+export async function GET(request, { params }) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
     const seeker = await prisma.serviceSeeker.findUnique({ where: { id } });
     if (!seeker) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -21,6 +27,11 @@ export async function GET(_request, { params }) {
 // PUT /api/service-seekers/[id]
 export async function PUT(request, { params }) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
     const body = await request.json();
 
@@ -29,6 +40,7 @@ export async function PUT(request, { params }) {
       data: {
         ...body,
         dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
+        updatedById: decoded?.id || decoded?.userId || null,
       },
     });
 
@@ -40,8 +52,13 @@ export async function PUT(request, { params }) {
 }
 
 // DELETE /api/service-seekers/[id]
-export async function DELETE(_request, { params }) {
+export async function DELETE(request, { params }) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
 
     // Ensure there are no dependent shifts blocking deletion

@@ -2,12 +2,18 @@
 
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
 // GET /api/service-seekers
-export async function GET() {
+export async function GET(request) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const seekers = await prisma.serviceSeeker.findMany({
       orderBy: { createdAt: 'desc' },
     });
@@ -21,6 +27,11 @@ export async function GET() {
 // POST /api/service-seekers
 export async function POST(request) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const body = await request.json();
     const {
       firstName,
@@ -63,6 +74,8 @@ export async function POST(request) {
         dnar: typeof dnar === 'boolean' ? dnar : null,
         sexuality: sexuality || null,
         status: status || 'LIVE',
+        createdById: decoded?.id || decoded?.userId || null,
+        updatedById: decoded?.id || decoded?.userId || null,
       },
     });
 

@@ -403,7 +403,7 @@ export default function ServiceUsersPage() {
                   )}
 
                   <div className="flex justify-between pt-2">
-                    <button type="button" className="px-4 py-2 rounded border" onClick={()=>{
+                    <button type="button" className="px-4 py-2 rounded border text-gray-700 bg-gray-100 hover:bg-gray-200" onClick={()=>{
                       if(currentStep>1){ setCurrentStep(currentStep-1); } else { setShowModal(false); }
                     }}>Back</button>
                     <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded bg-[#224fa6] text-white disabled:opacity-70">

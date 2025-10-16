@@ -22,6 +22,8 @@ export default function ServiceUsersPage() {
   const [seekerToDelete, setSeekerToDelete] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewData, setViewData] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
     firstName: '',
@@ -64,8 +66,22 @@ export default function ServiceUsersPage() {
 
   useEffect(() => { if (user) fetchSeekers(); }, [user]);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const openAdd = () => {
     setEditing(null);
+    setSelectedImage(null);
+    setImagePreview(null);
     setFormData({
       firstName: '', lastName: '', preferredName: '', title: '', dateOfBirth: '',
       address: '', postalCode: '', latitude: '', longitude: '', photoUrl: '',
@@ -77,6 +93,8 @@ export default function ServiceUsersPage() {
 
   const openEdit = (s) => {
     setEditing(s);
+    setSelectedImage(null);
+    setImagePreview(s.photoUrl || null);
     setFormData({
       firstName: s.firstName || '',
       lastName: s.lastName || '',
@@ -454,8 +472,23 @@ export default function ServiceUsersPage() {
                         <input type="number" step="any" value={formData.longitude} onChange={e=>setFormData({...formData, longitude:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm text-gray-600 mb-1">Photo URL</label>
-                        <input value={formData.photoUrl} onChange={e=>setFormData({...formData, photoUrl:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        <label className="block text-sm text-gray-600 mb-1">Profile Photo</label>
+                        <div className="flex items-center space-x-4">
+                          {imagePreview && (
+                            <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200">
+                              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              className="w-full border rounded-lg px-3 py-2 text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#224fa6] file:text-white hover:file:bg-[#1a3d85] cursor-pointer"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Upload a profile photo (cloud storage integration pending)</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -527,74 +560,172 @@ export default function ServiceUsersPage() {
           )}
           {/* View Details Modal */}
           {showViewModal && viewData && (
-            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full mx-4">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-gray-900">{viewData.firstName} {viewData.lastName}</h3>
-                    <button onClick={()=>setShowViewModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-gray-500">Preferred Name</p>
-                      <p className="text-gray-900">{viewData.preferredName || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Title</p>
-                      <p className="text-gray-900">{viewData.title || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Date of Birth</p>
-                      <p className="text-gray-900">{viewData.dateOfBirth ? new Date(viewData.dateOfBirth).toLocaleDateString() : '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Age</p>
-                      <p className="text-gray-900">{calculateAge(viewData.dateOfBirth)}</p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="text-xs text-gray-500">Address</p>
-                      <p className="text-gray-900">{viewData.address || '-'} {viewData.postalCode ? `(${viewData.postalCode})` : ''}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Latitude</p>
-                      <p className="text-gray-900">{viewData.latitude ?? '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Longitude</p>
-                      <p className="text-gray-900">{viewData.longitude ?? '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Gender</p>
-                      <p className="text-gray-900">{viewData.gender || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Gender at Birth</p>
-                      <p className="text-gray-900">{viewData.genderAtBirth || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Pronouns</p>
-                      <p className="text-gray-900">{viewData.pronouns || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Sexuality</p>
-                      <p className="text-gray-900">{viewData.sexuality || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">DNAR</p>
-                      <p className="text-gray-900">{viewData.dnar ? 'Yes' : 'No'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Status</p>
-                      <p className="text-gray-900">{viewData.status}</p>
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 my-8">
+                {/* Header with gradient */}
+                <div className="relative bg-gradient-to-r from-[#224fa6] to-[#3270e9] p-6 rounded-t-2xl">
+                  <button onClick={()=>setShowViewModal(false)} className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                  <div className="flex items-center space-x-4">
+                    {viewData.photoUrl ? (
+                      <img src={viewData.photoUrl} alt={`${viewData.firstName} ${viewData.lastName}`} className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover" />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-white flex items-center justify-center">
+                        <span className="text-3xl font-bold text-[#224fa6]">{(viewData.firstName?.[0]||'S')}{(viewData.lastName?.[0]||'U')}</span>
+                      </div>
+                    )}
+                    <div className="text-white">
+                      <h3 className="text-2xl font-bold mb-1">{viewData.firstName} {viewData.lastName}</h3>
+                      {viewData.preferredName && <p className="text-blue-100 text-sm mb-2">Preferred: {viewData.preferredName}</p>}
+                      <span className={`inline-block px-3 py-1 text-xs rounded-full font-semibold ${
+                        viewData.status === 'LIVE' ? 'bg-green-500 text-white' :
+                        viewData.status === 'PRE_ADMISSION' ? 'bg-yellow-500 text-white' :
+                        viewData.status === 'ON_HOLD_HOSPITAL' ? 'bg-blue-400 text-white' :
+                        viewData.status === 'ARCHIVED_PRE_ADMISSION' ? 'bg-purple-500 text-white' :
+                        'bg-gray-500 text-white'
+                      }`}>{viewData.status}</span>
                     </div>
                   </div>
-                  <div className="mt-6 p-4 border-t border-gray-200">
-                    <p className="text-xs text-gray-500 mb-1">Audit</p>
-                    <div className="text-sm text-gray-700">
-                      <p>Created: <span className="text-gray-900">{viewData.createdAt ? new Date(viewData.createdAt).toLocaleString() : '-'}</span>{' '}by <span className="text-gray-900">{viewData.createdBy ? `${viewData.createdBy.firstName} ${viewData.createdBy.lastName}` : '-'}</span></p>
-                      <p>Last Updated: <span className="text-gray-900">{viewData.updatedAt ? new Date(viewData.updatedAt).toLocaleString() : '-'}</span>{' '}by <span className="text-gray-900">{viewData.updatedBy ? `${viewData.updatedBy.firstName} ${viewData.updatedBy.lastName}` : '-'}</span></p>
+                </div>
+
+                <div className="p-6 max-h-[70vh] overflow-y-auto">
+                  {/* Personal Information */}
+                  <div className="mb-6">
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                        <svg className="w-5 h-5 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900">Personal Information</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-xl p-4">
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Title</p>
+                        <p className="text-gray-900 font-medium">{viewData.title || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Date of Birth</p>
+                        <p className="text-gray-900 font-medium">{viewData.dateOfBirth ? new Date(viewData.dateOfBirth).toLocaleDateString() : '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Age</p>
+                        <p className="text-gray-900 font-medium">{calculateAge(viewData.dateOfBirth)} years</p>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Address & Location */}
+                  <div className="mb-6">
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900">Address & Location</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4">
+                      <div className="md:col-span-2">
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Address</p>
+                        <p className="text-gray-900 font-medium">{viewData.address || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Postal Code</p>
+                        <p className="text-gray-900 font-medium">{viewData.postalCode || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Coordinates</p>
+                        <p className="text-gray-900 font-medium">{viewData.latitude && viewData.longitude ? `${viewData.latitude}, ${viewData.longitude}` : '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Identity & Preferences */}
+                  <div className="mb-6">
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
+                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900">Identity & Preferences</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4">
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Gender</p>
+                        <p className="text-gray-900 font-medium">{viewData.gender || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Gender at Birth</p>
+                        <p className="text-gray-900 font-medium">{viewData.genderAtBirth || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pronouns</p>
+                        <p className="text-gray-900 font-medium">{viewData.pronouns || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Sexuality</p>
+                        <p className="text-gray-900 font-medium">{viewData.sexuality || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Medical Information */}
+                  <div className="mb-6">
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mr-3">
+                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900">Medical Information</h4>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <div className="flex items-center">
+                        <div className={`w-3 h-3 rounded-full mr-2 ${viewData.dnar ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                        <p className="text-sm font-medium text-gray-700">
+                          DNAR (Do Not Attempt Resuscitation): <span className={`font-bold ${viewData.dnar ? 'text-red-600' : 'text-green-600'}`}>{viewData.dnar ? 'YES' : 'NO'}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Audit Trail */}
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center mr-3">
+                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900">Audit Trail</h4>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-green-500 mr-3"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">Created</p>
+                          <p className="text-sm text-gray-600">
+                            {viewData.createdAt ? new Date(viewData.createdAt).toLocaleString() : '-'}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            by <span className="font-medium text-gray-700">{viewData.createdBy ? `${viewData.createdBy.firstName} ${viewData.createdBy.lastName}` : 'System'}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-blue-500 mr-3"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">Last Updated</p>
+                          <p className="text-sm text-gray-600">
+                            {viewData.updatedAt ? new Date(viewData.updatedAt).toLocaleString() : '-'}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            by <span className="font-medium text-gray-700">{viewData.updatedBy ? `${viewData.updatedBy.firstName} ${viewData.updatedBy.lastName}` : 'System'}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer with action button */}
+                <div className="border-t border-gray-200 p-4 rounded-b-2xl bg-gray-50">
+                  <button onClick={()=>setShowViewModal(false)} className="w-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200">
+                    Close
+                  </button>
                 </div>
               </div>
             </div>

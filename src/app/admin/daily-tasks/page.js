@@ -55,6 +55,10 @@ export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [bathingTasks, setBathingTasks] = useState([]);
+  const [behaviourTasks, setBehaviourTasks] = useState([]);
+  const [behaviourTriggers, setBehaviourTriggers] = useState([]);
+  const [showTriggerModal, setShowTriggerModal] = useState(false);
+  const [newTrigger, setNewTrigger] = useState({ name: '', define: '' });
   const [serviceUsers, setServiceUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState('');
@@ -86,6 +90,22 @@ export default function DailyTasksPage() {
     emotion: 'NEUTRAL',
   });
 
+  // Behaviour form state
+  const [behaviourForm, setBehaviourForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    type: 'AGGRESSION_HITTING_BITING',
+    triggerId: '',
+    othersInvolved: false,
+    othersInvolvedDetails: '',
+    antecedents: '',
+    behaviour: '',
+    consequences: '',
+    careIntervention: '',
+    emotion: 'NEUTRAL',
+  });
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -104,6 +124,29 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchBehaviourTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/behaviour-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setBehaviourTasks(data);
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Failed to load behaviour tasks.', type: 'error' });
+    }
+  };
+
+  const fetchBehaviourTriggers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/behaviour-triggers', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setBehaviourTriggers(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const fetchServiceUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -118,6 +161,8 @@ export default function DailyTasksPage() {
   useEffect(() => { 
     if (user) {
       fetchBathingTasks();
+      fetchBehaviourTasks();
+      fetchBehaviourTriggers();
       fetchServiceUsers();
     }
   }, [user]);
@@ -143,6 +188,21 @@ export default function DailyTasksPage() {
       bathNotes: '',
       catheterChecked: false,
       completed: 'YES',
+      emotion: 'NEUTRAL',
+    });
+    // Reset behaviour form
+    setBehaviourForm({
+      serviceSeekerId: '',
+      date: new Date().toISOString().split('T')[0],
+      time: new Date().toTimeString().slice(0, 5),
+      type: 'AGGRESSION_HITTING_BITING',
+      triggerId: '',
+      othersInvolved: false,
+      othersInvolvedDetails: '',
+      antecedents: '',
+      behaviour: '',
+      consequences: '',
+      careIntervention: '',
       emotion: 'NEUTRAL',
     });
   };
@@ -482,26 +542,29 @@ export default function DailyTasksPage() {
                 <p className="text-gray-600 mb-6">Choose the type of daily task you want to record</p>
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {TASK_TYPES.map(taskType => (
-                    <button
-                      key={taskType.id}
-                      onClick={() => selectTaskType(taskType.id)}
-                      disabled={taskType.id !== 'bathing'}
-                      className={`group relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-white hover:to-gray-50 rounded-xl border-2 transition-all duration-200 ${
-                        taskType.id === 'bathing' 
-                          ? 'border-gray-200 hover:border-[#224fa6] hover:shadow-lg cursor-pointer' 
-                          : 'border-gray-100 opacity-50 cursor-not-allowed'
-                      }`}
-                    >
-                      <div className={`w-16 h-16 ${COLOR_CLASSES[taskType.color]} rounded-xl flex items-center justify-center text-3xl mx-auto mb-3 ${taskType.id === 'bathing' ? 'group-hover:scale-110' : ''} transition-transform`}>
-                        {taskType.icon}
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 text-center">{taskType.name}</p>
-                      {taskType.id !== 'bathing' && (
-                        <span className="absolute top-2 right-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Coming Soon</span>
-                      )}
-                    </button>
-                  ))}
+                  {TASK_TYPES.map(taskType => {
+                    const isEnabled = taskType.id === 'bathing' || taskType.id === 'behaviour';
+                    return (
+                      <button
+                        key={taskType.id}
+                        onClick={() => selectTaskType(taskType.id)}
+                        disabled={!isEnabled}
+                        className={`group relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-white hover:to-gray-50 rounded-xl border-2 transition-all duration-200 ${
+                          isEnabled
+                            ? 'border-gray-200 hover:border-[#224fa6] hover:shadow-lg cursor-pointer' 
+                            : 'border-gray-100 opacity-50 cursor-not-allowed'
+                        }`}
+                      >
+                        <div className={`w-16 h-16 ${COLOR_CLASSES[taskType.color]} rounded-xl flex items-center justify-center text-3xl mx-auto mb-3 ${isEnabled ? 'group-hover:scale-110' : ''} transition-transform`}>
+                          {taskType.icon}
+                        </div>
+                        <p className="text-sm font-medium text-gray-900 text-center">{taskType.name}</p>
+                        {!isEnabled && (
+                          <span className="absolute top-2 right-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Coming Soon</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

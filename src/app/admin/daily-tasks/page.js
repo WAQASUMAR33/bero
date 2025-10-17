@@ -129,9 +129,10 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/behaviour-tasks', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setBehaviourTasks(data);
+      setBehaviourTasks(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
+      setBehaviourTasks([]);
       setNotification({ show: true, message: 'Failed to load behaviour tasks.', type: 'error' });
     }
   };
@@ -141,9 +142,31 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/behaviour-triggers', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setBehaviourTriggers(data);
+      const triggers = Array.isArray(data) ? data : [];
+      setBehaviourTriggers(triggers);
+      
+      // If no triggers exist, seed them automatically
+      if (triggers.length === 0) {
+        await seedBehaviourTriggers();
+      }
     } catch (e) {
       console.error(e);
+      setBehaviourTriggers([]);
+    }
+  };
+
+  const seedBehaviourTriggers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/behaviour-triggers/seed', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        await fetchBehaviourTriggers();
+      }
+    } catch (e) {
+      console.error('Failed to seed triggers:', e);
     }
   };
 

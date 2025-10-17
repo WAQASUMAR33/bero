@@ -680,7 +680,7 @@ export default function DailyTasksPage() {
           {/* View Modal */}
           {showViewModal && viewData && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
                     <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
@@ -691,8 +691,8 @@ export default function DailyTasksPage() {
                   <button onClick={()=>setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
 
-                <div className="space-y-6">
-                  {/* Service User */}
+                <div className="space-y-4">
+                  {/* Service User - Full Width */}
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
                     <p className="text-sm font-medium text-gray-600 mb-1">Service User</p>
                     <p className="text-xl font-semibold text-gray-900">
@@ -700,94 +700,97 @@ export default function DailyTasksPage() {
                     </p>
                   </div>
 
-                  {/* Date & Time */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Date</p>
-                      <p className="text-lg font-semibold text-gray-900">{new Date(viewData.date).toLocaleDateString()}</p>
+                  {/* Two Column Layout */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Left Column */}
+                    <div className="space-y-4">
+                      {/* Date & Time */}
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Date & Time</p>
+                        <p className="text-base font-semibold text-gray-900">{new Date(viewData.date).toLocaleDateString()} at {viewData.time}</p>
+                      </div>
+
+                      {/* Bathing Type */}
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Bathing Type</p>
+                        <p className="text-base font-semibold text-gray-900">{viewData.bathingType?.replace(/_/g, ' ')}</p>
+                      </div>
+
+                      {/* Compliance */}
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Compliance</p>
+                        <span className={`inline-block px-3 py-1 text-sm rounded-full font-semibold ${viewData.compliance === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {viewData.compliance}
+                        </span>
+                      </div>
+
+                      {/* Completed */}
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Completed</p>
+                        <p className="text-base font-semibold text-gray-900">{viewData.completed?.replace(/_/g, ' ')}</p>
+                      </div>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Time</p>
-                      <p className="text-lg font-semibold text-gray-900">{viewData.time}</p>
+
+                    {/* Right Column */}
+                    <div className="space-y-4">
+                      {/* Observations */}
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-2">Observations</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-5 h-5 rounded ${viewData.stoolPassed ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
+                              {viewData.stoolPassed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
+                            </div>
+                            <span className="text-sm text-gray-700">Stool Passed</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-5 h-5 rounded ${viewData.urinePassed ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
+                              {viewData.urinePassed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
+                            </div>
+                            <span className="text-sm text-gray-700">Urine Passed</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-5 h-5 rounded ${viewData.catheterChecked ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
+                              {viewData.catheterChecked && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
+                            </div>
+                            <span className="text-sm text-gray-700">Catheter Checked</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Emotion */}
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Emotion</p>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-3xl">
+                            {viewData.emotion === 'HAPPY' ? '😊' : viewData.emotion === 'SAD' ? '😢' : '😐'}
+                          </span>
+                          <span className="text-base font-semibold text-gray-900">{viewData.emotion}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Bathing Type & Compliance */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Bathing Type</p>
-                      <p className="text-lg font-semibold text-gray-900">{viewData.bathingType?.replace('_', ' ')}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Compliance</p>
-                      <span className={`inline-block px-3 py-1 text-sm rounded-full font-semibold ${viewData.compliance === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {viewData.compliance}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Checkboxes */}
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase mb-3">Observations</p>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-5 h-5 rounded ${viewData.stoolPassed ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
-                          {viewData.stoolPassed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
-                        </div>
-                        <span className="text-sm text-gray-700">Stool Passed</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-5 h-5 rounded ${viewData.urinePassed ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
-                          {viewData.urinePassed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
-                        </div>
-                        <span className="text-sm text-gray-700">Urine Passed</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-5 h-5 rounded ${viewData.catheterChecked ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
-                          {viewData.catheterChecked && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
-                        </div>
-                        <span className="text-sm text-gray-700">Catheter Checked</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bath Notes */}
+                  {/* Bath Notes - Full Width */}
                   {viewData.bathNotes && (
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs font-medium text-gray-500 uppercase mb-2">Bath Notes</p>
-                      <p className="text-gray-900">{viewData.bathNotes}</p>
+                      <p className="text-sm text-gray-900">{viewData.bathNotes}</p>
                     </div>
                   )}
 
-                  {/* Completed & Emotion */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Completed</p>
-                      <p className="text-lg font-semibold text-gray-900">{viewData.completed?.replace('_', ' ')}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Emotion</p>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-3xl">
-                          {viewData.emotion === 'HAPPY' ? '😊' : viewData.emotion === 'SAD' ? '😢' : '😐'}
-                        </span>
-                        <span className="text-lg font-semibold text-gray-900">{viewData.emotion}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Audit Info */}
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
-                    <p className="text-xs font-medium text-gray-500 uppercase mb-3">Audit Information</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Created:</span>
+                  {/* Audit Info - Full Width */}
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3 border border-gray-200">
+                    <p className="text-xs font-medium text-gray-500 uppercase mb-2">Audit Information</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-600">Created: </span>
                         <span className="text-gray-900 font-medium">
                           {new Date(viewData.createdAt).toLocaleString()} by {viewData.createdBy ? `${viewData.createdBy.firstName} ${viewData.createdBy.lastName}` : 'System'}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Updated:</span>
+                      <div>
+                        <span className="text-gray-600">Updated: </span>
                         <span className="text-gray-900 font-medium">
                           {new Date(viewData.updatedAt).toLocaleString()} by {viewData.updatedBy ? `${viewData.updatedBy.firstName} ${viewData.updatedBy.lastName}` : 'System'}
                         </span>

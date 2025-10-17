@@ -186,7 +186,7 @@ export default function DailyTasksPage() {
   }
 
   // For now, we'll show bathing tasks only
-  const allTasks = bathingTasks;
+  const allTasks = Array.isArray(bathingTasks) ? bathingTasks : [];
   
   const filteredTasks = allTasks.filter((t) => {
     if (filterTaskType !== 'ALL' && filterTaskType !== 'bathing') return false;

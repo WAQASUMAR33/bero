@@ -422,8 +422,13 @@ export default function DailyTasksPage() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center space-x-2">
-                              <span className={`px-2 py-1 text-xs rounded-full ${task.compliance === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                {task.compliance}
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                task.completed === 'YES' ? 'bg-green-100 text-green-700' : 
+                                task.completed === 'NO' ? 'bg-red-100 text-red-700' : 
+                                task.completed === 'ATTEMPTED' ? 'bg-yellow-100 text-yellow-700' : 
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {task.completed?.replace('_', ' ')}
                               </span>
                               <span className="text-lg">{emotionEmoji}</span>
                             </div>

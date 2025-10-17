@@ -102,6 +102,8 @@ model User {
   updatedBloodTestTasks     BloodTestTask[]       @relation("BloodTestTaskUpdatedBy")
   createdBloodPressureTasks BloodPressureTask[]   @relation("BloodPressureTaskCreatedBy")
   updatedBloodPressureTasks BloodPressureTask[]   @relation("BloodPressureTaskUpdatedBy")
+  createdComfortCheckTasks  ComfortCheckTask[]    @relation("ComfortCheckTaskCreatedBy")
+  updatedComfortCheckTasks  ComfortCheckTask[]    @relation("ComfortCheckTaskUpdatedBy")
 }
 
 model UserPermission {
@@ -174,6 +176,7 @@ model ServiceSeeker {
   behaviourTasks      BehaviourTask[]
   bloodTestTasks      BloodTestTask[]
   bloodPressureTasks  BloodPressureTask[]
+  comfortCheckTasks   ComfortCheckTask[]
 
   // Relations
   createdBy           User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
@@ -407,4 +410,33 @@ model BloodPressureTask {
   serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User             @relation("BloodPressureTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User             @relation("BloodPressureTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model ComfortCheckTask {
+  id                      String           @id @default(cuid())
+  serviceSeekerId         String
+  date                    DateTime
+  time                    String
+  allNeedsMet             Boolean
+  catheterCheck           Boolean
+  incontinencePadCheck    Boolean
+  personalHygiene         Boolean
+  repositioned            Boolean
+  sleep                   Boolean
+  stomaCheck              Boolean
+  toileted                Boolean
+  stoolPassed             Boolean
+  urinePassed             Boolean
+  notes                   String?
+  completed               TaskCompletion
+  emotion                 EmotionType
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  createdById             String
+  updatedById             String
+
+  // Relations
+  serviceSeeker           ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  createdBy               User             @relation("ComfortCheckTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy               User             @relation("ComfortCheckTaskUpdatedBy", fields: [updatedById], references: [id])
 }

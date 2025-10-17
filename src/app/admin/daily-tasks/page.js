@@ -55,7 +55,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);

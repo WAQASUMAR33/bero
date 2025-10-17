@@ -66,6 +66,10 @@ export default function DailyTasksPage() {
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [showTaskTypeModal, setShowTaskTypeModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewData, setViewData] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
   
   // Bathing form state
   const [bathingForm, setBathingForm] = useState({
@@ -175,6 +179,72 @@ export default function DailyTasksPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleView = async (task) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/bathing-tasks/${task.id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setViewData(data);
+      setShowViewModal(true);
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Failed to load task details.', type: 'error' });
+    }
+  };
+
+  const handleEdit = (task) => {
+    setEditing(task);
+    setBathingForm({
+      serviceSeekerId: task.serviceSeekerId,
+      date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+      time: task.time || '',
+      bathingType: task.bathingType,
+      compliance: task.compliance,
+      stoolPassed: task.stoolPassed,
+      urinePassed: task.urinePassed,
+      bathNotes: task.bathNotes || '',
+      catheterChecked: task.catheterChecked,
+      completed: task.completed,
+      emotion: task.emotion,
+    });
+    setSelectedTaskType('bathing');
+    setShowModal(true);
+  };
+
+  const handleDeleteClick = (task) => {
+    setTaskToDelete(task);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!taskToDelete) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/bathing-tasks/${taskToDelete.id}`, { 
+        method: 'DELETE', 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      if (res.ok) {
+        await fetchBathingTasks();
+        setNotification({ show: true, message: 'Task deleted successfully.', type: 'success' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to delete task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while deleting.', type: 'error' });
+    } finally {
+      setShowDeleteConfirm(false);
+      setTaskToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setTaskToDelete(null);
   };
 
   if (isLoading || !user) {
@@ -344,13 +414,13 @@ export default function DailyTasksPage() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center justify-end space-x-2">
-                              <button title="View" className="p-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                              <button title="View" onClick={() => handleView(task)} className="p-2 rounded-lg text-gray-700 hover:bg-gray-50">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                               </button>
-                              <button title="Edit" className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50">
+                              <button title="Edit" onClick={() => handleEdit(task)} className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                               </button>
-                              <button title="Delete" className="p-2 rounded-lg text-red-600 hover:bg-red-50">
+                              <button title="Delete" onClick={() => handleDeleteClick(task)} className="p-2 rounded-lg text-red-600 hover:bg-red-50">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                               </button>
                             </div>
@@ -603,6 +673,155 @@ export default function DailyTasksPage() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* View Modal */}
+          {showViewModal && viewData && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🛁
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Bathing Task Details</h2>
+                  </div>
+                  <button onClick={()=>setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Service User */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Service User</p>
+                    <p className="text-xl font-semibold text-gray-900">
+                      {viewData.serviceSeeker ? `${viewData.serviceSeeker.firstName} ${viewData.serviceSeeker.lastName}` : '-'}
+                    </p>
+                  </div>
+
+                  {/* Date & Time */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Date</p>
+                      <p className="text-lg font-semibold text-gray-900">{new Date(viewData.date).toLocaleDateString()}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Time</p>
+                      <p className="text-lg font-semibold text-gray-900">{viewData.time}</p>
+                    </div>
+                  </div>
+
+                  {/* Bathing Type & Compliance */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Bathing Type</p>
+                      <p className="text-lg font-semibold text-gray-900">{viewData.bathingType?.replace('_', ' ')}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Compliance</p>
+                      <span className={`inline-block px-3 py-1 text-sm rounded-full font-semibold ${viewData.compliance === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {viewData.compliance}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Checkboxes */}
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs font-medium text-gray-500 uppercase mb-3">Observations</p>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-5 h-5 rounded ${viewData.stoolPassed ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
+                          {viewData.stoolPassed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
+                        </div>
+                        <span className="text-sm text-gray-700">Stool Passed</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-5 h-5 rounded ${viewData.urinePassed ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
+                          {viewData.urinePassed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
+                        </div>
+                        <span className="text-sm text-gray-700">Urine Passed</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-5 h-5 rounded ${viewData.catheterChecked ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
+                          {viewData.catheterChecked && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
+                        </div>
+                        <span className="text-sm text-gray-700">Catheter Checked</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bath Notes */}
+                  {viewData.bathNotes && (
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-2">Bath Notes</p>
+                      <p className="text-gray-900">{viewData.bathNotes}</p>
+                    </div>
+                  )}
+
+                  {/* Completed & Emotion */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Completed</p>
+                      <p className="text-lg font-semibold text-gray-900">{viewData.completed?.replace('_', ' ')}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Emotion</p>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-3xl">
+                          {viewData.emotion === 'HAPPY' ? '😊' : viewData.emotion === 'SAD' ? '😢' : '😐'}
+                        </span>
+                        <span className="text-lg font-semibold text-gray-900">{viewData.emotion}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Audit Info */}
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+                    <p className="text-xs font-medium text-gray-500 uppercase mb-3">Audit Information</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Created:</span>
+                        <span className="text-gray-900 font-medium">
+                          {new Date(viewData.createdAt).toLocaleString()} by {viewData.createdBy ? `${viewData.createdBy.firstName} ${viewData.createdBy.lastName}` : 'System'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Updated:</span>
+                        <span className="text-gray-900 font-medium">
+                          {new Date(viewData.updatedAt).toLocaleString()} by {viewData.updatedBy ? `${viewData.updatedBy.firstName} ${viewData.updatedBy.lastName}` : 'System'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <button onClick={()=>setShowViewModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Delete Confirmation Modal */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+                <div className="p-6">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Delete Bathing Task</h3>
+                  <p className="text-sm text-gray-600 text-center mb-6">
+                    Are you sure you want to delete this bathing task for <span className="font-medium text-gray-900">{taskToDelete?.serviceSeeker ? `${taskToDelete.serviceSeeker.firstName} ${taskToDelete.serviceSeeker.lastName}` : 'this service user'}</span>? This action cannot be undone.
+                  </p>
+                  <div className="flex space-x-3">
+                    <button onClick={handleDeleteCancel} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
+                    <button onClick={handleDeleteConfirm} className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">Delete</button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

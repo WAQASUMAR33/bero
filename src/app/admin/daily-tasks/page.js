@@ -1283,13 +1283,13 @@ export default function DailyTasksPage() {
                 ) : viewData.taskType === 'behaviour' ? (
                   <BehaviourTaskView data={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'bloodtest' ? (
-                  <BloodTestTaskView task={viewData} />
+                  <BloodTestTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'blood_pressure' ? (
-                  <BloodPressureTaskView task={viewData} />
+                  <BloodPressureTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'comfort_check' ? (
-                  <ComfortCheckTaskView task={viewData} />
+                  <ComfortCheckTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'communication_notes' ? (
-                  <CommunicationNotesTaskView task={viewData} />
+                  <CommunicationNotesTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : null}
               </div>
             </div>

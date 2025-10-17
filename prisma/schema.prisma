@@ -92,14 +92,16 @@ model User {
   permissions      UserPermission[]
 
   // Audit relations
-  createdServiceSeekers ServiceSeeker[]   @relation("ServiceSeekerCreatedBy")
-  updatedServiceSeekers ServiceSeeker[]   @relation("ServiceSeekerUpdatedBy")
-  createdBathingTasks   BathingTask[]     @relation("BathingTaskCreatedBy")
-  updatedBathingTasks   BathingTask[]     @relation("BathingTaskUpdatedBy")
-  createdBehaviourTasks BehaviourTask[]   @relation("BehaviourTaskCreatedBy")
-  updatedBehaviourTasks BehaviourTask[]   @relation("BehaviourTaskUpdatedBy")
-  createdBloodTestTasks BloodTestTask[]   @relation("BloodTestTaskCreatedBy")
-  updatedBloodTestTasks BloodTestTask[]   @relation("BloodTestTaskUpdatedBy")
+  createdServiceSeekers     ServiceSeeker[]       @relation("ServiceSeekerCreatedBy")
+  updatedServiceSeekers     ServiceSeeker[]       @relation("ServiceSeekerUpdatedBy")
+  createdBathingTasks       BathingTask[]         @relation("BathingTaskCreatedBy")
+  updatedBathingTasks       BathingTask[]         @relation("BathingTaskUpdatedBy")
+  createdBehaviourTasks     BehaviourTask[]       @relation("BehaviourTaskCreatedBy")
+  updatedBehaviourTasks     BehaviourTask[]       @relation("BehaviourTaskUpdatedBy")
+  createdBloodTestTasks     BloodTestTask[]       @relation("BloodTestTaskCreatedBy")
+  updatedBloodTestTasks     BloodTestTask[]       @relation("BloodTestTaskUpdatedBy")
+  createdBloodPressureTasks BloodPressureTask[]   @relation("BloodPressureTaskCreatedBy")
+  updatedBloodPressureTasks BloodPressureTask[]   @relation("BloodPressureTaskUpdatedBy")
 }
 
 model UserPermission {
@@ -167,14 +169,15 @@ model ServiceSeeker {
   createdById    String?
   updatedById    String?
 
-  shifts          Shift[]
-  bathingTasks    BathingTask[]
-  behaviourTasks  BehaviourTask[]
-  bloodTestTasks  BloodTestTask[]
+  shifts              Shift[]
+  bathingTasks        BathingTask[]
+  behaviourTasks      BehaviourTask[]
+  bloodTestTasks      BloodTestTask[]
+  bloodPressureTasks  BloodPressureTask[]
 
   // Relations
-  createdBy       User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
-  updatedBy       User?    @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
+  createdBy           User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User?    @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Shift {
@@ -383,4 +386,25 @@ model BloodTestTask {
   serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User             @relation("BloodTestTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User             @relation("BloodTestTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model BloodPressureTask {
+  id                  String           @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  systolicPressure    Int
+  diastolicPressure   Int
+  notes               String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User             @relation("BloodPressureTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User             @relation("BloodPressureTaskUpdatedBy", fields: [updatedById], references: [id])
 }

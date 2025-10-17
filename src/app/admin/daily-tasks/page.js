@@ -589,7 +589,15 @@ export default function DailyTasksPage() {
   const handleView = async (task) => {
     try {
       const token = localStorage.getItem('token');
-      const endpoint = task.taskType === 'bathing' ? 'bathing-tasks' : 'behaviour-tasks';
+      const endpointMap = {
+        'bathing': 'bathing-tasks',
+        'behaviour': 'behaviour-tasks',
+        'bloodtest': 'blood-test-tasks',
+        'blood_pressure': 'blood-pressure-tasks',
+        'comfort_check': 'comfort-check-tasks',
+        'communication_notes': 'communication-notes-tasks'
+      };
+      const endpoint = endpointMap[task.taskType];
       const res = await fetch(`/api/${endpoint}/${task.id}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setViewData({ ...data, taskType: task.taskType });
@@ -646,17 +654,30 @@ export default function DailyTasksPage() {
     setIsDeleting(true);
     try {
       const token = localStorage.getItem('token');
-      const endpoint = taskToDelete.taskType === 'bathing' ? 'bathing-tasks' : 'behaviour-tasks';
+      const endpointMap = {
+        'bathing': 'bathing-tasks',
+        'behaviour': 'behaviour-tasks',
+        'bloodtest': 'blood-test-tasks',
+        'blood_pressure': 'blood-pressure-tasks',
+        'comfort_check': 'comfort-check-tasks',
+        'communication_notes': 'communication-notes-tasks'
+      };
+      const endpoint = endpointMap[taskToDelete.taskType];
       const res = await fetch(`/api/${endpoint}/${taskToDelete.id}`, { 
         method: 'DELETE', 
         headers: { Authorization: `Bearer ${token}` } 
       });
       if (res.ok) {
-        if (taskToDelete.taskType === 'bathing') {
-          await fetchBathingTasks();
-        } else {
-          await fetchBehaviourTasks();
-        }
+        // Refresh the appropriate task list
+        const refreshMap = {
+          'bathing': fetchBathingTasks,
+          'behaviour': fetchBehaviourTasks,
+          'bloodtest': fetchBloodTestTasks,
+          'blood_pressure': fetchBloodPressureTasks,
+          'comfort_check': fetchComfortCheckTasks,
+          'communication_notes': fetchCommunicationNotesTasks
+        };
+        await refreshMap[taskToDelete.taskType]();
         setNotification({ show: true, message: 'Task deleted successfully.', type: 'success' });
       } else {
         const err = await res.json().catch(() => ({ error: 'Failed' }));
@@ -711,7 +732,19 @@ export default function DailyTasksPage() {
   // Combine all tasks
   const bathingTasksWithType = (Array.isArray(bathingTasks) ? bathingTasks : []).map(t => ({ ...t, taskType: 'bathing' }));
   const behaviourTasksWithType = (Array.isArray(behaviourTasks) ? behaviourTasks : []).map(t => ({ ...t, taskType: 'behaviour' }));
-  const allTasks = [...bathingTasksWithType, ...behaviourTasksWithType].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const bloodTestTasksWithType = (Array.isArray(bloodTestTasks) ? bloodTestTasks : []).map(t => ({ ...t, taskType: 'bloodtest' }));
+  const bloodPressureTasksWithType = (Array.isArray(bloodPressureTasks) ? bloodPressureTasks : []).map(t => ({ ...t, taskType: 'blood_pressure' }));
+  const comfortCheckTasksWithType = (Array.isArray(comfortCheckTasks) ? comfortCheckTasks : []).map(t => ({ ...t, taskType: 'comfort_check' }));
+  const communicationNotesTasksWithType = (Array.isArray(communicationNotesTasks) ? communicationNotesTasks : []).map(t => ({ ...t, taskType: 'communication_notes' }));
+  
+  const allTasks = [
+    ...bathingTasksWithType, 
+    ...behaviourTasksWithType,
+    ...bloodTestTasksWithType,
+    ...bloodPressureTasksWithType,
+    ...comfortCheckTasksWithType,
+    ...communicationNotesTasksWithType
+  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
   const filteredTasks = allTasks.filter((t) => {
     if (filterTaskType !== 'ALL' && filterTaskType !== t.taskType) return false;
@@ -851,7 +884,13 @@ export default function DailyTasksPage() {
                     pagedTasks.map((task, idx) => {
                       const taskInfo = getTaskTypeInfo(task.taskType);
                       const emotionEmoji = task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐';
-                      const subInfo = task.taskType === 'bathing' ? task.bathingType : task.type;
+                      let subInfo = '';
+                      if (task.taskType === 'bathing') subInfo = task.bathingType;
+                      else if (task.taskType === 'behaviour') subInfo = task.type;
+                      else if (task.taskType === 'bloodtest') subInfo = task.when;
+                      else if (task.taskType === 'blood_pressure') subInfo = `${task.systolicPressure}/${task.diastolicPressure} mmHg`;
+                      else if (task.taskType === 'comfort_check') subInfo = 'Comfort Check';
+                      else if (task.taskType === 'communication_notes') subInfo = 'Communication';
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
                           <td className="px-6 py-4">
@@ -888,7 +927,11 @@ export default function DailyTasksPage() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center space-x-2">
-                              {task.taskType === 'bathing' ? (
+                              {task.taskType === 'behaviour' ? (
+                                <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-700">
+                                  {task.trigger?.name || 'Recorded'}
+                                </span>
+                              ) : task.completed ? (
                                 <span className={`px-2 py-1 text-xs rounded-full ${
                                   task.completed === 'YES' ? 'bg-green-100 text-green-700' : 
                                   task.completed === 'NO' ? 'bg-red-100 text-red-700' : 
@@ -898,8 +941,8 @@ export default function DailyTasksPage() {
                                   {task.completed?.replace(/_/g, ' ')}
                                 </span>
                               ) : (
-                                <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-700">
-                                  {task.trigger?.name || 'Recorded'}
+                                <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">
+                                  Recorded
                                 </span>
                               )}
                               <span className="text-lg">{emotionEmoji}</span>

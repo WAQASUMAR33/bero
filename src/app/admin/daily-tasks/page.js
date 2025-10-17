@@ -317,6 +317,8 @@ export default function DailyTasksPage() {
         setShowTriggerModal(false);
         setNewTrigger({ name: '', define: '' });
         setNotification({ show: true, message: 'Trigger added successfully.', type: 'success' });
+      } else if (response.status === 409) {
+        setNotification({ show: true, message: 'A trigger with this name already exists.', type: 'error' });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
         setNotification({ show: true, message: err?.error || 'Failed to add trigger.', type: 'error' });

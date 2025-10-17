@@ -42,6 +42,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
+    // Check if trigger already exists
+    const existing = await prisma.behaviourTrigger.findUnique({
+      where: { name }
+    });
+
+    if (existing) {
+      return NextResponse.json({ error: 'A trigger with this name already exists' }, { status: 409 });
+    }
+
     const created = await prisma.behaviourTrigger.create({
       data: {
         name,

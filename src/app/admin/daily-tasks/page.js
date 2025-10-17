@@ -12,6 +12,10 @@ import ComfortCheckTaskForm from './components/ComfortCheckTaskForm';
 import CommunicationNotesTaskForm from './components/CommunicationNotesTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
+import BloodTestTaskView from './components/BloodTestTaskView';
+import BloodPressureTaskView from './components/BloodPressureTaskView';
+import ComfortCheckTaskView from './components/ComfortCheckTaskView';
+import CommunicationNotesTaskView from './components/CommunicationNotesTaskView';
 
 const TASK_TYPES = [
   { id: 'bathing', name: 'Bathing', icon: '🛁', color: 'blue' },
@@ -1248,18 +1252,45 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className={`w-12 h-12 ${viewData.taskType === 'bathing' ? 'bg-blue-500' : 'bg-purple-500'} rounded-xl flex items-center justify-center text-2xl mr-3`}>
-                      {viewData.taskType === 'bathing' ? '🛁' : '👤'}
+                    <div className={`w-12 h-12 ${
+                      viewData.taskType === 'bathing' ? 'bg-blue-500' : 
+                      viewData.taskType === 'behaviour' ? 'bg-purple-500' :
+                      viewData.taskType === 'bloodtest' ? 'bg-red-500' :
+                      viewData.taskType === 'blood_pressure' ? 'bg-blue-500' :
+                      viewData.taskType === 'comfort_check' ? 'bg-green-500' :
+                      'bg-purple-500'
+                    } rounded-xl flex items-center justify-center text-2xl mr-3`}>
+                      {viewData.taskType === 'bathing' ? '🛁' : 
+                       viewData.taskType === 'behaviour' ? '👤' :
+                       viewData.taskType === 'bloodtest' ? '💉' :
+                       viewData.taskType === 'blood_pressure' ? '🩺' :
+                       viewData.taskType === 'comfort_check' ? '✅' :
+                       '📝'}
                     </div>
-                    <h2 className="text-2xl font-semibold text-gray-900">{viewData.taskType === 'bathing' ? 'Bathing' : 'Behaviour'} Task Details</h2>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      {viewData.taskType === 'bathing' ? 'Bathing' : 
+                       viewData.taskType === 'behaviour' ? 'Behaviour' :
+                       viewData.taskType === 'bloodtest' ? 'Blood Test' :
+                       viewData.taskType === 'blood_pressure' ? 'Blood Pressure' :
+                       viewData.taskType === 'comfort_check' ? 'Comfort Check' :
+                       'Communication Notes'} Task Details
+                    </h2>
                   </div>
                   <button onClick={()=>setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 {viewData.taskType === 'bathing' ? (
                   <BathingTaskView data={viewData} onClose={()=>setShowViewModal(false)} />
-                ) : (
+                ) : viewData.taskType === 'behaviour' ? (
                   <BehaviourTaskView data={viewData} onClose={()=>setShowViewModal(false)} />
-                )}
+                ) : viewData.taskType === 'bloodtest' ? (
+                  <BloodTestTaskView task={viewData} />
+                ) : viewData.taskType === 'blood_pressure' ? (
+                  <BloodPressureTaskView task={viewData} />
+                ) : viewData.taskType === 'comfort_check' ? (
+                  <ComfortCheckTaskView task={viewData} />
+                ) : viewData.taskType === 'communication_notes' ? (
+                  <CommunicationNotesTaskView task={viewData} />
+                ) : null}
               </div>
             </div>
           )}

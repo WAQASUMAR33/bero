@@ -92,10 +92,12 @@ model User {
   permissions      UserPermission[]
 
   // Audit relations
-  createdServiceSeekers ServiceSeeker[] @relation("ServiceSeekerCreatedBy")
-  updatedServiceSeekers ServiceSeeker[] @relation("ServiceSeekerUpdatedBy")
-  createdBathingTasks   BathingTask[]   @relation("BathingTaskCreatedBy")
-  updatedBathingTasks   BathingTask[]   @relation("BathingTaskUpdatedBy")
+  createdServiceSeekers ServiceSeeker[]   @relation("ServiceSeekerCreatedBy")
+  updatedServiceSeekers ServiceSeeker[]   @relation("ServiceSeekerUpdatedBy")
+  createdBathingTasks   BathingTask[]     @relation("BathingTaskCreatedBy")
+  updatedBathingTasks   BathingTask[]     @relation("BathingTaskUpdatedBy")
+  createdBehaviourTasks BehaviourTask[]   @relation("BehaviourTaskCreatedBy")
+  updatedBehaviourTasks BehaviourTask[]   @relation("BehaviourTaskUpdatedBy")
 }
 
 model UserPermission {
@@ -163,12 +165,13 @@ model ServiceSeeker {
   createdById    String?
   updatedById    String?
 
-  shifts         Shift[]
-  bathingTasks   BathingTask[]
+  shifts          Shift[]
+  bathingTasks    BathingTask[]
+  behaviourTasks  BehaviourTask[]
 
   // Relations
-  createdBy      User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
-  updatedBy      User?    @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
+  createdBy       User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
+  updatedBy       User?    @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Shift {
@@ -285,4 +288,53 @@ model BathingTask {
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
   createdBy         User             @relation("BathingTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy         User             @relation("BathingTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+enum BehaviourType {
+  AGGRESSION_HITTING_BITING
+  CRYING
+  HAPPY_APPRECIATING
+  ISOLATION
+  SELF_INJURIOUS_BEHAVIOUR
+  SEXUALIZED_BEHAVIOUR_IN_PUBLIC
+  SHOUTING_SWEARING
+  SOILING_SMEARING
+  STARVATION
+  THROWING_BREAKING_ITEMS
+}
+
+model BehaviourTrigger {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  define      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  behaviourTasks BehaviourTask[]
+}
+
+model BehaviourTask {
+  id                    String           @id @default(cuid())
+  serviceSeekerId       String
+  date                  DateTime
+  time                  String
+  type                  BehaviourType
+  triggerId             String
+  othersInvolved        Boolean
+  othersInvolvedDetails String?
+  antecedents           String?
+  behaviour             String?
+  consequences          String?
+  careIntervention      String?
+  emotion               EmotionType
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  createdById           String
+  updatedById           String
+
+  // Relations
+  serviceSeeker         ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  trigger               BehaviourTrigger @relation(fields: [triggerId], references: [id])
+  createdBy             User             @relation("BehaviourTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy             User             @relation("BehaviourTaskUpdatedBy", fields: [updatedById], references: [id])
 }

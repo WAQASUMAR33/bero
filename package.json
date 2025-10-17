@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate",
-    "generate": "prisma generate"
+    "postinstall": "npx prisma generate",
+    "generate": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",

@@ -525,7 +525,7 @@ export default function DailyTasksPage() {
                   {pagedTasks.length === 0 ? (
                     <tr>
                       <td className="px-6 py-10 text-gray-500 text-center" colSpan={5}>
-                        No daily tasks recorded yet. Click "Add Task" to get started.
+                        No daily tasks recorded yet. Click &quot;Add Task&quot; to get started.
                       </td>
                     </tr>
                   ) : (

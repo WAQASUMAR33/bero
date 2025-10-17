@@ -6,6 +6,10 @@ import Header from '../components/Header';
 import Notification from '../components/Notification';
 import BathingTaskForm from './components/BathingTaskForm';
 import BehaviourTaskForm from './components/BehaviourTaskForm';
+import BloodTestTaskForm from './components/BloodTestTaskForm';
+import BloodPressureTaskForm from './components/BloodPressureTaskForm';
+import ComfortCheckTaskForm from './components/ComfortCheckTaskForm';
+import CommunicationNotesTaskForm from './components/CommunicationNotesTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
 
@@ -62,6 +66,10 @@ export default function DailyTasksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [bathingTasks, setBathingTasks] = useState([]);
   const [behaviourTasks, setBehaviourTasks] = useState([]);
+  const [bloodTestTasks, setBloodTestTasks] = useState([]);
+  const [bloodPressureTasks, setBloodPressureTasks] = useState([]);
+  const [comfortCheckTasks, setComfortCheckTasks] = useState([]);
+  const [communicationNotesTasks, setCommunicationNotesTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [newTrigger, setNewTrigger] = useState({ name: '', define: '' });
@@ -111,6 +119,56 @@ export default function DailyTasksPage() {
     behaviour: '',
     consequences: '',
     careIntervention: '',
+    emotion: 'NEUTRAL',
+  });
+
+  const [bloodTestForm, setBloodTestForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    when: 'BEFORE_BREAKFAST',
+    bloodGlucose: '',
+    insulinGiven: '',
+    sideAdministered: '',
+    note: '',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
+  const [bloodPressureForm, setBloodPressureForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    systolicPressure: '',
+    diastolicPressure: '',
+    notes: '',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
+  const [comfortCheckForm, setComfortCheckForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    allNeedsMet: false,
+    catheterCheck: false,
+    incontinencePadCheck: false,
+    personalHygiene: false,
+    repositioned: false,
+    sleep: false,
+    stomaCheck: false,
+    toileted: false,
+    stoolPassed: false,
+    urinePassed: false,
+    notes: '',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
+  const [communicationNotesForm, setCommunicationNotesForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    notes: '',
     emotion: 'NEUTRAL',
   });
 
@@ -178,6 +236,54 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchBloodTestTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/blood-test-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setBloodTestTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setBloodTestTasks([]);
+    }
+  };
+
+  const fetchBloodPressureTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/blood-pressure-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setBloodPressureTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setBloodPressureTasks([]);
+    }
+  };
+
+  const fetchComfortCheckTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/comfort-check-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setComfortCheckTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setComfortCheckTasks([]);
+    }
+  };
+
+  const fetchCommunicationNotesTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/communication-notes-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setCommunicationNotesTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setCommunicationNotesTasks([]);
+    }
+  };
+
   const fetchServiceUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -194,6 +300,10 @@ export default function DailyTasksPage() {
     if (user) {
       fetchBathingTasks();
       fetchBehaviourTasks();
+      fetchBloodTestTasks();
+      fetchBloodPressureTasks();
+      fetchComfortCheckTasks();
+      fetchCommunicationNotesTasks();
       fetchBehaviourTriggers();
       fetchServiceUsers();
     }
@@ -297,6 +407,142 @@ export default function DailyTasksPage() {
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
         setNotification({ show: true, message: err?.error || 'Failed to save behaviour task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBloodTestSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/blood-test-tasks/${editing.id}` : '/api/blood-test-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(bloodTestForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchBloodTestTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Blood test updated successfully.' : 'Blood test added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save blood test.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBloodPressureSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/blood-pressure-tasks/${editing.id}` : '/api/blood-pressure-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(bloodPressureForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchBloodPressureTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Blood pressure updated successfully.' : 'Blood pressure added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save blood pressure.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleComfortCheckSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/comfort-check-tasks/${editing.id}` : '/api/comfort-check-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(comfortCheckForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchComfortCheckTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Comfort check updated successfully.' : 'Comfort check added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save comfort check.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCommunicationNotesSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/communication-notes-tasks/${editing.id}` : '/api/communication-notes-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(communicationNotesForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchCommunicationNotesTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Communication notes updated successfully.' : 'Communication notes added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save communication notes.', type: 'error' });
       }
     } catch (e) {
       console.error(e);
@@ -785,6 +1031,110 @@ export default function DailyTasksPage() {
                   onCancel={()=>setShowModal(false)}
                   onAddTrigger={()=>setShowTriggerModal(true)}
                   onManageTriggers={()=>setShowManageTriggersModal(true)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Blood Test Modal */}
+          {showModal && selectedTaskType === 'bloodtest' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      💉
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Blood Test</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <BloodTestTaskForm
+                  formData={bloodTestForm}
+                  setFormData={setBloodTestForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleBloodTestSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Blood Pressure Modal */}
+          {showModal && selectedTaskType === 'blood_pressure' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🩺
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Blood Pressure</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <BloodPressureTaskForm
+                  formData={bloodPressureForm}
+                  setFormData={setBloodPressureForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleBloodPressureSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Comfort Check Modal */}
+          {showModal && selectedTaskType === 'comfort_check' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🛏️
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Comfort Check</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <ComfortCheckTaskForm
+                  formData={comfortCheckForm}
+                  setFormData={setComfortCheckForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleComfortCheckSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Communication Notes Modal */}
+          {showModal && selectedTaskType === 'communication_notes' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      📝
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Communication Notes</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <CommunicationNotesTaskForm
+                  formData={communicationNotesForm}
+                  setFormData={setCommunicationNotesForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleCommunicationNotesSubmit}
+                  onCancel={()=>setShowModal(false)}
                   editing={editing}
                 />
               </div>

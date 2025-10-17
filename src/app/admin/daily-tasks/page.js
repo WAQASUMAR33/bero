@@ -241,6 +241,69 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleBehaviourSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/behaviour-tasks/${editing.id}` : '/api/behaviour-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(behaviourForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchBehaviourTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Behaviour task updated successfully.' : 'Behaviour task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save behaviour task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddTrigger = async () => {
+    if (!newTrigger.name.trim()) {
+      setNotification({ show: true, message: 'Trigger name is required.', type: 'error' });
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/behaviour-triggers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(newTrigger),
+      });
+      if (response.ok) {
+        const created = await response.json();
+        await fetchBehaviourTriggers();
+        setBehaviourForm({ ...behaviourForm, triggerId: created.id });
+        setShowTriggerModal(false);
+        setNewTrigger({ name: '', define: '' });
+        setNotification({ show: true, message: 'Trigger added successfully.', type: 'success' });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to add trigger.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while adding trigger.', type: 'error' });
+    }
+  };
+
   const handleView = async (task) => {
     try {
       const token = localStorage.getItem('token');
@@ -757,6 +820,260 @@ export default function DailyTasksPage() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Behaviour Task Entry Modal */}
+          {showModal && selectedTaskType === 'behaviour' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      👤
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Behaviour Task</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+
+                <form onSubmit={handleBehaviourSubmit} className="space-y-4">
+                  {/* Service User, Date, Time */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Service User *</label>
+                      <select 
+                        required 
+                        value={behaviourForm.serviceSeekerId} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, serviceSeekerId:e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      >
+                        <option value="">Select Service User</option>
+                        {serviceUsers.map(su => (
+                          <option key={su.id} value={su.id}>{su.firstName} {su.lastName}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                      <input 
+                        type="date" 
+                        required 
+                        value={behaviourForm.date} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, date:e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
+                      <input 
+                        type="time" 
+                        required 
+                        value={behaviourForm.time} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, time:e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Behaviour Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Behaviour Type *</label>
+                    <select 
+                      required 
+                      value={behaviourForm.type} 
+                      onChange={(e)=>setBehaviourForm({...behaviourForm, type:e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                    >
+                      <option value="AGGRESSION_HITTING_BITING">Aggression (Hitting/Biting)</option>
+                      <option value="CRYING">Crying</option>
+                      <option value="HAPPY_APPRECIATING">Happy/Appreciating</option>
+                      <option value="ISOLATION">Isolation</option>
+                      <option value="SELF_INJURIOUS_BEHAVIOUR">Self Injurious Behaviour</option>
+                      <option value="SEXUALIZED_BEHAVIOUR_IN_PUBLIC">Sexualized Behaviour in Public</option>
+                      <option value="SHOUTING_SWEARING">Shouting/Swearing</option>
+                      <option value="SOILING_SMEARING">Soiling/Smearing</option>
+                      <option value="STARVATION">Starvation</option>
+                      <option value="THROWING_BREAKING_ITEMS">Throwing/Breaking Items</option>
+                    </select>
+                  </div>
+
+                  {/* Behaviour Trigger with Add New */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Behaviour Trigger *</label>
+                    <div className="flex gap-2">
+                      <select 
+                        required 
+                        value={behaviourForm.triggerId} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, triggerId:e.target.value})}
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      >
+                        <option value="">Select Trigger</option>
+                        {behaviourTriggers.map(trigger => (
+                          <option key={trigger.id} value={trigger.id}>{trigger.name}</option>
+                        ))}
+                      </select>
+                      <button 
+                        type="button" 
+                        onClick={()=>setShowTriggerModal(true)}
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 whitespace-nowrap"
+                      >
+                        + Add New
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Others Involved */}
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <input 
+                        type="checkbox" 
+                        id="othersInvolved" 
+                        checked={behaviourForm.othersInvolved} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, othersInvolved:e.target.checked})}
+                        className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                      />
+                      <label htmlFor="othersInvolved" className="text-sm font-medium text-gray-700">Were others involved?</label>
+                    </div>
+                    {behaviourForm.othersInvolved && (
+                      <textarea 
+                        rows={2}
+                        value={behaviourForm.othersInvolvedDetails} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, othersInvolvedDetails:e.target.value})}
+                        placeholder="Please provide names and explain..."
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    )}
+                  </div>
+
+                  {/* Text Areas: Antecedents, Behaviour, Consequences, Care/Intervention */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Antecedents</label>
+                      <textarea 
+                        rows={3}
+                        value={behaviourForm.antecedents} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, antecedents:e.target.value})}
+                        placeholder="What happened before the behaviour..."
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Behaviour</label>
+                      <textarea 
+                        rows={3}
+                        value={behaviourForm.behaviour} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, behaviour:e.target.value})}
+                        placeholder="Describe the behaviour..."
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Consequences</label>
+                      <textarea 
+                        rows={3}
+                        value={behaviourForm.consequences} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, consequences:e.target.value})}
+                        placeholder="What happened after the behaviour..."
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Care/Intervention</label>
+                      <textarea 
+                        rows={3}
+                        value={behaviourForm.careIntervention} 
+                        onChange={(e)=>setBehaviourForm({...behaviourForm, careIntervention:e.target.value})}
+                        placeholder="What care or intervention was provided..."
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Emotion */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
+                    <div className="flex gap-6">
+                      {[
+                        { value: 'SAD', emoji: '😢', label: 'Sad' },
+                        { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
+                        { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+                      ].map(emotion => (
+                        <button
+                          key={emotion.value}
+                          type="button"
+                          onClick={()=>setBehaviourForm({...behaviourForm, emotion:emotion.value})}
+                          className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
+                            behaviourForm.emotion === emotion.value 
+                              ? 'border-[#224fa6] bg-blue-50' 
+                              : 'border-gray-300 bg-white hover:border-[#224fa6]'
+                          }`}
+                        >
+                          <span className="text-4xl mb-2">{emotion.emoji}</span>
+                          <span className="text-sm font-medium text-gray-700">{emotion.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onClick={()=>setShowModal(false)} className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50">
+                      {isSubmitting ? 'Saving...' : editing ? 'Update Task' : 'Save Task'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Add Trigger Modal */}
+          {showTriggerModal && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-[60] p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Add New Trigger</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Trigger Name *</label>
+                    <input 
+                      type="text"
+                      required
+                      value={newTrigger.name} 
+                      onChange={(e)=>setNewTrigger({...newTrigger, name:e.target.value})}
+                      placeholder="e.g., Loud noises"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Definition</label>
+                    <textarea 
+                      rows={3}
+                      value={newTrigger.define} 
+                      onChange={(e)=>setNewTrigger({...newTrigger, define:e.target.value})}
+                      placeholder="Define this trigger..."
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-2">
+                    <button 
+                      type="button" 
+                      onClick={()=>{setShowTriggerModal(false); setNewTrigger({name:'', define:''});}}
+                      className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={handleAddTrigger}
+                      className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600"
+                    >
+                      Add Trigger
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

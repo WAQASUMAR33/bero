@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
+import BathingTaskForm from './components/BathingTaskForm';
+import BehaviourTaskForm from './components/BehaviourTaskForm';
 
 const TASK_TYPES = [
   { id: 'bathing', name: 'Bathing', icon: '🛁', color: 'blue' },
@@ -51,6 +53,8 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
+const ENABLED_TASKS = ['bathing', 'behaviour'];
+
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,7 +79,6 @@ export default function DailyTasksPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   
-  // Bathing form state
   const [bathingForm, setBathingForm] = useState({
     serviceSeekerId: '',
     date: new Date().toISOString().split('T')[0],
@@ -90,7 +93,6 @@ export default function DailyTasksPage() {
     emotion: 'NEUTRAL',
   });
 
-  // Behaviour form state
   const [behaviourForm, setBehaviourForm] = useState({
     serviceSeekerId: '',
     date: new Date().toISOString().split('T')[0],
@@ -117,10 +119,10 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/bathing-tasks', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setBathingTasks(data);
+      setBathingTasks(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
-      setNotification({ show: true, message: 'Failed to load bathing tasks.', type: 'error' });
+      setBathingTasks([]);
     }
   };
 
@@ -133,7 +135,6 @@ export default function DailyTasksPage() {
     } catch (e) {
       console.error(e);
       setBehaviourTasks([]);
-      setNotification({ show: true, message: 'Failed to load behaviour tasks.', type: 'error' });
     }
   };
 
@@ -145,7 +146,6 @@ export default function DailyTasksPage() {
       const triggers = Array.isArray(data) ? data : [];
       setBehaviourTriggers(triggers);
       
-      // If no triggers exist, seed them automatically
       if (triggers.length === 0) {
         await seedBehaviourTriggers();
       }
@@ -163,7 +163,9 @@ export default function DailyTasksPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        await fetchBehaviourTriggers();
+        const result = await res.json();
+        const triggers = await fetch('/api/behaviour-triggers', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+        setBehaviourTriggers(Array.isArray(triggers) ? triggers : []);
       }
     } catch (e) {
       console.error('Failed to seed triggers:', e);
@@ -175,9 +177,10 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/service-seekers', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setServiceUsers(data);
+      setServiceUsers(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
+      setServiceUsers([]);
     }
   };
 
@@ -199,7 +202,7 @@ export default function DailyTasksPage() {
     setShowTaskTypeModal(false);
     setShowModal(true);
     setEditing(null);
-    // Reset bathing form
+    // Reset forms
     setBathingForm({
       serviceSeekerId: '',
       date: new Date().toISOString().split('T')[0],
@@ -213,7 +216,6 @@ export default function DailyTasksPage() {
       completed: 'YES',
       emotion: 'NEUTRAL',
     });
-    // Reset behaviour form
     setBehaviourForm({
       serviceSeekerId: '',
       date: new Date().toISOString().split('T')[0],
@@ -332,9 +334,10 @@ export default function DailyTasksPage() {
   const handleView = async (task) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/bathing-tasks/${task.id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const endpoint = task.taskType === 'bathing' ? 'bathing-tasks' : 'behaviour-tasks';
+      const res = await fetch(`/api/${endpoint}/${task.id}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setViewData(data);
+      setViewData({ ...data, taskType: task.taskType });
       setShowViewModal(true);
     } catch (e) {
       console.error(e);
@@ -344,20 +347,37 @@ export default function DailyTasksPage() {
 
   const handleEdit = (task) => {
     setEditing(task);
-    setBathingForm({
-      serviceSeekerId: task.serviceSeekerId,
-      date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
-      time: task.time || '',
-      bathingType: task.bathingType,
-      compliance: task.compliance,
-      stoolPassed: task.stoolPassed,
-      urinePassed: task.urinePassed,
-      bathNotes: task.bathNotes || '',
-      catheterChecked: task.catheterChecked,
-      completed: task.completed,
-      emotion: task.emotion,
-    });
-    setSelectedTaskType('bathing');
+    if (task.taskType === 'bathing') {
+      setBathingForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        bathingType: task.bathingType,
+        compliance: task.compliance,
+        stoolPassed: task.stoolPassed,
+        urinePassed: task.urinePassed,
+        bathNotes: task.bathNotes || '',
+        catheterChecked: task.catheterChecked,
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'behaviour') {
+      setBehaviourForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        type: task.type,
+        triggerId: task.triggerId,
+        othersInvolved: task.othersInvolved,
+        othersInvolvedDetails: task.othersInvolvedDetails || '',
+        antecedents: task.antecedents || '',
+        behaviour: task.behaviour || '',
+        consequences: task.consequences || '',
+        careIntervention: task.careIntervention || '',
+        emotion: task.emotion,
+      });
+    }
+    setSelectedTaskType(task.taskType);
     setShowModal(true);
   };
 
@@ -370,12 +390,17 @@ export default function DailyTasksPage() {
     if (!taskToDelete) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/bathing-tasks/${taskToDelete.id}`, { 
+      const endpoint = taskToDelete.taskType === 'bathing' ? 'bathing-tasks' : 'behaviour-tasks';
+      const res = await fetch(`/api/${endpoint}/${taskToDelete.id}`, { 
         method: 'DELETE', 
         headers: { Authorization: `Bearer ${token}` } 
       });
       if (res.ok) {
-        await fetchBathingTasks();
+        if (taskToDelete.taskType === 'bathing') {
+          await fetchBathingTasks();
+        } else {
+          await fetchBehaviourTasks();
+        }
         setNotification({ show: true, message: 'Task deleted successfully.', type: 'success' });
       } else {
         const err = await res.json().catch(() => ({ error: 'Failed' }));
@@ -403,15 +428,17 @@ export default function DailyTasksPage() {
     );
   }
 
-  // For now, we'll show bathing tasks only
-  const allTasks = Array.isArray(bathingTasks) ? bathingTasks : [];
+  // Combine all tasks
+  const bathingTasksWithType = (Array.isArray(bathingTasks) ? bathingTasks : []).map(t => ({ ...t, taskType: 'bathing' }));
+  const behaviourTasksWithType = (Array.isArray(behaviourTasks) ? behaviourTasks : []).map(t => ({ ...t, taskType: 'behaviour' }));
+  const allTasks = [...bathingTasksWithType, ...behaviourTasksWithType].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
   const filteredTasks = allTasks.filter((t) => {
-    if (filterTaskType !== 'ALL' && filterTaskType !== 'bathing') return false;
+    if (filterTaskType !== 'ALL' && filterTaskType !== t.taskType) return false;
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
     const userName = `${t.serviceSeeker?.firstName} ${t.serviceSeeker?.lastName}`.toLowerCase();
-    return userName.includes(q) || t.bathingType?.toLowerCase().includes(q);
+    return userName.includes(q) || t.bathingType?.toLowerCase().includes(q) || t.type?.toLowerCase().includes(q);
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / pageSize));
@@ -421,6 +448,16 @@ export default function DailyTasksPage() {
 
   const getTaskTypeInfo = (taskTypeId) => {
     return TASK_TYPES.find(t => t.id === taskTypeId) || { name: taskTypeId, icon: '📋', color: 'gray' };
+  };
+
+  const getTaskIcon = (taskType) => {
+    const info = getTaskTypeInfo(taskType);
+    return info.icon;
+  };
+
+  const getTaskColor = (taskType) => {
+    const info = getTaskTypeInfo(taskType);
+    return COLOR_CLASSES[info.color] || COLOR_CLASSES.gray;
   };
 
   return (
@@ -451,7 +488,7 @@ export default function DailyTasksPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Total Tasks</p>
-                  <p className="text-2xl font-bold text-gray-900">{bathingTasks.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{allTasks.length}</p>
                 </div>
               </div>
             </div>
@@ -462,7 +499,7 @@ export default function DailyTasksPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Today</p>
-                  <p className="text-2xl font-bold text-gray-900">{bathingTasks.filter(t => new Date(t.date).toDateString() === new Date().toDateString()).length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{allTasks.filter(t => new Date(t.date).toDateString() === new Date().toDateString()).length}</p>
                 </div>
               </div>
             </div>
@@ -502,7 +539,7 @@ export default function DailyTasksPage() {
               <div>
                 <select value={filterTaskType} onChange={(e)=>setFilterTaskType(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
                   <option value="ALL">All Task Types</option>
-                  {TASK_TYPES.map(type => (
+                  {TASK_TYPES.filter(t => ENABLED_TASKS.includes(t.id)).map(type => (
                     <option key={type.id} value={type.id}>{type.name}</option>
                   ))}
                 </select>
@@ -532,8 +569,9 @@ export default function DailyTasksPage() {
                     </tr>
                   ) : (
                     pagedTasks.map((task, idx) => {
-                      const taskInfo = getTaskTypeInfo('bathing');
+                      const taskInfo = getTaskTypeInfo(task.taskType);
                       const emotionEmoji = task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐';
+                      const subInfo = task.taskType === 'bathing' ? task.bathingType : task.type;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
                           <td className="px-6 py-4">
@@ -543,7 +581,7 @@ export default function DailyTasksPage() {
                               </div>
                               <div>
                                 <span className="font-medium text-gray-900 block">{taskInfo.name}</span>
-                                <span className="text-xs text-gray-500">{task.bathingType}</span>
+                                <span className="text-xs text-gray-500">{subInfo?.replace(/_/g, ' ')}</span>
                               </div>
                             </div>
                           </td>
@@ -570,14 +608,20 @@ export default function DailyTasksPage() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center space-x-2">
-                              <span className={`px-2 py-1 text-xs rounded-full ${
-                                task.completed === 'YES' ? 'bg-green-100 text-green-700' : 
-                                task.completed === 'NO' ? 'bg-red-100 text-red-700' : 
-                                task.completed === 'ATTEMPTED' ? 'bg-yellow-100 text-yellow-700' : 
-                                'bg-gray-100 text-gray-700'
-                              }`}>
-                                {task.completed?.replace('_', ' ')}
-                              </span>
+                              {task.taskType === 'bathing' ? (
+                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                  task.completed === 'YES' ? 'bg-green-100 text-green-700' : 
+                                  task.completed === 'NO' ? 'bg-red-100 text-red-700' : 
+                                  task.completed === 'ATTEMPTED' ? 'bg-yellow-100 text-yellow-700' : 
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {task.completed?.replace(/_/g, ' ')}
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-700">
+                                  {task.trigger?.name || 'Recorded'}
+                                </span>
+                              )}
                               <span className="text-lg">{emotionEmoji}</span>
                             </div>
                           </td>
@@ -631,7 +675,7 @@ export default function DailyTasksPage() {
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {TASK_TYPES.map(taskType => {
-                    const isEnabled = taskType.id === 'bathing' || taskType.id === 'behaviour';
+                    const isEnabled = ENABLED_TASKS.includes(taskType.id);
                     return (
                       <button
                         key={taskType.id}
@@ -658,7 +702,7 @@ export default function DailyTasksPage() {
             </div>
           )}
 
-          {/* Bathing Task Entry Modal */}
+          {/* Bathing Task Modal */}
           {showModal && selectedTaskType === 'bathing' && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8">
@@ -671,185 +715,20 @@ export default function DailyTasksPage() {
                   </div>
                   <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
-
-                <form onSubmit={handleBathingSubmit} className="space-y-6">
-                  {/* Service User & Date/Time */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Service User *</label>
-                      <select 
-                        required 
-                        value={bathingForm.serviceSeekerId} 
-                        onChange={(e)=>setBathingForm({...bathingForm, serviceSeekerId:e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      >
-                        <option value="">Select Service User</option>
-                        {serviceUsers.map(su => (
-                          <option key={su.id} value={su.id}>{su.firstName} {su.lastName}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-                      <input 
-                        type="date" 
-                        required 
-                        value={bathingForm.date} 
-                        onChange={(e)=>setBathingForm({...bathingForm, date:e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
-                      <input 
-                        type="time" 
-                        required 
-                        value={bathingForm.time} 
-                        onChange={(e)=>setBathingForm({...bathingForm, time:e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bathing Type & Compliance */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Bathing Type *</label>
-                      <select 
-                        required 
-                        value={bathingForm.bathingType} 
-                        onChange={(e)=>setBathingForm({...bathingForm, bathingType:e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      >
-                        <option value="BATH">Bath</option>
-                        <option value="BEDWASH">Bed Wash</option>
-                        <option value="FULL_BODY_WASH">Full Body Wash</option>
-                        <option value="LOWER_BODY_WASH">Lower Body Wash</option>
-                        <option value="SHOWER">Shower</option>
-                        <option value="STRIP_WASH">Strip Wash</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Compliance *</label>
-                      <select 
-                        required 
-                        value={bathingForm.compliance} 
-                        onChange={(e)=>setBathingForm({...bathingForm, compliance:e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      >
-                        <option value="COMPLETED">Completed</option>
-                        <option value="DECLINED">Declined</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Yes/No Fields */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        id="stoolPassed" 
-                        checked={bathingForm.stoolPassed} 
-                        onChange={(e)=>setBathingForm({...bathingForm, stoolPassed:e.target.checked})}
-                        className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
-                      />
-                      <label htmlFor="stoolPassed" className="text-sm font-medium text-gray-700">Stool Passed</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        id="urinePassed" 
-                        checked={bathingForm.urinePassed} 
-                        onChange={(e)=>setBathingForm({...bathingForm, urinePassed:e.target.checked})}
-                        className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
-                      />
-                      <label htmlFor="urinePassed" className="text-sm font-medium text-gray-700">Urine Passed</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        id="catheterChecked" 
-                        checked={bathingForm.catheterChecked} 
-                        onChange={(e)=>setBathingForm({...bathingForm, catheterChecked:e.target.checked})}
-                        className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
-                      />
-                      <label htmlFor="catheterChecked" className="text-sm font-medium text-gray-700">Catheter Checked</label>
-                    </div>
-                  </div>
-
-                  {/* Bath Notes */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Bath Notes</label>
-                    <textarea 
-                      rows={3}
-                      value={bathingForm.bathNotes} 
-                      onChange={(e)=>setBathingForm({...bathingForm, bathNotes:e.target.value})}
-                      placeholder="Additional notes about the bathing task..."
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* Completed Status */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Completed *</label>
-                    <div className="flex flex-wrap gap-3">
-                      {['YES', 'NO', 'ATTEMPTED', 'NOT_REQUIRED'].map(status => (
-                        <button
-                          key={status}
-                          type="button"
-                          onClick={()=>setBathingForm({...bathingForm, completed:status})}
-                          className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                            bathingForm.completed === status 
-                              ? 'border-[#224fa6] bg-[#224fa6] text-white' 
-                              : 'border-gray-300 bg-white text-gray-700 hover:border-[#224fa6]'
-                          }`}
-                        >
-                          {status.replace('_', ' ')}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Emotion */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
-                    <div className="flex gap-6">
-                      {[
-                        { value: 'SAD', emoji: '😢', label: 'Sad' },
-                        { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-                        { value: 'HAPPY', emoji: '😊', label: 'Happy' }
-                      ].map(emotion => (
-                        <button
-                          key={emotion.value}
-                          type="button"
-                          onClick={()=>setBathingForm({...bathingForm, emotion:emotion.value})}
-                          className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-                            bathingForm.emotion === emotion.value 
-                              ? 'border-[#224fa6] bg-blue-50' 
-                              : 'border-gray-300 bg-white hover:border-[#224fa6]'
-                          }`}
-                        >
-                          <span className="text-4xl mb-2">{emotion.emoji}</span>
-                          <span className="text-sm font-medium text-gray-700">{emotion.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-3 pt-4 border-t">
-                    <button type="button" onClick={()=>setShowModal(false)} className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                      Cancel
-                    </button>
-                    <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50">
-                      {isSubmitting ? 'Saving...' : editing ? 'Update Task' : 'Save Task'}
-                    </button>
-                  </div>
-                </form>
+                <BathingTaskForm
+                  formData={bathingForm}
+                  setFormData={setBathingForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleBathingSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  editing={editing}
+                />
               </div>
             </div>
           )}
 
-          {/* Behaviour Task Entry Modal */}
+          {/* Behaviour Task Modal */}
           {showModal && selectedTaskType === 'behaviour' && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
@@ -862,195 +741,17 @@ export default function DailyTasksPage() {
                   </div>
                   <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
-
-                <form onSubmit={handleBehaviourSubmit} className="space-y-4">
-                  {/* Service User, Date, Time */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Service User *</label>
-                      <select 
-                        required 
-                        value={behaviourForm.serviceSeekerId} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, serviceSeekerId:e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      >
-                        <option value="">Select Service User</option>
-                        {serviceUsers.map(su => (
-                          <option key={su.id} value={su.id}>{su.firstName} {su.lastName}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-                      <input 
-                        type="date" 
-                        required 
-                        value={behaviourForm.date} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, date:e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
-                      <input 
-                        type="time" 
-                        required 
-                        value={behaviourForm.time} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, time:e.target.value})}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Behaviour Type */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Behaviour Type *</label>
-                    <select 
-                      required 
-                      value={behaviourForm.type} 
-                      onChange={(e)=>setBehaviourForm({...behaviourForm, type:e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                    >
-                      <option value="AGGRESSION_HITTING_BITING">Aggression (Hitting/Biting)</option>
-                      <option value="CRYING">Crying</option>
-                      <option value="HAPPY_APPRECIATING">Happy/Appreciating</option>
-                      <option value="ISOLATION">Isolation</option>
-                      <option value="SELF_INJURIOUS_BEHAVIOUR">Self Injurious Behaviour</option>
-                      <option value="SEXUALIZED_BEHAVIOUR_IN_PUBLIC">Sexualized Behaviour in Public</option>
-                      <option value="SHOUTING_SWEARING">Shouting/Swearing</option>
-                      <option value="SOILING_SMEARING">Soiling/Smearing</option>
-                      <option value="STARVATION">Starvation</option>
-                      <option value="THROWING_BREAKING_ITEMS">Throwing/Breaking Items</option>
-                    </select>
-                  </div>
-
-                  {/* Behaviour Trigger with Add New */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Behaviour Trigger *</label>
-                    <div className="flex gap-2">
-                      <select 
-                        required 
-                        value={behaviourForm.triggerId} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, triggerId:e.target.value})}
-                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      >
-                        <option value="">Select Trigger</option>
-                        {Array.isArray(behaviourTriggers) && behaviourTriggers.map(trigger => (
-                          <option key={trigger.id} value={trigger.id}>{trigger.name}</option>
-                        ))}
-                      </select>
-                      <button 
-                        type="button" 
-                        onClick={()=>setShowTriggerModal(true)}
-                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 whitespace-nowrap"
-                      >
-                        + Add New
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Others Involved */}
-                  <div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <input 
-                        type="checkbox" 
-                        id="othersInvolved" 
-                        checked={behaviourForm.othersInvolved} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, othersInvolved:e.target.checked})}
-                        className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
-                      />
-                      <label htmlFor="othersInvolved" className="text-sm font-medium text-gray-700">Were others involved?</label>
-                    </div>
-                    {behaviourForm.othersInvolved && (
-                      <textarea 
-                        rows={2}
-                        value={behaviourForm.othersInvolvedDetails} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, othersInvolvedDetails:e.target.value})}
-                        placeholder="Please provide names and explain..."
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    )}
-                  </div>
-
-                  {/* Text Areas: Antecedents, Behaviour, Consequences, Care/Intervention */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Antecedents</label>
-                      <textarea 
-                        rows={3}
-                        value={behaviourForm.antecedents} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, antecedents:e.target.value})}
-                        placeholder="What happened before the behaviour..."
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Behaviour</label>
-                      <textarea 
-                        rows={3}
-                        value={behaviourForm.behaviour} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, behaviour:e.target.value})}
-                        placeholder="Describe the behaviour..."
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Consequences</label>
-                      <textarea 
-                        rows={3}
-                        value={behaviourForm.consequences} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, consequences:e.target.value})}
-                        placeholder="What happened after the behaviour..."
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Care/Intervention</label>
-                      <textarea 
-                        rows={3}
-                        value={behaviourForm.careIntervention} 
-                        onChange={(e)=>setBehaviourForm({...behaviourForm, careIntervention:e.target.value})}
-                        placeholder="What care or intervention was provided..."
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Emotion */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
-                    <div className="flex gap-6">
-                      {[
-                        { value: 'SAD', emoji: '😢', label: 'Sad' },
-                        { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-                        { value: 'HAPPY', emoji: '😊', label: 'Happy' }
-                      ].map(emotion => (
-                        <button
-                          key={emotion.value}
-                          type="button"
-                          onClick={()=>setBehaviourForm({...behaviourForm, emotion:emotion.value})}
-                          className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-                            behaviourForm.emotion === emotion.value 
-                              ? 'border-[#224fa6] bg-blue-50' 
-                              : 'border-gray-300 bg-white hover:border-[#224fa6]'
-                          }`}
-                        >
-                          <span className="text-4xl mb-2">{emotion.emoji}</span>
-                          <span className="text-sm font-medium text-gray-700">{emotion.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-3 pt-4 border-t">
-                    <button type="button" onClick={()=>setShowModal(false)} className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                      Cancel
-                    </button>
-                    <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50">
-                      {isSubmitting ? 'Saving...' : editing ? 'Update Task' : 'Save Task'}
-                    </button>
-                  </div>
-                </form>
+                <BehaviourTaskForm
+                  formData={behaviourForm}
+                  setFormData={setBehaviourForm}
+                  serviceUsers={serviceUsers}
+                  behaviourTriggers={behaviourTriggers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleBehaviourSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  onAddTrigger={()=>setShowTriggerModal(true)}
+                  editing={editing}
+                />
               </div>
             </div>
           )}
@@ -1103,151 +804,6 @@ export default function DailyTasksPage() {
             </div>
           )}
 
-          {/* View Modal */}
-          {showViewModal && viewData && (
-            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🛁
-                    </div>
-                    <h2 className="text-2xl font-semibold text-gray-900">Bathing Task Details</h2>
-                  </div>
-                  <button onClick={()=>setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Service User - Full Width with Photo */}
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
-                    <p className="text-sm font-medium text-gray-600 mb-2">Service User</p>
-                    <div className="flex items-center space-x-4">
-                      {viewData.serviceSeeker?.photoUrl ? (
-                        <img src={viewData.serviceSeeker.photoUrl} alt={`${viewData.serviceSeeker.firstName} ${viewData.serviceSeeker.lastName}`} className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-lg" />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white font-semibold text-lg border-2 border-white shadow-lg">
-                          {viewData.serviceSeeker ? `${viewData.serviceSeeker.firstName?.[0]}${viewData.serviceSeeker.lastName?.[0]}` : 'SU'}
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-xl font-semibold text-gray-900">
-                          {viewData.serviceSeeker ? `${viewData.serviceSeeker.firstName} ${viewData.serviceSeeker.lastName}` : '-'}
-                        </p>
-                        {viewData.serviceSeeker?.preferredName && (
-                          <p className="text-sm text-gray-600">Preferred: {viewData.serviceSeeker.preferredName}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Two Column Layout */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Left Column */}
-                    <div className="space-y-4">
-                      {/* Date & Time */}
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Date & Time</p>
-                        <p className="text-base font-semibold text-gray-900">{new Date(viewData.date).toLocaleDateString()} at {viewData.time}</p>
-                      </div>
-
-                      {/* Bathing Type */}
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Bathing Type</p>
-                        <p className="text-base font-semibold text-gray-900">{viewData.bathingType?.replace(/_/g, ' ')}</p>
-                      </div>
-
-                      {/* Compliance */}
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Compliance</p>
-                        <span className={`inline-block px-3 py-1 text-sm rounded-full font-semibold ${viewData.compliance === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {viewData.compliance}
-                        </span>
-                      </div>
-
-                      {/* Completed */}
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Completed</p>
-                        <p className="text-base font-semibold text-gray-900">{viewData.completed?.replace(/_/g, ' ')}</p>
-                      </div>
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-4">
-                      {/* Observations */}
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs font-medium text-gray-500 uppercase mb-2">Observations</p>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-5 h-5 rounded ${viewData.stoolPassed ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
-                              {viewData.stoolPassed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
-                            </div>
-                            <span className="text-sm text-gray-700">Stool Passed</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-5 h-5 rounded ${viewData.urinePassed ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
-                              {viewData.urinePassed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
-                            </div>
-                            <span className="text-sm text-gray-700">Urine Passed</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-5 h-5 rounded ${viewData.catheterChecked ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center`}>
-                              {viewData.catheterChecked && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
-                            </div>
-                            <span className="text-sm text-gray-700">Catheter Checked</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Emotion */}
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Emotion</p>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-3xl">
-                            {viewData.emotion === 'HAPPY' ? '😊' : viewData.emotion === 'SAD' ? '😢' : '😐'}
-                          </span>
-                          <span className="text-base font-semibold text-gray-900">{viewData.emotion}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bath Notes - Full Width */}
-                  {viewData.bathNotes && (
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-2">Bath Notes</p>
-                      <p className="text-sm text-gray-900">{viewData.bathNotes}</p>
-                    </div>
-                  )}
-
-                  {/* Audit Info - Full Width */}
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3 border border-gray-200">
-                    <p className="text-xs font-medium text-gray-500 uppercase mb-2">Audit Information</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="text-gray-600">Created: </span>
-                        <span className="text-gray-900 font-medium">
-                          {new Date(viewData.createdAt).toLocaleString()} by {viewData.createdBy ? `${viewData.createdBy.firstName} ${viewData.createdBy.lastName}` : 'System'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Updated: </span>
-                        <span className="text-gray-900 font-medium">
-                          {new Date(viewData.updatedAt).toLocaleString()} by {viewData.updatedBy ? `${viewData.updatedBy.firstName} ${viewData.updatedBy.lastName}` : 'System'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <button onClick={()=>setShowViewModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Delete Confirmation Modal */}
           {showDeleteConfirm && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
@@ -1256,9 +812,9 @@ export default function DailyTasksPage() {
                   <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
                     <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Delete Bathing Task</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Delete Task</h3>
                   <p className="text-sm text-gray-600 text-center mb-6">
-                    Are you sure you want to delete this bathing task for <span className="font-medium text-gray-900">{taskToDelete?.serviceSeeker ? `${taskToDelete.serviceSeeker.firstName} ${taskToDelete.serviceSeeker.lastName}` : 'this service user'}</span>? This action cannot be undone.
+                    Are you sure you want to delete this {taskToDelete?.taskType} task for <span className="font-medium text-gray-900">{taskToDelete?.serviceSeeker ? `${taskToDelete.serviceSeeker.firstName} ${taskToDelete.serviceSeeker.lastName}` : 'this service user'}</span>? This action cannot be undone.
                   </p>
                   <div className="flex space-x-3">
                     <button onClick={handleDeleteCancel} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
@@ -1281,3 +837,4 @@ export default function DailyTasksPage() {
     </div>
   );
 }
+

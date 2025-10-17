@@ -65,6 +65,7 @@ export default function DailyTasksPage() {
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [newTrigger, setNewTrigger] = useState({ name: '', define: '' });
+  const [isAddingTrigger, setIsAddingTrigger] = useState(false);
   const [serviceUsers, setServiceUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState('');
@@ -310,6 +311,7 @@ export default function DailyTasksPage() {
       setNotification({ show: true, message: 'Trigger name is required.', type: 'error' });
       return;
     }
+    setIsAddingTrigger(true);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('/api/behaviour-triggers', {
@@ -333,6 +335,8 @@ export default function DailyTasksPage() {
     } catch (e) {
       console.error(e);
       setNotification({ show: true, message: 'Unexpected error while adding trigger.', type: 'error' });
+    } finally {
+      setIsAddingTrigger(false);
     }
   };
 
@@ -818,16 +822,26 @@ export default function DailyTasksPage() {
                     <button 
                       type="button" 
                       onClick={()=>{setShowTriggerModal(false); setNewTrigger({name:'', define:''});}}
-                      className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      disabled={isAddingTrigger}
+                      className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                     >
                       Cancel
                     </button>
                     <button 
                       type="button" 
                       onClick={handleAddTrigger}
-                      className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600"
+                      disabled={isAddingTrigger}
+                      className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 flex items-center justify-center min-w-[120px]"
                     >
-                      Add Trigger
+                      {isAddingTrigger ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Adding...
+                        </>
+                      ) : 'Add Trigger'}
                     </button>
                   </div>
                 </div>

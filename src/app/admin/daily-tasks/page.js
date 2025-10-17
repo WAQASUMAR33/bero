@@ -910,7 +910,7 @@ export default function DailyTasksPage() {
                         className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
                       >
                         <option value="">Select Trigger</option>
-                        {behaviourTriggers.map(trigger => (
+                        {Array.isArray(behaviourTriggers) && behaviourTriggers.map(trigger => (
                           <option key={trigger.id} value={trigger.id}>{trigger.name}</option>
                         ))}
                       </select>

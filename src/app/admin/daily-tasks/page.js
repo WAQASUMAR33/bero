@@ -6,6 +6,8 @@ import Header from '../components/Header';
 import Notification from '../components/Notification';
 import BathingTaskForm from './components/BathingTaskForm';
 import BehaviourTaskForm from './components/BehaviourTaskForm';
+import BathingTaskView from './components/BathingTaskView';
+import BehaviourTaskView from './components/BehaviourTaskView';
 
 const TASK_TYPES = [
   { id: 'bathing', name: 'Bathing', icon: '🛁', color: 'blue' },
@@ -78,6 +80,8 @@ export default function DailyTasksPage() {
   const [viewData, setViewData] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+  const [showManageTriggersModal, setShowManageTriggersModal] = useState(false);
+  const [triggerToDelete, setTriggerToDelete] = useState(null);
   
   const [bathingForm, setBathingForm] = useState({
     serviceSeekerId: '',
@@ -420,6 +424,26 @@ export default function DailyTasksPage() {
     setTaskToDelete(null);
   };
 
+  const handleDeleteTrigger = async (triggerId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/behaviour-triggers/${triggerId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        await fetchBehaviourTriggers();
+        setNotification({ show: true, message: 'Trigger deleted successfully.', type: 'success' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to delete trigger.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while deleting trigger.', type: 'error' });
+    }
+  };
+
   if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -750,6 +774,7 @@ export default function DailyTasksPage() {
                   onSubmit={handleBehaviourSubmit}
                   onCancel={()=>setShowModal(false)}
                   onAddTrigger={()=>setShowTriggerModal(true)}
+                  onManageTriggers={()=>setShowManageTriggersModal(true)}
                   editing={editing}
                 />
               </div>
@@ -804,6 +829,28 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {/* View Modal */}
+          {showViewModal && viewData && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className={`w-12 h-12 ${viewData.taskType === 'bathing' ? 'bg-blue-500' : 'bg-purple-500'} rounded-xl flex items-center justify-center text-2xl mr-3`}>
+                      {viewData.taskType === 'bathing' ? '🛁' : '👤'}
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">{viewData.taskType === 'bathing' ? 'Bathing' : 'Behaviour'} Task Details</h2>
+                  </div>
+                  <button onClick={()=>setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                {viewData.taskType === 'bathing' ? (
+                  <BathingTaskView data={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : (
+                  <BehaviourTaskView data={viewData} onClose={()=>setShowViewModal(false)} />
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Delete Confirmation Modal */}
           {showDeleteConfirm && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
@@ -820,6 +867,45 @@ export default function DailyTasksPage() {
                     <button onClick={handleDeleteCancel} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
                     <button onClick={handleDeleteConfirm} className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">Delete</button>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Manage Triggers Modal */}
+          {showManageTriggersModal && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-[60] p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-semibold text-gray-900">Manage Behaviour Triggers</h3>
+                  <button onClick={()=>setShowManageTriggersModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <div className="space-y-3">
+                  {Array.isArray(behaviourTriggers) && behaviourTriggers.map(trigger => (
+                    <div key={trigger.id} className="flex items-start justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{trigger.name}</p>
+                        {trigger.define && (
+                          <p className="text-sm text-gray-600 mt-1">{trigger.define}</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteTrigger(trigger.id)}
+                        className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        title="Delete Trigger"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                  ))}
+                  {(!behaviourTriggers || behaviourTriggers.length === 0) && (
+                    <p className="text-center text-gray-500 py-8">No triggers available. Add triggers using the &quot;+ Add&quot; button in the form.</p>
+                  )}
+                </div>
+                <div className="flex justify-end mt-6 pt-4 border-t">
+                  <button onClick={()=>setShowManageTriggersModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                    Close
+                  </button>
                 </div>
               </div>
             </div>

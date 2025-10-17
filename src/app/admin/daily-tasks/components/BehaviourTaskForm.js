@@ -9,6 +9,7 @@ export default function BehaviourTaskForm({
   onSubmit, 
   onCancel,
   onAddTrigger,
+  onManageTriggers,
   editing 
 }) {
   return (
@@ -93,7 +94,15 @@ export default function BehaviourTaskForm({
             onClick={onAddTrigger}
             className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 whitespace-nowrap"
           >
-            + Add New
+            + Add
+          </button>
+          <button 
+            type="button" 
+            onClick={onManageTriggers}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 whitespace-nowrap"
+            title="Manage Triggers"
+          >
+            ⚙️
           </button>
         </div>
       </div>

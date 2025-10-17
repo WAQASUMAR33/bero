@@ -1,0 +1,386 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
+import Notification from '../components/Notification';
+
+const TASK_TYPES = [
+  { id: 'bathing', name: 'Bathing', icon: '🛁', color: 'blue' },
+  { id: 'behaviour', name: 'Behaviour', icon: '👤', color: 'purple' },
+  { id: 'bloodtest', name: 'Blood Test', icon: '💉', color: 'red' },
+  { id: 'blood_pressure', name: 'Blood Pressure', icon: '🩺', color: 'red' },
+  { id: 'comfort_check', name: 'Comfort Check', icon: '🛏️', color: 'green' },
+  { id: 'communication_notes', name: 'Communication Notes', icon: '📝', color: 'blue' },
+  { id: 'encouragement', name: 'Encouragement', icon: '💪', color: 'yellow' },
+  { id: 'family_photo_message', name: 'Family Photo/Message', icon: '📷', color: 'pink' },
+  { id: 'follow_up', name: 'Follow Up', icon: '🔄', color: 'indigo' },
+  { id: 'food_drink', name: 'Food/Drink', icon: '🍽️', color: 'orange' },
+  { id: 'general_support', name: 'General Support', icon: '🤝', color: 'teal' },
+  { id: 'house_keeping', name: 'House Keeping', icon: '🧹', color: 'gray' },
+  { id: 'incident_fall', name: 'Incident/Fall', icon: '⚠️', color: 'red' },
+  { id: 'medicine_prn', name: 'Medicine PRN', icon: '💊', color: 'red' },
+  { id: 'muac', name: 'MUAC', icon: '📏', color: 'blue' },
+  { id: 'observation', name: 'Observation', icon: '👁️', color: 'purple' },
+  { id: 'one_to_one', name: 'One to One', icon: '👥', color: 'green' },
+  { id: 'oral_care', name: 'Oral Care', icon: '🦷', color: 'cyan' },
+  { id: 'oxygen', name: 'Oxygen', icon: '💨', color: 'blue' },
+  { id: 'person_centred_task', name: 'Person Centred Task', icon: '❤️', color: 'pink' },
+  { id: 'physical_intervention', name: 'Physical Intervention', icon: '🚨', color: 'red' },
+  { id: 'pulse', name: 'Pulse', icon: '❤️‍🩹', color: 'red' },
+  { id: 're_position', name: 'Re-position', icon: '🔄', color: 'indigo' },
+  { id: 'spending_money', name: 'Spending/Money', icon: '💰', color: 'green' },
+  { id: 'stool', name: 'Stool', icon: '🚽', color: 'brown' },
+  { id: 'temperature', name: 'Temperature', icon: '🌡️', color: 'orange' },
+  { id: 'visit', name: 'Visit', icon: '👋', color: 'blue' },
+  { id: 'weight', name: 'Weight', icon: '⚖️', color: 'purple' },
+];
+
+const COLOR_CLASSES = {
+  blue: 'bg-blue-500',
+  purple: 'bg-purple-500',
+  red: 'bg-red-500',
+  green: 'bg-green-500',
+  yellow: 'bg-yellow-500',
+  pink: 'bg-pink-500',
+  indigo: 'bg-indigo-500',
+  orange: 'bg-orange-500',
+  teal: 'bg-teal-500',
+  gray: 'bg-gray-500',
+  cyan: 'bg-cyan-500',
+  brown: 'bg-amber-700',
+};
+
+export default function DailyTasksPage() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [tasks, setTasks] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedTaskType, setSelectedTaskType] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterTaskType, setFilterTaskType] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  const [showTaskTypeModal, setShowTaskTypeModal] = useState(false);
+  const [editing, setEditing] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) setUser(JSON.parse(storedUser));
+    setIsLoading(false);
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/daily-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setTasks(data);
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Failed to load daily tasks.', type: 'error' });
+    }
+  };
+
+  useEffect(() => { if (user) fetchTasks(); }, [user]);
+
+  const openAddTask = () => {
+    setShowTaskTypeModal(true);
+  };
+
+  const selectTaskType = (taskTypeId) => {
+    setSelectedTaskType(taskTypeId);
+    setShowTaskTypeModal(false);
+    setShowModal(true);
+    setEditing(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      // API call will be implemented when we add fields for each task type
+      setNotification({ show: true, message: 'Task added successfully.', type: 'success' });
+      setShowModal(false);
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#224fa6]"></div>
+      </div>
+    );
+  }
+
+  const filteredTasks = tasks.filter((t) => {
+    if (filterTaskType !== 'ALL' && t.taskType !== filterTaskType) return false;
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    return t.serviceUser?.toLowerCase().includes(q) || t.taskType?.toLowerCase().includes(q);
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredTasks.length / pageSize));
+  const pageSafe = Math.min(currentPage, totalPages);
+  const startIdx = (pageSafe - 1) * pageSize;
+  const pagedTasks = filteredTasks.slice(startIdx, startIdx + pageSize);
+
+  const getTaskTypeInfo = (taskTypeId) => {
+    return TASK_TYPES.find(t => t.id === taskTypeId) || { name: taskTypeId, icon: '📋', color: 'gray' };
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      <Sidebar user={user} />
+      <div className="flex-1 flex flex-col lg:ml-64">
+        <Header user={user} />
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Daily Tasks</h1>
+                <p className="text-gray-600">Record and manage daily care tasks</p>
+              </div>
+              <button onClick={openAddTask} className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200">
+                Add Task
+              </button>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">Total Tasks</p>
+                  <p className="text-2xl font-bold text-gray-900">{tasks.length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">Today</p>
+                  <p className="text-2xl font-bold text-gray-900">0</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">This Week</p>
+                  <p className="text-2xl font-bold text-gray-900">0</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">Task Types</p>
+                  <p className="text-2xl font-bold text-gray-900">{TASK_TYPES.length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Search by service user or task type" className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900" />
+                </div>
+              </div>
+              <div>
+                <select value={filterTaskType} onChange={(e)=>setFilterTaskType(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
+                  <option value="ALL">All Task Types</option>
+                  {TASK_TYPES.map(type => (
+                    <option key={type.id} value={type.id}>{type.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-xl shadow border border-gray-100">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-[1]">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Task Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service User</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Recorded By</th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {pagedTasks.length === 0 ? (
+                    <tr>
+                      <td className="px-6 py-10 text-gray-500 text-center" colSpan={5}>
+                        No daily tasks recorded yet. Click "Add Task" to get started.
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedTasks.map((task, idx) => {
+                      const taskInfo = getTaskTypeInfo(task.taskType);
+                      return (
+                        <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center">
+                              <div className={`w-10 h-10 rounded-lg ${COLOR_CLASSES[taskInfo.color]} flex items-center justify-center text-white text-xl mr-3`}>
+                                {taskInfo.icon}
+                              </div>
+                              <span className="font-medium text-gray-900">{taskInfo.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-900">{task.serviceUser || '-'}</td>
+                          <td className="px-6 py-4 text-gray-700">{task.date ? new Date(task.date).toLocaleString() : '-'}</td>
+                          <td className="px-6 py-4 text-gray-700">{task.recordedBy || '-'}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end space-x-2">
+                              <button title="View" className="p-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                              </button>
+                              <button title="Edit" className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                              </button>
+                              <button title="Delete" className="p-2 rounded-lg text-red-600 hover:bg-red-50">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {/* Pagination */}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+              <div className="text-sm text-gray-600">
+                Showing <span className="font-medium text-gray-900">{Math.min(filteredTasks.length, startIdx + 1)}</span>-
+                <span className="font-medium text-gray-900">{Math.min(filteredTasks.length, startIdx + pagedTasks.length)}</span> of
+                <span className="font-medium text-gray-900"> {filteredTasks.length}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <select value={pageSize} onChange={(e)=>{ setPageSize(parseInt(e.target.value)||10); setCurrentPage(1); }} className="px-2 py-1 border rounded">
+                  {[10,20,50].map(n => (<option key={n} value={n}>{n} / page</option>))}
+                </select>
+                <button onClick={()=> setCurrentPage(p => Math.max(1, p-1))} disabled={pageSafe===1} className={`px-3 py-1 rounded border ${pageSafe===1? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Prev</button>
+                <span className="text-sm text-gray-700">Page {pageSafe} / {totalPages}</span>
+                <button onClick={()=> setCurrentPage(p => Math.min(totalPages, p+1))} disabled={pageSafe===totalPages} className={`px-3 py-1 rounded border ${pageSafe===totalPages? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Next</button>
+              </div>
+            </div>
+          </div>
+
+          {/* Task Type Selection Modal */}
+          {showTaskTypeModal && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 max-h-[85vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900">Select Task Type</h2>
+                  <button onClick={()=>setShowTaskTypeModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <p className="text-gray-600 mb-6">Choose the type of daily task you want to record</p>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {TASK_TYPES.map(taskType => (
+                    <button
+                      key={taskType.id}
+                      onClick={() => selectTaskType(taskType.id)}
+                      className="group relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-white hover:to-gray-50 rounded-xl border-2 border-gray-200 hover:border-[#224fa6] transition-all duration-200 hover:shadow-lg"
+                    >
+                      <div className={`w-16 h-16 ${COLOR_CLASSES[taskType.color]} rounded-xl flex items-center justify-center text-3xl mx-auto mb-3 group-hover:scale-110 transition-transform`}>
+                        {taskType.icon}
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 text-center">{taskType.name}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Task Entry Modal (Placeholder) */}
+          {showModal && selectedTaskType && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    {(() => {
+                      const taskInfo = getTaskTypeInfo(selectedTaskType);
+                      return (
+                        <>
+                          <div className={`w-12 h-12 ${COLOR_CLASSES[taskInfo.color]} rounded-xl flex items-center justify-center text-2xl mr-3`}>
+                            {taskInfo.icon}
+                          </div>
+                          <h2 className="text-2xl font-semibold text-gray-900">{taskInfo.name}</h2>
+                        </>
+                      );
+                    })()}
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-yellow-800">
+                      📝 Form fields for this task type will be configured next. Each task type will have its own specific fields.
+                    </p>
+                  </div>
+
+                  {/* Placeholder for task-specific fields */}
+                  <div className="text-center py-8 text-gray-500">
+                    Task entry form will be added here with specific fields for each task type.
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onClick={()=>setShowModal(false)} className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50">
+                      {isSubmitting ? 'Saving...' : 'Save Task'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Notification */}
+          <Notification
+            show={notification.show}
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification({ ...notification, show: false })}
+          />
+        </main>
+      </div>
+    </div>
+  );
+}
+

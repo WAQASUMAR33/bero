@@ -94,6 +94,8 @@ model User {
   // Audit relations
   createdServiceSeekers ServiceSeeker[] @relation("ServiceSeekerCreatedBy")
   updatedServiceSeekers ServiceSeeker[] @relation("ServiceSeekerUpdatedBy")
+  createdBathingTasks   BathingTask[]   @relation("BathingTaskCreatedBy")
+  updatedBathingTasks   BathingTask[]   @relation("BathingTaskUpdatedBy")
 }
 
 model UserPermission {
@@ -139,7 +141,7 @@ model DailyTask {
 }
 
 model ServiceSeeker {
-  id             String   @id @default(cuid())
+  id             String              @id @default(cuid())
   firstName      String
   lastName       String
   postalCode     String?
@@ -162,6 +164,7 @@ model ServiceSeeker {
   updatedById    String?
 
   shifts         Shift[]
+  bathingTasks   BathingTask[]
 
   // Relations
   createdBy      User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
@@ -231,4 +234,55 @@ model StandByShift {
 
   // Relations
   caretaker            User     @relation(fields: [caretakerId], references: [id])
+}
+
+enum BathingType {
+  BATH
+  BEDWASH
+  FULL_BODY_WASH
+  LOWER_BODY_WASH
+  SHOWER
+  STRIP_WASH
+}
+
+enum ComplianceStatus {
+  COMPLETED
+  DECLINED
+}
+
+enum TaskCompletion {
+  YES
+  NO
+  ATTEMPTED
+  NOT_REQUIRED
+}
+
+enum EmotionType {
+  SAD
+  NEUTRAL
+  HAPPY
+}
+
+model BathingTask {
+  id                String           @id @default(cuid())
+  serviceSeekerId   String
+  date              DateTime
+  time              String
+  bathingType       BathingType
+  compliance        ComplianceStatus
+  stoolPassed       Boolean
+  urinePassed       Boolean
+  bathNotes         String?
+  catheterChecked   Boolean
+  completed         TaskCompletion
+  emotion           EmotionType
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  createdById       String
+  updatedById       String
+
+  // Relations
+  serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  createdBy         User             @relation("BathingTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy         User             @relation("BathingTaskUpdatedBy", fields: [updatedById], references: [id])
 }

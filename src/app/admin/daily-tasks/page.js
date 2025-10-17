@@ -54,7 +54,8 @@ const COLOR_CLASSES = {
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [tasks, setTasks] = useState([]);
+  const [bathingTasks, setBathingTasks] = useState([]);
+  const [serviceUsers, setServiceUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,6 +66,21 @@ export default function DailyTasksPage() {
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [showTaskTypeModal, setShowTaskTypeModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  
+  // Bathing form state
+  const [bathingForm, setBathingForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    bathingType: 'BATH',
+    compliance: 'COMPLETED',
+    stoolPassed: false,
+    urinePassed: false,
+    bathNotes: '',
+    catheterChecked: false,
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -72,19 +88,35 @@ export default function DailyTasksPage() {
     setIsLoading(false);
   }, []);
 
-  const fetchTasks = async () => {
+  const fetchBathingTasks = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/daily-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/bathing-tasks', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setTasks(data);
+      setBathingTasks(data);
     } catch (e) {
       console.error(e);
-      setNotification({ show: true, message: 'Failed to load daily tasks.', type: 'error' });
+      setNotification({ show: true, message: 'Failed to load bathing tasks.', type: 'error' });
     }
   };
 
-  useEffect(() => { if (user) fetchTasks(); }, [user]);
+  const fetchServiceUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/service-seekers', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setServiceUsers(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => { 
+    if (user) {
+      fetchBathingTasks();
+      fetchServiceUsers();
+    }
+  }, [user]);
 
   const openAddTask = () => {
     setShowTaskTypeModal(true);
@@ -95,15 +127,48 @@ export default function DailyTasksPage() {
     setShowTaskTypeModal(false);
     setShowModal(true);
     setEditing(null);
+    // Reset bathing form
+    setBathingForm({
+      serviceSeekerId: '',
+      date: new Date().toISOString().split('T')[0],
+      time: new Date().toTimeString().slice(0, 5),
+      bathingType: 'BATH',
+      compliance: 'COMPLETED',
+      stoolPassed: false,
+      urinePassed: false,
+      bathNotes: '',
+      catheterChecked: false,
+      completed: 'YES',
+      emotion: 'NEUTRAL',
+    });
   };
 
-  const handleSubmit = async (e) => {
+  const handleBathingSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // API call will be implemented when we add fields for each task type
-      setNotification({ show: true, message: 'Task added successfully.', type: 'success' });
-      setShowModal(false);
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/bathing-tasks/${editing.id}` : '/api/bathing-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(bathingForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchBathingTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Bathing task updated successfully.' : 'Bathing task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save bathing task.', type: 'error' });
+      }
     } catch (e) {
       console.error(e);
       setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
@@ -120,11 +185,15 @@ export default function DailyTasksPage() {
     );
   }
 
-  const filteredTasks = tasks.filter((t) => {
-    if (filterTaskType !== 'ALL' && t.taskType !== filterTaskType) return false;
+  // For now, we'll show bathing tasks only
+  const allTasks = bathingTasks;
+  
+  const filteredTasks = allTasks.filter((t) => {
+    if (filterTaskType !== 'ALL' && filterTaskType !== 'bathing') return false;
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
-    return t.serviceUser?.toLowerCase().includes(q) || t.taskType?.toLowerCase().includes(q);
+    const userName = `${t.serviceSeeker?.firstName} ${t.serviceSeeker?.lastName}`.toLowerCase();
+    return userName.includes(q) || t.bathingType?.toLowerCase().includes(q);
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / pageSize));
@@ -164,7 +233,7 @@ export default function DailyTasksPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Total Tasks</p>
-                  <p className="text-2xl font-bold text-gray-900">{tasks.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{bathingTasks.length}</p>
                 </div>
               </div>
             </div>
@@ -175,7 +244,7 @@ export default function DailyTasksPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Today</p>
-                  <p className="text-2xl font-bold text-gray-900">0</p>
+                  <p className="text-2xl font-bold text-gray-900">{bathingTasks.filter(t => new Date(t.date).toDateString() === new Date().toDateString()).length}</p>
                 </div>
               </div>
             </div>
@@ -232,7 +301,7 @@ export default function DailyTasksPage() {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Task Type</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service User</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Recorded By</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -245,7 +314,8 @@ export default function DailyTasksPage() {
                     </tr>
                   ) : (
                     pagedTasks.map((task, idx) => {
-                      const taskInfo = getTaskTypeInfo(task.taskType);
+                      const taskInfo = getTaskTypeInfo('bathing');
+                      const emotionEmoji = task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐';
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
                           <td className="px-6 py-4">
@@ -253,12 +323,25 @@ export default function DailyTasksPage() {
                               <div className={`w-10 h-10 rounded-lg ${COLOR_CLASSES[taskInfo.color]} flex items-center justify-center text-white text-xl mr-3`}>
                                 {taskInfo.icon}
                               </div>
-                              <span className="font-medium text-gray-900">{taskInfo.name}</span>
+                              <div>
+                                <span className="font-medium text-gray-900 block">{taskInfo.name}</span>
+                                <span className="text-xs text-gray-500">{task.bathingType}</span>
+                              </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-gray-900">{task.serviceUser || '-'}</td>
-                          <td className="px-6 py-4 text-gray-700">{task.date ? new Date(task.date).toLocaleString() : '-'}</td>
-                          <td className="px-6 py-4 text-gray-700">{task.recordedBy || '-'}</td>
+                          <td className="px-6 py-4 text-gray-900">{task.serviceSeeker ? `${task.serviceSeeker.firstName} ${task.serviceSeeker.lastName}` : '-'}</td>
+                          <td className="px-6 py-4 text-gray-700">
+                            <div>{new Date(task.date).toLocaleDateString()}</div>
+                            <div className="text-xs text-gray-500">{task.time}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 text-xs rounded-full ${task.compliance === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                {task.compliance}
+                              </span>
+                              <span className="text-lg">{emotionEmoji}</span>
+                            </div>
+                          </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center justify-end space-x-2">
                               <button title="View" className="p-2 rounded-lg text-gray-700 hover:bg-gray-50">
@@ -312,12 +395,20 @@ export default function DailyTasksPage() {
                     <button
                       key={taskType.id}
                       onClick={() => selectTaskType(taskType.id)}
-                      className="group relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-white hover:to-gray-50 rounded-xl border-2 border-gray-200 hover:border-[#224fa6] transition-all duration-200 hover:shadow-lg"
+                      disabled={taskType.id !== 'bathing'}
+                      className={`group relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-white hover:to-gray-50 rounded-xl border-2 transition-all duration-200 ${
+                        taskType.id === 'bathing' 
+                          ? 'border-gray-200 hover:border-[#224fa6] hover:shadow-lg cursor-pointer' 
+                          : 'border-gray-100 opacity-50 cursor-not-allowed'
+                      }`}
                     >
-                      <div className={`w-16 h-16 ${COLOR_CLASSES[taskType.color]} rounded-xl flex items-center justify-center text-3xl mx-auto mb-3 group-hover:scale-110 transition-transform`}>
+                      <div className={`w-16 h-16 ${COLOR_CLASSES[taskType.color]} rounded-xl flex items-center justify-center text-3xl mx-auto mb-3 ${taskType.id === 'bathing' ? 'group-hover:scale-110' : ''} transition-transform`}>
                         {taskType.icon}
                       </div>
                       <p className="text-sm font-medium text-gray-900 text-center">{taskType.name}</p>
+                      {taskType.id !== 'bathing' && (
+                        <span className="absolute top-2 right-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Coming Soon</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -325,37 +416,182 @@ export default function DailyTasksPage() {
             </div>
           )}
 
-          {/* Task Entry Modal (Placeholder) */}
-          {showModal && selectedTaskType && (
-            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6">
+          {/* Bathing Task Entry Modal */}
+          {showModal && selectedTaskType === 'bathing' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    {(() => {
-                      const taskInfo = getTaskTypeInfo(selectedTaskType);
-                      return (
-                        <>
-                          <div className={`w-12 h-12 ${COLOR_CLASSES[taskInfo.color]} rounded-xl flex items-center justify-center text-2xl mr-3`}>
-                            {taskInfo.icon}
-                          </div>
-                          <h2 className="text-2xl font-semibold text-gray-900">{taskInfo.name}</h2>
-                        </>
-                      );
-                    })()}
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🛁
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Bathing Task</h2>
                   </div>
                   <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-yellow-800">
-                      📝 Form fields for this task type will be configured next. Each task type will have its own specific fields.
-                    </p>
+                <form onSubmit={handleBathingSubmit} className="space-y-6">
+                  {/* Service User & Date/Time */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Service User *</label>
+                      <select 
+                        required 
+                        value={bathingForm.serviceSeekerId} 
+                        onChange={(e)=>setBathingForm({...bathingForm, serviceSeekerId:e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      >
+                        <option value="">Select Service User</option>
+                        {serviceUsers.map(su => (
+                          <option key={su.id} value={su.id}>{su.firstName} {su.lastName}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                      <input 
+                        type="date" 
+                        required 
+                        value={bathingForm.date} 
+                        onChange={(e)=>setBathingForm({...bathingForm, date:e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
+                      <input 
+                        type="time" 
+                        required 
+                        value={bathingForm.time} 
+                        onChange={(e)=>setBathingForm({...bathingForm, time:e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      />
+                    </div>
                   </div>
 
-                  {/* Placeholder for task-specific fields */}
-                  <div className="text-center py-8 text-gray-500">
-                    Task entry form will be added here with specific fields for each task type.
+                  {/* Bathing Type & Compliance */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Bathing Type *</label>
+                      <select 
+                        required 
+                        value={bathingForm.bathingType} 
+                        onChange={(e)=>setBathingForm({...bathingForm, bathingType:e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      >
+                        <option value="BATH">Bath</option>
+                        <option value="BEDWASH">Bed Wash</option>
+                        <option value="FULL_BODY_WASH">Full Body Wash</option>
+                        <option value="LOWER_BODY_WASH">Lower Body Wash</option>
+                        <option value="SHOWER">Shower</option>
+                        <option value="STRIP_WASH">Strip Wash</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Compliance *</label>
+                      <select 
+                        required 
+                        value={bathingForm.compliance} 
+                        onChange={(e)=>setBathingForm({...bathingForm, compliance:e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      >
+                        <option value="COMPLETED">Completed</option>
+                        <option value="DECLINED">Declined</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Yes/No Fields */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="stoolPassed" 
+                        checked={bathingForm.stoolPassed} 
+                        onChange={(e)=>setBathingForm({...bathingForm, stoolPassed:e.target.checked})}
+                        className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                      />
+                      <label htmlFor="stoolPassed" className="text-sm font-medium text-gray-700">Stool Passed</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="urinePassed" 
+                        checked={bathingForm.urinePassed} 
+                        onChange={(e)=>setBathingForm({...bathingForm, urinePassed:e.target.checked})}
+                        className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                      />
+                      <label htmlFor="urinePassed" className="text-sm font-medium text-gray-700">Urine Passed</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="catheterChecked" 
+                        checked={bathingForm.catheterChecked} 
+                        onChange={(e)=>setBathingForm({...bathingForm, catheterChecked:e.target.checked})}
+                        className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                      />
+                      <label htmlFor="catheterChecked" className="text-sm font-medium text-gray-700">Catheter Checked</label>
+                    </div>
+                  </div>
+
+                  {/* Bath Notes */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bath Notes</label>
+                    <textarea 
+                      rows={3}
+                      value={bathingForm.bathNotes} 
+                      onChange={(e)=>setBathingForm({...bathingForm, bathNotes:e.target.value})}
+                      placeholder="Additional notes about the bathing task..."
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Completed Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Completed *</label>
+                    <div className="flex flex-wrap gap-3">
+                      {['YES', 'NO', 'ATTEMPTED', 'NOT_REQUIRED'].map(status => (
+                        <button
+                          key={status}
+                          type="button"
+                          onClick={()=>setBathingForm({...bathingForm, completed:status})}
+                          className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                            bathingForm.completed === status 
+                              ? 'border-[#224fa6] bg-[#224fa6] text-white' 
+                              : 'border-gray-300 bg-white text-gray-700 hover:border-[#224fa6]'
+                          }`}
+                        >
+                          {status.replace('_', ' ')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Emotion */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
+                    <div className="flex gap-6">
+                      {[
+                        { value: 'SAD', emoji: '😢', label: 'Sad' },
+                        { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
+                        { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+                      ].map(emotion => (
+                        <button
+                          key={emotion.value}
+                          type="button"
+                          onClick={()=>setBathingForm({...bathingForm, emotion:emotion.value})}
+                          className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
+                            bathingForm.emotion === emotion.value 
+                              ? 'border-[#224fa6] bg-blue-50' 
+                              : 'border-gray-300 bg-white hover:border-[#224fa6]'
+                          }`}
+                        >
+                          <span className="text-4xl mb-2">{emotion.emoji}</span>
+                          <span className="text-sm font-medium text-gray-700">{emotion.label}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -363,7 +599,7 @@ export default function DailyTasksPage() {
                       Cancel
                     </button>
                     <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50">
-                      {isSubmitting ? 'Saving...' : 'Save Task'}
+                      {isSubmitting ? 'Saving...' : editing ? 'Update Task' : 'Save Task'}
                     </button>
                   </div>
                 </form>
@@ -383,4 +619,3 @@ export default function DailyTasksPage() {
     </div>
   );
 }
-

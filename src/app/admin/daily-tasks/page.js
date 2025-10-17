@@ -80,8 +80,9 @@ export default function DailyTasksPage() {
   const [viewData, setViewData] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showManageTriggersModal, setShowManageTriggersModal] = useState(false);
-  const [triggerToDelete, setTriggerToDelete] = useState(null);
+  const [deletingTriggerId, setDeletingTriggerId] = useState(null);
   
   const [bathingForm, setBathingForm] = useState({
     serviceSeekerId: '',
@@ -392,6 +393,7 @@ export default function DailyTasksPage() {
 
   const handleDeleteConfirm = async () => {
     if (!taskToDelete) return;
+    setIsDeleting(true);
     try {
       const token = localStorage.getItem('token');
       const endpoint = taskToDelete.taskType === 'bathing' ? 'bathing-tasks' : 'behaviour-tasks';
@@ -414,6 +416,7 @@ export default function DailyTasksPage() {
       console.error(e);
       setNotification({ show: true, message: 'Unexpected error while deleting.', type: 'error' });
     } finally {
+      setIsDeleting(false);
       setShowDeleteConfirm(false);
       setTaskToDelete(null);
     }
@@ -425,6 +428,7 @@ export default function DailyTasksPage() {
   };
 
   const handleDeleteTrigger = async (triggerId) => {
+    setDeletingTriggerId(triggerId);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`/api/behaviour-triggers/${triggerId}`, {
@@ -441,6 +445,8 @@ export default function DailyTasksPage() {
     } catch (e) {
       console.error(e);
       setNotification({ show: true, message: 'Unexpected error while deleting trigger.', type: 'error' });
+    } finally {
+      setDeletingTriggerId(null);
     }
   };
 
@@ -864,8 +870,18 @@ export default function DailyTasksPage() {
                     Are you sure you want to delete this {taskToDelete?.taskType} task for <span className="font-medium text-gray-900">{taskToDelete?.serviceSeeker ? `${taskToDelete.serviceSeeker.firstName} ${taskToDelete.serviceSeeker.lastName}` : 'this service user'}</span>? This action cannot be undone.
                   </p>
                   <div className="flex space-x-3">
-                    <button onClick={handleDeleteCancel} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
-                    <button onClick={handleDeleteConfirm} className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">Delete</button>
+                    <button onClick={handleDeleteCancel} disabled={isDeleting} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50">Cancel</button>
+                    <button onClick={handleDeleteConfirm} disabled={isDeleting} className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center justify-center">
+                      {isDeleting ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Deleting...
+                        </>
+                      ) : 'Delete'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -891,10 +907,18 @@ export default function DailyTasksPage() {
                       </div>
                       <button
                         onClick={() => handleDeleteTrigger(trigger.id)}
-                        className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        disabled={deletingTriggerId === trigger.id}
+                        className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[40px]"
                         title="Delete Trigger"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        {deletingTriggerId === trigger.id ? (
+                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        )}
                       </button>
                     </div>
                   ))}

@@ -1,3 +1,5 @@
+'use client';
+
 export default function OneToOneTaskForm({ 
   formData, 
   setFormData, 
@@ -7,130 +9,116 @@ export default function OneToOneTaskForm({
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      {/* Service User */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Service User *
-        </label>
-        <select
-          value={formData.serviceSeekerId}
-          onChange={(e) => setFormData({ ...formData, serviceSeekerId: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          required
-        >
-          <option value="">Select Service User</option>
-          {serviceSeekers.map(seeker => (
-            <option key={seeker.id} value={seeker.id}>
-              {seeker.firstName} {seeker.lastName}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Date and Time */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Service User & Date/Time */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Date *
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Service User *</label>
+          <select
+            required
+            value={formData.serviceSeekerId}
+            onChange={(e) => setFormData({ ...formData, serviceSeekerId: e.target.value })}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          >
+            <option value="">Select Service User</option>
+            {serviceSeekers.map(seeker => (
+              <option key={seeker.id} value={seeker.id}>
+                {seeker.firstName} {seeker.lastName}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
           <input
             type="date"
+            required
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Time *
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
           <input
             type="time"
+            required
             value={formData.time}
             onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Duration */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Duration *
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Duration *</label>
         <input
           type="text"
+          required
           value={formData.duration}
           onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
           placeholder="e.g., 30 minutes, 1 hour"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          required
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
         />
       </div>
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Notes *
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Notes *</label>
         <textarea
+          required
+          rows={4}
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="Enter notes about the one-to-one session..."
-          rows={4}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          required
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
         />
       </div>
 
       {/* Emotion */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Emotion *
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {['HAPPY', 'SAD', 'ANGRY', 'ANXIOUS', 'CALM', 'NEUTRAL'].map(emotion => (
+        <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
+        <div className="flex gap-6">
+          {[
+            { value: 'SAD', emoji: '😢', label: 'Sad' },
+            { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
+            { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+          ].map(emotion => (
             <button
-              key={emotion}
+              key={emotion.value}
               type="button"
-              onClick={() => setFormData({ ...formData, emotion })}
-              className={`px-4 py-2 rounded-lg border-2 transition-colors ${
-                formData.emotion === emotion
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 hover:border-gray-400'
+              onClick={() => setFormData({ ...formData, emotion: emotion.value })}
+              className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
+                formData.emotion === emotion.value
+                  ? 'border-[#224fa6] bg-blue-50'
+                  : 'border-gray-300 bg-white hover:border-[#224fa6]'
               }`}
             >
-              {emotion === 'HAPPY' && '😊 Happy'}
-              {emotion === 'SAD' && '😢 Sad'}
-              {emotion === 'ANGRY' && '😠 Angry'}
-              {emotion === 'ANXIOUS' && '😰 Anxious'}
-              {emotion === 'CALM' && '😌 Calm'}
-              {emotion === 'NEUTRAL' && '😐 Neutral'}
+              <span className="text-4xl mb-2">{emotion.emoji}</span>
+              <span className="text-sm font-medium text-gray-700">{emotion.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end gap-3 pt-4">
+      <div className="flex justify-end pt-4 border-t">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px]"
         >
           {isSubmitting ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
               Saving...
             </>
-          ) : (
-            formData.id ? 'Update Task' : 'Create Task'
-          )}
+          ) : formData.id ? 'Update Task' : 'Save Task'}
         </button>
       </div>
     </form>
   );
 }
-

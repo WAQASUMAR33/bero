@@ -1,3 +1,5 @@
+'use client';
+
 export default function OralCareTaskForm({ 
   formData, 
   setFormData, 
@@ -7,125 +9,91 @@ export default function OralCareTaskForm({
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      {/* Service User */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Service User *
-        </label>
-        <select
-          value={formData.serviceSeekerId}
-          onChange={(e) => setFormData({ ...formData, serviceSeekerId: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          required
-        >
-          <option value="">Select Service User</option>
-          {serviceSeekers.map(seeker => (
-            <option key={seeker.id} value={seeker.id}>
-              {seeker.firstName} {seeker.lastName}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Date and Time */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Service User & Date/Time */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Date *
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Service User *</label>
+          <select
+            required
+            value={formData.serviceSeekerId}
+            onChange={(e) => setFormData({ ...formData, serviceSeekerId: e.target.value })}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          >
+            <option value="">Select Service User</option>
+            {serviceSeekers.map(seeker => (
+              <option key={seeker.id} value={seeker.id}>
+                {seeker.firstName} {seeker.lastName}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
           <input
             type="date"
+            required
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Time
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
           <input
             type="time"
             value={formData.time || ''}
             onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
           />
         </div>
       </div>
 
-      {/* Oral Care Type */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Oral Care Type *
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'BRUSHED_TEETH', label: '🦷 Brushed Teeth' },
-            { value: 'DENTURE_SOAK', label: '💧 Denture Soak' },
-            { value: 'DENTURE_FILLED', label: '🔧 Denture Filled' },
-            { value: 'MOUTH_WASH', label: '🧴 Mouth Wash' }
-          ].map(option => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setFormData({ ...formData, oralCare: option.value })}
-              className={`px-4 py-3 rounded-lg border-2 transition-colors text-left ${
-                formData.oralCare === option.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
+      {/* Oral Care Type & Assisted */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Oral Care Type *</label>
+          <select
+            required
+            value={formData.oralCare}
+            onChange={(e) => setFormData({ ...formData, oralCare: e.target.value })}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          >
+            <option value="BRUSHED_TEETH">Brushed Teeth</option>
+            <option value="DENTURE_SOAK">Denture Soak</option>
+            <option value="DENTURE_FILLED">Denture Filled</option>
+            <option value="MOUTH_WASH">Mouth Wash</option>
+          </select>
         </div>
-      </div>
-
-      {/* Assisted */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Assistance *
-        </label>
-        <div className="flex gap-3">
-          {[
-            { value: 'SELF_ASSISTED', label: '👤 Self Assisted' },
-            { value: 'ASSISTED', label: '🤝 Assisted' }
-          ].map(option => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setFormData({ ...formData, assisted: option.value })}
-              className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors ${
-                formData.assisted === option.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Assisted *</label>
+          <select
+            required
+            value={formData.assisted}
+            onChange={(e) => setFormData({ ...formData, assisted: e.target.value })}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          >
+            <option value="SELF_ASSISTED">Self Assisted</option>
+            <option value="ASSISTED">Assisted</option>
+          </select>
         </div>
       </div>
 
       {/* Compliance */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Compliance *
-        </label>
-        <div className="flex gap-3">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Compliance *</label>
+        <div className="flex flex-wrap gap-3">
           {[
-            { value: 'COMPLETED', label: '✅ Completed' },
-            { value: 'DECLINED', label: '❌ Declined' }
+            { value: 'COMPLETED', label: 'Completed' },
+            { value: 'DECLINED', label: 'Declined' }
           ].map(option => (
             <button
               key={option.value}
               type="button"
               onClick={() => setFormData({ ...formData, compliance: option.value })}
-              className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors ${
+              className={`px-4 py-2 rounded-lg border-2 transition-all ${
                 formData.compliance === option.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 hover:border-gray-400'
+                  ? 'border-[#224fa6] bg-[#224fa6] text-white'
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-[#224fa6]'
               }`}
             >
               {option.label}
@@ -136,27 +104,20 @@ export default function OralCareTaskForm({
 
       {/* Completed Status */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Completed Status *
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'YES', label: '✅ Yes' },
-            { value: 'NO', label: '❌ No' },
-            { value: 'ATTEMPTED', label: '🔄 Attempted' },
-            { value: 'NOT_REQUIRED', label: '⊘ Not Required' }
-          ].map(option => (
+        <label className="block text-sm font-medium text-gray-700 mb-2">Completed *</label>
+        <div className="flex flex-wrap gap-3">
+          {['YES', 'NO', 'ATTEMPTED', 'NOT_REQUIRED'].map(status => (
             <button
-              key={option.value}
+              key={status}
               type="button"
-              onClick={() => setFormData({ ...formData, completed: option.value })}
-              className={`px-4 py-3 rounded-lg border-2 transition-colors ${
-                formData.completed === option.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 hover:border-gray-400'
+              onClick={() => setFormData({ ...formData, completed: status })}
+              className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                formData.completed === status
+                  ? 'border-[#224fa6] bg-[#224fa6] text-white'
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-[#224fa6]'
               }`}
             >
-              {option.label}
+              {status.replace('_', ' ')}
             </button>
           ))}
         </div>
@@ -164,64 +125,60 @@ export default function OralCareTaskForm({
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Notes
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
         <textarea
+          rows={3}
           value={formData.notes || ''}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="Enter any additional notes..."
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
         />
       </div>
 
       {/* Emotion */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Emotion *
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {['HAPPY', 'SAD', 'ANGRY', 'ANXIOUS', 'CALM', 'NEUTRAL'].map(emotion => (
+        <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
+        <div className="flex gap-6">
+          {[
+            { value: 'SAD', emoji: '😢', label: 'Sad' },
+            { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
+            { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+          ].map(emotion => (
             <button
-              key={emotion}
+              key={emotion.value}
               type="button"
-              onClick={() => setFormData({ ...formData, emotion })}
-              className={`px-4 py-2 rounded-lg border-2 transition-colors ${
-                formData.emotion === emotion
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 hover:border-gray-400'
+              onClick={() => setFormData({ ...formData, emotion: emotion.value })}
+              className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
+                formData.emotion === emotion.value
+                  ? 'border-[#224fa6] bg-blue-50'
+                  : 'border-gray-300 bg-white hover:border-[#224fa6]'
               }`}
             >
-              {emotion === 'HAPPY' && '😊 Happy'}
-              {emotion === 'SAD' && '😢 Sad'}
-              {emotion === 'ANGRY' && '😠 Angry'}
-              {emotion === 'ANXIOUS' && '😰 Anxious'}
-              {emotion === 'CALM' && '😌 Calm'}
-              {emotion === 'NEUTRAL' && '😐 Neutral'}
+              <span className="text-4xl mb-2">{emotion.emoji}</span>
+              <span className="text-sm font-medium text-gray-700">{emotion.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end gap-3 pt-4">
+      <div className="flex justify-end pt-4 border-t">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px]"
         >
           {isSubmitting ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
               Saving...
             </>
-          ) : (
-            formData.id ? 'Update Task' : 'Create Task'
-          )}
+          ) : formData.id ? 'Update Task' : 'Save Task'}
         </button>
       </div>
     </form>
   );
 }
-

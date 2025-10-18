@@ -2376,6 +2376,7 @@ export default function DailyTasksPage() {
         'blood_pressure': 'blood-pressure-tasks',
         'comfort_check': 'comfort-check-tasks',
         'communication_notes': 'communication-notes-tasks',
+        'encouragement': 'encouragement-tasks',
         'family_photo_message': 'family-photo-message-tasks',
         'food_drink': 'food-drink-tasks',
         'general_support': 'general-support-tasks',
@@ -2389,6 +2390,13 @@ export default function DailyTasksPage() {
         'oxygen': 'oxygen-tasks',
         'person_centred_task': 'person-centred-tasks',
         'physical_intervention': 'physical-intervention-tasks',
+        'pulse': 'pulse-tasks',
+        're_position': 'reposition-tasks',
+        'spending_money': 'spending-money-tasks',
+        'stool': 'stool-tasks',
+        'temperature': 'temperature-tasks',
+        'visit': 'visit-tasks',
+        'weight': 'weight-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];

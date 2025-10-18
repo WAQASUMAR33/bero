@@ -2029,6 +2029,36 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {showModal && selectedTaskType === 'incident_fall' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      ⚠️
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Incident/Fall</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <IncidentFallTaskForm
+                  formData={incidentFallForm}
+                  setFormData={setIncidentFallForm}
+                  serviceUsers={serviceUsers}
+                  incidentTypes={incidentTypes}
+                  incidentLocations={incidentLocations}
+                  staffUsers={staffUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleIncidentFallSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  onManageIncidentTypes={()=>setShowIncidentTypesModal(true)}
+                  onManageLocations={()=>setShowIncidentLocationsModal(true)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
           {showModal && selectedTaskType === 'follow_up' && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
@@ -2071,6 +2101,7 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'food_drink' ? 'bg-orange-500' :
                       viewData.taskType === 'general_support' ? 'bg-teal-500' :
                       viewData.taskType === 'house_keeping' ? 'bg-gray-500' :
+                      viewData.taskType === 'incident_fall' ? 'bg-red-500' :
                       viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
                       'bg-gray-500'
                     } rounded-xl flex items-center justify-center text-2xl mr-3`}>
@@ -2084,6 +2115,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'food_drink' ? '🍽️' :
                        viewData.taskType === 'general_support' ? '🤝' :
                        viewData.taskType === 'house_keeping' ? '🧹' :
+                       viewData.taskType === 'incident_fall' ? '⚠️' :
                        viewData.taskType === 'follow_up' ? '🔄' :
                        '❓'}
                     </div>
@@ -2098,6 +2130,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'food_drink' ? 'Food/Drink' :
                        viewData.taskType === 'general_support' ? 'General Support' :
                        viewData.taskType === 'house_keeping' ? 'House Keeping' :
+                       viewData.taskType === 'incident_fall' ? 'Incident/Fall' :
                        viewData.taskType === 'follow_up' ? 'Follow Up' :
                        'Task'} Task Details
                     </h2>
@@ -2124,6 +2157,8 @@ export default function DailyTasksPage() {
                   <GeneralSupportTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'house_keeping' ? (
                   <HouseKeepingTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : viewData.taskType === 'incident_fall' ? (
+                  <IncidentFallTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'follow_up' ? (
                   <FollowUpTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : null}
@@ -2279,6 +2314,165 @@ export default function DailyTasksPage() {
                 </div>
                 <div className="flex justify-end mt-6 pt-4 border-t">
                   <button onClick={()=>setShowSupportListModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Manage Incident Types Modal */}
+          {showIncidentTypesModal && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-[60] p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-semibold text-gray-900">Manage Incident Types</h3>
+                  <button onClick={()=>setShowIncidentTypesModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+
+                {/* Add New Incident Type */}
+                <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Add New Incident Type</label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={newIncidentType}
+                      onChange={(e) => setNewIncidentType(e.target.value)}
+                      placeholder="Incident type..."
+                      disabled={isAddingIncidentType}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddIncidentType()}
+                    />
+                    <button
+                      onClick={handleAddIncidentType}
+                      disabled={isAddingIncidentType || !newIncidentType.trim()}
+                      className="px-4 py-2 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+                    >
+                      {isAddingIncidentType ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Adding...
+                        </>
+                      ) : '+ Add'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Incident Types List */}
+                <div className="space-y-3">
+                  {Array.isArray(incidentTypes) && incidentTypes.map(type => (
+                    <div key={type.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{type.type}</p>
+                        {!type.canEdit && (
+                          <p className="text-xs text-gray-500 mt-1">Default (cannot be deleted)</p>
+                        )}
+                      </div>
+                      {type.canEdit && (
+                        <button
+                          onClick={() => handleDeleteIncidentType(type.id)}
+                          disabled={deletingIncidentTypeId === type.id}
+                          className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[40px]"
+                          title="Delete Incident Type"
+                        >
+                          {deletingIncidentTypeId === type.id ? (
+                            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {(!incidentTypes || incidentTypes.length === 0) && (
+                    <p className="text-center text-gray-500 py-8">No incident types available.</p>
+                  )}
+                </div>
+                <div className="flex justify-end mt-6 pt-4 border-t">
+                  <button onClick={()=>setShowIncidentTypesModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Manage Incident Locations Modal */}
+          {showIncidentLocationsModal && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-[60] p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-semibold text-gray-900">Manage Incident Locations</h3>
+                  <button onClick={()=>setShowIncidentLocationsModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+
+                {/* Add New Location */}
+                <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Add New Location</label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={newIncidentLocation}
+                      onChange={(e) => setNewIncidentLocation(e.target.value)}
+                      placeholder="Location name..."
+                      disabled={isAddingIncidentLocation}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddIncidentLocation()}
+                    />
+                    <button
+                      onClick={handleAddIncidentLocation}
+                      disabled={isAddingIncidentLocation || !newIncidentLocation.trim()}
+                      className="px-4 py-2 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+                    >
+                      {isAddingIncidentLocation ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Adding...
+                        </>
+                      ) : '+ Add'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Locations List */}
+                <div className="space-y-3">
+                  {Array.isArray(incidentLocations) && incidentLocations.map(loc => (
+                    <div key={loc.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{loc.name}</p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteIncidentLocation(loc.id)}
+                        disabled={deletingIncidentLocationId === loc.id}
+                        className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[40px]"
+                        title="Delete Location"
+                      >
+                        {deletingIncidentLocationId === loc.id ? (
+                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                  {(!incidentLocations || incidentLocations.length === 0) && (
+                    <p className="text-center text-gray-500 py-8">No locations available. Add one using the form above.</p>
+                  )}
+                </div>
+                <div className="flex justify-end mt-6 pt-4 border-t">
+                  <button onClick={()=>setShowIncidentLocationsModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
                     Close
                   </button>
                 </div>

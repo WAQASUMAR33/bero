@@ -144,6 +144,8 @@ model User {
   updatedStoolTasks              StoolTask[]              @relation("StoolTaskUpdatedBy")
   createdTemperatureTasks        TemperatureTask[]        @relation("TemperatureTaskCreatedBy")
   updatedTemperatureTasks        TemperatureTask[]        @relation("TemperatureTaskUpdatedBy")
+  createdVisitTasks              VisitTask[]              @relation("VisitTaskCreatedBy")
+  updatedVisitTasks              VisitTask[]              @relation("VisitTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -238,6 +240,7 @@ model ServiceSeeker {
   spendingMoneyTasks      SpendingMoneyTask[]
   stoolTasks              StoolTask[]
   temperatureTasks        TemperatureTask[]
+  visitTasks              VisitTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -867,6 +870,41 @@ enum StoolCompletion {
   DECLINED
 }
 
+enum VisitType {
+  FAMILY
+  PROFESSIONAL
+}
+
+enum VisitAnnounced {
+  YES
+  NO
+}
+
+enum ProfessionalRole {
+  ONE_ONE_ONE_VISIT
+  ATTYPD_18_25
+  CHIROPODIST
+  CLINICAL_NAVIGATION
+  CLINICAL_PSYCHOLOGIST
+  DISTRICT_NURSE
+  DOLS
+  ENRICH_TEAM
+  FCPA
+  GP
+  MANAGER
+  OTHER
+  PARAMEDIC
+  PROBATIC_PRACTITIONER
+  SALT
+  SOCIAL_WORKER
+  TEAM_MANAGER
+}
+
+enum VisitCompletion {
+  YES
+  NO
+}
+
 model MedicinePrnTask {
   id                  String              @id @default(cuid())
   serviceSeekerId     String
@@ -1171,6 +1209,30 @@ model TemperatureTask {
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User                @relation("TemperatureTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User                @relation("TemperatureTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model VisitTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  visitType           VisitType
+  announced           VisitAnnounced
+  name                String
+  relationship        String?             // For family visits
+  role                ProfessionalRole?   // For professional visits
+  purpose             String
+  summary             String?
+  completed           VisitCompletion
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("VisitTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("VisitTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

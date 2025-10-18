@@ -675,6 +675,40 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleFoodDrinkSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/food-drink-tasks/${editing.id}` : '/api/food-drink-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(foodDrinkForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchFoodDrinkTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Food/drink task updated successfully.' : 'Food/drink task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save food/drink task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleFollowUpSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -754,6 +788,7 @@ export default function DailyTasksPage() {
         'comfort_check': 'comfort-check-tasks',
         'communication_notes': 'communication-notes-tasks',
         'family_photo_message': 'family-photo-message-tasks',
+        'food_drink': 'food-drink-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[task.taskType];
@@ -821,6 +856,7 @@ export default function DailyTasksPage() {
         'comfort_check': 'comfort-check-tasks',
         'communication_notes': 'communication-notes-tasks',
         'family_photo_message': 'family-photo-message-tasks',
+        'food_drink': 'food-drink-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];
@@ -838,6 +874,7 @@ export default function DailyTasksPage() {
           'comfort_check': fetchComfortCheckTasks,
           'communication_notes': fetchCommunicationNotesTasks,
           'family_photo_message': fetchFamilyPhotoMessageTasks,
+          'food_drink': fetchFoodDrinkTasks,
           'follow_up': fetchFollowUpTasks
         };
         await refreshMap[taskToDelete.taskType]();
@@ -900,6 +937,7 @@ export default function DailyTasksPage() {
   const comfortCheckTasksWithType = (Array.isArray(comfortCheckTasks) ? comfortCheckTasks : []).map(t => ({ ...t, taskType: 'comfort_check' }));
   const communicationNotesTasksWithType = (Array.isArray(communicationNotesTasks) ? communicationNotesTasks : []).map(t => ({ ...t, taskType: 'communication_notes' }));
   const familyPhotoMessageTasksWithType = (Array.isArray(familyPhotoMessageTasks) ? familyPhotoMessageTasks : []).map(t => ({ ...t, taskType: 'family_photo_message' }));
+  const foodDrinkTasksWithType = (Array.isArray(foodDrinkTasks) ? foodDrinkTasks : []).map(t => ({ ...t, taskType: 'food_drink' }));
   const followUpTasksWithType = (Array.isArray(followUpTasks) ? followUpTasks : []).map(t => ({ ...t, taskType: 'follow_up' }));
   
   const allTasks = [
@@ -910,6 +948,7 @@ export default function DailyTasksPage() {
     ...comfortCheckTasksWithType,
     ...communicationNotesTasksWithType,
     ...familyPhotoMessageTasksWithType,
+    ...foodDrinkTasksWithType,
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
@@ -1059,6 +1098,7 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'comfort_check') subInfo = 'Comfort Check';
                       else if (task.taskType === 'communication_notes') subInfo = 'Communication';
                       else if (task.taskType === 'family_photo_message') subInfo = task.description ? task.description.substring(0, 30) + '...' : 'Family Photo';
+                      else if (task.taskType === 'food_drink') subInfo = task.time ? task.time.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Meal';
                       else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
@@ -1436,6 +1476,31 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {showModal && selectedTaskType === 'food_drink' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🍽️
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Food/Drink</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <FoodDrinkTaskForm
+                  formData={foodDrinkForm}
+                  setFormData={setFoodDrinkForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleFoodDrinkSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
           {showModal && selectedTaskType === 'follow_up' && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
@@ -1475,6 +1540,7 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'comfort_check' ? 'bg-green-500' :
                       viewData.taskType === 'communication_notes' ? 'bg-purple-500' :
                       viewData.taskType === 'family_photo_message' ? 'bg-pink-500' :
+                      viewData.taskType === 'food_drink' ? 'bg-orange-500' :
                       viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
                       'bg-gray-500'
                     } rounded-xl flex items-center justify-center text-2xl mr-3`}>
@@ -1485,6 +1551,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'comfort_check' ? '✅' :
                        viewData.taskType === 'communication_notes' ? '📝' :
                        viewData.taskType === 'family_photo_message' ? '📷' :
+                       viewData.taskType === 'food_drink' ? '🍽️' :
                        viewData.taskType === 'follow_up' ? '🔄' :
                        '❓'}
                     </div>
@@ -1496,6 +1563,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'comfort_check' ? 'Comfort Check' :
                        viewData.taskType === 'communication_notes' ? 'Communication Notes' :
                        viewData.taskType === 'family_photo_message' ? 'Family Photo/Message' :
+                       viewData.taskType === 'food_drink' ? 'Food/Drink' :
                        viewData.taskType === 'follow_up' ? 'Follow Up' :
                        'Task'} Task Details
                     </h2>
@@ -1516,6 +1584,8 @@ export default function DailyTasksPage() {
                   <CommunicationNotesTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'family_photo_message' ? (
                   <FamilyPhotoMessageTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : viewData.taskType === 'food_drink' ? (
+                  <FoodDrinkTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'follow_up' ? (
                   <FollowUpTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : null}

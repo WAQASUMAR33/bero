@@ -499,6 +499,70 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchStaffUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setStaffUsers(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setStaffUsers([]);
+    }
+  };
+
+  const fetchIncidentTypes = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/incident-types', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (Array.isArray(data) && data.length === 0) {
+        // Auto-seed if empty
+        await fetch('/api/incident-types/seed', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+        const res2 = await fetch('/api/incident-types', { headers: { Authorization: `Bearer ${token}` } });
+        const data2 = await res2.json();
+        setIncidentTypes(Array.isArray(data2) ? data2 : []);
+      } else {
+        setIncidentTypes(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error(e);
+      setIncidentTypes([]);
+    }
+  };
+
+  const fetchIncidentLocations = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/incident-locations', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (Array.isArray(data) && data.length === 0) {
+        // Auto-seed if empty
+        await fetch('/api/incident-locations/seed', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+        const res2 = await fetch('/api/incident-locations', { headers: { Authorization: `Bearer ${token}` } });
+        const data2 = await res2.json();
+        setIncidentLocations(Array.isArray(data2) ? data2 : []);
+      } else {
+        setIncidentLocations(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error(e);
+      setIncidentLocations([]);
+    }
+  };
+
+  const fetchIncidentFallTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/incident-fall-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setIncidentFallTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setIncidentFallTasks([]);
+    }
+  };
+
   useEffect(() => { 
     if (user) {
       fetchBathingTasks();
@@ -511,10 +575,14 @@ export default function DailyTasksPage() {
       fetchFoodDrinkTasks();
       fetchGeneralSupportTasks();
       fetchHouseKeepingTasks();
+      fetchIncidentFallTasks();
       fetchFollowUpTasks();
       fetchBehaviourTriggers();
       fetchSupportLists();
+      fetchIncidentTypes();
+      fetchIncidentLocations();
       fetchServiceUsers();
+      fetchStaffUsers();
     }
   }, [user]);
 
@@ -897,6 +965,40 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleIncidentFallSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/incident-fall-tasks/${editing.id}` : '/api/incident-fall-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(incidentFallForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchIncidentFallTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Incident/fall task updated successfully.' : 'Incident/fall task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save incident/fall task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleAddSupportList = async () => {
     if (!newSupportList.trim()) {
       setNotification({ show: true, message: 'Support type name is required.', type: 'error' });
@@ -950,6 +1052,118 @@ export default function DailyTasksPage() {
       setNotification({ show: true, message: 'Unexpected error.', type: 'error' });
     } finally {
       setDeletingSupportListId(null);
+    }
+  };
+
+  const handleAddIncidentType = async () => {
+    if (!newIncidentType.trim()) {
+      setNotification({ show: true, message: 'Incident type is required.', type: 'error' });
+      return;
+    }
+    setIsAddingIncidentType(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/incident-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ type: newIncidentType.trim(), canEdit: true }),
+      });
+
+      if (res.ok) {
+        setNewIncidentType('');
+        await fetchIncidentTypes();
+        setNotification({ show: true, message: 'Incident type added successfully.', type: 'success' });
+      } else if (res.status === 409) {
+        setNotification({ show: true, message: 'This incident type already exists.', type: 'error' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to add incident type.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error.', type: 'error' });
+    } finally {
+      setIsAddingIncidentType(false);
+    }
+  };
+
+  const handleDeleteIncidentType = async (id) => {
+    setDeletingIncidentTypeId(id);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/incident-types/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        await fetchIncidentTypes();
+        setNotification({ show: true, message: 'Incident type deleted successfully.', type: 'success' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to delete incident type.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error.', type: 'error' });
+    } finally {
+      setDeletingIncidentTypeId(null);
+    }
+  };
+
+  const handleAddIncidentLocation = async () => {
+    if (!newIncidentLocation.trim()) {
+      setNotification({ show: true, message: 'Location name is required.', type: 'error' });
+      return;
+    }
+    setIsAddingIncidentLocation(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/incident-locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: newIncidentLocation.trim() }),
+      });
+
+      if (res.ok) {
+        setNewIncidentLocation('');
+        await fetchIncidentLocations();
+        setNotification({ show: true, message: 'Location added successfully.', type: 'success' });
+      } else if (res.status === 409) {
+        setNotification({ show: true, message: 'This location already exists.', type: 'error' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to add location.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error.', type: 'error' });
+    } finally {
+      setIsAddingIncidentLocation(false);
+    }
+  };
+
+  const handleDeleteIncidentLocation = async (id) => {
+    setDeletingIncidentLocationId(id);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/incident-locations/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        await fetchIncidentLocations();
+        setNotification({ show: true, message: 'Location deleted successfully.', type: 'success' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to delete location.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error.', type: 'error' });
+    } finally {
+      setDeletingIncidentLocationId(null);
     }
   };
 
@@ -1035,6 +1249,7 @@ export default function DailyTasksPage() {
         'food_drink': 'food-drink-tasks',
         'general_support': 'general-support-tasks',
         'house_keeping': 'house-keeping-tasks',
+        'incident_fall': 'incident-fall-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[task.taskType];
@@ -1105,6 +1320,7 @@ export default function DailyTasksPage() {
         'food_drink': 'food-drink-tasks',
         'general_support': 'general-support-tasks',
         'house_keeping': 'house-keeping-tasks',
+        'incident_fall': 'incident-fall-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];
@@ -1125,6 +1341,7 @@ export default function DailyTasksPage() {
           'food_drink': fetchFoodDrinkTasks,
           'general_support': fetchGeneralSupportTasks,
           'house_keeping': fetchHouseKeepingTasks,
+          'incident_fall': fetchIncidentFallTasks,
           'follow_up': fetchFollowUpTasks
         };
         await refreshMap[taskToDelete.taskType]();
@@ -1190,6 +1407,7 @@ export default function DailyTasksPage() {
   const foodDrinkTasksWithType = (Array.isArray(foodDrinkTasks) ? foodDrinkTasks : []).map(t => ({ ...t, taskType: 'food_drink' }));
   const generalSupportTasksWithType = (Array.isArray(generalSupportTasks) ? generalSupportTasks : []).map(t => ({ ...t, taskType: 'general_support' }));
   const houseKeepingTasksWithType = (Array.isArray(houseKeepingTasks) ? houseKeepingTasks : []).map(t => ({ ...t, taskType: 'house_keeping' }));
+  const incidentFallTasksWithType = (Array.isArray(incidentFallTasks) ? incidentFallTasks : []).map(t => ({ ...t, taskType: 'incident_fall' }));
   const followUpTasksWithType = (Array.isArray(followUpTasks) ? followUpTasks : []).map(t => ({ ...t, taskType: 'follow_up' }));
   
   const allTasks = [
@@ -1203,6 +1421,7 @@ export default function DailyTasksPage() {
     ...foodDrinkTasksWithType,
     ...generalSupportTasksWithType,
     ...houseKeepingTasksWithType,
+    ...incidentFallTasksWithType,
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
@@ -1355,6 +1574,7 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'food_drink') subInfo = task.time ? task.time.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Meal';
                       else if (task.taskType === 'general_support') subInfo = task.supportList?.name || 'Support';
                       else if (task.taskType === 'house_keeping') subInfo = task.task ? (task.task.length > 30 ? task.task.substring(0, 30) + '...' : task.task) : 'Cleaning';
+                      else if (task.taskType === 'incident_fall') subInfo = task.incidentType?.type || 'Incident';
                       else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>

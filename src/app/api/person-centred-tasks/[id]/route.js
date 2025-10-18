@@ -1,27 +1,20 @@
+'use server';
+
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
-// Helper function to verify JWT token
-function verifyToken(request) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-  const token = authHeader.substring(7);
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded;
-  } catch (error) {
-    return null;
-  }
-}
-
 // GET single person centred task
 export async function GET(request, { params }) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+
     const { id } = await params;
 
     const task = await prisma.personCentredTask.findUnique({
@@ -58,10 +51,11 @@ export async function GET(request, { params }) {
 // PUT - Update person centred task
 export async function PUT(request, { params }) {
   try {
-    const user = verifyToken(request);
-    if (!user) {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = await params;
     const body = await request.json();
@@ -87,7 +81,7 @@ export async function PUT(request, { params }) {
         photoUrl: photoUrl || null,
         completed,
         emotion,
-        updatedById: user.userId
+        updatedById: decoded.userId
       },
       include: {
         serviceSeeker: true,
@@ -114,10 +108,11 @@ export async function PUT(request, { params }) {
 // DELETE person centred task
 export async function DELETE(request, { params }) {
   try {
-    const user = verifyToken(request);
-    if (!user) {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = await params;
 
@@ -134,4 +129,3 @@ export async function DELETE(request, { params }) {
     );
   }
 }
-

@@ -106,6 +106,10 @@ model User {
   updatedComfortCheckTasks      ComfortCheckTask[]        @relation("ComfortCheckTaskUpdatedBy")
   createdCommunicationNotesTasks CommunicationNotesTask[] @relation("CommunicationNotesTaskCreatedBy")
   updatedCommunicationNotesTasks CommunicationNotesTask[] @relation("CommunicationNotesTaskUpdatedBy")
+  createdFamilyPhotoMessageTasks FamilyPhotoMessageTask[] @relation("FamilyPhotoMessageTaskCreatedBy")
+  updatedFamilyPhotoMessageTasks FamilyPhotoMessageTask[] @relation("FamilyPhotoMessageTaskUpdatedBy")
+  createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
+  updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
 
 model UserPermission {
@@ -180,6 +184,8 @@ model ServiceSeeker {
   bloodPressureTasks      BloodPressureTask[]
   comfortCheckTasks       ComfortCheckTask[]
   communicationNotesTasks CommunicationNotesTask[]
+  familyPhotoMessageTasks FamilyPhotoMessageTask[]
+  followUpTasks           FollowUpTask[]
 
   // Relations
   createdBy               User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
@@ -459,4 +465,51 @@ model CommunicationNotesTask {
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
   createdBy         User             @relation("CommunicationNotesTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy         User             @relation("CommunicationNotesTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model FamilyPhotoMessageTask {
+  id                  String           @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  description         String?
+  messageFromResidence String?
+  photoUrl            String?
+  emotion             EmotionType
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User             @relation("FamilyPhotoMessageTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User             @relation("FamilyPhotoMessageTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+enum FollowUpStatus {
+  ONGOING
+  COMPLETED
+}
+
+model FollowUpTask {
+  id                String           @id @default(cuid())
+  serviceSeekerId   String
+  date              DateTime
+  time              String
+  followUpDate      DateTime
+  followUpTime      String
+  name              String
+  description       String?
+  status            FollowUpStatus
+  emotion           EmotionType
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  createdById       String
+  updatedById       String
+
+  // Relations
+  serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  createdBy         User             @relation("FollowUpTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy         User             @relation("FollowUpTaskUpdatedBy", fields: [updatedById], references: [id])
 }

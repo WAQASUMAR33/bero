@@ -10,12 +10,16 @@ import BloodTestTaskForm from './components/BloodTestTaskForm';
 import BloodPressureTaskForm from './components/BloodPressureTaskForm';
 import ComfortCheckTaskForm from './components/ComfortCheckTaskForm';
 import CommunicationNotesTaskForm from './components/CommunicationNotesTaskForm';
+import FamilyPhotoMessageTaskForm from './components/FamilyPhotoMessageTaskForm';
+import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
 import BloodTestTaskView from './components/BloodTestTaskView';
 import BloodPressureTaskView from './components/BloodPressureTaskView';
 import ComfortCheckTaskView from './components/ComfortCheckTaskView';
 import CommunicationNotesTaskView from './components/CommunicationNotesTaskView';
+import FamilyPhotoMessageTaskView from './components/FamilyPhotoMessageTaskView';
+import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
   { id: 'bathing', name: 'Bathing', icon: '🛁', color: 'blue' },
@@ -63,7 +67,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -74,6 +78,8 @@ export default function DailyTasksPage() {
   const [bloodPressureTasks, setBloodPressureTasks] = useState([]);
   const [comfortCheckTasks, setComfortCheckTasks] = useState([]);
   const [communicationNotesTasks, setCommunicationNotesTasks] = useState([]);
+  const [familyPhotoMessageTasks, setFamilyPhotoMessageTasks] = useState([]);
+  const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [newTrigger, setNewTrigger] = useState({ name: '', define: '' });
@@ -173,6 +179,28 @@ export default function DailyTasksPage() {
     serviceSeekerId: '',
     date: new Date().toISOString().split('T')[0],
     notes: '',
+    emotion: 'NEUTRAL',
+  });
+
+  const [familyPhotoMessageForm, setFamilyPhotoMessageForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    description: '',
+    messageFromResidence: '',
+    photoUrl: '',
+    emotion: 'NEUTRAL',
+  });
+
+  const [followUpForm, setFollowUpForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    followUpDate: new Date().toISOString().split('T')[0],
+    followUpTime: new Date().toTimeString().slice(0, 5),
+    name: '',
+    description: '',
+    status: 'ONGOING',
     emotion: 'NEUTRAL',
   });
 
@@ -288,6 +316,30 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchFamilyPhotoMessageTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/family-photo-message-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setFamilyPhotoMessageTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setFamilyPhotoMessageTasks([]);
+    }
+  };
+
+  const fetchFollowUpTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/follow-up-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setFollowUpTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setFollowUpTasks([]);
+    }
+  };
+
   const fetchServiceUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -308,6 +360,8 @@ export default function DailyTasksPage() {
       fetchBloodPressureTasks();
       fetchComfortCheckTasks();
       fetchCommunicationNotesTasks();
+      fetchFamilyPhotoMessageTasks();
+      fetchFollowUpTasks();
       fetchBehaviourTriggers();
       fetchServiceUsers();
     }

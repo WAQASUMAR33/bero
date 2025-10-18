@@ -1,85 +1,73 @@
 'use client';
 
-export default function GeneralSupportTaskForm({ formData, setFormData, serviceUsers, supportLists, isSubmitting, onSubmit, onCancel, editing, onManageSupportLists }) {
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit();
-  };
-
+export default function GeneralSupportTaskForm({ 
+  formData, 
+  setFormData, 
+  serviceUsers, 
+  supportLists, 
+  isSubmitting, 
+  onSubmit, 
+  onCancel, 
+  onManageSupportLists,
+  editing 
+}) {
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Service User */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Service User *</label>
-        <select
-          name="serviceSeekerId"
-          value={formData.serviceSeekerId}
-          onChange={handleChange}
-          required
-          disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-        >
-          <option value="">Select Service User</option>
-          {serviceUsers.map(user => (
-            <option key={user.id} value={user.id}>
-              {user.firstName} {user.lastName}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Date and Time */}
-      <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={onSubmit} className="space-y-6">
+      {/* Service User & Date/Time */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            disabled={isSubmitting}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          <label className="block text-sm font-medium text-gray-700 mb-2">Service User *</label>
+          <select 
+            required 
+            value={formData.serviceSeekerId} 
+            onChange={(e)=>setFormData({...formData, serviceSeekerId:e.target.value})}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          >
+            <option value="">Select Service User</option>
+            {serviceUsers.map(su => (
+              <option key={su.id} value={su.id}>{su.firstName} {su.lastName}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+          <input 
+            type="date" 
+            required 
+            value={formData.date} 
+            onChange={(e)=>setFormData({...formData, date:e.target.value})}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Time *</label>
-          <input
-            type="time"
-            name="time"
-            value={formData.time}
-            onChange={handleChange}
-            required
-            disabled={isSubmitting}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
+          <input 
+            type="time" 
+            required 
+            value={formData.time} 
+            onChange={(e)=>setFormData({...formData, time:e.target.value})}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
           />
         </div>
       </div>
 
-      {/* Support List */}
+      {/* Support Type */}
       <div>
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-2">
           <label className="block text-sm font-medium text-gray-700">Support Type *</label>
           <button
             type="button"
             onClick={onManageSupportLists}
-            className="text-xs text-[#224fa6] hover:underline"
+            className="text-xs text-[#224fa6] hover:underline font-medium"
           >
             Manage Support Types
           </button>
         </div>
-        <select
-          name="supportListId"
-          value={formData.supportListId}
-          onChange={handleChange}
-          required
-          disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+        <select 
+          required 
+          value={formData.supportListId} 
+          onChange={(e)=>setFormData({...formData, supportListId:e.target.value})}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
         >
           <option value="">Select Support Type</option>
           {(Array.isArray(supportLists) ? supportLists : []).map(item => (
@@ -90,63 +78,58 @@ export default function GeneralSupportTaskForm({ formData, setFormData, serviceU
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-        <textarea
-          name="notes"
-          value={formData.notes}
-          onChange={handleChange}
+        <label className="block text-sm font-medium text-gray-700 mb-2">Support Notes</label>
+        <textarea 
           rows={4}
-          disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          value={formData.notes} 
+          onChange={(e)=>setFormData({...formData, notes:e.target.value})}
           placeholder="Enter support details..."
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
         />
       </div>
 
       {/* Emotion */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Emotion *</label>
-        <select
-          name="emotion"
-          value={formData.emotion}
-          onChange={handleChange}
-          required
-          disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-        >
-          <option value="NEUTRAL">😐 Neutral</option>
-          <option value="HAPPY">😊 Happy</option>
-          <option value="SAD">😢 Sad</option>
-          <option value="ANXIOUS">😰 Anxious</option>
-          <option value="CALM">😌 Calm</option>
-          <option value="FRUSTRATED">😤 Frustrated</option>
-          <option value="CONFUSED">😕 Confused</option>
-          <option value="EXCITED">🤩 Excited</option>
-          <option value="TIRED">😴 Tired</option>
-        </select>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
+        <div className="flex gap-6">
+          {[
+            { value: 'SAD', emoji: '😢', label: 'Sad' },
+            { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
+            { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+          ].map(emotion => (
+            <button
+              key={emotion.value}
+              type="button"
+              onClick={()=>setFormData({...formData, emotion:emotion.value})}
+              className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
+                formData.emotion === emotion.value 
+                  ? 'border-[#224fa6] bg-blue-50' 
+                  : 'border-gray-300 bg-white hover:border-[#224fa6]'
+              }`}
+            >
+              <span className="text-4xl mb-2">{emotion.emoji}</span>
+              <span className="text-sm font-medium text-gray-700">{emotion.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex justify-end space-x-3 pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
+      <div className="flex justify-end space-x-3 pt-4 border-t">
+        <button type="button" onClick={onCancel} className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
           Cancel
         </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 flex items-center"
-        >
-          {isSubmitting && (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-          )}
-          {isSubmitting ? 'Saving...' : editing ? 'Update Task' : 'Create Task'}
+        <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px]">
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            </>
+          ) : editing ? 'Update Task' : 'Save Task'}
         </button>
       </div>
     </form>
   );
 }
-

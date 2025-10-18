@@ -12,6 +12,7 @@ import ComfortCheckTaskForm from './components/ComfortCheckTaskForm';
 import CommunicationNotesTaskForm from './components/CommunicationNotesTaskForm';
 import FamilyPhotoMessageTaskForm from './components/FamilyPhotoMessageTaskForm';
 import FoodDrinkTaskForm from './components/FoodDrinkTaskForm';
+import GeneralSupportTaskForm from './components/GeneralSupportTaskForm';
 import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
@@ -21,6 +22,7 @@ import ComfortCheckTaskView from './components/ComfortCheckTaskView';
 import CommunicationNotesTaskView from './components/CommunicationNotesTaskView';
 import FamilyPhotoMessageTaskView from './components/FamilyPhotoMessageTaskView';
 import FoodDrinkTaskView from './components/FoodDrinkTaskView';
+import GeneralSupportTaskView from './components/GeneralSupportTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
@@ -69,7 +71,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'follow_up'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -82,11 +84,17 @@ export default function DailyTasksPage() {
   const [communicationNotesTasks, setCommunicationNotesTasks] = useState([]);
   const [familyPhotoMessageTasks, setFamilyPhotoMessageTasks] = useState([]);
   const [foodDrinkTasks, setFoodDrinkTasks] = useState([]);
+  const [generalSupportTasks, setGeneralSupportTasks] = useState([]);
   const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
+  const [supportLists, setSupportLists] = useState([]);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [newTrigger, setNewTrigger] = useState({ name: '', define: '' });
   const [isAddingTrigger, setIsAddingTrigger] = useState(false);
+  const [showSupportListModal, setShowSupportListModal] = useState(false);
+  const [newSupportList, setNewSupportList] = useState('');
+  const [isAddingSupportList, setIsAddingSupportList] = useState(false);
+  const [deletingSupportListId, setDeletingSupportListId] = useState(null);
   const [serviceUsers, setServiceUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState('');
@@ -207,6 +215,15 @@ export default function DailyTasksPage() {
     foodDrinkOffered: 'YES',
     pictureUrl: '',
     completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
+  const [generalSupportForm, setGeneralSupportForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    notes: '',
+    supportListId: '',
     emotion: 'NEUTRAL',
   });
 
@@ -358,6 +375,38 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchGeneralSupportTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/general-support-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setGeneralSupportTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setGeneralSupportTasks([]);
+    }
+  };
+
+  const fetchSupportLists = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/support-lists', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (Array.isArray(data) && data.length === 0) {
+        // Auto-seed if empty
+        await fetch('/api/support-lists/seed', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+        const res2 = await fetch('/api/support-lists', { headers: { Authorization: `Bearer ${token}` } });
+        const data2 = await res2.json();
+        setSupportLists(Array.isArray(data2) ? data2 : []);
+      } else {
+        setSupportLists(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error(e);
+      setSupportLists([]);
+    }
+  };
+
   const fetchFollowUpTasks = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -392,8 +441,10 @@ export default function DailyTasksPage() {
       fetchCommunicationNotesTasks();
       fetchFamilyPhotoMessageTasks();
       fetchFoodDrinkTasks();
+      fetchGeneralSupportTasks();
       fetchFollowUpTasks();
       fetchBehaviourTriggers();
+      fetchSupportLists();
       fetchServiceUsers();
     }
   }, [user]);
@@ -709,6 +760,96 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleGeneralSupportSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/general-support-tasks/${editing.id}` : '/api/general-support-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(generalSupportForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchGeneralSupportTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'General support task updated successfully.' : 'General support task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save general support task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddSupportList = async () => {
+    if (!newSupportList.trim()) {
+      setNotification({ show: true, message: 'Support type name is required.', type: 'error' });
+      return;
+    }
+    setIsAddingSupportList(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/support-lists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: newSupportList.trim() }),
+      });
+
+      if (res.ok) {
+        setNewSupportList('');
+        await fetchSupportLists();
+        setNotification({ show: true, message: 'Support type added successfully.', type: 'success' });
+      } else if (res.status === 409) {
+        setNotification({ show: true, message: 'This support type already exists.', type: 'error' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to add support type.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error.', type: 'error' });
+    } finally {
+      setIsAddingSupportList(false);
+    }
+  };
+
+  const handleDeleteSupportList = async (id) => {
+    setDeletingSupportListId(id);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/support-lists/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        await fetchSupportLists();
+        setNotification({ show: true, message: 'Support type deleted successfully.', type: 'success' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to delete support type.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error.', type: 'error' });
+    } finally {
+      setDeletingSupportListId(null);
+    }
+  };
+
   const handleFollowUpSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -789,6 +930,7 @@ export default function DailyTasksPage() {
         'communication_notes': 'communication-notes-tasks',
         'family_photo_message': 'family-photo-message-tasks',
         'food_drink': 'food-drink-tasks',
+        'general_support': 'general-support-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[task.taskType];
@@ -857,6 +999,7 @@ export default function DailyTasksPage() {
         'communication_notes': 'communication-notes-tasks',
         'family_photo_message': 'family-photo-message-tasks',
         'food_drink': 'food-drink-tasks',
+        'general_support': 'general-support-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];
@@ -875,6 +1018,7 @@ export default function DailyTasksPage() {
           'communication_notes': fetchCommunicationNotesTasks,
           'family_photo_message': fetchFamilyPhotoMessageTasks,
           'food_drink': fetchFoodDrinkTasks,
+          'general_support': fetchGeneralSupportTasks,
           'follow_up': fetchFollowUpTasks
         };
         await refreshMap[taskToDelete.taskType]();
@@ -938,6 +1082,7 @@ export default function DailyTasksPage() {
   const communicationNotesTasksWithType = (Array.isArray(communicationNotesTasks) ? communicationNotesTasks : []).map(t => ({ ...t, taskType: 'communication_notes' }));
   const familyPhotoMessageTasksWithType = (Array.isArray(familyPhotoMessageTasks) ? familyPhotoMessageTasks : []).map(t => ({ ...t, taskType: 'family_photo_message' }));
   const foodDrinkTasksWithType = (Array.isArray(foodDrinkTasks) ? foodDrinkTasks : []).map(t => ({ ...t, taskType: 'food_drink' }));
+  const generalSupportTasksWithType = (Array.isArray(generalSupportTasks) ? generalSupportTasks : []).map(t => ({ ...t, taskType: 'general_support' }));
   const followUpTasksWithType = (Array.isArray(followUpTasks) ? followUpTasks : []).map(t => ({ ...t, taskType: 'follow_up' }));
   
   const allTasks = [
@@ -949,6 +1094,7 @@ export default function DailyTasksPage() {
     ...communicationNotesTasksWithType,
     ...familyPhotoMessageTasksWithType,
     ...foodDrinkTasksWithType,
+    ...generalSupportTasksWithType,
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
@@ -1099,6 +1245,7 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'communication_notes') subInfo = 'Communication';
                       else if (task.taskType === 'family_photo_message') subInfo = task.description ? task.description.substring(0, 30) + '...' : 'Family Photo';
                       else if (task.taskType === 'food_drink') subInfo = task.time ? task.time.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Meal';
+                      else if (task.taskType === 'general_support') subInfo = task.supportList?.name || 'Support';
                       else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
@@ -1501,6 +1648,33 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {showModal && selectedTaskType === 'general_support' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-teal-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🤝
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">General Support</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <GeneralSupportTaskForm
+                  formData={generalSupportForm}
+                  setFormData={setGeneralSupportForm}
+                  serviceUsers={serviceUsers}
+                  supportLists={supportLists}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleGeneralSupportSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  onManageSupportLists={()=>setShowSupportListModal(true)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
           {showModal && selectedTaskType === 'follow_up' && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
@@ -1541,6 +1715,7 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'communication_notes' ? 'bg-purple-500' :
                       viewData.taskType === 'family_photo_message' ? 'bg-pink-500' :
                       viewData.taskType === 'food_drink' ? 'bg-orange-500' :
+                      viewData.taskType === 'general_support' ? 'bg-teal-500' :
                       viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
                       'bg-gray-500'
                     } rounded-xl flex items-center justify-center text-2xl mr-3`}>
@@ -1552,6 +1727,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'communication_notes' ? '📝' :
                        viewData.taskType === 'family_photo_message' ? '📷' :
                        viewData.taskType === 'food_drink' ? '🍽️' :
+                       viewData.taskType === 'general_support' ? '🤝' :
                        viewData.taskType === 'follow_up' ? '🔄' :
                        '❓'}
                     </div>
@@ -1564,6 +1740,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'communication_notes' ? 'Communication Notes' :
                        viewData.taskType === 'family_photo_message' ? 'Family Photo/Message' :
                        viewData.taskType === 'food_drink' ? 'Food/Drink' :
+                       viewData.taskType === 'general_support' ? 'General Support' :
                        viewData.taskType === 'follow_up' ? 'Follow Up' :
                        'Task'} Task Details
                     </h2>
@@ -1586,6 +1763,8 @@ export default function DailyTasksPage() {
                   <FamilyPhotoMessageTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'food_drink' ? (
                   <FoodDrinkTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : viewData.taskType === 'general_support' ? (
+                  <GeneralSupportTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'follow_up' ? (
                   <FollowUpTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : null}
@@ -1664,6 +1843,83 @@ export default function DailyTasksPage() {
                 </div>
                 <div className="flex justify-end mt-6 pt-4 border-t">
                   <button onClick={()=>setShowManageTriggersModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Manage Support Types Modal */}
+          {showSupportListModal && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-[60] p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-semibold text-gray-900">Manage Support Types</h3>
+                  <button onClick={()=>setShowSupportListModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+
+                {/* Add New Support Type */}
+                <div className="mb-6 p-4 bg-gradient-to-r from-teal-50 to-teal-100 rounded-xl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Add New Support Type</label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={newSupportList}
+                      onChange={(e) => setNewSupportList(e.target.value)}
+                      placeholder="Support type name..."
+                      disabled={isAddingSupportList}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddSupportList()}
+                    />
+                    <button
+                      onClick={handleAddSupportList}
+                      disabled={isAddingSupportList || !newSupportList.trim()}
+                      className="px-4 py-2 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+                    >
+                      {isAddingSupportList ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Adding...
+                        </>
+                      ) : '+ Add'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Support List Items */}
+                <div className="space-y-3">
+                  {Array.isArray(supportLists) && supportLists.map(item => (
+                    <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{item.name}</p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteSupportList(item.id)}
+                        disabled={deletingSupportListId === item.id}
+                        className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[40px]"
+                        title="Delete Support Type"
+                      >
+                        {deletingSupportListId === item.id ? (
+                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                  {(!supportLists || supportLists.length === 0) && (
+                    <p className="text-center text-gray-500 py-8">No support types available. Add one using the form above.</p>
+                  )}
+                </div>
+                <div className="flex justify-end mt-6 pt-4 border-t">
+                  <button onClick={()=>setShowSupportListModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
                     Close
                   </button>
                 </div>

@@ -110,6 +110,8 @@ model User {
   updatedFamilyPhotoMessageTasks FamilyPhotoMessageTask[] @relation("FamilyPhotoMessageTaskUpdatedBy")
   createdFoodDrinkTasks          FoodDrinkTask[]          @relation("FoodDrinkTaskCreatedBy")
   updatedFoodDrinkTasks          FoodDrinkTask[]          @relation("FoodDrinkTaskUpdatedBy")
+  createdGeneralSupportTasks     GeneralSupportTask[]     @relation("GeneralSupportTaskCreatedBy")
+  updatedGeneralSupportTasks     GeneralSupportTask[]     @relation("GeneralSupportTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -188,6 +190,7 @@ model ServiceSeeker {
   communicationNotesTasks CommunicationNotesTask[]
   familyPhotoMessageTasks FamilyPhotoMessageTask[]
   foodDrinkTasks          FoodDrinkTask[]
+  generalSupportTasks     GeneralSupportTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -550,6 +553,36 @@ model FoodDrinkTask {
   serviceSeeker       ServiceSeeker     @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User              @relation("FoodDrinkTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User              @relation("FoodDrinkTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model SupportList {
+  id                String              @id @default(cuid())
+  name              String              @unique
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  generalSupportTasks GeneralSupportTask[]
+}
+
+model GeneralSupportTask {
+  id                String           @id @default(cuid())
+  serviceSeekerId   String
+  date              DateTime
+  time              String
+  notes             String?
+  supportListId     String
+  emotion           EmotionType
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  createdById       String
+  updatedById       String
+
+  // Relations
+  serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  supportList       SupportList      @relation(fields: [supportListId], references: [id])
+  createdBy         User             @relation("GeneralSupportTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy         User             @relation("GeneralSupportTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

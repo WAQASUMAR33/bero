@@ -30,6 +30,7 @@ import StoolTaskForm from './components/StoolTaskForm';
 import TemperatureTaskForm from './components/TemperatureTaskForm';
 import VisitTaskForm from './components/VisitTaskForm';
 import WeightTaskForm from './components/WeightTaskForm';
+import EncouragementTaskForm from './components/EncouragementTaskForm';
 import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
@@ -57,6 +58,7 @@ import StoolTaskView from './components/StoolTaskView';
 import TemperatureTaskView from './components/TemperatureTaskView';
 import VisitTaskView from './components/VisitTaskView';
 import WeightTaskView from './components/WeightTaskView';
+import EncouragementTaskView from './components/EncouragementTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
@@ -105,7 +107,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'medicine_prn', 'muac', 'observation', 'one_to_one', 'oral_care', 'oxygen', 'person_centred_task', 'physical_intervention', 'pulse', 're_position', 'spending_money', 'stool', 'temperature', 'visit', 'weight', 'follow_up'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'encouragement', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'medicine_prn', 'muac', 'observation', 'one_to_one', 'oral_care', 'oxygen', 'person_centred_task', 'physical_intervention', 'pulse', 're_position', 'spending_money', 'stool', 'temperature', 'visit', 'weight', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -136,6 +138,7 @@ export default function DailyTasksPage() {
   const [temperatureTasks, setTemperatureTasks] = useState([]);
   const [visitTasks, setVisitTasks] = useState([]);
   const [weightTasks, setWeightTasks] = useState([]);
+  const [encouragementTasks, setEncouragementTasks] = useState([]);
   const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [supportLists, setSupportLists] = useState([]);
@@ -533,6 +536,16 @@ export default function DailyTasksPage() {
     emotion: 'NEUTRAL',
   });
 
+  const [encouragementForm, setEncouragementForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    encouragement: '',
+    note: '',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -917,6 +930,18 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchEncouragementTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/encouragement-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setEncouragementTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setEncouragementTasks([]);
+    }
+  };
+
   const fetchServiceUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -1022,6 +1047,7 @@ export default function DailyTasksPage() {
       fetchTemperatureTasks();
       fetchVisitTasks();
       fetchWeightTasks();
+      fetchEncouragementTasks();
       fetchBehaviourTriggers();
       fetchSupportLists();
       fetchPersonCentredTaskNames();
@@ -2185,6 +2211,40 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleEncouragementSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/encouragement-tasks/${editing.id}` : '/api/encouragement-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(encouragementForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchEncouragementTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Encouragement task updated successfully.' : 'Encouragement task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save encouragement task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleAddTrigger = async () => {
     if (!newTrigger.name.trim()) {
       setNotification({ show: true, message: 'Trigger name is required.', type: 'error' });
@@ -2229,6 +2289,7 @@ export default function DailyTasksPage() {
         'blood_pressure': 'blood-pressure-tasks',
         'comfort_check': 'comfort-check-tasks',
         'communication_notes': 'communication-notes-tasks',
+        'encouragement': 'encouragement-tasks',
         'family_photo_message': 'family-photo-message-tasks',
         'food_drink': 'food-drink-tasks',
         'general_support': 'general-support-tasks',
@@ -2344,6 +2405,7 @@ export default function DailyTasksPage() {
           'blood_pressure': fetchBloodPressureTasks,
           'comfort_check': fetchComfortCheckTasks,
           'communication_notes': fetchCommunicationNotesTasks,
+          'encouragement': fetchEncouragementTasks,
           'family_photo_message': fetchFamilyPhotoMessageTasks,
           'food_drink': fetchFoodDrinkTasks,
           'general_support': fetchGeneralSupportTasks,
@@ -2446,6 +2508,7 @@ export default function DailyTasksPage() {
   const temperatureTasksWithType = (Array.isArray(temperatureTasks) ? temperatureTasks : []).map(t => ({ ...t, taskType: 'temperature' }));
   const visitTasksWithType = (Array.isArray(visitTasks) ? visitTasks : []).map(t => ({ ...t, taskType: 'visit' }));
   const weightTasksWithType = (Array.isArray(weightTasks) ? weightTasks : []).map(t => ({ ...t, taskType: 'weight' }));
+  const encouragementTasksWithType = (Array.isArray(encouragementTasks) ? encouragementTasks : []).map(t => ({ ...t, taskType: 'encouragement' }));
 
   const allTasks = [
     ...bathingTasksWithType, 
@@ -2454,6 +2517,7 @@ export default function DailyTasksPage() {
     ...bloodPressureTasksWithType,
     ...comfortCheckTasksWithType,
     ...communicationNotesTasksWithType,
+    ...encouragementTasksWithType,
     ...familyPhotoMessageTasksWithType,
     ...foodDrinkTasksWithType,
     ...generalSupportTasksWithType,
@@ -2622,6 +2686,7 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'blood_pressure') subInfo = `${task.systolicPressure}/${task.diastolicPressure} mmHg`;
                       else if (task.taskType === 'comfort_check') subInfo = 'Comfort Check';
                       else if (task.taskType === 'communication_notes') subInfo = 'Communication';
+                      else if (task.taskType === 'encouragement') subInfo = task.encouragement?.substring(0, 40) + '...';
                       else if (task.taskType === 'family_photo_message') subInfo = task.description ? task.description.substring(0, 30) + '...' : 'Family Photo';
                       else if (task.taskType === 'food_drink') subInfo = task.time ? task.time.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Meal';
                       else if (task.taskType === 'general_support') subInfo = task.supportList?.name || 'Support';
@@ -2931,6 +2996,29 @@ export default function DailyTasksPage() {
                   onSubmit={handleCommunicationNotesSubmit}
                   onCancel={()=>setShowModal(false)}
                   editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
+          {showModal && selectedTaskType === 'encouragement' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      💪
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Encouragement</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <EncouragementTaskForm
+                  formData={encouragementForm}
+                  setFormData={setEncouragementForm}
+                  serviceSeekers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleEncouragementSubmit}
                 />
               </div>
             </div>
@@ -3514,6 +3602,7 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'blood_pressure' ? 'bg-red-500' :
                       viewData.taskType === 'comfort_check' ? 'bg-green-500' :
                       viewData.taskType === 'communication_notes' ? 'bg-blue-500' :
+                      viewData.taskType === 'encouragement' ? 'bg-yellow-500' :
                       viewData.taskType === 'family_photo_message' ? 'bg-pink-500' :
                       viewData.taskType === 'food_drink' ? 'bg-orange-500' :
                       viewData.taskType === 'general_support' ? 'bg-teal-500' :
@@ -3543,6 +3632,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'blood_pressure' ? '🩺' :
                        viewData.taskType === 'comfort_check' ? '🛏️' :
                        viewData.taskType === 'communication_notes' ? '📝' :
+                       viewData.taskType === 'encouragement' ? '💪' :
                        viewData.taskType === 'family_photo_message' ? '📷' :
                        viewData.taskType === 'food_drink' ? '🍽️' :
                        viewData.taskType === 'general_support' ? '🤝' :
@@ -3573,6 +3663,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'blood_pressure' ? 'Blood Pressure' :
                        viewData.taskType === 'comfort_check' ? 'Comfort Check' :
                        viewData.taskType === 'communication_notes' ? 'Communication Notes' :
+                       viewData.taskType === 'encouragement' ? 'Encouragement' :
                        viewData.taskType === 'family_photo_message' ? 'Family Photo/Message' :
                        viewData.taskType === 'food_drink' ? 'Food/Drink' :
                        viewData.taskType === 'general_support' ? 'General Support' :
@@ -3611,6 +3702,8 @@ export default function DailyTasksPage() {
                   <ComfortCheckTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'communication_notes' ? (
                   <CommunicationNotesTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : viewData.taskType === 'encouragement' ? (
+                  <EncouragementTaskView task={viewData} />
                 ) : viewData.taskType === 'family_photo_message' ? (
                   <FamilyPhotoMessageTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'food_drink' ? (

@@ -2081,6 +2081,13 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'general_support') subInfo = task.supportList?.name || 'Support';
                       else if (task.taskType === 'house_keeping') subInfo = task.task ? (task.task.length > 30 ? task.task.substring(0, 30) + '...' : task.task) : 'Cleaning';
                       else if (task.taskType === 'incident_fall') subInfo = task.incidentType?.type || 'Incident';
+                      else if (task.taskType === 'medicine_prn') subInfo = task.medicineName || 'Medicine';
+                      else if (task.taskType === 'muac') subInfo = `${task.muacInCm} cm`;
+                      else if (task.taskType === 'observation') subInfo = 'Observation';
+                      else if (task.taskType === 'one_to_one') subInfo = task.duration || 'Session';
+                      else if (task.taskType === 'oral_care') subInfo = task.oralCare?.replace(/_/g, ' ');
+                      else if (task.taskType === 'oxygen') subInfo = task.quantity || 'Oxygen';
+                      else if (task.taskType === 'person_centred_task') subInfo = task.taskName?.name || 'Person Centred';
                       else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
@@ -2766,14 +2773,21 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'bathing' ? 'bg-blue-500' : 
                       viewData.taskType === 'behaviour' ? 'bg-purple-500' :
                       viewData.taskType === 'bloodtest' ? 'bg-red-500' :
-                      viewData.taskType === 'blood_pressure' ? 'bg-blue-500' :
+                      viewData.taskType === 'blood_pressure' ? 'bg-red-500' :
                       viewData.taskType === 'comfort_check' ? 'bg-green-500' :
-                      viewData.taskType === 'communication_notes' ? 'bg-purple-500' :
+                      viewData.taskType === 'communication_notes' ? 'bg-blue-500' :
                       viewData.taskType === 'family_photo_message' ? 'bg-pink-500' :
                       viewData.taskType === 'food_drink' ? 'bg-orange-500' :
                       viewData.taskType === 'general_support' ? 'bg-teal-500' :
                       viewData.taskType === 'house_keeping' ? 'bg-gray-500' :
                       viewData.taskType === 'incident_fall' ? 'bg-red-500' :
+                      viewData.taskType === 'medicine_prn' ? 'bg-red-500' :
+                      viewData.taskType === 'muac' ? 'bg-blue-500' :
+                      viewData.taskType === 'observation' ? 'bg-purple-500' :
+                      viewData.taskType === 'one_to_one' ? 'bg-green-500' :
+                      viewData.taskType === 'oral_care' ? 'bg-cyan-500' :
+                      viewData.taskType === 'oxygen' ? 'bg-blue-500' :
+                      viewData.taskType === 'person_centred_task' ? 'bg-pink-500' :
                       viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
                       'bg-gray-500'
                     } rounded-xl flex items-center justify-center text-2xl mr-3`}>
@@ -2781,13 +2795,20 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'behaviour' ? '👤' :
                        viewData.taskType === 'bloodtest' ? '💉' :
                        viewData.taskType === 'blood_pressure' ? '🩺' :
-                       viewData.taskType === 'comfort_check' ? '✅' :
+                       viewData.taskType === 'comfort_check' ? '🛏️' :
                        viewData.taskType === 'communication_notes' ? '📝' :
                        viewData.taskType === 'family_photo_message' ? '📷' :
                        viewData.taskType === 'food_drink' ? '🍽️' :
                        viewData.taskType === 'general_support' ? '🤝' :
                        viewData.taskType === 'house_keeping' ? '🧹' :
                        viewData.taskType === 'incident_fall' ? '⚠️' :
+                       viewData.taskType === 'medicine_prn' ? '💊' :
+                       viewData.taskType === 'muac' ? '📏' :
+                       viewData.taskType === 'observation' ? '👁️' :
+                       viewData.taskType === 'one_to_one' ? '👥' :
+                       viewData.taskType === 'oral_care' ? '🦷' :
+                       viewData.taskType === 'oxygen' ? '💨' :
+                       viewData.taskType === 'person_centred_task' ? '❤️' :
                        viewData.taskType === 'follow_up' ? '🔄' :
                        '❓'}
                     </div>
@@ -2803,6 +2824,13 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'general_support' ? 'General Support' :
                        viewData.taskType === 'house_keeping' ? 'House Keeping' :
                        viewData.taskType === 'incident_fall' ? 'Incident/Fall' :
+                       viewData.taskType === 'medicine_prn' ? 'Medicine PRN' :
+                       viewData.taskType === 'muac' ? 'MUAC' :
+                       viewData.taskType === 'observation' ? 'Observation' :
+                       viewData.taskType === 'one_to_one' ? 'One to One' :
+                       viewData.taskType === 'oral_care' ? 'Oral Care' :
+                       viewData.taskType === 'oxygen' ? 'Oxygen' :
+                       viewData.taskType === 'person_centred_task' ? 'Person Centred Task' :
                        viewData.taskType === 'follow_up' ? 'Follow Up' :
                        'Task'} Task Details
                     </h2>

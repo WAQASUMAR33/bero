@@ -610,6 +610,74 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleFamilyPhotoMessageSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/family-photo-message-tasks/${editing.id}` : '/api/family-photo-message-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(familyPhotoMessageForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchFamilyPhotoMessageTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Family photo/message updated successfully.' : 'Family photo/message added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save family photo/message.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFollowUpSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/follow-up-tasks/${editing.id}` : '/api/follow-up-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(followUpForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchFollowUpTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Follow up updated successfully.' : 'Follow up added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save follow up.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleAddTrigger = async () => {
     if (!newTrigger.name.trim()) {
       setNotification({ show: true, message: 'Trigger name is required.', type: 'error' });
@@ -653,7 +721,9 @@ export default function DailyTasksPage() {
         'bloodtest': 'blood-test-tasks',
         'blood_pressure': 'blood-pressure-tasks',
         'comfort_check': 'comfort-check-tasks',
-        'communication_notes': 'communication-notes-tasks'
+        'communication_notes': 'communication-notes-tasks',
+        'family_photo_message': 'family-photo-message-tasks',
+        'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[task.taskType];
       const res = await fetch(`/api/${endpoint}/${task.id}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -718,7 +788,9 @@ export default function DailyTasksPage() {
         'bloodtest': 'blood-test-tasks',
         'blood_pressure': 'blood-pressure-tasks',
         'comfort_check': 'comfort-check-tasks',
-        'communication_notes': 'communication-notes-tasks'
+        'communication_notes': 'communication-notes-tasks',
+        'family_photo_message': 'family-photo-message-tasks',
+        'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];
       const res = await fetch(`/api/${endpoint}/${taskToDelete.id}`, { 
@@ -733,7 +805,9 @@ export default function DailyTasksPage() {
           'bloodtest': fetchBloodTestTasks,
           'blood_pressure': fetchBloodPressureTasks,
           'comfort_check': fetchComfortCheckTasks,
-          'communication_notes': fetchCommunicationNotesTasks
+          'communication_notes': fetchCommunicationNotesTasks,
+          'family_photo_message': fetchFamilyPhotoMessageTasks,
+          'follow_up': fetchFollowUpTasks
         };
         await refreshMap[taskToDelete.taskType]();
         setNotification({ show: true, message: 'Task deleted successfully.', type: 'success' });
@@ -794,6 +868,8 @@ export default function DailyTasksPage() {
   const bloodPressureTasksWithType = (Array.isArray(bloodPressureTasks) ? bloodPressureTasks : []).map(t => ({ ...t, taskType: 'blood_pressure' }));
   const comfortCheckTasksWithType = (Array.isArray(comfortCheckTasks) ? comfortCheckTasks : []).map(t => ({ ...t, taskType: 'comfort_check' }));
   const communicationNotesTasksWithType = (Array.isArray(communicationNotesTasks) ? communicationNotesTasks : []).map(t => ({ ...t, taskType: 'communication_notes' }));
+  const familyPhotoMessageTasksWithType = (Array.isArray(familyPhotoMessageTasks) ? familyPhotoMessageTasks : []).map(t => ({ ...t, taskType: 'family_photo_message' }));
+  const followUpTasksWithType = (Array.isArray(followUpTasks) ? followUpTasks : []).map(t => ({ ...t, taskType: 'follow_up' }));
   
   const allTasks = [
     ...bathingTasksWithType, 
@@ -801,7 +877,9 @@ export default function DailyTasksPage() {
     ...bloodTestTasksWithType,
     ...bloodPressureTasksWithType,
     ...comfortCheckTasksWithType,
-    ...communicationNotesTasksWithType
+    ...communicationNotesTasksWithType,
+    ...familyPhotoMessageTasksWithType,
+    ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
   const filteredTasks = allTasks.filter((t) => {
@@ -949,6 +1027,8 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'blood_pressure') subInfo = `${task.systolicPressure}/${task.diastolicPressure} mmHg`;
                       else if (task.taskType === 'comfort_check') subInfo = 'Comfort Check';
                       else if (task.taskType === 'communication_notes') subInfo = 'Communication';
+                      else if (task.taskType === 'family_photo_message') subInfo = task.description ? task.description.substring(0, 30) + '...' : 'Family Photo';
+                      else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
                           <td className="px-6 py-4">
@@ -1300,6 +1380,56 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {showModal && selectedTaskType === 'family_photo_message' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      📷
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Family Photo/Message</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <FamilyPhotoMessageTaskForm
+                  formData={familyPhotoMessageForm}
+                  setFormData={setFamilyPhotoMessageForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleFamilyPhotoMessageSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
+          {showModal && selectedTaskType === 'follow_up' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🔄
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Follow Up</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <FollowUpTaskForm
+                  formData={followUpForm}
+                  setFormData={setFollowUpForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleFollowUpSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
           {/* View Modal */}
           {showViewModal && viewData && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -1312,14 +1442,20 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'bloodtest' ? 'bg-red-500' :
                       viewData.taskType === 'blood_pressure' ? 'bg-blue-500' :
                       viewData.taskType === 'comfort_check' ? 'bg-green-500' :
-                      'bg-purple-500'
+                      viewData.taskType === 'communication_notes' ? 'bg-purple-500' :
+                      viewData.taskType === 'family_photo_message' ? 'bg-pink-500' :
+                      viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
+                      'bg-gray-500'
                     } rounded-xl flex items-center justify-center text-2xl mr-3`}>
                       {viewData.taskType === 'bathing' ? '🛁' : 
                        viewData.taskType === 'behaviour' ? '👤' :
                        viewData.taskType === 'bloodtest' ? '💉' :
                        viewData.taskType === 'blood_pressure' ? '🩺' :
                        viewData.taskType === 'comfort_check' ? '✅' :
-                       '📝'}
+                       viewData.taskType === 'communication_notes' ? '📝' :
+                       viewData.taskType === 'family_photo_message' ? '📷' :
+                       viewData.taskType === 'follow_up' ? '🔄' :
+                       '❓'}
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">
                       {viewData.taskType === 'bathing' ? 'Bathing' : 
@@ -1327,7 +1463,10 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'bloodtest' ? 'Blood Test' :
                        viewData.taskType === 'blood_pressure' ? 'Blood Pressure' :
                        viewData.taskType === 'comfort_check' ? 'Comfort Check' :
-                       'Communication Notes'} Task Details
+                       viewData.taskType === 'communication_notes' ? 'Communication Notes' :
+                       viewData.taskType === 'family_photo_message' ? 'Family Photo/Message' :
+                       viewData.taskType === 'follow_up' ? 'Follow Up' :
+                       'Task'} Task Details
                     </h2>
                   </div>
                   <button onClick={()=>setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
@@ -1344,6 +1483,10 @@ export default function DailyTasksPage() {
                   <ComfortCheckTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'communication_notes' ? (
                   <CommunicationNotesTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : viewData.taskType === 'family_photo_message' ? (
+                  <FamilyPhotoMessageTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : viewData.taskType === 'follow_up' ? (
+                  <FollowUpTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : null}
               </div>
             </div>

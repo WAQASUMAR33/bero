@@ -134,6 +134,8 @@ model User {
   updatedPersonCentredTasks      PersonCentredTask[]      @relation("PersonCentredTaskUpdatedBy")
   createdPhysicalInterventionTasks PhysicalInterventionTask[] @relation("PhysicalInterventionTaskCreatedBy")
   updatedPhysicalInterventionTasks PhysicalInterventionTask[] @relation("PhysicalInterventionTaskUpdatedBy")
+  createdPulseTasks              PulseTask[]              @relation("PulseTaskCreatedBy")
+  updatedPulseTasks              PulseTask[]              @relation("PulseTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -223,6 +225,7 @@ model ServiceSeeker {
   oxygenTasks             OxygenTask[]
   personCentredTasks      PersonCentredTask[]
   physicalInterventionTasks PhysicalInterventionTask[]
+  pulseTasks              PulseTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -992,6 +995,26 @@ model PhysicalInterventionTask {
   serviceSeeker                   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
   createdBy                       User          @relation("PhysicalInterventionTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy                       User          @relation("PhysicalInterventionTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model PulseTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  pulseRate           Int
+  notes               String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("PulseTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("PulseTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

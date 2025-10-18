@@ -7,8 +7,20 @@ export default function SpendingMoneyTaskForm({
   onSubmit, 
   isSubmitting 
 }) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.paidUsing) {
+      alert('Please select a payment method');
+      return;
+    }
+    
+    onSubmit(e);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Service User & Date/Time */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>

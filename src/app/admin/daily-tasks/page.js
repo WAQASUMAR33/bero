@@ -470,7 +470,7 @@ export default function DailyTasksPage() {
     time: new Date().toTimeString().slice(0, 5),
     type: '',
     amount: '',
-    paidUsing: '',
+    paidUsing: 'CASH',
     receiptUrl: '',
     notes: '',
     emotion: 'NEUTRAL',

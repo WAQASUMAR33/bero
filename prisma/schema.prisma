@@ -146,6 +146,8 @@ model User {
   updatedTemperatureTasks        TemperatureTask[]        @relation("TemperatureTaskUpdatedBy")
   createdVisitTasks              VisitTask[]              @relation("VisitTaskCreatedBy")
   updatedVisitTasks              VisitTask[]              @relation("VisitTaskUpdatedBy")
+  createdWeightTasks             WeightTask[]             @relation("WeightTaskCreatedBy")
+  updatedWeightTasks             WeightTask[]             @relation("WeightTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -241,6 +243,7 @@ model ServiceSeeker {
   stoolTasks              StoolTask[]
   temperatureTasks        TemperatureTask[]
   visitTasks              VisitTask[]
+  weightTasks             WeightTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -1233,6 +1236,26 @@ model VisitTask {
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User                @relation("VisitTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User                @relation("VisitTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model WeightTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  weight              Float
+  notes               String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("WeightTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("WeightTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

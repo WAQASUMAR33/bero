@@ -142,6 +142,8 @@ model User {
   updatedSpendingMoneyTasks      SpendingMoneyTask[]      @relation("SpendingMoneyTaskUpdatedBy")
   createdStoolTasks              StoolTask[]              @relation("StoolTaskCreatedBy")
   updatedStoolTasks              StoolTask[]              @relation("StoolTaskUpdatedBy")
+  createdTemperatureTasks        TemperatureTask[]        @relation("TemperatureTaskCreatedBy")
+  updatedTemperatureTasks        TemperatureTask[]        @relation("TemperatureTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -235,6 +237,7 @@ model ServiceSeeker {
   repositionTasks         RepositionTask[]
   spendingMoneyTasks      SpendingMoneyTask[]
   stoolTasks              StoolTask[]
+  temperatureTasks        TemperatureTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -1148,6 +1151,26 @@ model StoolTask {
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User                @relation("StoolTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User                @relation("StoolTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model TemperatureTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  temperatureInC      Float
+  notes               String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("TemperatureTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("TemperatureTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

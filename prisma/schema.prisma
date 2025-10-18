@@ -140,6 +140,8 @@ model User {
   updatedRepositionTasks         RepositionTask[]         @relation("RepositionTaskUpdatedBy")
   createdSpendingMoneyTasks      SpendingMoneyTask[]      @relation("SpendingMoneyTaskCreatedBy")
   updatedSpendingMoneyTasks      SpendingMoneyTask[]      @relation("SpendingMoneyTaskUpdatedBy")
+  createdStoolTasks              StoolTask[]              @relation("StoolTaskCreatedBy")
+  updatedStoolTasks              StoolTask[]              @relation("StoolTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -232,6 +234,7 @@ model ServiceSeeker {
   pulseTasks              PulseTask[]
   repositionTasks         RepositionTask[]
   spendingMoneyTasks      SpendingMoneyTask[]
+  stoolTasks              StoolTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -837,6 +840,30 @@ enum PaymentMethod {
   VOUCHER
 }
 
+enum StoolType {
+  SEPARATED_HARD_LUMPS_HARD_TO_PASS
+  SAUSAGE_SHAPED_BUT_LUMPY
+  SAUSAGE_BUT_CRACK_ON_SURFACE
+  SOFT_BLOBS_WITH_CLEAR_CUT_EDGES
+  FLUFFY_PIECES_WITH_RAGGED_EDGES_MUSHY
+  WATERY_NO_SOLID_PIECES_ENTIRELY_LIQUID
+  NO_STOOL_PASSED
+  STOMA_NO_ALERT_WILL_BE_SENT
+  UNKNOWN
+}
+
+enum UrinePassed {
+  YES
+  NO
+  NA
+}
+
+enum StoolCompletion {
+  YES
+  NO
+  DECLINED
+}
+
 model MedicinePrnTask {
   id                  String              @id @default(cuid())
   serviceSeekerId     String
@@ -1100,6 +1127,27 @@ model SpendingMoneyTask {
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User                @relation("SpendingMoneyTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User                @relation("SpendingMoneyTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model StoolTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  type                StoolType
+  urinePassed         UrinePassed
+  notes               String?
+  completed           StoolCompletion
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("StoolTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("StoolTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

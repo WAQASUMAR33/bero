@@ -114,6 +114,9 @@ model User {
   updatedGeneralSupportTasks     GeneralSupportTask[]     @relation("GeneralSupportTaskUpdatedBy")
   createdHouseKeepingTasks       HouseKeepingTask[]       @relation("HouseKeepingTaskCreatedBy")
   updatedHouseKeepingTasks       HouseKeepingTask[]       @relation("HouseKeepingTaskUpdatedBy")
+  witnessedIncidentFallTasks     IncidentFallTask[]       @relation("IncidentFallTaskWitnessedBy")
+  createdIncidentFallTasks       IncidentFallTask[]       @relation("IncidentFallTaskCreatedBy")
+  updatedIncidentFallTasks       IncidentFallTask[]       @relation("IncidentFallTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -194,6 +197,7 @@ model ServiceSeeker {
   foodDrinkTasks          FoodDrinkTask[]
   generalSupportTasks     GeneralSupportTask[]
   houseKeepingTasks       HouseKeepingTask[]
+  incidentFallTasks       IncidentFallTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -607,6 +611,124 @@ model HouseKeepingTask {
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
   createdBy         User             @relation("HouseKeepingTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy         User             @relation("HouseKeepingTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model IncidentType {
+  id                String              @id @default(cuid())
+  type              String              @unique
+  canEdit           Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  incidentFallTasks IncidentFallTask[]
+}
+
+model IncidentLocation {
+  id                String              @id @default(cuid())
+  name              String              @unique
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  incidentFallTasks IncidentFallTask[]
+}
+
+enum ServiceUserInjured {
+  YES
+  NO
+  UNSURE
+}
+
+enum WitnessedBy {
+  NOBODY
+  STAFF
+}
+
+enum PhotoConsent {
+  YES
+  NO
+  SPECIFIED
+}
+
+enum ResidentInfoProvided {
+  YES
+  NO
+  NOT_RELIABLY
+}
+
+enum YesNoOption {
+  YES
+  NO
+}
+
+enum YesNoNotYetOption {
+  YES
+  NO
+  NOT_YET
+}
+
+enum ContactsCalled {
+  NO_ONE
+  AMBULANCE
+  ONE_ONE_ONE_CALLED
+  ADULT_TRANSITION_TEAM
+  CHIROPODIST
+  CLINICAL_NAVIGATION
+  CLINICAL_PSYCHOLOGIST
+  DISTRICT_NURSE
+  DOLS
+  ENRICH_TEAM
+  FCPA
+  GP
+  MANAGER
+  PARAMEDIC
+  PHARMACIST
+  SALT
+  SOCIAL_WORKER
+  SPA
+  TEAM_MANAGER
+}
+
+model IncidentFallTask {
+  id                          String                  @id @default(cuid())
+  serviceSeekerId             String
+  date                        DateTime
+  time                        String
+  incidentTypeId              String
+  incidentLasted              String                  // time duration
+  locationId                  String
+  othersInvolved              Boolean
+  othersInvolvedDetails       String?
+  injuryDetail                String?
+  serviceUserInjured          ServiceUserInjured
+  witnessedBy                 WitnessedBy
+  witnessedByStaffId          String?
+  witnessDetail               String?
+  photoConsent                PhotoConsent
+  photoUrl                    String?
+  residentInfoProvided        ResidentInfoProvided
+  whatResidentDoing           String?
+  howIncidentHappened         String?
+  dateReportedToSeniorStaff   DateTime?
+  equipmentInvolved           YesNoOption
+  relativesInformed           YesNoNotYetOption
+  contactsCalled              ContactsCalled
+  notes                       String?
+  emotion                     EmotionType
+  signatureUrl                String?
+  createdAt                   DateTime                @default(now())
+  updatedAt                   DateTime                @updatedAt
+  createdById                 String
+  updatedById                 String
+
+  // Relations
+  serviceSeeker               ServiceSeeker           @relation(fields: [serviceSeekerId], references: [id])
+  incidentType                IncidentType            @relation(fields: [incidentTypeId], references: [id])
+  location                    IncidentLocation        @relation(fields: [locationId], references: [id])
+  witnessedByStaff            User?                   @relation("IncidentFallTaskWitnessedBy", fields: [witnessedByStaffId], references: [id])
+  createdBy                   User                    @relation("IncidentFallTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy                   User                    @relation("IncidentFallTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

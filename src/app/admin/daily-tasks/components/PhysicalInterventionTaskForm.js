@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import SignatureCanvas from './SignatureCanvas';
 
 export default function PhysicalInterventionTaskForm({ 
   formData, 
@@ -510,49 +511,14 @@ export default function PhysicalInterventionTaskForm({
 
       {/* Signature Modal */}
       {showSignatureModal && (
-        <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-r from-[#224fa6] to-[#3270e9] rounded-xl flex items-center justify-center text-white text-xl mr-3">
-                  ✍️
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900">Add Signature</h3>
-              </div>
-              <button
-                onClick={() => setShowSignatureModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[200px] flex items-center justify-center">
-              <p className="text-gray-500 text-center">
-                📝 Signature drawing functionality will be implemented here<br/>
-                <span className="text-sm">(Canvas-based signature pad)</span>
-              </p>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                type="button"
-                onClick={() => setShowSignatureModal(false)}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormData({ ...formData, signatureUrl: 'signature-placeholder' });
-                  setShowSignatureModal(false);
-                }}
-                className="px-6 py-2 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:shadow-lg transition-all"
-              >
-                Save Signature
-              </button>
-            </div>
-          </div>
-        </div>
+        <SignatureCanvas
+          onSave={(dataUrl) => {
+            setFormData({ ...formData, signatureUrl: dataUrl });
+            setShowSignatureModal(false);
+          }}
+          onClose={() => setShowSignatureModal(false)}
+          existingSignature={formData.signatureUrl}
+        />
       )}
     </>
   );

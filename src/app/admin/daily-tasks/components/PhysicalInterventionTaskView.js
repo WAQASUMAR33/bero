@@ -180,11 +180,24 @@ export default function PhysicalInterventionTaskView({ task }) {
       </div>
 
       {/* Signature */}
-      {task.signatureUrl && (
+      {task.signatureUrl && task.signatureUrl !== 'signature-placeholder' && (
         <div className="bg-gray-50 rounded-xl p-3">
           <p className="text-xs font-medium text-gray-500 uppercase mb-2">Signature</p>
           <div className="border-2 border-gray-200 rounded-lg p-4 bg-white">
-            <p className="text-sm text-gray-500">✍️ Signature: {task.signatureUrl}</p>
+            <img 
+              src={task.signatureUrl} 
+              alt="Signature" 
+              className="max-w-full h-auto"
+              style={{ maxHeight: '150px' }}
+            />
+          </div>
+        </div>
+      )}
+      {task.signatureUrl === 'signature-placeholder' && (
+        <div className="bg-gray-50 rounded-xl p-3">
+          <p className="text-xs font-medium text-gray-500 uppercase mb-2">Signature</p>
+          <div className="border-2 border-gray-200 rounded-lg p-4 bg-white">
+            <p className="text-sm text-gray-500">✍️ Signature on file</p>
           </div>
         </div>
       )}

@@ -15,6 +15,13 @@ import FoodDrinkTaskForm from './components/FoodDrinkTaskForm';
 import GeneralSupportTaskForm from './components/GeneralSupportTaskForm';
 import HouseKeepingTaskForm from './components/HouseKeepingTaskForm';
 import IncidentFallTaskForm from './components/IncidentFallTaskForm';
+import MedicinePrnTaskForm from './components/MedicinePrnTaskForm';
+import MuacTaskForm from './components/MuacTaskForm';
+import ObservationTaskForm from './components/ObservationTaskForm';
+import OneToOneTaskForm from './components/OneToOneTaskForm';
+import OralCareTaskForm from './components/OralCareTaskForm';
+import OxygenTaskForm from './components/OxygenTaskForm';
+import PersonCentredTaskForm from './components/PersonCentredTaskForm';
 import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
@@ -27,6 +34,13 @@ import FoodDrinkTaskView from './components/FoodDrinkTaskView';
 import GeneralSupportTaskView from './components/GeneralSupportTaskView';
 import HouseKeepingTaskView from './components/HouseKeepingTaskView';
 import IncidentFallTaskView from './components/IncidentFallTaskView';
+import MedicinePrnTaskView from './components/MedicinePrnTaskView';
+import MuacTaskView from './components/MuacTaskView';
+import ObservationTaskView from './components/ObservationTaskView';
+import OneToOneTaskView from './components/OneToOneTaskView';
+import OralCareTaskView from './components/OralCareTaskView';
+import OxygenTaskView from './components/OxygenTaskView';
+import PersonCentredTaskView from './components/PersonCentredTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
@@ -75,7 +89,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'follow_up'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'medicine_prn', 'muac', 'observation', 'one_to_one', 'oral_care', 'oxygen', 'person_centred_task', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -91,9 +105,17 @@ export default function DailyTasksPage() {
   const [generalSupportTasks, setGeneralSupportTasks] = useState([]);
   const [houseKeepingTasks, setHouseKeepingTasks] = useState([]);
   const [incidentFallTasks, setIncidentFallTasks] = useState([]);
+  const [medicinePrnTasks, setMedicinePrnTasks] = useState([]);
+  const [muacTasks, setMuacTasks] = useState([]);
+  const [observationTasks, setObservationTasks] = useState([]);
+  const [oneToOneTasks, setOneToOneTasks] = useState([]);
+  const [oralCareTasks, setOralCareTasks] = useState([]);
+  const [oxygenTasks, setOxygenTasks] = useState([]);
+  const [personCentredTasks, setPersonCentredTasks] = useState([]);
   const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [supportLists, setSupportLists] = useState([]);
+  const [personCentredTaskNames, setPersonCentredTaskNames] = useState([]);
   const [incidentTypes, setIncidentTypes] = useState([]);
   const [incidentLocations, setIncidentLocations] = useState([]);
   const [staffUsers, setStaffUsers] = useState([]);
@@ -112,6 +134,10 @@ export default function DailyTasksPage() {
   const [newIncidentLocation, setNewIncidentLocation] = useState('');
   const [isAddingIncidentLocation, setIsAddingIncidentLocation] = useState(false);
   const [deletingIncidentLocationId, setDeletingIncidentLocationId] = useState(null);
+  const [showPersonCentredTaskNamesModal, setShowPersonCentredTaskNamesModal] = useState(false);
+  const [newPersonCentredTaskName, setNewPersonCentredTaskName] = useState('');
+  const [isAddingPersonCentredTaskName, setIsAddingPersonCentredTaskName] = useState(false);
+  const [deletingPersonCentredTaskNameId, setDeletingPersonCentredTaskNameId] = useState(null);
   const [serviceUsers, setServiceUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState('');
@@ -292,6 +318,81 @@ export default function DailyTasksPage() {
     name: '',
     description: '',
     status: 'ONGOING',
+    emotion: 'NEUTRAL',
+  });
+
+  const [medicinePrnForm, setMedicinePrnForm] = useState({
+    serviceSeekerId: '',
+    applyDate: new Date().toISOString().split('T')[0],
+    applyTime: new Date().toTimeString().slice(0, 5),
+    prn: '',
+    medicineName: '',
+    medicineType: 'CREAM',
+    administrated: 'YES',
+    notes: '',
+    requestSignoffBy: 'NOT_NEEDED',
+    signoffByStaffId: '',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
+  const [muacForm, setMuacForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    muacInCm: '',
+    notes: '',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
+  const [observationForm, setObservationForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    notes: '',
+    emotion: 'NEUTRAL',
+  });
+
+  const [oneToOneForm, setOneToOneForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    duration: '',
+    notes: '',
+    emotion: 'NEUTRAL',
+  });
+
+  const [oralCareForm, setOralCareForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: '',
+    oralCare: 'BRUSHED_TEETH',
+    assisted: 'SELF_ASSISTED',
+    notes: '',
+    compliance: 'COMPLETED',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
+  const [oxygenForm, setOxygenForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    quantity: '',
+    notes: '',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
+  const [personCentredForm, setPersonCentredForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    nameId: '',
+    notes: '',
+    photoUrl: '',
+    completed: 'YES',
     emotion: 'NEUTRAL',
   });
 
@@ -487,6 +588,102 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchMedicinePrnTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/medicine-prn-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setMedicinePrnTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setMedicinePrnTasks([]);
+    }
+  };
+
+  const fetchMuacTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/muac-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setMuacTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setMuacTasks([]);
+    }
+  };
+
+  const fetchObservationTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/observation-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setObservationTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setObservationTasks([]);
+    }
+  };
+
+  const fetchOneToOneTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/one-to-one-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setOneToOneTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setOneToOneTasks([]);
+    }
+  };
+
+  const fetchOralCareTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/oral-care-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setOralCareTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setOralCareTasks([]);
+    }
+  };
+
+  const fetchOxygenTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/oxygen-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setOxygenTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setOxygenTasks([]);
+    }
+  };
+
+  const fetchPersonCentredTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/person-centred-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setPersonCentredTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setPersonCentredTasks([]);
+    }
+  };
+
+  const fetchPersonCentredTaskNames = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/person-centred-task-names', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setPersonCentredTaskNames(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setPersonCentredTaskNames([]);
+    }
+  };
+
   const fetchServiceUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -577,8 +774,16 @@ export default function DailyTasksPage() {
       fetchHouseKeepingTasks();
       fetchIncidentFallTasks();
       fetchFollowUpTasks();
+      fetchMedicinePrnTasks();
+      fetchMuacTasks();
+      fetchObservationTasks();
+      fetchOneToOneTasks();
+      fetchOralCareTasks();
+      fetchOxygenTasks();
+      fetchPersonCentredTasks();
       fetchBehaviourTriggers();
       fetchSupportLists();
+      fetchPersonCentredTaskNames();
       fetchIncidentTypes();
       fetchIncidentLocations();
       fetchServiceUsers();
@@ -1201,6 +1406,272 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleMedicinePrnSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/medicine-prn-tasks/${editing.id}` : '/api/medicine-prn-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(medicinePrnForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchMedicinePrnTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Medicine task updated successfully.' : 'Medicine task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save medicine task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleMuacSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/muac-tasks/${editing.id}` : '/api/muac-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(muacForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchMuacTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'MUAC task updated successfully.' : 'MUAC task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save MUAC task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleObservationSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/observation-tasks/${editing.id}` : '/api/observation-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(observationForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchObservationTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Observation task updated successfully.' : 'Observation task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save observation task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOneToOneSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/one-to-one-tasks/${editing.id}` : '/api/one-to-one-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(oneToOneForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchOneToOneTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'One to One task updated successfully.' : 'One to One task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save one to one task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOralCareSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/oral-care-tasks/${editing.id}` : '/api/oral-care-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(oralCareForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchOralCareTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Oral Care task updated successfully.' : 'Oral Care task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save oral care task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOxygenSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/oxygen-tasks/${editing.id}` : '/api/oxygen-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(oxygenForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchOxygenTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Oxygen task updated successfully.' : 'Oxygen task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save oxygen task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePersonCentredSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/person-centred-tasks/${editing.id}` : '/api/person-centred-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(personCentredForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchPersonCentredTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Person Centred task updated successfully.' : 'Person Centred task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save person centred task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddPersonCentredTaskName = async (name) => {
+    if (!name.trim()) {
+      setNotification({ show: true, message: 'Task name is required.', type: 'error' });
+      return;
+    }
+    setIsAddingPersonCentredTaskName(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/person-centred-task-names', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name }),
+      });
+      if (response.ok) {
+        await fetchPersonCentredTaskNames();
+        setNotification({ show: true, message: 'Task name added successfully.', type: 'success' });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to add task name.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while adding task name.', type: 'error' });
+    } finally {
+      setIsAddingPersonCentredTaskName(false);
+    }
+  };
+
   const handleAddTrigger = async () => {
     if (!newTrigger.name.trim()) {
       setNotification({ show: true, message: 'Trigger name is required.', type: 'error' });
@@ -1250,6 +1721,13 @@ export default function DailyTasksPage() {
         'general_support': 'general-support-tasks',
         'house_keeping': 'house-keeping-tasks',
         'incident_fall': 'incident-fall-tasks',
+        'medicine_prn': 'medicine-prn-tasks',
+        'muac': 'muac-tasks',
+        'observation': 'observation-tasks',
+        'one_to_one': 'one-to-one-tasks',
+        'oral_care': 'oral-care-tasks',
+        'oxygen': 'oxygen-tasks',
+        'person_centred_task': 'person-centred-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[task.taskType];
@@ -1321,6 +1799,13 @@ export default function DailyTasksPage() {
         'general_support': 'general-support-tasks',
         'house_keeping': 'house-keeping-tasks',
         'incident_fall': 'incident-fall-tasks',
+        'medicine_prn': 'medicine-prn-tasks',
+        'muac': 'muac-tasks',
+        'observation': 'observation-tasks',
+        'one_to_one': 'one-to-one-tasks',
+        'oral_care': 'oral-care-tasks',
+        'oxygen': 'oxygen-tasks',
+        'person_centred_task': 'person-centred-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];
@@ -1342,6 +1827,13 @@ export default function DailyTasksPage() {
           'general_support': fetchGeneralSupportTasks,
           'house_keeping': fetchHouseKeepingTasks,
           'incident_fall': fetchIncidentFallTasks,
+          'medicine_prn': fetchMedicinePrnTasks,
+          'muac': fetchMuacTasks,
+          'observation': fetchObservationTasks,
+          'one_to_one': fetchOneToOneTasks,
+          'oral_care': fetchOralCareTasks,
+          'oxygen': fetchOxygenTasks,
+          'person_centred_task': fetchPersonCentredTasks,
           'follow_up': fetchFollowUpTasks
         };
         await refreshMap[taskToDelete.taskType]();
@@ -1409,7 +1901,14 @@ export default function DailyTasksPage() {
   const houseKeepingTasksWithType = (Array.isArray(houseKeepingTasks) ? houseKeepingTasks : []).map(t => ({ ...t, taskType: 'house_keeping' }));
   const incidentFallTasksWithType = (Array.isArray(incidentFallTasks) ? incidentFallTasks : []).map(t => ({ ...t, taskType: 'incident_fall' }));
   const followUpTasksWithType = (Array.isArray(followUpTasks) ? followUpTasks : []).map(t => ({ ...t, taskType: 'follow_up' }));
-  
+  const medicinePrnTasksWithType = (Array.isArray(medicinePrnTasks) ? medicinePrnTasks : []).map(t => ({ ...t, taskType: 'medicine_prn' }));
+  const muacTasksWithType = (Array.isArray(muacTasks) ? muacTasks : []).map(t => ({ ...t, taskType: 'muac' }));
+  const observationTasksWithType = (Array.isArray(observationTasks) ? observationTasks : []).map(t => ({ ...t, taskType: 'observation' }));
+  const oneToOneTasksWithType = (Array.isArray(oneToOneTasks) ? oneToOneTasks : []).map(t => ({ ...t, taskType: 'one_to_one' }));
+  const oralCareTasksWithType = (Array.isArray(oralCareTasks) ? oralCareTasks : []).map(t => ({ ...t, taskType: 'oral_care' }));
+  const oxygenTasksWithType = (Array.isArray(oxygenTasks) ? oxygenTasks : []).map(t => ({ ...t, taskType: 'oxygen' }));
+  const personCentredTasksWithType = (Array.isArray(personCentredTasks) ? personCentredTasks : []).map(t => ({ ...t, taskType: 'person_centred_task' }));
+
   const allTasks = [
     ...bathingTasksWithType, 
     ...behaviourTasksWithType,
@@ -1422,6 +1921,13 @@ export default function DailyTasksPage() {
     ...generalSupportTasksWithType,
     ...houseKeepingTasksWithType,
     ...incidentFallTasksWithType,
+    ...medicinePrnTasksWithType,
+    ...muacTasksWithType,
+    ...observationTasksWithType,
+    ...oneToOneTasksWithType,
+    ...oralCareTasksWithType,
+    ...oxygenTasksWithType,
+    ...personCentredTasksWithType,
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
@@ -2084,6 +2590,172 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {showModal && selectedTaskType === 'medicine_prn' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      💊
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Medicine PRN</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <MedicinePrnTaskForm
+                  formData={medicinePrnForm}
+                  setFormData={setMedicinePrnForm}
+                  serviceSeekers={serviceUsers}
+                  staffUsers={staffUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleMedicinePrnSubmit}
+                />
+              </div>
+            </div>
+          )}
+
+          {showModal && selectedTaskType === 'muac' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      📏
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">MUAC</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <MuacTaskForm
+                  formData={muacForm}
+                  setFormData={setMuacForm}
+                  serviceSeekers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleMuacSubmit}
+                />
+              </div>
+            </div>
+          )}
+
+          {showModal && selectedTaskType === 'observation' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      👁️
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Observation</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <ObservationTaskForm
+                  formData={observationForm}
+                  setFormData={setObservationForm}
+                  serviceSeekers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleObservationSubmit}
+                />
+              </div>
+            </div>
+          )}
+
+          {showModal && selectedTaskType === 'one_to_one' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      👥
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">One to One</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <OneToOneTaskForm
+                  formData={oneToOneForm}
+                  setFormData={setOneToOneForm}
+                  serviceSeekers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleOneToOneSubmit}
+                />
+              </div>
+            </div>
+          )}
+
+          {showModal && selectedTaskType === 'oral_care' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-cyan-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🦷
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Oral Care</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <OralCareTaskForm
+                  formData={oralCareForm}
+                  setFormData={setOralCareForm}
+                  serviceSeekers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleOralCareSubmit}
+                />
+              </div>
+            </div>
+          )}
+
+          {showModal && selectedTaskType === 'oxygen' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      💨
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Oxygen</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <OxygenTaskForm
+                  formData={oxygenForm}
+                  setFormData={setOxygenForm}
+                  serviceSeekers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleOxygenSubmit}
+                />
+              </div>
+            </div>
+          )}
+
+          {showModal && selectedTaskType === 'person_centred_task' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      ❤️
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Person Centred Task</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <PersonCentredTaskForm
+                  formData={personCentredForm}
+                  setFormData={setPersonCentredForm}
+                  serviceSeekers={serviceUsers}
+                  personCentredTaskNames={personCentredTaskNames}
+                  isSubmitting={isSubmitting}
+                  isAddingTaskName={isAddingPersonCentredTaskName}
+                  onSubmit={handlePersonCentredSubmit}
+                  onAddTaskName={handleAddPersonCentredTaskName}
+                  onManageTaskNames={() => setShowPersonCentredTaskNamesModal(true)}
+                />
+              </div>
+            </div>
+          )}
+
           {/* View Modal */}
           {showViewModal && viewData && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -2161,6 +2833,20 @@ export default function DailyTasksPage() {
                   <IncidentFallTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'follow_up' ? (
                   <FollowUpTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : viewData.taskType === 'medicine_prn' ? (
+                  <MedicinePrnTaskView task={viewData} />
+                ) : viewData.taskType === 'muac' ? (
+                  <MuacTaskView task={viewData} />
+                ) : viewData.taskType === 'observation' ? (
+                  <ObservationTaskView task={viewData} />
+                ) : viewData.taskType === 'one_to_one' ? (
+                  <OneToOneTaskView task={viewData} />
+                ) : viewData.taskType === 'oral_care' ? (
+                  <OralCareTaskView task={viewData} />
+                ) : viewData.taskType === 'oxygen' ? (
+                  <OxygenTaskView task={viewData} />
+                ) : viewData.taskType === 'person_centred_task' ? (
+                  <PersonCentredTaskView task={viewData} />
                 ) : null}
               </div>
             </div>

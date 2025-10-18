@@ -117,6 +117,21 @@ model User {
   witnessedIncidentFallTasks     IncidentFallTask[]       @relation("IncidentFallTaskWitnessedBy")
   createdIncidentFallTasks       IncidentFallTask[]       @relation("IncidentFallTaskCreatedBy")
   updatedIncidentFallTasks       IncidentFallTask[]       @relation("IncidentFallTaskUpdatedBy")
+  signoffMedicinePrnTasks        MedicinePrnTask[]        @relation("MedicinePrnTaskSignoffBy")
+  createdMedicinePrnTasks        MedicinePrnTask[]        @relation("MedicinePrnTaskCreatedBy")
+  updatedMedicinePrnTasks        MedicinePrnTask[]        @relation("MedicinePrnTaskUpdatedBy")
+  createdMuacTasks               MuacTask[]               @relation("MuacTaskCreatedBy")
+  updatedMuacTasks               MuacTask[]               @relation("MuacTaskUpdatedBy")
+  createdObservationTasks        ObservationTask[]        @relation("ObservationTaskCreatedBy")
+  updatedObservationTasks        ObservationTask[]        @relation("ObservationTaskUpdatedBy")
+  createdOneToOneTasks           OneToOneTask[]           @relation("OneToOneTaskCreatedBy")
+  updatedOneToOneTasks           OneToOneTask[]           @relation("OneToOneTaskUpdatedBy")
+  createdOralCareTasks           OralCareTask[]           @relation("OralCareTaskCreatedBy")
+  updatedOralCareTasks           OralCareTask[]           @relation("OralCareTaskUpdatedBy")
+  createdOxygenTasks             OxygenTask[]             @relation("OxygenTaskCreatedBy")
+  updatedOxygenTasks             OxygenTask[]             @relation("OxygenTaskUpdatedBy")
+  createdPersonCentredTasks      PersonCentredTask[]      @relation("PersonCentredTaskCreatedBy")
+  updatedPersonCentredTasks      PersonCentredTask[]      @relation("PersonCentredTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -198,6 +213,13 @@ model ServiceSeeker {
   generalSupportTasks     GeneralSupportTask[]
   houseKeepingTasks       HouseKeepingTask[]
   incidentFallTasks       IncidentFallTask[]
+  medicinePrnTasks        MedicinePrnTask[]
+  muacTasks               MuacTask[]
+  observationTasks        ObservationTask[]
+  oneToOneTasks           OneToOneTask[]
+  oralCareTasks           OralCareTask[]
+  oxygenTasks             OxygenTask[]
+  personCentredTasks      PersonCentredTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -729,6 +751,200 @@ model IncidentFallTask {
   witnessedByStaff            User?                   @relation("IncidentFallTaskWitnessedBy", fields: [witnessedByStaffId], references: [id])
   createdBy                   User                    @relation("IncidentFallTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy                   User                    @relation("IncidentFallTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+enum MedicineType {
+  CREAM
+  FLUID
+  INJECTION
+  PATCH
+  PEG
+  INHALER
+  LIQUID
+  SYRUP
+  CAPSULE
+  NEBULIZER
+  OTHER
+}
+
+enum SignoffRequired {
+  NOT_NEEDED
+  REQUIRED
+}
+
+enum MedicineCompleted {
+  YES
+  NO
+  ATTEMPTED
+}
+
+enum OralCareType {
+  BRUSHED_TEETH
+  DENTURE_SOAK
+  DENTURE_FILLED
+  MOUTH_WASH
+}
+
+enum AssistedType {
+  SELF_ASSISTED
+  ASSISTED
+}
+
+model MedicinePrnTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  applyDate           DateTime
+  applyTime           String
+  prn                 String
+  medicineName        String
+  medicineType        MedicineType
+  administrated       Boolean
+  notes               String?
+  requestSignoffBy    SignoffRequired
+  signoffByStaffId    String?
+  completed           MedicineCompleted
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  signoffByStaff      User?               @relation("MedicinePrnTaskSignoffBy", fields: [signoffByStaffId], references: [id])
+  createdBy           User                @relation("MedicinePrnTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("MedicinePrnTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model MuacTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  muacInCm            Float
+  notes               String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("MuacTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("MuacTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model ObservationTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  notes               String
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("ObservationTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("ObservationTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model OneToOneTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  duration            String
+  notes               String
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("OneToOneTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("OneToOneTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model OralCareTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String?
+  oralCare            OralCareType
+  assisted            AssistedType
+  notes               String?
+  compliance          ComplianceStatus
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("OralCareTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("OralCareTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model OxygenTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  quantity            String
+  notes               String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("OxygenTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("OxygenTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model PersonCentredTaskName {
+  id                  String                @id @default(cuid())
+  name                String                @unique
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  
+  // Relations
+  tasks               PersonCentredTask[]
+}
+
+model PersonCentredTask {
+  id                  String                @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  nameId              String
+  notes               String?
+  photoUrl            String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker         @relation(fields: [serviceSeekerId], references: [id])
+  taskName            PersonCentredTaskName @relation(fields: [nameId], references: [id])
+  createdBy           User                  @relation("PersonCentredTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                  @relation("PersonCentredTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

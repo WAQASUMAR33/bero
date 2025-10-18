@@ -14,6 +14,7 @@ import FamilyPhotoMessageTaskForm from './components/FamilyPhotoMessageTaskForm'
 import FoodDrinkTaskForm from './components/FoodDrinkTaskForm';
 import GeneralSupportTaskForm from './components/GeneralSupportTaskForm';
 import HouseKeepingTaskForm from './components/HouseKeepingTaskForm';
+import IncidentFallTaskForm from './components/IncidentFallTaskForm';
 import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
@@ -25,6 +26,7 @@ import FamilyPhotoMessageTaskView from './components/FamilyPhotoMessageTaskView'
 import FoodDrinkTaskView from './components/FoodDrinkTaskView';
 import GeneralSupportTaskView from './components/GeneralSupportTaskView';
 import HouseKeepingTaskView from './components/HouseKeepingTaskView';
+import IncidentFallTaskView from './components/IncidentFallTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
@@ -73,7 +75,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'follow_up'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -88,9 +90,13 @@ export default function DailyTasksPage() {
   const [foodDrinkTasks, setFoodDrinkTasks] = useState([]);
   const [generalSupportTasks, setGeneralSupportTasks] = useState([]);
   const [houseKeepingTasks, setHouseKeepingTasks] = useState([]);
+  const [incidentFallTasks, setIncidentFallTasks] = useState([]);
   const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [supportLists, setSupportLists] = useState([]);
+  const [incidentTypes, setIncidentTypes] = useState([]);
+  const [incidentLocations, setIncidentLocations] = useState([]);
+  const [staffUsers, setStaffUsers] = useState([]);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [newTrigger, setNewTrigger] = useState({ name: '', define: '' });
   const [isAddingTrigger, setIsAddingTrigger] = useState(false);
@@ -98,6 +104,14 @@ export default function DailyTasksPage() {
   const [newSupportList, setNewSupportList] = useState('');
   const [isAddingSupportList, setIsAddingSupportList] = useState(false);
   const [deletingSupportListId, setDeletingSupportListId] = useState(null);
+  const [showIncidentTypesModal, setShowIncidentTypesModal] = useState(false);
+  const [newIncidentType, setNewIncidentType] = useState('');
+  const [isAddingIncidentType, setIsAddingIncidentType] = useState(false);
+  const [deletingIncidentTypeId, setDeletingIncidentTypeId] = useState(null);
+  const [showIncidentLocationsModal, setShowIncidentLocationsModal] = useState(false);
+  const [newIncidentLocation, setNewIncidentLocation] = useState('');
+  const [isAddingIncidentLocation, setIsAddingIncidentLocation] = useState(false);
+  const [deletingIncidentLocationId, setDeletingIncidentLocationId] = useState(null);
   const [serviceUsers, setServiceUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState('');
@@ -239,6 +253,34 @@ export default function DailyTasksPage() {
     photoUrl: '',
     completed: 'YES',
     emotion: 'NEUTRAL',
+  });
+
+  const [incidentFallForm, setIncidentFallForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    incidentTypeId: '',
+    incidentLasted: '',
+    locationId: '',
+    othersInvolved: false,
+    othersInvolvedDetails: '',
+    injuryDetail: '',
+    serviceUserInjured: 'NO',
+    witnessedBy: 'NOBODY',
+    witnessedByStaffId: '',
+    witnessDetail: '',
+    photoConsent: 'NO',
+    photoUrl: '',
+    residentInfoProvided: 'YES',
+    whatResidentDoing: '',
+    howIncidentHappened: '',
+    dateReportedToSeniorStaff: '',
+    equipmentInvolved: 'NO',
+    relativesInformed: 'NOT_YET',
+    contactsCalled: 'NO_ONE',
+    notes: '',
+    emotion: 'NEUTRAL',
+    signatureUrl: '',
   });
 
   const [followUpForm, setFollowUpForm] = useState({

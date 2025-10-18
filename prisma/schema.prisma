@@ -108,6 +108,8 @@ model User {
   updatedCommunicationNotesTasks CommunicationNotesTask[] @relation("CommunicationNotesTaskUpdatedBy")
   createdFamilyPhotoMessageTasks FamilyPhotoMessageTask[] @relation("FamilyPhotoMessageTaskCreatedBy")
   updatedFamilyPhotoMessageTasks FamilyPhotoMessageTask[] @relation("FamilyPhotoMessageTaskUpdatedBy")
+  createdFoodDrinkTasks          FoodDrinkTask[]          @relation("FoodDrinkTaskCreatedBy")
+  updatedFoodDrinkTasks          FoodDrinkTask[]          @relation("FoodDrinkTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -185,6 +187,7 @@ model ServiceSeeker {
   comfortCheckTasks       ComfortCheckTask[]
   communicationNotesTasks CommunicationNotesTask[]
   familyPhotoMessageTasks FamilyPhotoMessageTask[]
+  foodDrinkTasks          FoodDrinkTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -490,6 +493,63 @@ model FamilyPhotoMessageTask {
 enum FollowUpStatus {
   ONGOING
   COMPLETED
+}
+
+enum MealTime {
+  BREAKFAST
+  TEA
+  MORNING_SNACK
+  LUNCH
+  DINNER
+  EVENING_SNACK
+  AFTERNOON_SNACK
+  OTHER
+}
+
+enum MealPortion {
+  LEFT_EATING_MEAL
+  NONE
+  QUARTER_EATEN
+  HALF_EATEN
+  THREE_QUARTER_EATEN
+  ALL
+}
+
+enum AssistanceType {
+  REQUIRED
+  SELF_REQUIRED
+}
+
+enum FoodDrinkOffered {
+  YES
+  NO_ASLEEP
+  NO_GONE_OUT
+  NO_NOT_WANTED
+}
+
+model FoodDrinkTask {
+  id                  String            @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                MealTime
+  foodDrinkOffer      String?
+  main                MealPortion
+  fluidIntake         Int               // in ml
+  comments            String?
+  assistance          AssistanceType
+  foodDrinkOffered    FoodDrinkOffered
+  pictureUrl          String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker     @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User              @relation("FoodDrinkTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User              @relation("FoodDrinkTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

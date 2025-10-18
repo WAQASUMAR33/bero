@@ -11,6 +11,7 @@ import BloodPressureTaskForm from './components/BloodPressureTaskForm';
 import ComfortCheckTaskForm from './components/ComfortCheckTaskForm';
 import CommunicationNotesTaskForm from './components/CommunicationNotesTaskForm';
 import FamilyPhotoMessageTaskForm from './components/FamilyPhotoMessageTaskForm';
+import FoodDrinkTaskForm from './components/FoodDrinkTaskForm';
 import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
@@ -19,6 +20,7 @@ import BloodPressureTaskView from './components/BloodPressureTaskView';
 import ComfortCheckTaskView from './components/ComfortCheckTaskView';
 import CommunicationNotesTaskView from './components/CommunicationNotesTaskView';
 import FamilyPhotoMessageTaskView from './components/FamilyPhotoMessageTaskView';
+import FoodDrinkTaskView from './components/FoodDrinkTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
@@ -67,7 +69,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'follow_up'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -79,6 +81,7 @@ export default function DailyTasksPage() {
   const [comfortCheckTasks, setComfortCheckTasks] = useState([]);
   const [communicationNotesTasks, setCommunicationNotesTasks] = useState([]);
   const [familyPhotoMessageTasks, setFamilyPhotoMessageTasks] = useState([]);
+  const [foodDrinkTasks, setFoodDrinkTasks] = useState([]);
   const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
@@ -189,6 +192,21 @@ export default function DailyTasksPage() {
     description: '',
     messageFromResidence: '',
     photoUrl: '',
+    emotion: 'NEUTRAL',
+  });
+
+  const [foodDrinkForm, setFoodDrinkForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: 'BREAKFAST',
+    foodDrinkOffer: '',
+    main: 'NONE',
+    fluidIntake: '0',
+    comments: '',
+    assistance: 'REQUIRED',
+    foodDrinkOffered: 'YES',
+    pictureUrl: '',
+    completed: 'YES',
     emotion: 'NEUTRAL',
   });
 
@@ -328,6 +346,18 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchFoodDrinkTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/food-drink-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setFoodDrinkTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setFoodDrinkTasks([]);
+    }
+  };
+
   const fetchFollowUpTasks = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -361,6 +391,7 @@ export default function DailyTasksPage() {
       fetchComfortCheckTasks();
       fetchCommunicationNotesTasks();
       fetchFamilyPhotoMessageTasks();
+      fetchFoodDrinkTasks();
       fetchFollowUpTasks();
       fetchBehaviourTriggers();
       fetchServiceUsers();

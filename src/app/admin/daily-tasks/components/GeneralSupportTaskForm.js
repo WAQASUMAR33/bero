@@ -53,27 +53,30 @@ export default function GeneralSupportTaskForm({
 
       {/* Support Type */}
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">Support Type *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Support Type *</label>
+        <div className="flex gap-2">
+          <select 
+            required 
+            value={formData.supportListId} 
+            onChange={(e)=>setFormData({...formData, supportListId:e.target.value})}
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          >
+            <option value="">Select Support Type</option>
+            {(Array.isArray(supportLists) ? supportLists : []).map(item => (
+              <option key={item.id} value={item.id}>{item.name}</option>
+            ))}
+          </select>
           <button
             type="button"
             onClick={onManageSupportLists}
-            className="text-xs text-[#224fa6] hover:underline font-medium"
+            className="px-3 py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center"
+            title="Manage Support Types"
           >
-            Manage Support Types
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
           </button>
         </div>
-        <select 
-          required 
-          value={formData.supportListId} 
-          onChange={(e)=>setFormData({...formData, supportListId:e.target.value})}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-        >
-          <option value="">Select Support Type</option>
-          {(Array.isArray(supportLists) ? supportLists : []).map(item => (
-            <option key={item.id} value={item.id}>{item.name}</option>
-          ))}
-        </select>
       </div>
 
       {/* Notes */}

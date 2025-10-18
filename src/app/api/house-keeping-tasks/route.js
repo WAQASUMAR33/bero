@@ -17,86 +17,63 @@ function getUserIdFromToken(request) {
   }
 }
 
-export async function GET(request, { params }) {
+export async function GET(request) {
   try {
     const userId = getUserIdFromToken(request);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = await params;
-    const task = await prisma.generalSupportTask.findUnique({
-      where: { id },
+    const tasks = await prisma.houseKeepingTask.findMany({
       include: {
         serviceSeeker: true,
-        supportList: true,
         createdBy: { select: { id: true, firstName: true, lastName: true } },
         updatedBy: { select: { id: true, firstName: true, lastName: true } },
       },
+      orderBy: { createdAt: 'desc' },
     });
 
-    if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(task);
+    return NextResponse.json(tasks);
   } catch (error) {
-    console.error('GET /api/general-support-tasks/[id] error:', error);
-    return NextResponse.json({ error: 'Failed to fetch task' }, { status: 500 });
+    console.error('GET /api/house-keeping-tasks error:', error);
+    return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 });
   }
 }
 
-export async function PUT(request, { params }) {
+export async function POST(request) {
   try {
     const userId = getUserIdFromToken(request);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = await params;
     const body = await request.json();
-    const { serviceSeekerId, date, time, notes, supportListId, emotion } = body;
+    const { serviceSeekerId, date, time, task, notes, photoUrl, completed, emotion } = body;
 
-    const task = await prisma.generalSupportTask.update({
-      where: { id },
+    const taskRecord = await prisma.houseKeepingTask.create({
       data: {
         serviceSeekerId,
         date: new Date(date),
         time,
+        task,
         notes: notes || null,
-        supportListId,
+        photoUrl: photoUrl || null,
+        completed,
         emotion,
+        createdById: userId,
         updatedById: userId,
       },
       include: {
         serviceSeeker: true,
-        supportList: true,
         createdBy: { select: { id: true, firstName: true, lastName: true } },
         updatedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
 
-    return NextResponse.json(task);
+    return NextResponse.json(taskRecord, { status: 201 });
   } catch (error) {
-    console.error('PUT /api/general-support-tasks/[id] error:', error);
-    return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
-  }
-}
-
-export async function DELETE(request, { params }) {
-  try {
-    const userId = getUserIdFromToken(request);
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { id } = await params;
-    await prisma.generalSupportTask.delete({ where: { id } });
-
-    return NextResponse.json({ message: 'Task deleted successfully' });
-  } catch (error) {
-    console.error('DELETE /api/general-support-tasks/[id] error:', error);
-    return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
+    console.error('POST /api/house-keeping-tasks error:', error);
+    return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
   }
 }
 

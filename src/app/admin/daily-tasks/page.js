@@ -13,6 +13,7 @@ import CommunicationNotesTaskForm from './components/CommunicationNotesTaskForm'
 import FamilyPhotoMessageTaskForm from './components/FamilyPhotoMessageTaskForm';
 import FoodDrinkTaskForm from './components/FoodDrinkTaskForm';
 import GeneralSupportTaskForm from './components/GeneralSupportTaskForm';
+import HouseKeepingTaskForm from './components/HouseKeepingTaskForm';
 import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
@@ -23,6 +24,7 @@ import CommunicationNotesTaskView from './components/CommunicationNotesTaskView'
 import FamilyPhotoMessageTaskView from './components/FamilyPhotoMessageTaskView';
 import FoodDrinkTaskView from './components/FoodDrinkTaskView';
 import GeneralSupportTaskView from './components/GeneralSupportTaskView';
+import HouseKeepingTaskView from './components/HouseKeepingTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
@@ -71,7 +73,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'follow_up'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -85,6 +87,7 @@ export default function DailyTasksPage() {
   const [familyPhotoMessageTasks, setFamilyPhotoMessageTasks] = useState([]);
   const [foodDrinkTasks, setFoodDrinkTasks] = useState([]);
   const [generalSupportTasks, setGeneralSupportTasks] = useState([]);
+  const [houseKeepingTasks, setHouseKeepingTasks] = useState([]);
   const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [supportLists, setSupportLists] = useState([]);
@@ -224,6 +227,17 @@ export default function DailyTasksPage() {
     time: new Date().toTimeString().slice(0, 5),
     notes: '',
     supportListId: '',
+    emotion: 'NEUTRAL',
+  });
+
+  const [houseKeepingForm, setHouseKeepingForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    task: '',
+    notes: '',
+    photoUrl: '',
+    completed: 'YES',
     emotion: 'NEUTRAL',
   });
 
@@ -387,6 +401,18 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchHouseKeepingTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/house-keeping-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setHouseKeepingTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setHouseKeepingTasks([]);
+    }
+  };
+
   const fetchSupportLists = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -442,6 +468,7 @@ export default function DailyTasksPage() {
       fetchFamilyPhotoMessageTasks();
       fetchFoodDrinkTasks();
       fetchGeneralSupportTasks();
+      fetchHouseKeepingTasks();
       fetchFollowUpTasks();
       fetchBehaviourTriggers();
       fetchSupportLists();
@@ -794,6 +821,40 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleHouseKeepingSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/house-keeping-tasks/${editing.id}` : '/api/house-keeping-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(houseKeepingForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchHouseKeepingTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'House keeping task updated successfully.' : 'House keeping task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save house keeping task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleAddSupportList = async () => {
     if (!newSupportList.trim()) {
       setNotification({ show: true, message: 'Support type name is required.', type: 'error' });
@@ -931,6 +992,7 @@ export default function DailyTasksPage() {
         'family_photo_message': 'family-photo-message-tasks',
         'food_drink': 'food-drink-tasks',
         'general_support': 'general-support-tasks',
+        'house_keeping': 'house-keeping-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[task.taskType];
@@ -1000,6 +1062,7 @@ export default function DailyTasksPage() {
         'family_photo_message': 'family-photo-message-tasks',
         'food_drink': 'food-drink-tasks',
         'general_support': 'general-support-tasks',
+        'house_keeping': 'house-keeping-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];
@@ -1019,6 +1082,7 @@ export default function DailyTasksPage() {
           'family_photo_message': fetchFamilyPhotoMessageTasks,
           'food_drink': fetchFoodDrinkTasks,
           'general_support': fetchGeneralSupportTasks,
+          'house_keeping': fetchHouseKeepingTasks,
           'follow_up': fetchFollowUpTasks
         };
         await refreshMap[taskToDelete.taskType]();
@@ -1083,6 +1147,7 @@ export default function DailyTasksPage() {
   const familyPhotoMessageTasksWithType = (Array.isArray(familyPhotoMessageTasks) ? familyPhotoMessageTasks : []).map(t => ({ ...t, taskType: 'family_photo_message' }));
   const foodDrinkTasksWithType = (Array.isArray(foodDrinkTasks) ? foodDrinkTasks : []).map(t => ({ ...t, taskType: 'food_drink' }));
   const generalSupportTasksWithType = (Array.isArray(generalSupportTasks) ? generalSupportTasks : []).map(t => ({ ...t, taskType: 'general_support' }));
+  const houseKeepingTasksWithType = (Array.isArray(houseKeepingTasks) ? houseKeepingTasks : []).map(t => ({ ...t, taskType: 'house_keeping' }));
   const followUpTasksWithType = (Array.isArray(followUpTasks) ? followUpTasks : []).map(t => ({ ...t, taskType: 'follow_up' }));
   
   const allTasks = [
@@ -1095,6 +1160,7 @@ export default function DailyTasksPage() {
     ...familyPhotoMessageTasksWithType,
     ...foodDrinkTasksWithType,
     ...generalSupportTasksWithType,
+    ...houseKeepingTasksWithType,
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
@@ -1246,6 +1312,7 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'family_photo_message') subInfo = task.description ? task.description.substring(0, 30) + '...' : 'Family Photo';
                       else if (task.taskType === 'food_drink') subInfo = task.time ? task.time.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Meal';
                       else if (task.taskType === 'general_support') subInfo = task.supportList?.name || 'Support';
+                      else if (task.taskType === 'house_keeping') subInfo = task.task ? (task.task.length > 30 ? task.task.substring(0, 30) + '...' : task.task) : 'Cleaning';
                       else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
@@ -1675,6 +1742,31 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {showModal && selectedTaskType === 'house_keeping' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-gray-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🧹
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">House Keeping</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <HouseKeepingTaskForm
+                  formData={houseKeepingForm}
+                  setFormData={setHouseKeepingForm}
+                  serviceUsers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleHouseKeepingSubmit}
+                  onCancel={()=>setShowModal(false)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          )}
+
           {showModal && selectedTaskType === 'follow_up' && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
@@ -1716,6 +1808,7 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'family_photo_message' ? 'bg-pink-500' :
                       viewData.taskType === 'food_drink' ? 'bg-orange-500' :
                       viewData.taskType === 'general_support' ? 'bg-teal-500' :
+                      viewData.taskType === 'house_keeping' ? 'bg-gray-500' :
                       viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
                       'bg-gray-500'
                     } rounded-xl flex items-center justify-center text-2xl mr-3`}>
@@ -1728,6 +1821,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'family_photo_message' ? '📷' :
                        viewData.taskType === 'food_drink' ? '🍽️' :
                        viewData.taskType === 'general_support' ? '🤝' :
+                       viewData.taskType === 'house_keeping' ? '🧹' :
                        viewData.taskType === 'follow_up' ? '🔄' :
                        '❓'}
                     </div>
@@ -1741,6 +1835,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'family_photo_message' ? 'Family Photo/Message' :
                        viewData.taskType === 'food_drink' ? 'Food/Drink' :
                        viewData.taskType === 'general_support' ? 'General Support' :
+                       viewData.taskType === 'house_keeping' ? 'House Keeping' :
                        viewData.taskType === 'follow_up' ? 'Follow Up' :
                        'Task'} Task Details
                     </h2>
@@ -1765,6 +1860,8 @@ export default function DailyTasksPage() {
                   <FoodDrinkTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'general_support' ? (
                   <GeneralSupportTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                ) : viewData.taskType === 'house_keeping' ? (
+                  <HouseKeepingTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : viewData.taskType === 'follow_up' ? (
                   <FollowUpTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
                 ) : null}

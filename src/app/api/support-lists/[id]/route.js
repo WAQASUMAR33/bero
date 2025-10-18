@@ -24,7 +24,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if support list is in use
     const tasksUsingThis = await prisma.generalSupportTask.count({

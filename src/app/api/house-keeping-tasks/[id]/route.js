@@ -25,11 +25,10 @@ export async function GET(request, { params }) {
     }
 
     const { id } = await params;
-    const task = await prisma.generalSupportTask.findUnique({
+    const task = await prisma.houseKeepingTask.findUnique({
       where: { id },
       include: {
         serviceSeeker: true,
-        supportList: true,
         createdBy: { select: { id: true, firstName: true, lastName: true } },
         updatedBy: { select: { id: true, firstName: true, lastName: true } },
       },
@@ -41,7 +40,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(task);
   } catch (error) {
-    console.error('GET /api/general-support-tasks/[id] error:', error);
+    console.error('GET /api/house-keeping-tasks/[id] error:', error);
     return NextResponse.json({ error: 'Failed to fetch task' }, { status: 500 });
   }
 }
@@ -55,30 +54,31 @@ export async function PUT(request, { params }) {
 
     const { id } = await params;
     const body = await request.json();
-    const { serviceSeekerId, date, time, notes, supportListId, emotion } = body;
+    const { serviceSeekerId, date, time, task, notes, photoUrl, completed, emotion } = body;
 
-    const task = await prisma.generalSupportTask.update({
+    const taskRecord = await prisma.houseKeepingTask.update({
       where: { id },
       data: {
         serviceSeekerId,
         date: new Date(date),
         time,
+        task,
         notes: notes || null,
-        supportListId,
+        photoUrl: photoUrl || null,
+        completed,
         emotion,
         updatedById: userId,
       },
       include: {
         serviceSeeker: true,
-        supportList: true,
         createdBy: { select: { id: true, firstName: true, lastName: true } },
         updatedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
 
-    return NextResponse.json(task);
+    return NextResponse.json(taskRecord);
   } catch (error) {
-    console.error('PUT /api/general-support-tasks/[id] error:', error);
+    console.error('PUT /api/house-keeping-tasks/[id] error:', error);
     return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
   }
 }
@@ -91,11 +91,11 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = await params;
-    await prisma.generalSupportTask.delete({ where: { id } });
+    await prisma.houseKeepingTask.delete({ where: { id } });
 
     return NextResponse.json({ message: 'Task deleted successfully' });
   } catch (error) {
-    console.error('DELETE /api/general-support-tasks/[id] error:', error);
+    console.error('DELETE /api/house-keeping-tasks/[id] error:', error);
     return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
   }
 }

@@ -132,6 +132,8 @@ model User {
   updatedOxygenTasks             OxygenTask[]             @relation("OxygenTaskUpdatedBy")
   createdPersonCentredTasks      PersonCentredTask[]      @relation("PersonCentredTaskCreatedBy")
   updatedPersonCentredTasks      PersonCentredTask[]      @relation("PersonCentredTaskUpdatedBy")
+  createdPhysicalInterventionTasks PhysicalInterventionTask[] @relation("PhysicalInterventionTaskCreatedBy")
+  updatedPhysicalInterventionTasks PhysicalInterventionTask[] @relation("PhysicalInterventionTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -220,6 +222,7 @@ model ServiceSeeker {
   oralCareTasks           OralCareTask[]
   oxygenTasks             OxygenTask[]
   personCentredTasks      PersonCentredTask[]
+  physicalInterventionTasks PhysicalInterventionTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -945,6 +948,50 @@ model PersonCentredTask {
   taskName            PersonCentredTaskName @relation(fields: [nameId], references: [id])
   createdBy           User                  @relation("PersonCentredTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User                  @relation("PersonCentredTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model PhysicalInterventionTask {
+  id                              String        @id @default(cuid())
+  serviceSeekerId                 String
+  date                            DateTime
+  time                            String
+  location                        String
+  wereOtherStaffInvolved          YesNoOption
+  otherStaffNames                 String?
+  wereOtherResidenceInvolved      YesNoOption
+  otherResidenceNamesExplanation  String?
+  wereAnyInjuriesSustained        YesNoOption
+  injuriesExplanation             String?
+  didResidenceStaffRequireMedication YesNoOption
+  medicationExplanation           String?
+  hasAccidentBeenFilled           YesNoOption
+  accidentFilledExplanation       String?
+  accidentBookDateTime            String?
+  accidentBookNumber              String?
+  detailOfPhysicalIntervention    String
+  techniquesUsed                  String
+  positionOfStaffMembers          String
+  durationOfPhysicalIntervention  String
+  wereRestraintsUsed              YesNoOption
+  durationOfWholeIncident         String
+  wasReportedToManager            YesNoOption
+  reportedToManagerExplanation    String?
+  managerReportTime               String?
+  emotion                         EmotionType
+  cqcNotified                     YesNoOption
+  safeguardingNotified            YesNoOption
+  familyMemberNotified            YesNoOption
+  externalProfessional            YesNoOption
+  signatureUrl                    String?
+  createdAt                       DateTime      @default(now())
+  updatedAt                       DateTime      @updatedAt
+  createdById                     String
+  updatedById                     String
+
+  // Relations
+  serviceSeeker                   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy                       User          @relation("PhysicalInterventionTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy                       User          @relation("PhysicalInterventionTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

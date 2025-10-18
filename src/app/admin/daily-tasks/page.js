@@ -22,6 +22,7 @@ import OneToOneTaskForm from './components/OneToOneTaskForm';
 import OralCareTaskForm from './components/OralCareTaskForm';
 import OxygenTaskForm from './components/OxygenTaskForm';
 import PersonCentredTaskForm from './components/PersonCentredTaskForm';
+import PhysicalInterventionTaskForm from './components/PhysicalInterventionTaskForm';
 import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
@@ -41,6 +42,7 @@ import OneToOneTaskView from './components/OneToOneTaskView';
 import OralCareTaskView from './components/OralCareTaskView';
 import OxygenTaskView from './components/OxygenTaskView';
 import PersonCentredTaskView from './components/PersonCentredTaskView';
+import PhysicalInterventionTaskView from './components/PhysicalInterventionTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
@@ -89,7 +91,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'medicine_prn', 'muac', 'observation', 'one_to_one', 'oral_care', 'oxygen', 'person_centred_task', 'follow_up'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'medicine_prn', 'muac', 'observation', 'one_to_one', 'oral_care', 'oxygen', 'person_centred_task', 'physical_intervention', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -112,6 +114,7 @@ export default function DailyTasksPage() {
   const [oralCareTasks, setOralCareTasks] = useState([]);
   const [oxygenTasks, setOxygenTasks] = useState([]);
   const [personCentredTasks, setPersonCentredTasks] = useState([]);
+  const [physicalInterventionTasks, setPhysicalInterventionTasks] = useState([]);
   const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [supportLists, setSupportLists] = useState([]);
@@ -394,6 +397,40 @@ export default function DailyTasksPage() {
     photoUrl: '',
     completed: 'YES',
     emotion: 'NEUTRAL',
+  });
+
+  const [physicalInterventionForm, setPhysicalInterventionForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    location: '',
+    wereOtherStaffInvolved: 'NO',
+    otherStaffNames: '',
+    wereOtherResidenceInvolved: 'NO',
+    otherResidenceNamesExplanation: '',
+    wereAnyInjuriesSustained: 'NO',
+    injuriesExplanation: '',
+    didResidenceStaffRequireMedication: 'NO',
+    medicationExplanation: '',
+    hasAccidentBeenFilled: 'NO',
+    accidentFilledExplanation: '',
+    accidentBookDateTime: '',
+    accidentBookNumber: '',
+    detailOfPhysicalIntervention: '',
+    techniquesUsed: '',
+    positionOfStaffMembers: '',
+    durationOfPhysicalIntervention: '',
+    wereRestraintsUsed: 'NO',
+    durationOfWholeIncident: '',
+    wasReportedToManager: 'NO',
+    reportedToManagerExplanation: '',
+    managerReportTime: '',
+    emotion: 'NEUTRAL',
+    cqcNotified: 'NO',
+    safeguardingNotified: 'NO',
+    familyMemberNotified: 'NO',
+    externalProfessional: 'NO',
+    signatureUrl: '',
   });
 
   useEffect(() => {
@@ -684,6 +721,18 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchPhysicalInterventionTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/physical-intervention-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setPhysicalInterventionTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setPhysicalInterventionTasks([]);
+    }
+  };
+
   const fetchServiceUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -781,6 +830,7 @@ export default function DailyTasksPage() {
       fetchOralCareTasks();
       fetchOxygenTasks();
       fetchPersonCentredTasks();
+      fetchPhysicalInterventionTasks();
       fetchBehaviourTriggers();
       fetchSupportLists();
       fetchPersonCentredTaskNames();
@@ -1672,6 +1722,40 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handlePhysicalInterventionSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/physical-intervention-tasks/${editing.id}` : '/api/physical-intervention-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(physicalInterventionForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchPhysicalInterventionTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Physical Intervention task updated successfully.' : 'Physical Intervention task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save physical intervention task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleAddTrigger = async () => {
     if (!newTrigger.name.trim()) {
       setNotification({ show: true, message: 'Trigger name is required.', type: 'error' });
@@ -1728,6 +1812,7 @@ export default function DailyTasksPage() {
         'oral_care': 'oral-care-tasks',
         'oxygen': 'oxygen-tasks',
         'person_centred_task': 'person-centred-tasks',
+        'physical_intervention': 'physical-intervention-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[task.taskType];
@@ -1806,6 +1891,7 @@ export default function DailyTasksPage() {
         'oral_care': 'oral-care-tasks',
         'oxygen': 'oxygen-tasks',
         'person_centred_task': 'person-centred-tasks',
+        'physical_intervention': 'physical-intervention-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];
@@ -1834,6 +1920,7 @@ export default function DailyTasksPage() {
           'oral_care': fetchOralCareTasks,
           'oxygen': fetchOxygenTasks,
           'person_centred_task': fetchPersonCentredTasks,
+          'physical_intervention': fetchPhysicalInterventionTasks,
           'follow_up': fetchFollowUpTasks
         };
         await refreshMap[taskToDelete.taskType]();
@@ -1908,6 +1995,7 @@ export default function DailyTasksPage() {
   const oralCareTasksWithType = (Array.isArray(oralCareTasks) ? oralCareTasks : []).map(t => ({ ...t, taskType: 'oral_care' }));
   const oxygenTasksWithType = (Array.isArray(oxygenTasks) ? oxygenTasks : []).map(t => ({ ...t, taskType: 'oxygen' }));
   const personCentredTasksWithType = (Array.isArray(personCentredTasks) ? personCentredTasks : []).map(t => ({ ...t, taskType: 'person_centred_task' }));
+  const physicalInterventionTasksWithType = (Array.isArray(physicalInterventionTasks) ? physicalInterventionTasks : []).map(t => ({ ...t, taskType: 'physical_intervention' }));
 
   const allTasks = [
     ...bathingTasksWithType, 
@@ -1928,6 +2016,7 @@ export default function DailyTasksPage() {
     ...oralCareTasksWithType,
     ...oxygenTasksWithType,
     ...personCentredTasksWithType,
+    ...physicalInterventionTasksWithType,
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
@@ -2088,6 +2177,7 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'oral_care') subInfo = task.oralCare?.replace(/_/g, ' ');
                       else if (task.taskType === 'oxygen') subInfo = task.quantity || 'Oxygen';
                       else if (task.taskType === 'person_centred_task') subInfo = task.taskName?.name || 'Person Centred';
+                      else if (task.taskType === 'physical_intervention') subInfo = task.location || 'Physical Intervention';
                       else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
@@ -2763,6 +2853,29 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {showModal && selectedTaskType === 'physical_intervention' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🚨
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Physical Intervention</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <PhysicalInterventionTaskForm
+                  formData={physicalInterventionForm}
+                  setFormData={setPhysicalInterventionForm}
+                  serviceSeekers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handlePhysicalInterventionSubmit}
+                />
+              </div>
+            </div>
+          )}
+
           {/* View Modal */}
           {showViewModal && viewData && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -2788,6 +2901,7 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'oral_care' ? 'bg-cyan-500' :
                       viewData.taskType === 'oxygen' ? 'bg-blue-500' :
                       viewData.taskType === 'person_centred_task' ? 'bg-pink-500' :
+                      viewData.taskType === 'physical_intervention' ? 'bg-red-500' :
                       viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
                       'bg-gray-500'
                     } rounded-xl flex items-center justify-center text-2xl mr-3`}>
@@ -2809,6 +2923,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'oral_care' ? '🦷' :
                        viewData.taskType === 'oxygen' ? '💨' :
                        viewData.taskType === 'person_centred_task' ? '❤️' :
+                       viewData.taskType === 'physical_intervention' ? '🚨' :
                        viewData.taskType === 'follow_up' ? '🔄' :
                        '❓'}
                     </div>
@@ -2831,6 +2946,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'oral_care' ? 'Oral Care' :
                        viewData.taskType === 'oxygen' ? 'Oxygen' :
                        viewData.taskType === 'person_centred_task' ? 'Person Centred Task' :
+                       viewData.taskType === 'physical_intervention' ? 'Physical Intervention' :
                        viewData.taskType === 'follow_up' ? 'Follow Up' :
                        'Task'} Task Details
                     </h2>
@@ -2875,6 +2991,8 @@ export default function DailyTasksPage() {
                   <OxygenTaskView task={viewData} />
                 ) : viewData.taskType === 'person_centred_task' ? (
                   <PersonCentredTaskView task={viewData} />
+                ) : viewData.taskType === 'physical_intervention' ? (
+                  <PhysicalInterventionTaskView task={viewData} />
                 ) : null}
               </div>
             </div>

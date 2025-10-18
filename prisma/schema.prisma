@@ -138,6 +138,8 @@ model User {
   updatedPulseTasks              PulseTask[]              @relation("PulseTaskUpdatedBy")
   createdRepositionTasks         RepositionTask[]         @relation("RepositionTaskCreatedBy")
   updatedRepositionTasks         RepositionTask[]         @relation("RepositionTaskUpdatedBy")
+  createdSpendingMoneyTasks      SpendingMoneyTask[]      @relation("SpendingMoneyTaskCreatedBy")
+  updatedSpendingMoneyTasks      SpendingMoneyTask[]      @relation("SpendingMoneyTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -229,6 +231,7 @@ model ServiceSeeker {
   physicalInterventionTasks PhysicalInterventionTask[]
   pulseTasks              PulseTask[]
   repositionTasks         RepositionTask[]
+  spendingMoneyTasks      SpendingMoneyTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -822,6 +825,18 @@ enum IntactOrEpuapGrade {
   GRADE_4
 }
 
+enum SpendingType {
+  BANK_WITHDRAWAL
+  GENERAL_PURCHASE
+  MEDICINE_OVER_THE_COUNTER
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_CARD
+  VOUCHER
+}
+
 model MedicinePrnTask {
   id                  String              @id @default(cuid())
   serviceSeekerId     String
@@ -1063,6 +1078,28 @@ model RepositionTask {
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User                @relation("RepositionTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User                @relation("RepositionTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model SpendingMoneyTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  type                SpendingType
+  amount              Float
+  paidUsing           PaymentMethod
+  receiptUrl          String?
+  notes               String?
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("SpendingMoneyTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("SpendingMoneyTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

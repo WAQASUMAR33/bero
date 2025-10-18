@@ -136,6 +136,8 @@ model User {
   updatedPhysicalInterventionTasks PhysicalInterventionTask[] @relation("PhysicalInterventionTaskUpdatedBy")
   createdPulseTasks              PulseTask[]              @relation("PulseTaskCreatedBy")
   updatedPulseTasks              PulseTask[]              @relation("PulseTaskUpdatedBy")
+  createdRepositionTasks         RepositionTask[]         @relation("RepositionTaskCreatedBy")
+  updatedRepositionTasks         RepositionTask[]         @relation("RepositionTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
 }
@@ -226,6 +228,7 @@ model ServiceSeeker {
   personCentredTasks      PersonCentredTask[]
   physicalInterventionTasks PhysicalInterventionTask[]
   pulseTasks              PulseTask[]
+  repositionTasks         RepositionTask[]
   followUpTasks           FollowUpTask[]
 
   // Relations
@@ -796,6 +799,29 @@ enum AssistedType {
   ASSISTED
 }
 
+enum RepositionType {
+  SELF_ASSISTED
+  LEFT
+  RIGHT
+  BACK
+  WHEELCHAIR
+  ARM
+  HOISTED
+  SITTING_STRAIGHT_UP
+  WHEELCHAIR_PRESSURE_CUSHION
+  TOILETED
+  HOSPITAL_BED
+  ROUNDS
+}
+
+enum IntactOrEpuapGrade {
+  INTACT
+  GRADE_1
+  GRADE_2
+  GRADE_3
+  GRADE_4
+}
+
 model MedicinePrnTask {
   id                  String              @id @default(cuid())
   serviceSeekerId     String
@@ -1015,6 +1041,28 @@ model PulseTask {
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
   createdBy           User                @relation("PulseTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy           User                @relation("PulseTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model RepositionTask {
+  id                  String              @id @default(cuid())
+  serviceSeekerId     String
+  date                DateTime
+  time                String
+  position            RepositionType
+  intactOrEpuapGrade  IntactOrEpuapGrade
+  notes               String?
+  photoUrl            String?
+  completed           TaskCompletion
+  emotion             EmotionType
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User                @relation("RepositionTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User                @relation("RepositionTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {

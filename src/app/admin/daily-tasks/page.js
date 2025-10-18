@@ -24,6 +24,7 @@ import OxygenTaskForm from './components/OxygenTaskForm';
 import PersonCentredTaskForm from './components/PersonCentredTaskForm';
 import PhysicalInterventionTaskForm from './components/PhysicalInterventionTaskForm';
 import PulseTaskForm from './components/PulseTaskForm';
+import RepositionTaskForm from './components/RepositionTaskForm';
 import FollowUpTaskForm from './components/FollowUpTaskForm';
 import BathingTaskView from './components/BathingTaskView';
 import BehaviourTaskView from './components/BehaviourTaskView';
@@ -45,6 +46,7 @@ import OxygenTaskView from './components/OxygenTaskView';
 import PersonCentredTaskView from './components/PersonCentredTaskView';
 import PhysicalInterventionTaskView from './components/PhysicalInterventionTaskView';
 import PulseTaskView from './components/PulseTaskView';
+import RepositionTaskView from './components/RepositionTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
@@ -93,7 +95,7 @@ const COLOR_CLASSES = {
   brown: 'bg-amber-700',
 };
 
-const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'medicine_prn', 'muac', 'observation', 'one_to_one', 'oral_care', 'oxygen', 'person_centred_task', 'physical_intervention', 'pulse', 'follow_up'];
+const ENABLED_TASKS = ['bathing', 'behaviour', 'bloodtest', 'blood_pressure', 'comfort_check', 'communication_notes', 'family_photo_message', 'food_drink', 'general_support', 'house_keeping', 'incident_fall', 'medicine_prn', 'muac', 'observation', 'one_to_one', 'oral_care', 'oxygen', 'person_centred_task', 'physical_intervention', 'pulse', 're_position', 'follow_up'];
 
 export default function DailyTasksPage() {
   const [user, setUser] = useState(null);
@@ -118,6 +120,7 @@ export default function DailyTasksPage() {
   const [personCentredTasks, setPersonCentredTasks] = useState([]);
   const [physicalInterventionTasks, setPhysicalInterventionTasks] = useState([]);
   const [pulseTasks, setPulseTasks] = useState([]);
+  const [repositionTasks, setRepositionTasks] = useState([]);
   const [followUpTasks, setFollowUpTasks] = useState([]);
   const [behaviourTriggers, setBehaviourTriggers] = useState([]);
   const [supportLists, setSupportLists] = useState([]);
@@ -446,6 +449,18 @@ export default function DailyTasksPage() {
     emotion: 'NEUTRAL',
   });
 
+  const [repositionForm, setRepositionForm] = useState({
+    serviceSeekerId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0, 5),
+    position: '',
+    intactOrEpuapGrade: '',
+    notes: '',
+    photoUrl: '',
+    completed: 'YES',
+    emotion: 'NEUTRAL',
+  });
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -758,6 +773,18 @@ export default function DailyTasksPage() {
     }
   };
 
+  const fetchRepositionTasks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/reposition-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setRepositionTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      setRepositionTasks([]);
+    }
+  };
+
   const fetchServiceUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -857,6 +884,7 @@ export default function DailyTasksPage() {
       fetchPersonCentredTasks();
       fetchPhysicalInterventionTasks();
       fetchPulseTasks();
+      fetchRepositionTasks();
       fetchBehaviourTriggers();
       fetchSupportLists();
       fetchPersonCentredTaskNames();
@@ -1816,6 +1844,40 @@ export default function DailyTasksPage() {
     }
   };
 
+  const handleRepositionSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const method = editing ? 'PUT' : 'POST';
+      const url = editing ? `/api/reposition-tasks/${editing.id}` : '/api/reposition-tasks';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(repositionForm),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        await fetchRepositionTasks();
+        setNotification({ 
+          show: true, 
+          message: editing ? 'Reposition task updated successfully.' : 'Reposition task added successfully.', 
+          type: 'success' 
+        });
+      } else {
+        const err = await response.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to save reposition task.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while saving.', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleAddTrigger = async () => {
     if (!newTrigger.name.trim()) {
       setNotification({ show: true, message: 'Trigger name is required.', type: 'error' });
@@ -1874,6 +1936,7 @@ export default function DailyTasksPage() {
         'person_centred_task': 'person-centred-tasks',
         'physical_intervention': 'physical-intervention-tasks',
         'pulse': 'pulse-tasks',
+        're_position': 'reposition-tasks',
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[task.taskType];
@@ -1983,6 +2046,7 @@ export default function DailyTasksPage() {
           'person_centred_task': fetchPersonCentredTasks,
           'physical_intervention': fetchPhysicalInterventionTasks,
           'pulse': fetchPulseTasks,
+          're_position': fetchRepositionTasks,
           'follow_up': fetchFollowUpTasks
         };
         await refreshMap[taskToDelete.taskType]();
@@ -2059,6 +2123,7 @@ export default function DailyTasksPage() {
   const personCentredTasksWithType = (Array.isArray(personCentredTasks) ? personCentredTasks : []).map(t => ({ ...t, taskType: 'person_centred_task' }));
   const physicalInterventionTasksWithType = (Array.isArray(physicalInterventionTasks) ? physicalInterventionTasks : []).map(t => ({ ...t, taskType: 'physical_intervention' }));
   const pulseTasksWithType = (Array.isArray(pulseTasks) ? pulseTasks : []).map(t => ({ ...t, taskType: 'pulse' }));
+  const repositionTasksWithType = (Array.isArray(repositionTasks) ? repositionTasks : []).map(t => ({ ...t, taskType: 're_position' }));
 
   const allTasks = [
     ...bathingTasksWithType, 
@@ -2081,6 +2146,7 @@ export default function DailyTasksPage() {
     ...personCentredTasksWithType,
     ...physicalInterventionTasksWithType,
     ...pulseTasksWithType,
+    ...repositionTasksWithType,
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
@@ -2243,6 +2309,7 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'person_centred_task') subInfo = task.taskName?.name || 'Person Centred';
                       else if (task.taskType === 'physical_intervention') subInfo = task.location || 'Physical Intervention';
                       else if (task.taskType === 'pulse') subInfo = `${task.pulseRate} bpm`;
+                      else if (task.taskType === 're_position') subInfo = task.position?.replace(/_/g, ' ');
                       else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
                         <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
@@ -2964,6 +3031,29 @@ export default function DailyTasksPage() {
             </div>
           )}
 
+          {showModal && selectedTaskType === 're_position' && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-2xl mr-3">
+                      🔄
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Re-position</h2>
+                  </div>
+                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+                <RepositionTaskForm
+                  formData={repositionForm}
+                  setFormData={setRepositionForm}
+                  serviceSeekers={serviceUsers}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleRepositionSubmit}
+                />
+              </div>
+            </div>
+          )}
+
           {/* View Modal */}
           {showViewModal && viewData && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -2991,6 +3081,7 @@ export default function DailyTasksPage() {
                       viewData.taskType === 'person_centred_task' ? 'bg-pink-500' :
                       viewData.taskType === 'physical_intervention' ? 'bg-red-500' :
                       viewData.taskType === 'pulse' ? 'bg-red-500' :
+                      viewData.taskType === 're_position' ? 'bg-indigo-500' :
                       viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
                       'bg-gray-500'
                     } rounded-xl flex items-center justify-center text-2xl mr-3`}>
@@ -3014,6 +3105,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'person_centred_task' ? '❤️' :
                        viewData.taskType === 'physical_intervention' ? '🚨' :
                        viewData.taskType === 'pulse' ? '❤️‍🩹' :
+                       viewData.taskType === 're_position' ? '🔄' :
                        viewData.taskType === 'follow_up' ? '🔄' :
                        '❓'}
                     </div>
@@ -3038,6 +3130,7 @@ export default function DailyTasksPage() {
                        viewData.taskType === 'person_centred_task' ? 'Person Centred Task' :
                        viewData.taskType === 'physical_intervention' ? 'Physical Intervention' :
                        viewData.taskType === 'pulse' ? 'Pulse' :
+                       viewData.taskType === 're_position' ? 'Re-position' :
                        viewData.taskType === 'follow_up' ? 'Follow Up' :
                        'Task'} Task Details
                     </h2>
@@ -3086,6 +3179,8 @@ export default function DailyTasksPage() {
                   <PhysicalInterventionTaskView task={viewData} />
                 ) : viewData.taskType === 'pulse' ? (
                   <PulseTaskView task={viewData} />
+                ) : viewData.taskType === 're_position' ? (
+                  <RepositionTaskView task={viewData} />
                 ) : null}
               </div>
             </div>

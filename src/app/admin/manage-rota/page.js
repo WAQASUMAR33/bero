@@ -391,6 +391,7 @@ export default function ManageRotaPage() {
           }}
           onSaved={handleShiftSaved}
           onShiftRunCreated={fetchShiftRuns}
+          onShiftTypeCreated={fetchShiftTypes}
         />
       )}
 

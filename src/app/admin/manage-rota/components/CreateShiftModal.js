@@ -10,7 +10,8 @@ export default function CreateShiftModal({
   shiftRuns,
   onClose,
   onSaved,
-  onShiftRunCreated
+  onShiftRunCreated,
+  onShiftTypeCreated
 }) {
   const [formData, setFormData] = useState({
     serviceSeekerId: '',
@@ -213,8 +214,10 @@ export default function CreateShiftModal({
           careerPayBankHoliday: '',
           payCalculation: 'PER_HOUR'
         });
-        // Refresh shift types
-        window.location.reload(); // Simple reload to refresh shift types
+        // Call the callback to refresh shift types without reloading the page
+        if (onShiftTypeCreated) {
+          onShiftTypeCreated();
+        }
       } else {
         const error = await res.json();
         alert(error.error || 'Failed to create shift type');
@@ -224,6 +227,38 @@ export default function CreateShiftModal({
       alert('Failed to create shift type');
     } finally {
       setIsCreatingShiftType(false);
+    }
+  };
+
+  const handleDeleteShiftType = async (shiftTypeId) => {
+    if (!confirm('Are you sure you want to delete this shift type? This cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/shift-types/${shiftTypeId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        // Clear the selection if the deleted type was selected
+        if (formData.shiftTypeId === shiftTypeId) {
+          setFormData({ ...formData, shiftTypeId: '' });
+        }
+        // Refresh shift types
+        if (onShiftTypeCreated) {
+          onShiftTypeCreated();
+        }
+        alert('Shift type deleted successfully');
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Failed to delete shift type');
+      }
+    } catch (error) {
+      console.error('Error deleting shift type:', error);
+      alert('Failed to delete shift type');
     }
   };
 
@@ -354,27 +389,43 @@ export default function CreateShiftModal({
             {/* Shift Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Shift Type *</label>
-              <div className="flex items-center gap-2">
-                <select
-                  required
-                  value={formData.shiftTypeId}
-                  onChange={(e) => setFormData({ ...formData, shiftTypeId: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                >
-                  <option value="">Select Shift Type</option>
-                  {shiftTypes.map(st => (
-                    <option key={st.id} value={st.id}>
-                      {st.name} - £{st.careerPayRegular} ({st.payCalculation === 'PER_HOUR' ? 'per hour' : 'per shift'})
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={() => setShowShiftTypeModal(true)}
-                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium whitespace-nowrap"
-                >
-                  + Add New
-                </button>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <select
+                    required
+                    value={formData.shiftTypeId}
+                    onChange={(e) => setFormData({ ...formData, shiftTypeId: e.target.value })}
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                  >
+                    <option value="">Select Shift Type</option>
+                    {shiftTypes.map(st => (
+                      <option key={st.id} value={st.id}>
+                        {st.name} - £{st.careerPayRegular} ({st.payCalculation === 'PER_HOUR' ? 'per hour' : 'per shift'})
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowShiftTypeModal(true)}
+                    className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium whitespace-nowrap"
+                  >
+                    + Add New
+                  </button>
+                </div>
+                
+                {/* Delete Selected Shift Type Button */}
+                {formData.shiftTypeId && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteShiftType(formData.shiftTypeId)}
+                    className="w-full px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Delete Selected Shift Type
+                  </button>
+                )}
               </div>
             </div>
 

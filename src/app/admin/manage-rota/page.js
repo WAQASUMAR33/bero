@@ -90,8 +90,18 @@ export default function ManageRotaPage() {
       const res = await fetch('/api/funders', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
-      setFunders(Array.isArray(data) ? data : []);
+      const result = await res.json();
+      // Handle both direct array and {success, data} format
+      const fundersData = result.success ? result.data : (Array.isArray(result) ? result : []);
+      // Transform to match our needs
+      const transformedFunders = fundersData.map(f => ({
+        id: f.id,
+        fundingSource: f.name || f.fundingSource,
+        contractNumber: f.contractNumber,
+        serviceType: f.serviceType,
+        paymentType: f.paymentType
+      }));
+      setFunders(transformedFunders);
     } catch (e) {
       console.error(e);
       setFunders([]);

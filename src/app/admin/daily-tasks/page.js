@@ -2354,6 +2354,308 @@ export default function DailyTasksPage() {
         careIntervention: task.careIntervention || '',
         emotion: task.emotion,
       });
+    } else if (task.taskType === 'bloodtest') {
+      setBloodTestForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        testType: task.testType,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'blood_pressure') {
+      setBloodPressureForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        systolic: task.systolic,
+        diastolic: task.diastolic,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'comfort_check') {
+      setComfortCheckForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        checkType: task.checkType,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'communication_notes') {
+      setCommunicationNotesForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        note: task.note || '',
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'encouragement') {
+      setEncouragementForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        encouragement: task.encouragement || '',
+        note: task.note || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'family_photo_message') {
+      setFamilyPhotoMessageForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        messageType: task.messageType,
+        fromName: task.fromName || '',
+        relationship: task.relationship || '',
+        message: task.message || '',
+        photoUrl: task.photoUrl || '',
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'food_drink') {
+      setFoodDrinkForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        mealType: task.mealType,
+        amountEaten: task.amountEaten,
+        drinkIntake: task.drinkIntake,
+        notes: task.notes || '',
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'general_support') {
+      setGeneralSupportForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        supportListId: task.supportListId,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'house_keeping') {
+      setHouseKeepingForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        taskDescription: task.taskDescription || '',
+        areasCleaned: task.areasCleaned || '',
+        notes: task.notes || '',
+        completed: task.completed,
+      });
+    } else if (task.taskType === 'incident_fall') {
+      setIncidentFallForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        incidentTypeId: task.incidentTypeId,
+        incidentLocationId: task.incidentLocationId,
+        description: task.description || '',
+        actionTaken: task.actionTaken || '',
+        injurySustained: task.injurySustained,
+        injuryDetails: task.injuryDetails || '',
+        witnessedBy: task.witnessedBy || '',
+        reportedToManager: task.reportedToManager,
+        managerNotifiedAt: task.managerNotifiedAt ? new Date(task.managerNotifiedAt).toISOString().slice(0, 16) : '',
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'medicine_prn') {
+      setMedicinePrnForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        medicineName: task.medicineName || '',
+        dosage: task.dosage || '',
+        reason: task.reason || '',
+        administered: task.administered,
+        notes: task.notes || '',
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'muac') {
+      setMuacForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        measurement: task.measurement,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'observation') {
+      setObservationForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        observation: task.observation || '',
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'one_to_one') {
+      setOneToOneForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        activity: task.activity || '',
+        duration: task.duration,
+        notes: task.notes || '',
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'oral_care') {
+      setOralCareForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        teethBrushed: task.teethBrushed,
+        denturesRemoved: task.denturesRemoved,
+        mouthwashUsed: task.mouthwashUsed,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'oxygen') {
+      setOxygenForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        oxygenLevel: task.oxygenLevel,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'person_centred_task') {
+      setPersonCentredTaskForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        taskNameId: task.taskNameId,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'physical_intervention') {
+      setPhysicalInterventionForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        location: task.location || '',
+        wereOtherStaffInvolved: task.wereOtherStaffInvolved,
+        otherStaffNames: task.otherStaffNames || '',
+        wereOtherResidenceInvolved: task.wereOtherResidenceInvolved,
+        otherResidenceNamesExplanation: task.otherResidenceNamesExplanation || '',
+        wereAnyInjuriesSustained: task.wereAnyInjuriesSustained,
+        injuriesExplanation: task.injuriesExplanation || '',
+        didResidenceStaffRequireMedication: task.didResidenceStaffRequireMedication,
+        medicationExplanation: task.medicationExplanation || '',
+        hasAccidentBeenFilled: task.hasAccidentBeenFilled,
+        accidentFilledExplanation: task.accidentFilledExplanation || '',
+        accidentBookDateTime: task.accidentBookDateTime ? new Date(task.accidentBookDateTime).toISOString().slice(0, 16) : '',
+        accidentBookNumber: task.accidentBookNumber || '',
+        detailOfPhysicalIntervention: task.detailOfPhysicalIntervention || '',
+        techniquesUsed: task.techniquesUsed || '',
+        positionOfStaffMembers: task.positionOfStaffMembers || '',
+        durationOfPhysicalIntervention: task.durationOfPhysicalIntervention || '',
+        wereRestraintsUsed: task.wereRestraintsUsed,
+        durationOfWholeIncident: task.durationOfWholeIncident || '',
+        wasReportedToManager: task.wasReportedToManager,
+        reportedToManagerExplanation: task.reportedToManagerExplanation || '',
+        managerReportTime: task.managerReportTime ? new Date(task.managerReportTime).toISOString().slice(0, 16) : '',
+        emotion: task.emotion,
+        cqcNotified: task.cqcNotified,
+        safeguardingNotified: task.safeguardingNotified,
+        familyMemberNotified: task.familyMemberNotified,
+        externalProfessional: task.externalProfessional,
+        signatureUrl: task.signatureUrl || '',
+      });
+    } else if (task.taskType === 'pulse') {
+      setPulseForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        pulseRate: task.pulseRate,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 're_position') {
+      setRepositionForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        position: task.position,
+        intactOrEpuapGrade: task.intactOrEpuapGrade,
+        notes: task.notes || '',
+        photoUrl: task.photoUrl || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'spending_money') {
+      setSpendingMoneyForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        type: task.type,
+        amount: task.amount,
+        paidUsing: task.paidUsing,
+        receiptUrl: task.receiptUrl || '',
+        notes: task.notes || '',
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'stool') {
+      setStoolForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        type: task.type,
+        urinePassed: task.urinePassed,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'temperature') {
+      setTemperatureForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        temperatureInC: task.temperatureInC,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'visit') {
+      setVisitForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        visitType: task.visitType,
+        announced: task.announced,
+        name: task.name || '',
+        relationship: task.relationship || '',
+        role: task.role || '',
+        purpose: task.purpose || '',
+        summary: task.summary || '',
+        completed: task.completed,
+      });
+    } else if (task.taskType === 'weight') {
+      setWeightForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        weight: task.weight,
+        notes: task.notes || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
+    } else if (task.taskType === 'follow_up') {
+      setFollowUpForm({
+        serviceSeekerId: task.serviceSeekerId,
+        date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
+        time: task.time || '',
+        followUpNote: task.followUpNote || '',
+        completed: task.completed,
+        emotion: task.emotion,
+      });
     }
     setSelectedTaskType(task.taskType);
     setShowModal(true);

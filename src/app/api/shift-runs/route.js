@@ -1,86 +1,75 @@
+'use server';
+
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
-// GET all shift runs
-export async function GET() {
+// GET /api/shift-runs
+export async function GET(request) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+
     const shiftRuns = await prisma.shiftRun.findMany({
       include: {
-        shifts: {
-          select: {
-            id: true,
-          },
+        createdBy: {
+          select: { id: true, firstName: true, lastName: true }
         },
+        updatedBy: {
+          select: { id: true, firstName: true, lastName: true }
+        }
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' }
     });
 
-    // Add shift count to each shift run
-    const shiftRunsWithCount = shiftRuns.map(shiftRun => ({
-      ...shiftRun,
-      totalShifts: shiftRun.shifts.length,
-      shifts: undefined, // Remove the shifts array, keep only the count
-    }));
-
-    return NextResponse.json({
-      success: true,
-      data: shiftRunsWithCount,
-    });
+    return NextResponse.json(shiftRuns);
   } catch (error) {
-    console.error('Error fetching shift runs:', error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    console.error('GET /shift-runs error:', error);
+    return NextResponse.json({ error: 'Failed to fetch shift runs' }, { status: 500 });
   }
 }
 
-// POST - Create new shift run
+// POST /api/shift-runs
 export async function POST(request) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+
     const body = await request.json();
-    const { name } = body;
+    const { name, description } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { success: false, error: 'Name is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'name is required' }, { status: 400 });
     }
 
     const shiftRun = await prisma.shiftRun.create({
       data: {
         name,
+        description: description || null,
+        createdById: decoded.userId,
+        updatedById: decoded.userId
       },
       include: {
-        shifts: {
-          select: {
-            id: true,
-          },
+        createdBy: {
+          select: { id: true, firstName: true, lastName: true }
         },
-      },
+        updatedBy: {
+          select: { id: true, firstName: true, lastName: true }
+        }
+      }
     });
 
-    const shiftRunWithCount = {
-      ...shiftRun,
-      totalShifts: shiftRun.shifts.length,
-      shifts: undefined,
-    };
-
-    return NextResponse.json({
-      success: true,
-      data: shiftRunWithCount,
-    });
+    return NextResponse.json(shiftRun, { status: 201 });
   } catch (error) {
-    console.error('Error creating shift run:', error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    console.error('POST /shift-runs error:', error);
+    return NextResponse.json({ error: 'Failed to create shift run' }, { status: 500 });
   }
 }
-

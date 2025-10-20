@@ -40,6 +40,35 @@ enum FunderPaymentType {
   BY_PERCENTAGE_SPENT
 }
 
+enum ShiftRecurrence {
+  DAILY
+  WEEK
+  TWO_WEEK
+  THREE_WEEK
+  FOUR_WEEK
+  FIVE_WEEK
+  SIX_WEEK
+  SEVEN_WEEK
+  EIGHT_WEEK
+  NINE_WEEK
+  TEN_WEEK
+  TWO_DAY
+  THREE_DAY
+  FOUR_DAY
+  FIVE_DAY
+  SIX_DAY
+}
+
+enum CareerPayType {
+  REGULAR
+  BANK_HOLIDAY
+}
+
+enum PayCalculation {
+  PER_HOUR
+  PER_SHIFT
+}
+
 //
 // MODELS
 //
@@ -152,6 +181,13 @@ model User {
   updatedEncouragementTasks      EncouragementTask[]      @relation("EncouragementTaskUpdatedBy")
   createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
   updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
+  
+  // Rota relations
+  createdShiftRuns               ShiftRun[]               @relation("ShiftRunCreatedBy")
+  updatedShiftRuns               ShiftRun[]               @relation("ShiftRunUpdatedBy")
+  createdShifts                  Shift[]                  @relation("ShiftCreatedBy")
+  updatedShifts                  Shift[]                  @relation("ShiftUpdatedBy")
+  shiftAssignments               ShiftAssignment[]        @relation("ShiftAssignments")
 }
 
 model UserPermission {
@@ -254,33 +290,6 @@ model ServiceSeeker {
   updatedBy               User?    @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
 }
 
-model Shift {
-  id                 String    @id @default(cuid())
-  serviceSeekerId    String
-  fromDate           DateTime
-  untilDate          DateTime?
-  every              String?   // "day" | "week"
-  startTime          DateTime
-  endTime            DateTime
-  shiftType          String
-  totalStaffReq      Int
-  funderId           String?
-  chargesPer         ChargeType
-  charges            Float
-  chargesBankHoliday Float?
-  timeCritical       Boolean   @default(false)
-  shiftRunId         String?
-  noteCaretaker      String?
-  noteManager        String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  // Relations
-  serviceSeeker      ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
-  funder             Funder?       @relation(fields: [funderId], references: [id])
-  shiftRun           ShiftRun?     @relation(fields: [shiftRunId], references: [id])
-}
-
 model Funder {
   id              String   @id @default(cuid())
   fundingSource   String
@@ -292,15 +301,6 @@ model Funder {
   updatedAt       DateTime @updatedAt
 
   shifts          Shift[]
-}
-
-model ShiftRun {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  shifts    Shift[]
 }
 
 model StandByShift {
@@ -1301,4 +1301,79 @@ model FollowUpTask {
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
   createdBy         User             @relation("FollowUpTaskCreatedBy", fields: [createdById], references: [id])
   updatedBy         User             @relation("FollowUpTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+// Rota Models
+model ShiftType {
+  id                  String            @id @default(cuid())
+  name                String            @unique
+  careerPayRegular    Float
+  careerPayBankHoliday Float
+  payCalculation      PayCalculation    @default(PER_HOUR)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  // Relations
+  shifts              Shift[]
+}
+
+model ShiftRun {
+  id                  String            @id @default(cuid())
+  name                String
+  description         String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  createdById         String?
+  updatedById         String?
+
+  // Relations
+  createdBy           User?             @relation("ShiftRunCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User?             @relation("ShiftRunUpdatedBy", fields: [updatedById], references: [id])
+  shifts              Shift[]
+}
+
+model Shift {
+  id                  String            @id @default(cuid())
+  serviceSeekerId     String
+  fromDate            DateTime
+  untilDate           DateTime?
+  recurrence          ShiftRecurrence
+  startTime           String
+  endTime             String
+  shiftTypeId         String
+  totalStaffRequired  Int               @default(1)
+  funderId            String?
+  timeCritical        Boolean           @default(false)
+  shiftRunId          String?
+  notesForCarers      String?
+  notesForManager     String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  createdById         String
+  updatedById         String
+
+  // Relations
+  serviceSeeker       ServiceSeeker     @relation(fields: [serviceSeekerId], references: [id])
+  shiftType           ShiftType         @relation(fields: [shiftTypeId], references: [id])
+  funder              Funder?           @relation(fields: [funderId], references: [id])
+  shiftRun            ShiftRun?         @relation(fields: [shiftRunId], references: [id])
+  createdBy           User              @relation("ShiftCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User              @relation("ShiftUpdatedBy", fields: [updatedById], references: [id])
+  assignments         ShiftAssignment[]
+}
+
+model ShiftAssignment {
+  id                  String            @id @default(cuid())
+  shiftId             String
+  userId              String
+  date                DateTime
+  status              String            @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  // Relations
+  shift               Shift             @relation(fields: [shiftId], references: [id])
+  user                User              @relation("ShiftAssignments", fields: [userId], references: [id])
+
+  @@unique([shiftId, userId, date])
 }

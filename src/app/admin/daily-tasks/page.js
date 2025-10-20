@@ -2327,7 +2327,7 @@ export default function DailyTasksPage() {
     setEditing(task);
     if (task.taskType === 'bathing') {
       setBathingForm({
-        serviceSeekerId: task.serviceSeekerId,
+        serviceSeekerId: task.serviceSeekerId || '',
         date: task.date ? new Date(task.date).toISOString().split('T')[0] : '',
         time: task.time || '',
         bathingType: task.bathingType,
@@ -3329,6 +3329,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleEncouragementSubmit}
+                  editing={editing}
                 />
               </div>
             </div>
@@ -3733,6 +3734,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handlePhysicalInterventionSubmit}
+                  editing={editing}
                 />
               </div>
             </div>
@@ -3756,6 +3758,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handlePulseSubmit}
+                  editing={editing}
                 />
               </div>
             </div>
@@ -3779,6 +3782,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleRepositionSubmit}
+                  editing={editing}
                 />
               </div>
             </div>
@@ -3802,6 +3806,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleSpendingMoneySubmit}
+                  editing={editing}
                 />
               </div>
             </div>
@@ -3825,6 +3830,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleStoolSubmit}
+                  editing={editing}
                 />
               </div>
             </div>
@@ -3848,6 +3854,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleTemperatureSubmit}
+                  editing={editing}
                 />
               </div>
             </div>
@@ -3871,6 +3878,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleVisitSubmit}
+                  editing={editing}
                 />
               </div>
             </div>
@@ -3894,6 +3902,7 @@ export default function DailyTasksPage() {
                   serviceSeekers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleWeightSubmit}
+                  editing={editing}
                 />
               </div>
             </div>

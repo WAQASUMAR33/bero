@@ -20,15 +20,19 @@ export async function GET(request) {
     const date = searchParams.get('date'); // ISO date string
     const week = searchParams.get('week'); // ISO date string for week start
 
-    let whereClause = {};
+    let whereClause = {
+      AND: []
+    };
 
     // If view is 'my', only show shifts assigned to the current user
     if (view === 'my') {
-      whereClause.assignments = {
-        some: {
-          userId: decoded.userId
+      whereClause.AND.push({
+        assignments: {
+          some: {
+            userId: decoded.userId
+          }
         }
-      };
+      });
     }
 
     // Filter by date range if provided
@@ -38,13 +42,17 @@ export async function GET(request) {
       const endOfDay = new Date(date);
       endOfDay.setHours(23, 59, 59, 999);
 
-      whereClause.fromDate = {
-        lte: endOfDay
-      };
-      whereClause.OR = [
-        { untilDate: null },
-        { untilDate: { gte: startOfDay } }
-      ];
+      whereClause.AND.push({
+        fromDate: {
+          lte: endOfDay
+        }
+      });
+      whereClause.AND.push({
+        OR: [
+          { untilDate: null },
+          { untilDate: { gte: startOfDay } }
+        ]
+      });
     }
 
     if (week) {
@@ -53,13 +61,22 @@ export async function GET(request) {
       endOfWeek.setDate(endOfWeek.getDate() + 6);
       endOfWeek.setHours(23, 59, 59, 999);
 
-      whereClause.fromDate = {
-        lte: endOfWeek
-      };
-      whereClause.OR = [
-        { untilDate: null },
-        { untilDate: { gte: startOfWeek } }
-      ];
+      whereClause.AND.push({
+        fromDate: {
+          lte: endOfWeek
+        }
+      });
+      whereClause.AND.push({
+        OR: [
+          { untilDate: null },
+          { untilDate: { gte: startOfWeek } }
+        ]
+      });
+    }
+
+    // If no filters, remove the empty AND array
+    if (whereClause.AND.length === 0) {
+      delete whereClause.AND;
     }
 
     const shifts = await prisma.shift.findMany({

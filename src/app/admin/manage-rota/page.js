@@ -225,13 +225,11 @@ export default function ManageRotaPage() {
   const weekDays = view === 'weekly' ? getWeekDays(getWeekStart(currentDate)) : [currentDate];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col lg:ml-64">
         <Header user={user} />
-        
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {/* Page Header */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Rota</h1>

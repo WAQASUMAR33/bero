@@ -303,10 +303,10 @@ export default function MyRotaPage() {
 
           {/* Calendar Grid */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <div className="inline-block min-w-full">
+            <div className={view === 'weekly' ? 'overflow-x-auto' : ''}>
+              <div className="min-w-full">
                 {/* Header */}
-                <div className="grid" style={{ gridTemplateColumns: `80px repeat(${weekDays.length}, minmax(200px, 1fr))` }}>
+                <div className="grid" style={{ gridTemplateColumns: view === 'daily' ? `80px 1fr` : `80px repeat(7, minmax(150px, 1fr))` }}>
                   <div className="bg-gray-50 border-b border-r border-gray-200 p-3 font-semibold text-gray-700">
                     Time
                   </div>
@@ -324,7 +324,7 @@ export default function MyRotaPage() {
 
                 {/* Time Slots */}
                 {hours.map(hour => (
-                  <div key={hour} className="grid" style={{ gridTemplateColumns: `80px repeat(${weekDays.length}, minmax(200px, 1fr))` }}>
+                  <div key={hour} className="grid" style={{ gridTemplateColumns: view === 'daily' ? `80px 1fr` : `80px repeat(7, minmax(150px, 1fr))` }}>
                     <div className="border-b border-r border-gray-200 p-3 text-sm font-medium text-gray-600 bg-gray-50">
                       {hour.toString().padStart(2, '0')}:00
                     </div>

@@ -186,17 +186,63 @@ export default function ManageRotaPage() {
 
   const getShiftsForTimeSlot = (date, hour) => {
     return shifts.filter(shift => {
-      const shiftDate = new Date(shift.fromDate);
       const shiftStartHour = parseInt(shift.startTime.split(':')[0]);
       const shiftEndHour = parseInt(shift.endTime.split(':')[0]);
       
-      // Check if shift is on this date
-      const isSameDate = shiftDate.toDateString() === date.toDateString();
-      
       // Check if this hour falls within the shift time
       const isInTimeRange = hour >= shiftStartHour && hour < shiftEndHour;
-      
-      return isSameDate && isInTimeRange;
+      if (!isInTimeRange) return false;
+
+      // Check if shift occurs on this date based on recurrence
+      const fromDate = new Date(shift.fromDate);
+      fromDate.setHours(0, 0, 0, 0);
+      const untilDate = shift.untilDate ? new Date(shift.untilDate) : null;
+      const checkDate = new Date(date);
+      checkDate.setHours(0, 0, 0, 0);
+
+      // Check if date is within the shift's date range
+      if (checkDate < fromDate) return false;
+      if (untilDate && checkDate > untilDate) return false;
+
+      // Check recurrence pattern
+      const daysDiff = Math.floor((checkDate - fromDate) / (1000 * 60 * 60 * 24));
+
+      switch (shift.recurrence) {
+        case 'DAILY':
+          return true;
+        case 'WEEK':
+          return daysDiff % 7 === 0;
+        case 'TWO_WEEK':
+          return daysDiff % 14 === 0;
+        case 'THREE_WEEK':
+          return daysDiff % 21 === 0;
+        case 'FOUR_WEEK':
+          return daysDiff % 28 === 0;
+        case 'FIVE_WEEK':
+          return daysDiff % 35 === 0;
+        case 'SIX_WEEK':
+          return daysDiff % 42 === 0;
+        case 'SEVEN_WEEK':
+          return daysDiff % 49 === 0;
+        case 'EIGHT_WEEK':
+          return daysDiff % 56 === 0;
+        case 'NINE_WEEK':
+          return daysDiff % 63 === 0;
+        case 'TEN_WEEK':
+          return daysDiff % 70 === 0;
+        case 'TWO_DAY':
+          return daysDiff % 2 === 0;
+        case 'THREE_DAY':
+          return daysDiff % 3 === 0;
+        case 'FOUR_DAY':
+          return daysDiff % 4 === 0;
+        case 'FIVE_DAY':
+          return daysDiff % 5 === 0;
+        case 'SIX_DAY':
+          return daysDiff % 6 === 0;
+        default:
+          return false;
+      }
     });
   };
 

@@ -43,6 +43,7 @@ export default function CreateShiftModal({
   });
   const [isCreatingShiftType, setIsCreatingShiftType] = useState(false);
   const [calculatedWage, setCalculatedWage] = useState(null);
+  const [showManageShiftTypesModal, setShowManageShiftTypesModal] = useState(false);
 
   useEffect(() => {
     if (shift) {
@@ -410,18 +411,13 @@ export default function CreateShiftModal({
                 >
                   + Add New
                 </button>
-                {formData.shiftTypeId && (
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteShiftType(formData.shiftTypeId)}
-                    className="px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                    title="Delete Selected Shift Type"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowManageShiftTypesModal(true)}
+                  className="px-4 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors font-medium whitespace-nowrap"
+                >
+                  Manage
+                </button>
               </div>
             </div>
 
@@ -744,6 +740,98 @@ export default function CreateShiftModal({
                     {isCreatingShiftType ? 'Creating...' : 'Create'}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Shift Types Modal */}
+      {showManageShiftTypesModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center backdrop-blur-md bg-black/30">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <h3 className="text-xl font-semibold text-white">Manage Shift Types</h3>
+              <button
+                onClick={() => setShowManageShiftTypesModal(false)}
+                className="text-white hover:text-gray-200 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="mb-4 flex justify-between items-center">
+                <p className="text-gray-600">Manage all shift types. Click delete to remove a shift type.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowManageShiftTypesModal(false);
+                    setShowShiftTypeModal(true);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all"
+                >
+                  + Add New Shift Type
+                </button>
+              </div>
+              
+              <div className="space-y-3">
+                {shiftTypes.map((shiftType) => (
+                  <div key={shiftType.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{shiftType.name}</h4>
+                            <div className="text-sm text-gray-600 mt-1">
+                              <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-2">
+                                {shiftType.payCalculation === 'PER_HOUR' ? 'Per Hour' : 'Per Shift'}
+                              </span>
+                              Regular: £{shiftType.careerPayRegular} | Bank Holiday: £{shiftType.careerPayBankHoliday}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.shiftTypeId === shiftType.id && (
+                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                            Currently Selected
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteShiftType(shiftType.id)}
+                          className="px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                          title="Delete Shift Type"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {shiftTypes.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <p>No shift types found</p>
+                    <p className="text-sm">Create your first shift type to get started</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowManageShiftTypesModal(false)}
+                  className="px-6 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>

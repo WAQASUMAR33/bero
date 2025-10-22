@@ -389,41 +389,37 @@ export default function CreateShiftModal({
             {/* Shift Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Shift Type *</label>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <select
-                    required
-                    value={formData.shiftTypeId}
-                    onChange={(e) => setFormData({ ...formData, shiftTypeId: e.target.value })}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                  >
-                    <option value="">Select Shift Type</option>
-                    {shiftTypes.map(st => (
-                      <option key={st.id} value={st.id}>
-                        {st.name} - £{st.careerPayRegular} ({st.payCalculation === 'PER_HOUR' ? 'per hour' : 'per shift'})
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => setShowShiftTypeModal(true)}
-                    className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium whitespace-nowrap"
-                  >
-                    + Add New
-                  </button>
-                </div>
-                
-                {/* Delete Selected Shift Type Button */}
+              <div className="flex items-center gap-2">
+                <select
+                  required
+                  value={formData.shiftTypeId}
+                  onChange={(e) => setFormData({ ...formData, shiftTypeId: e.target.value })}
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+                >
+                  <option value="">Select Shift Type</option>
+                  {shiftTypes.map(st => (
+                    <option key={st.id} value={st.id}>
+                      {st.name} - £{st.careerPayRegular} ({st.payCalculation === 'PER_HOUR' ? 'per hour' : 'per shift'})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowShiftTypeModal(true)}
+                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium whitespace-nowrap"
+                >
+                  + Add New
+                </button>
                 {formData.shiftTypeId && (
                   <button
                     type="button"
                     onClick={() => handleDeleteShiftType(formData.shiftTypeId)}
-                    className="w-full px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium flex items-center justify-center gap-2"
+                    className="px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                    title="Delete Selected Shift Type"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
-                    Delete Selected Shift Type
                   </button>
                 )}
               </div>
@@ -480,19 +476,19 @@ export default function CreateShiftModal({
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-gray-600">Funding Source:</span>
-                    <span className="ml-2 font-medium">{selectedFunder.fundingSource}</span>
+                    <span className="ml-2 font-semibold text-gray-900">{selectedFunder.fundingSource}</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Contract Number:</span>
-                    <span className="ml-2 font-medium">{selectedFunder.contractNumber}</span>
+                    <span className="ml-2 font-semibold text-gray-900">{selectedFunder.contractNumber}</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Service Type:</span>
-                    <span className="ml-2 font-medium">{selectedFunder.serviceType}</span>
+                    <span className="ml-2 font-semibold text-gray-900">{selectedFunder.serviceType}</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Payment Type:</span>
-                    <span className="ml-2 font-medium">{selectedFunder.paymentType.replace('_', ' ')}</span>
+                    <span className="ml-2 font-semibold text-gray-900">{selectedFunder.paymentType.replace('_', ' ')}</span>
                   </div>
                 </div>
               </div>
@@ -719,30 +715,35 @@ export default function CreateShiftModal({
                   <option value="PER_SHIFT">Per Shift</option>
                 </select>
               </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowShiftTypeModal(false);
-                    setNewShiftType({
-                      name: '',
-                      careerPayRegular: '',
-                      careerPayBankHoliday: '',
-                      payCalculation: 'PER_HOUR'
-                    });
-                  }}
-                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCreateShiftType}
-                  disabled={isCreatingShiftType}
-                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50"
-                >
-                  {isCreatingShiftType ? 'Creating...' : 'Create'}
-                </button>
+              <div className="flex justify-between items-center pt-4">
+                <div className="text-sm text-gray-500">
+                  {shiftTypes.length} shift types available
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowShiftTypeModal(false);
+                      setNewShiftType({
+                        name: '',
+                        careerPayRegular: '',
+                        careerPayBankHoliday: '',
+                        payCalculation: 'PER_HOUR'
+                      });
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCreateShiftType}
+                    disabled={isCreatingShiftType}
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50"
+                  >
+                    {isCreatingShiftType ? 'Creating...' : 'Create'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

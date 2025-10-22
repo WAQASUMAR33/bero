@@ -44,6 +44,15 @@ export default function CreateShiftModal({
   const [isCreatingShiftType, setIsCreatingShiftType] = useState(false);
   const [calculatedWage, setCalculatedWage] = useState(null);
   const [showManageShiftTypesModal, setShowManageShiftTypesModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [shiftTypeToDelete, setShiftTypeToDelete] = useState(null);
+  const [notification, setNotification] = useState(null);
+
+  // Show notification
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 5000);
+  };
 
   useEffect(() => {
     if (shift) {
@@ -135,11 +144,11 @@ export default function CreateShiftModal({
         onSaved();
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to save shift');
+        showNotification(error.error || 'Failed to save shift', 'error');
       }
     } catch (error) {
       console.error('Error saving shift:', error);
-      alert('Failed to save shift');
+      showNotification('Failed to save shift', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -147,7 +156,7 @@ export default function CreateShiftModal({
 
   const handleCreateShiftRun = async () => {
     if (!newShiftRunName.trim()) {
-      alert('Please enter a shift run name');
+      showNotification('Please enter a shift run name', 'error');
       return;
     }
 
@@ -176,11 +185,11 @@ export default function CreateShiftModal({
         onShiftRunCreated();
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to create shift run');
+        showNotification(error.error || 'Failed to create shift run', 'error');
       }
     } catch (error) {
       console.error('Error creating shift run:', error);
-      alert('Failed to create shift run');
+      showNotification('Failed to create shift run', 'error');
     } finally {
       setIsCreatingShiftRun(false);
     }
@@ -188,7 +197,7 @@ export default function CreateShiftModal({
 
   const handleCreateShiftType = async () => {
     if (!newShiftType.name.trim() || !newShiftType.careerPayRegular || !newShiftType.careerPayBankHoliday) {
-      alert('Please fill in all required fields');
+      showNotification('Please fill in all required fields', 'error');
       return;
     }
 
@@ -221,45 +230,52 @@ export default function CreateShiftModal({
         }
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to create shift type');
+        showNotification(error.error || 'Failed to create shift type', 'error');
       }
     } catch (error) {
       console.error('Error creating shift type:', error);
-      alert('Failed to create shift type');
+      showNotification('Failed to create shift type', 'error');
     } finally {
       setIsCreatingShiftType(false);
     }
   };
 
-  const handleDeleteShiftType = async (shiftTypeId) => {
-    if (!confirm('Are you sure you want to delete this shift type? This cannot be undone.')) {
-      return;
-    }
+  const handleDeleteShiftType = (shiftTypeId) => {
+    const shiftType = shiftTypes.find(st => st.id === shiftTypeId);
+    setShiftTypeToDelete(shiftType);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const confirmDeleteShiftType = async () => {
+    if (!shiftTypeToDelete) return;
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/shift-types/${shiftTypeId}`, {
+      const res = await fetch(`/api/shift-types/${shiftTypeToDelete.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.ok) {
         // Clear the selection if the deleted type was selected
-        if (formData.shiftTypeId === shiftTypeId) {
+        if (formData.shiftTypeId === shiftTypeToDelete.id) {
           setFormData({ ...formData, shiftTypeId: '' });
         }
         // Refresh shift types
         if (onShiftTypeCreated) {
           onShiftTypeCreated();
         }
-        alert('Shift type deleted successfully');
+        showNotification('Shift type deleted successfully', 'success');
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to delete shift type');
+        showNotification(error.error || 'Failed to delete shift type', 'error');
       }
     } catch (error) {
       console.error('Error deleting shift type:', error);
-      alert('Failed to delete shift type');
+      showNotification('Failed to delete shift type', 'error');
+    } finally {
+      setShowDeleteConfirmModal(false);
+      setShiftTypeToDelete(null);
     }
   };
 
@@ -267,6 +283,34 @@ export default function CreateShiftModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/30">
+      {/* Notification */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-[70] animate-in slide-in-from-top-2 duration-300">
+          <div className={`px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 ${
+            notification.type === 'success' 
+              ? 'bg-green-500 text-white' 
+              : 'bg-red-500 text-white'
+          }`}>
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              {notification.type === 'success' ? (
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              ) : (
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              )}
+            </svg>
+            <span className="font-medium">{notification.message}</span>
+            <button
+              onClick={() => setNotification(null)}
+              className="ml-2 text-white/80 hover:text-white"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] px-6 py-4 flex items-center justify-between">
@@ -831,6 +875,72 @@ export default function CreateShiftModal({
                   className="px-6 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmModal && shiftTypeToDelete && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center backdrop-blur-md bg-black/30">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <h3 className="text-xl font-semibold text-white">Confirm Delete</h3>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirmModal(false);
+                  setShiftTypeToDelete(null);
+                }}
+                className="text-white hover:text-gray-200 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Delete Shift Type</h4>
+                  <p className="text-sm text-gray-600">This action cannot be undone</p>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h5 className="font-medium text-gray-900 mb-2">{shiftTypeToDelete.name}</h5>
+                <div className="text-sm text-gray-600">
+                  <div>Regular Pay: £{shiftTypeToDelete.careerPayRegular}</div>
+                  <div>Bank Holiday Pay: £{shiftTypeToDelete.careerPayBankHoliday}</div>
+                  <div>Pay Type: {shiftTypeToDelete.payCalculation === 'PER_HOUR' ? 'Per Hour' : 'Per Shift'}</div>
+                </div>
+              </div>
+
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this shift type? This will remove it from all future shifts and cannot be undone.
+              </p>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteConfirmModal(false);
+                    setShiftTypeToDelete(null);
+                  }}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteShiftType}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                >
+                  Delete Shift Type
                 </button>
               </div>
             </div>

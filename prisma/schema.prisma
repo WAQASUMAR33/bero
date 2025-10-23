@@ -74,7 +74,7 @@ enum PayCalculation {
 //
 
 model RoleDefinition {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   name        String   @unique // e.g., "ADMIN", "CAREWORKER"
   displayName String   // e.g., "Administrator", "Care Worker"
   description String?
@@ -87,13 +87,13 @@ model RoleDefinition {
 }
 
 model User {
-  id               String       @id @default(cuid())
+  id               Int          @id @default(autoincrement())
   firstName        String
   lastName         String
   username         String       @unique
   phoneNo          String
   email            String       @unique
-  roleId           String
+  roleId           Int
   password         String
   isEmailVerified  Boolean      @default(false)
   lastLoggedIn     DateTime?
@@ -103,7 +103,7 @@ model User {
   updatedAt        DateTime     @updatedAt
   startDate        DateTime?
   leaveDate        DateTime?
-  regionId         String?
+  regionId         Int?
   emergencyName    String?
   emergencyContact String?
   postalCode       String?
@@ -191,8 +191,8 @@ model User {
 }
 
 model UserPermission {
-  id        String   @id @default(cuid())
-  userId    String
+  id        Int      @id @default(autoincrement())
+  userId    Int
   key       String   // flexible permission key (admin defines)
 
   user      User     @relation(fields: [userId], references: [id])
@@ -201,9 +201,9 @@ model UserPermission {
 }
 
 model Document {
-  id         String   @id @default(cuid())
-  userId     String   // document belongs to this user
-  uploadedBy String   // uploaded by which user
+  id         Int      @id @default(autoincrement())
+  userId     Int      // document belongs to this user
+  uploadedBy Int      // uploaded by which user
 
   fileUrl    String
   createdAt  DateTime @default(now())
@@ -215,7 +215,7 @@ model Document {
 }
 
 model Region {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   title     String
   code      String   @unique
   createdAt DateTime @default(now())
@@ -225,7 +225,7 @@ model Region {
 }
 
 model DailyTask {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   taskTitle String
   logoUrl   String?
   createdAt DateTime @default(now())
@@ -233,7 +233,7 @@ model DailyTask {
 }
 
 model ServiceSeeker {
-  id             String              @id @default(cuid())
+  id             Int                 @id @default(autoincrement())
   firstName      String
   lastName       String
   postalCode     String?
@@ -252,8 +252,8 @@ model ServiceSeeker {
   status         ServiceSeekerStatus
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  createdById    String?
-  updatedById    String?
+  createdById    Int?
+  updatedById    Int?
 
   shifts                  Shift[]
   bathingTasks            BathingTask[]
@@ -291,7 +291,7 @@ model ServiceSeeker {
 }
 
 model Funder {
-  id              String   @id @default(cuid())
+  id              Int      @id @default(autoincrement())
   fundingSource   String
   contractNumber  String
   serviceType     String
@@ -304,8 +304,8 @@ model Funder {
 }
 
 model StandByShift {
-  id                   String   @id @default(cuid())
-  caretakerId          String
+  id                   Int      @id @default(autoincrement())
+  caretakerId          Int
   date                 DateTime
   startTime            DateTime
   endTime              DateTime
@@ -347,8 +347,8 @@ enum EmotionType {
 }
 
 model BathingTask {
-  id                String           @id @default(cuid())
-  serviceSeekerId   String
+  id                Int              @id @default(autoincrement())
+  serviceSeekerId   Int
   date              DateTime
   time              String
   bathingType       BathingType
@@ -361,8 +361,8 @@ model BathingTask {
   emotion           EmotionType
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  createdById       String
-  updatedById       String
+  createdById       Int
+  updatedById       Int
 
   // Relations
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -384,7 +384,7 @@ enum BehaviourType {
 }
 
 model BehaviourTrigger {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   name        String   @unique
   define      String?
   createdAt   DateTime @default(now())
@@ -394,12 +394,12 @@ model BehaviourTrigger {
 }
 
 model BehaviourTask {
-  id                    String           @id @default(cuid())
-  serviceSeekerId       String
+  id                    Int              @id @default(autoincrement())
+  serviceSeekerId       Int
   date                  DateTime
   time                  String
   type                  BehaviourType
-  triggerId             String
+  triggerId             Int
   othersInvolved        Boolean
   othersInvolvedDetails String?
   antecedents           String?
@@ -409,8 +409,8 @@ model BehaviourTask {
   emotion               EmotionType
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
-  createdById           String
-  updatedById           String
+  createdById           Int
+  updatedById           Int
 
   // Relations
   serviceSeeker         ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -440,8 +440,8 @@ enum SideAdministered {
 }
 
 model BloodTestTask {
-  id                  String           @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int              @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   when                BloodTestWhen
@@ -453,8 +453,8 @@ model BloodTestTask {
   emotion             EmotionType
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -463,8 +463,8 @@ model BloodTestTask {
 }
 
 model BloodPressureTask {
-  id                  String           @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int              @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   systolicPressure    Int
@@ -474,8 +474,8 @@ model BloodPressureTask {
   emotion             EmotionType
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -484,8 +484,8 @@ model BloodPressureTask {
 }
 
 model ComfortCheckTask {
-  id                      String           @id @default(cuid())
-  serviceSeekerId         String
+  id                      Int              @id @default(autoincrement())
+  serviceSeekerId         Int
   date                    DateTime
   time                    String
   allNeedsMet             Boolean
@@ -503,8 +503,8 @@ model ComfortCheckTask {
   emotion                 EmotionType
   createdAt               DateTime         @default(now())
   updatedAt               DateTime         @updatedAt
-  createdById             String
-  updatedById             String
+  createdById             Int
+  updatedById             Int
 
   // Relations
   serviceSeeker           ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -513,15 +513,15 @@ model ComfortCheckTask {
 }
 
 model CommunicationNotesTask {
-  id                String           @id @default(cuid())
-  serviceSeekerId   String
+  id                Int              @id @default(autoincrement())
+  serviceSeekerId   Int
   date              DateTime
   notes             String
   emotion           EmotionType
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  createdById       String
-  updatedById       String
+  createdById       Int
+  updatedById       Int
 
   // Relations
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -530,8 +530,8 @@ model CommunicationNotesTask {
 }
 
 model FamilyPhotoMessageTask {
-  id                  String           @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int              @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   description         String?
@@ -540,8 +540,8 @@ model FamilyPhotoMessageTask {
   emotion             EmotionType
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -587,8 +587,8 @@ enum FoodDrinkOffered {
 }
 
 model FoodDrinkTask {
-  id                  String            @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int               @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                MealTime
   foodDrinkOffer      String?
@@ -602,8 +602,8 @@ model FoodDrinkTask {
   emotion             EmotionType
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker     @relation(fields: [serviceSeekerId], references: [id])
@@ -612,7 +612,7 @@ model FoodDrinkTask {
 }
 
 model SupportList {
-  id                String              @id @default(cuid())
+  id                Int                 @id @default(autoincrement())
   name              String              @unique
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
@@ -622,17 +622,17 @@ model SupportList {
 }
 
 model GeneralSupportTask {
-  id                String           @id @default(cuid())
-  serviceSeekerId   String
+  id                Int              @id @default(autoincrement())
+  serviceSeekerId   Int
   date              DateTime
   time              String
   notes             String?
-  supportListId     String
+  supportListId     Int
   emotion           EmotionType
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  createdById       String
-  updatedById       String
+  createdById       Int
+  updatedById       Int
 
   // Relations
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -642,8 +642,8 @@ model GeneralSupportTask {
 }
 
 model HouseKeepingTask {
-  id                String           @id @default(cuid())
-  serviceSeekerId   String
+  id                Int              @id @default(autoincrement())
+  serviceSeekerId   Int
   date              DateTime
   time              String
   task              String
@@ -653,8 +653,8 @@ model HouseKeepingTask {
   emotion           EmotionType
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  createdById       String
-  updatedById       String
+  createdById       Int
+  updatedById       Int
 
   // Relations
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -663,7 +663,7 @@ model HouseKeepingTask {
 }
 
 model IncidentType {
-  id                String              @id @default(cuid())
+  id                Int                 @id @default(autoincrement())
   type              String              @unique
   canEdit           Boolean             @default(true)
   createdAt         DateTime            @default(now())
@@ -674,7 +674,7 @@ model IncidentType {
 }
 
 model IncidentLocation {
-  id                String              @id @default(cuid())
+  id                Int                 @id @default(autoincrement())
   name              String              @unique
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
@@ -740,19 +740,19 @@ enum ContactsCalled {
 }
 
 model IncidentFallTask {
-  id                          String                  @id @default(cuid())
-  serviceSeekerId             String
+  id                          Int                     @id @default(autoincrement())
+  serviceSeekerId             Int
   date                        DateTime
   time                        String
-  incidentTypeId              String
+  incidentTypeId              Int
   incidentLasted              String                  // time duration
-  locationId                  String
+  locationId                  Int
   othersInvolved              Boolean
   othersInvolvedDetails       String?
   injuryDetail                String?
   serviceUserInjured          ServiceUserInjured
   witnessedBy                 WitnessedBy
-  witnessedByStaffId          String?
+  witnessedByStaffId          Int?
   witnessDetail               String?
   photoConsent                PhotoConsent
   photoUrl                    String?
@@ -768,8 +768,8 @@ model IncidentFallTask {
   signatureUrl                String?
   createdAt                   DateTime                @default(now())
   updatedAt                   DateTime                @updatedAt
-  createdById                 String
-  updatedById                 String
+  createdById                 Int
+  updatedById                 Int
 
   // Relations
   serviceSeeker               ServiceSeeker           @relation(fields: [serviceSeekerId], references: [id])
@@ -912,8 +912,8 @@ enum VisitCompletion {
 }
 
 model MedicinePrnTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   applyDate           DateTime
   applyTime           String
   prn                 String
@@ -922,13 +922,13 @@ model MedicinePrnTask {
   administrated       Boolean
   notes               String?
   requestSignoffBy    SignoffRequired
-  signoffByStaffId    String?
+  signoffByStaffId    Int?
   completed           MedicineCompleted
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -938,8 +938,8 @@ model MedicinePrnTask {
 }
 
 model MuacTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   muacInCm            Float
@@ -948,8 +948,8 @@ model MuacTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -958,16 +958,16 @@ model MuacTask {
 }
 
 model ObservationTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   notes               String
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -976,8 +976,8 @@ model ObservationTask {
 }
 
 model OneToOneTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   duration            String
@@ -985,8 +985,8 @@ model OneToOneTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -995,8 +995,8 @@ model OneToOneTask {
 }
 
 model OralCareTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String?
   oralCare            OralCareType
@@ -1007,8 +1007,8 @@ model OralCareTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1017,8 +1017,8 @@ model OralCareTask {
 }
 
 model OxygenTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   quantity            String
@@ -1027,8 +1027,8 @@ model OxygenTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1037,7 +1037,7 @@ model OxygenTask {
 }
 
 model PersonCentredTaskName {
-  id                  String                @id @default(cuid())
+  id                  Int                   @id @default(autoincrement())
   name                String                @unique
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
@@ -1047,19 +1047,19 @@ model PersonCentredTaskName {
 }
 
 model PersonCentredTask {
-  id                  String                @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                   @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
-  nameId              String
+  nameId              Int
   notes               String?
   photoUrl            String?
   completed           TaskCompletion
   emotion             EmotionType
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker         @relation(fields: [serviceSeekerId], references: [id])
@@ -1069,8 +1069,8 @@ model PersonCentredTask {
 }
 
 model PhysicalInterventionTask {
-  id                              String        @id @default(cuid())
-  serviceSeekerId                 String
+  id                              Int           @id @default(autoincrement())
+  serviceSeekerId                 Int
   date                            DateTime
   time                            String
   location                        String
@@ -1103,8 +1103,8 @@ model PhysicalInterventionTask {
   signatureUrl                    String?
   createdAt                       DateTime      @default(now())
   updatedAt                       DateTime      @updatedAt
-  createdById                     String
-  updatedById                     String
+  createdById                     Int
+  updatedById                     Int
 
   // Relations
   serviceSeeker                   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
@@ -1113,8 +1113,8 @@ model PhysicalInterventionTask {
 }
 
 model PulseTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   pulseRate           Int
@@ -1123,8 +1123,8 @@ model PulseTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1133,8 +1133,8 @@ model PulseTask {
 }
 
 model RepositionTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   position            RepositionType
@@ -1145,8 +1145,8 @@ model RepositionTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1155,8 +1155,8 @@ model RepositionTask {
 }
 
 model SpendingMoneyTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   type                SpendingType
@@ -1167,8 +1167,8 @@ model SpendingMoneyTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1177,8 +1177,8 @@ model SpendingMoneyTask {
 }
 
 model StoolTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   type                StoolType
@@ -1188,8 +1188,8 @@ model StoolTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1198,8 +1198,8 @@ model StoolTask {
 }
 
 model TemperatureTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   temperatureInC      Float
@@ -1208,8 +1208,8 @@ model TemperatureTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1218,8 +1218,8 @@ model TemperatureTask {
 }
 
 model VisitTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   visitType           VisitType
@@ -1232,8 +1232,8 @@ model VisitTask {
   completed           VisitCompletion
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1242,8 +1242,8 @@ model VisitTask {
 }
 
 model WeightTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   weight              Float
@@ -1252,8 +1252,8 @@ model WeightTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1262,8 +1262,8 @@ model WeightTask {
 }
 
 model EncouragementTask {
-  id                  String              @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int                 @id @default(autoincrement())
+  serviceSeekerId     Int
   date                DateTime
   time                String
   encouragement       String
@@ -1272,8 +1272,8 @@ model EncouragementTask {
   emotion             EmotionType
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
@@ -1282,8 +1282,8 @@ model EncouragementTask {
 }
 
 model FollowUpTask {
-  id                String           @id @default(cuid())
-  serviceSeekerId   String
+  id                Int              @id @default(autoincrement())
+  serviceSeekerId   Int
   date              DateTime
   time              String
   followUpDate      DateTime
@@ -1294,8 +1294,8 @@ model FollowUpTask {
   emotion           EmotionType
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  createdById       String
-  updatedById       String
+  createdById       Int
+  updatedById       Int
 
   // Relations
   serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
@@ -1305,7 +1305,7 @@ model FollowUpTask {
 
 // Rota Models
 model ShiftType {
-  id                  String            @id @default(cuid())
+  id                  Int               @id @default(autoincrement())
   name                String            @unique
   careerPayRegular    Float
   careerPayBankHoliday Float
@@ -1318,13 +1318,13 @@ model ShiftType {
 }
 
 model ShiftRun {
-  id                  String            @id @default(cuid())
+  id                  Int               @id @default(autoincrement())
   name                String
   description         String?
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
-  createdById         String?
-  updatedById         String?
+  createdById         Int?
+  updatedById         Int?
 
   // Relations
   createdBy           User?             @relation("ShiftRunCreatedBy", fields: [createdById], references: [id])
@@ -1333,24 +1333,24 @@ model ShiftRun {
 }
 
 model Shift {
-  id                  String            @id @default(cuid())
-  serviceSeekerId     String
+  id                  Int               @id @default(autoincrement())
+  serviceSeekerId     Int
   fromDate            DateTime
   untilDate           DateTime?
   recurrence          ShiftRecurrence
   startTime           String
   endTime             String
-  shiftTypeId         String
+  shiftTypeId         Int
   totalStaffRequired  Int               @default(1)
-  funderId            String?
+  funderId            Int?
   timeCritical        Boolean           @default(false)
-  shiftRunId          String?
+  shiftRunId          Int?
   notesForCarers      String?
   notesForManager     String?
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
-  createdById         String
-  updatedById         String
+  createdById         Int
+  updatedById         Int
 
   // Relations
   serviceSeeker       ServiceSeeker     @relation(fields: [serviceSeekerId], references: [id])
@@ -1363,9 +1363,9 @@ model Shift {
 }
 
 model ShiftAssignment {
-  id                  String            @id @default(cuid())
-  shiftId             String
-  userId              String
+  id                  Int               @id @default(autoincrement())
+  shiftId             Int
+  userId              Int
   date                DateTime
   status              String            @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
   createdAt           DateTime          @default(now())

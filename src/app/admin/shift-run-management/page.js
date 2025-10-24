@@ -321,7 +321,7 @@ export default function ShiftRunManagementPage() {
                           <td className="px-6 py-4">
                             <div>
                               <p className="font-semibold text-gray-900">{shiftRun.name}</p>
-                              <p className="text-sm text-gray-500">ID: {shiftRun.id.slice(0, 8)}...</p>
+                              <p className="text-sm text-gray-500">ID: {shiftRun.id}</p>
                             </div>
                           </td>
                           <td className="px-6 py-4">

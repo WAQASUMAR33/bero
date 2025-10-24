@@ -348,7 +348,7 @@ export default function RegionManagementPage() {
                           <td className="px-6 py-4">
                             <div>
                               <p className="font-semibold text-gray-900">{region.title}</p>
-                              <p className="text-sm text-gray-500">ID: {region.id.slice(0, 8)}...</p>
+                              <p className="text-sm text-gray-500">ID: {region.id}</p>
                             </div>
                           </td>
                           <td className="px-6 py-4">

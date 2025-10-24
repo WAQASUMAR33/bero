@@ -10,9 +10,10 @@ export async function GET(request, { params }) {
     await prisma.$connect();
     
     const { id } = await params;
+    const regionId = parseInt(id);
 
     const region = await prisma.region.findUnique({
-      where: { id },
+      where: { id: regionId },
       include: {
         users: {
           select: {
@@ -64,6 +65,7 @@ export async function PUT(request, { params }) {
     await prisma.$connect();
     
     const { id } = await params;
+    const regionId = parseInt(id);
     const body = await request.json();
     const { title, code } = body;
 
@@ -80,7 +82,7 @@ export async function PUT(request, { params }) {
       where: {
         code,
         id: {
-          not: id,
+          not: regionId,
         },
       },
     });
@@ -93,7 +95,7 @@ export async function PUT(request, { params }) {
     }
 
     const updatedRegion = await prisma.region.update({
-      where: { id },
+      where: { id: regionId },
       data: {
         title,
         code
@@ -142,10 +144,11 @@ export async function DELETE(request, { params }) {
     await prisma.$connect();
     
     const { id } = await params;
+    const regionId = parseInt(id);
 
     // Check if region exists and has associated users
     const regionWithUsers = await prisma.region.findUnique({
-      where: { id },
+      where: { id: regionId },
       include: { users: true },
     });
 
@@ -164,7 +167,7 @@ export async function DELETE(request, { params }) {
     }
 
     await prisma.region.delete({
-      where: { id },
+      where: { id: regionId },
     });
 
     return NextResponse.json({ success: true, message: 'Region deleted successfully' });

@@ -7,9 +7,10 @@ const prisma = new PrismaClient();
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
+    const funderId = parseInt(id);
 
     const funder = await prisma.funder.findUnique({
-      where: { id },
+      where: { id: funderId },
       include: {
         shifts: {
           select: {
@@ -66,6 +67,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { id } = await params;
+    const funderId = parseInt(id);
     const body = await request.json();
     const { name, contractNumber, serviceType, costNotes, paymentType } = body;
 
@@ -79,7 +81,7 @@ export async function PUT(request, { params }) {
 
     // Check if funder exists
     const existingFunder = await prisma.funder.findUnique({
-      where: { id }
+      where: { id: funderId }
     });
 
     if (!existingFunder) {
@@ -93,7 +95,7 @@ export async function PUT(request, { params }) {
     const duplicateFunder = await prisma.funder.findFirst({
       where: { 
         contractNumber,
-        id: { not: id }
+        id: { not: funderId }
       }
     });
 
@@ -105,7 +107,7 @@ export async function PUT(request, { params }) {
     }
 
     const funder = await prisma.funder.update({
-      where: { id },
+      where: { id: funderId },
       data: {
         fundingSource: name,
         contractNumber,
@@ -162,10 +164,11 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { id } = await params;
+    const funderId = parseInt(id);
 
     // Check if funder exists
     const existingFunder = await prisma.funder.findUnique({
-      where: { id },
+      where: { id: funderId },
       include: {
         shifts: true
       }

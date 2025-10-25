@@ -96,12 +96,15 @@ export async function DELETE(request, { params }) {
     const { id } = params;
     const shiftRunId = parseInt(id);
     await prisma.shiftRun.delete({
-      where: { id }
+      where: { id: shiftRunId }
     });
 
-    return NextResponse.json({ message: 'Shift run deleted successfully' });
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Shift run deleted successfully' 
+    });
   } catch (error) {
     console.error('DELETE /shift-runs/[id] error:', error);
-    return NextResponse.json({ error: 'Failed to delete shift run' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to delete shift run' }, { status: 500 });
   }
 }

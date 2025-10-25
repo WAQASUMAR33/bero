@@ -15,6 +15,7 @@ export default function LocationMap({
   const [marker, setMarker] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [lastGeocodedPostalCode, setLastGeocodedPostalCode] = useState(null);
 
   // Initialize map
   useEffect(() => {
@@ -93,7 +94,21 @@ export default function LocationMap({
 
   // Handle postal code geocoding
   useEffect(() => {
-    if (!postalCode || !map) return;
+    if (!postalCode || !map || readOnly) return;
+
+    // Validate postal code format (basic UK postal code validation)
+    const ukPostalCodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
+    const trimmedPostalCode = postalCode.trim();
+    
+    // Only geocode if it looks like a complete UK postal code
+    if (!ukPostalCodeRegex.test(trimmedPostalCode) || trimmedPostalCode.length < 5) {
+      return;
+    }
+
+    // Don't geocode if we already geocoded this postal code
+    if (lastGeocodedPostalCode === trimmedPostalCode) {
+      return;
+    }
 
     const geocodePostalCode = async () => {
       setIsLoading(true);
@@ -102,7 +117,7 @@ export default function LocationMap({
       try {
         // Use Nominatim (OpenStreetMap) geocoding service
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&countrycodes=gb&postalcode=${encodeURIComponent(postalCode)}&limit=1`
+          `https://nominatim.openstreetmap.org/search?format=json&countrycodes=gb&postalcode=${encodeURIComponent(trimmedPostalCode)}&limit=1`
         );
         
         if (!response.ok) {
@@ -133,6 +148,9 @@ export default function LocationMap({
           if (onLocationSelect && !readOnly) {
             onLocationSelect(newLat, newLng);
           }
+
+          // Remember this postal code to avoid duplicate requests
+          setLastGeocodedPostalCode(trimmedPostalCode);
         } else {
           setError('Postal code not found');
         }
@@ -144,10 +162,10 @@ export default function LocationMap({
       }
     };
 
-    // Debounce the geocoding request
-    const timeoutId = setTimeout(geocodePostalCode, 500);
+    // Debounce the geocoding request with longer delay
+    const timeoutId = setTimeout(geocodePostalCode, 1500);
     return () => clearTimeout(timeoutId);
-  }, [postalCode, map, onLocationSelect, readOnly]);
+  }, [postalCode, map, onLocationSelect, readOnly, lastGeocodedPostalCode]);
 
   // Update marker when coordinates change externally
   useEffect(() => {

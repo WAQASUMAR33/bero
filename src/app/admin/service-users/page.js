@@ -473,10 +473,12 @@ export default function ServiceUsersPage() {
                           <label className="block text-sm text-gray-600 mb-1">Postal Code</label>
                           <input 
                             value={formData.postalCode} 
-                            onChange={e=>setFormData({...formData, postalCode:e.target.value})} 
+                            onChange={e=>setFormData({...formData, postalCode:e.target.value.toUpperCase()})} 
                             className="w-full border rounded-lg px-3 py-2 text-gray-900" 
-                            placeholder="Enter postal code to show map"
+                            placeholder="e.g. SW1A 1AA"
+                            maxLength={8}
                           />
+                          <p className="text-xs text-gray-500 mt-1">Enter complete UK postal code to auto-locate on map</p>
                         </div>
                       </div>
 

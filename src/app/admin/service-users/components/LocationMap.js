@@ -11,8 +11,8 @@ export default function LocationMap({
   className = "w-full h-64 rounded-lg border"
 }) {
   const mapRef = useRef(null);
+  const markerRef = useRef(null);
   const [map, setMap] = useState(null);
-  const [marker, setMarker] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastGeocodedPostalCode, setLastGeocodedPostalCode] = useState(null);
@@ -52,22 +52,23 @@ export default function LocationMap({
         // Add marker if coordinates exist
         if (latitude && longitude) {
           const markerInstance = L.marker([latitude, longitude]).addTo(mapInstance);
-          setMarker(markerInstance);
+          markerRef.current = markerInstance;
         }
 
         // Add click handler for non-readonly mode
         if (!readOnly) {
-          mapInstance.on('click', (e) => {
+          mapInstance.on('click', async (e) => {
             const { lat, lng } = e.latlng;
             
-            // Remove existing marker
-            if (marker) {
-              mapInstance.removeLayer(marker);
+            // Remove existing marker from the map instance
+            if (markerRef.current) {
+              mapInstance.removeLayer(markerRef.current);
+              markerRef.current = null;
             }
             
             // Add new marker
             const newMarker = L.marker([lat, lng]).addTo(mapInstance);
-            setMarker(newMarker);
+            markerRef.current = newMarker;
             
             // Call callback with new coordinates
             if (onLocationSelect) {
@@ -86,6 +87,10 @@ export default function LocationMap({
 
     // Cleanup
     return () => {
+      if (markerRef.current && map) {
+        map.removeLayer(markerRef.current);
+        markerRef.current = null;
+      }
       if (map) {
         map.remove();
       }
@@ -135,14 +140,15 @@ export default function LocationMap({
           map.setView([newLat, newLng], 13);
 
           // Remove existing marker
-          if (marker) {
-            map.removeLayer(marker);
+          if (markerRef.current) {
+            map.removeLayer(markerRef.current);
+            markerRef.current = null;
           }
 
           // Add new marker
           const L = (await import('leaflet')).default;
           const newMarker = L.marker([newLat, newLng]).addTo(map);
-          setMarker(newMarker);
+          markerRef.current = newMarker;
 
           // Call callback with geocoded coordinates
           if (onLocationSelect && !readOnly) {
@@ -173,14 +179,15 @@ export default function LocationMap({
 
     const updateMarker = async () => {
       // Remove existing marker
-      if (marker) {
-        map.removeLayer(marker);
+      if (markerRef.current) {
+        map.removeLayer(markerRef.current);
+        markerRef.current = null;
       }
 
       // Add new marker
       const L = (await import('leaflet')).default;
       const newMarker = L.marker([latitude, longitude]).addTo(map);
-      setMarker(newMarker);
+      markerRef.current = newMarker;
 
       // Update map view
       map.setView([latitude, longitude], 15);

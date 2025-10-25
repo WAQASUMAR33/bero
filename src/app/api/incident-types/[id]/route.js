@@ -25,16 +25,17 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = await params;
+    const typeId = parseInt(id);
 
     // Check if incident type can be edited/deleted
-    const incidentType = await prisma.incidentType.findUnique({ where: { id } });
+    const incidentType = await prisma.incidentType.findUnique({ where: { id: typeId } });
     if (incidentType && !incidentType.canEdit) {
       return NextResponse.json({ error: 'This default incident type cannot be deleted' }, { status: 400 });
     }
 
     // Check if incident type is in use
     const tasksUsingThis = await prisma.incidentFallTask.count({
-      where: { incidentTypeId: id }
+      where: { incidentTypeId: typeId }
     });
 
     if (tasksUsingThis > 0) {
@@ -43,7 +44,7 @@ export async function DELETE(request, { params }) {
       }, { status: 400 });
     }
 
-    await prisma.incidentType.delete({ where: { id } });
+    await prisma.incidentType.delete({ where: { id: typeId } });
 
     return NextResponse.json({ message: 'Incident type deleted successfully' });
   } catch (error) {

@@ -25,8 +25,9 @@ export async function GET(request, { params }) {
     }
 
     const { id } = await params;
+    const taskId = parseInt(id);
     const task = await prisma.generalSupportTask.findUnique({
-      where: { id },
+      where: { id: taskId },
       include: {
         serviceSeeker: true,
         supportList: true,
@@ -54,11 +55,12 @@ export async function PUT(request, { params }) {
     }
 
     const { id } = await params;
+    const taskId = parseInt(id);
     const body = await request.json();
     const { serviceSeekerId, date, time, notes, supportListId, emotion } = body;
 
     const task = await prisma.generalSupportTask.update({
-      where: { id },
+      where: { id: taskId },
       data: {
         serviceSeekerId,
         date: new Date(date),
@@ -91,7 +93,8 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = await params;
-    await prisma.generalSupportTask.delete({ where: { id } });
+    const taskId = parseInt(id);
+    await prisma.generalSupportTask.delete({ where: { id: taskId } });
 
     return NextResponse.json({ message: 'Task deleted successfully' });
   } catch (error) {

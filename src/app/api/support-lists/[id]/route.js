@@ -25,10 +25,11 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = await params;
+    const supportListId = parseInt(id);
 
     // Check if support list is in use
     const tasksUsingThis = await prisma.generalSupportTask.count({
-      where: { supportListId: id }
+      where: { supportListId: supportListId }
     });
 
     if (tasksUsingThis > 0) {
@@ -37,7 +38,7 @@ export async function DELETE(request, { params }) {
       }, { status: 400 });
     }
 
-    await prisma.supportList.delete({ where: { id } });
+    await prisma.supportList.delete({ where: { id: supportListId } });
 
     return NextResponse.json({ message: 'Support list item deleted successfully' });
   } catch (error) {

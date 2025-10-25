@@ -25,10 +25,11 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = await params;
+    const locationId = parseInt(id);
 
     // Check if location is in use
     const tasksUsingThis = await prisma.incidentFallTask.count({
-      where: { locationId: id }
+      where: { locationId: locationId }
     });
 
     if (tasksUsingThis > 0) {
@@ -37,7 +38,7 @@ export async function DELETE(request, { params }) {
       }, { status: 400 });
     }
 
-    await prisma.incidentLocation.delete({ where: { id } });
+    await prisma.incidentLocation.delete({ where: { id: locationId } });
 
     return NextResponse.json({ message: 'Location deleted successfully' });
   } catch (error) {

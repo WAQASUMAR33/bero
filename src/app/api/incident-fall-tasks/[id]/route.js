@@ -25,8 +25,9 @@ export async function GET(request, { params }) {
     }
 
     const { id } = await params;
+    const taskId = parseInt(id);
     const task = await prisma.incidentFallTask.findUnique({
-      where: { id },
+      where: { id: taskId },
       include: {
         serviceSeeker: true,
         incidentType: true,
@@ -56,6 +57,7 @@ export async function PUT(request, { params }) {
     }
 
     const { id } = await params;
+    const taskId = parseInt(id);
     const body = await request.json();
     const {
       serviceSeekerId,
@@ -86,7 +88,7 @@ export async function PUT(request, { params }) {
     } = body;
 
     const task = await prisma.incidentFallTask.update({
-      where: { id },
+      where: { id: taskId },
       data: {
         serviceSeekerId,
         date: new Date(date),
@@ -140,7 +142,8 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = await params;
-    await prisma.incidentFallTask.delete({ where: { id } });
+    const taskId = parseInt(id);
+    await prisma.incidentFallTask.delete({ where: { id: taskId } });
 
     return NextResponse.json({ message: 'Task deleted successfully' });
   } catch (error) {

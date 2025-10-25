@@ -47,7 +47,7 @@ export async function POST(request) {
     const body = await request.json();
     
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       type,
@@ -63,14 +63,14 @@ export async function POST(request) {
 
     if (!serviceSeekerId || !date || !time || !type || !triggerId || !emotion) {
       return NextResponse.json(
-        { error: 'Required fields: serviceSeekerId: parseInt(serviceSeekerId), date, time, type, triggerId, emotion' },
+        { error: 'Required fields: serviceSeekerId, date, time, type, triggerId, emotion' },
         { status: 400 }
       );
     }
 
     const created = await prisma.behaviourTask.create({
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         type,

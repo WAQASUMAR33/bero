@@ -49,7 +49,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       muacInCm,
@@ -60,7 +60,7 @@ export async function POST(request) {
 
     const task = await prisma.muacTask.create({
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         muacInCm: parseFloat(muacInCm),

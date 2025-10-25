@@ -49,7 +49,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       oralCare,
@@ -62,7 +62,7 @@ export async function POST(request) {
 
     const task = await prisma.oralCareTask.create({
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time: time || null,
         oralCare,

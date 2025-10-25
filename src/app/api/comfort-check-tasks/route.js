@@ -46,7 +46,7 @@ export async function POST(request) {
     const body = await request.json();
     
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       allNeedsMet,
@@ -66,14 +66,14 @@ export async function POST(request) {
 
     if (!serviceSeekerId || !date || !time || !completed || !emotion) {
       return NextResponse.json(
-        { error: 'Required fields: serviceSeekerId: parseInt(serviceSeekerId), date, time, completed, emotion' },
+        { error: 'Required fields: serviceSeekerId, date, time, completed, emotion' },
         { status: 400 }
       );
     }
 
     const created = await prisma.comfortCheckTask.create({
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         allNeedsMet: typeof allNeedsMet === 'boolean' ? allNeedsMet : false,

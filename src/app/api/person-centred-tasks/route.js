@@ -50,7 +50,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       nameId,
@@ -62,7 +62,7 @@ export async function POST(request) {
 
     const task = await prisma.personCentredTask.create({
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         nameId,

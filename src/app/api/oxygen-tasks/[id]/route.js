@@ -61,7 +61,7 @@ export async function PUT(request, { params }) {
     const taskId = parseInt(id);
     const body = await request.json();
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       quantity,
@@ -73,7 +73,7 @@ export async function PUT(request, { params }) {
     const task = await prisma.oxygenTask.update({
       where: { id: taskId },
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         quantity,

@@ -61,7 +61,7 @@ export async function PUT(request, { params }) {
     const taskId = parseInt(id);
     const body = await request.json();
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       duration,
@@ -72,7 +72,7 @@ export async function PUT(request, { params }) {
     const task = await prisma.oneToOneTask.update({
       where: { id: taskId },
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         duration,

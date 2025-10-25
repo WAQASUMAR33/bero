@@ -64,7 +64,7 @@ export async function PUT(request, { params }) {
     const task = await prisma.physicalInterventionTask.update({
       where: { id: taskId },
       data: {
-        serviceSeekerId: body.serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId: body.serviceSeekerId,
         date: new Date(body.date),
         time: body.time,
         location: body.location,

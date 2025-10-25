@@ -49,7 +49,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       quantity,
@@ -60,7 +60,7 @@ export async function POST(request) {
 
     const task = await prisma.oxygenTask.create({
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         quantity,

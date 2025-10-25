@@ -56,12 +56,12 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const taskId = parseInt(id);
     const body = await request.json();
-    const { serviceSeekerId: parseInt(serviceSeekerId), date, time, followUpDate, followUpTime, name, description, status, emotion } = body;
+    const { serviceSeekerId, date, time, followUpDate, followUpTime, name, description, status, emotion } = body;
 
     const task = await prisma.followUpTask.update({
       where: { id: taskId },
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         followUpDate: new Date(followUpDate),

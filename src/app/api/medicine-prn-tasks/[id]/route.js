@@ -64,7 +64,7 @@ export async function PUT(request, { params }) {
     const taskId = parseInt(id);
     const body = await request.json();
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       applyDate,
       applyTime,
       prn,
@@ -81,7 +81,7 @@ export async function PUT(request, { params }) {
     const task = await prisma.medicinePrnTask.update({
       where: { id: taskId },
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         applyDate: new Date(applyDate),
         applyTime,
         prn,

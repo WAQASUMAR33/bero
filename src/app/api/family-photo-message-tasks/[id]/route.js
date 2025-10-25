@@ -56,12 +56,12 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const taskId = parseInt(id);
     const body = await request.json();
-    const { serviceSeekerId: parseInt(serviceSeekerId), date, time, description, messageFromResidence, photoUrl, emotion } = body;
+    const { serviceSeekerId, date, time, description, messageFromResidence, photoUrl, emotion } = body;
 
     const task = await prisma.familyPhotoMessageTask.update({
       where: { id: taskId },
       data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
+        serviceSeekerId,
         date: new Date(date),
         time,
         description: description || null,

@@ -67,7 +67,7 @@ export async function PUT(request, { params }) {
     const shiftId = parseInt(id);
     const body = await request.json();
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       fromDate,
       untilDate,
       recurrence,

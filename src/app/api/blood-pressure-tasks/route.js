@@ -46,7 +46,7 @@ export async function POST(request) {
     const body = await request.json();
     
     const {
-      serviceSeekerId,
+      serviceSeekerId: parseInt(serviceSeekerId),
       date,
       time,
       systolicPressure,
@@ -58,14 +58,14 @@ export async function POST(request) {
 
     if (!serviceSeekerId || !date || !time || !systolicPressure || !diastolicPressure || !completed || !emotion) {
       return NextResponse.json(
-        { error: 'Required fields: serviceSeekerId, date, time, systolicPressure, diastolicPressure, completed, emotion' },
+        { error: 'Required fields: serviceSeekerId: parseInt(serviceSeekerId), date, time, systolicPressure, diastolicPressure, completed, emotion' },
         { status: 400 }
       );
     }
 
     const created = await prisma.bloodPressureTask.create({
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         date: new Date(date),
         time,
         systolicPressure: parseInt(systolicPressure),

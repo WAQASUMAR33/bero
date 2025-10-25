@@ -49,7 +49,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      serviceSeekerId,
+      serviceSeekerId: parseInt(serviceSeekerId),
       date,
       time,
       visitType,
@@ -64,7 +64,7 @@ export async function POST(request) {
 
     const task = await prisma.visitTask.create({
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         date: new Date(date),
         time,
         visitType,

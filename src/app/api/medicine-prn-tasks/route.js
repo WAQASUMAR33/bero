@@ -51,7 +51,7 @@ export async function POST(request) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const body = await request.json();
     const {
-      serviceSeekerId,
+      serviceSeekerId: parseInt(serviceSeekerId),
       applyDate,
       applyTime,
       prn,
@@ -67,7 +67,7 @@ export async function POST(request) {
 
     const task = await prisma.medicinePrnTask.create({
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         applyDate: new Date(applyDate),
         applyTime,
         prn,

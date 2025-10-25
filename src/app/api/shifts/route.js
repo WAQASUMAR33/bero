@@ -127,7 +127,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      serviceSeekerId,
+      serviceSeekerId: parseInt(serviceSeekerId),
       fromDate,
       untilDate,
       recurrence,
@@ -144,13 +144,13 @@ export async function POST(request) {
 
     if (!serviceSeekerId || !fromDate || !recurrence || !startTime || !endTime || !shiftTypeId) {
       return NextResponse.json({
-        error: 'serviceSeekerId, fromDate, recurrence, startTime, endTime, and shiftTypeId are required'
+        error: 'serviceSeekerId: parseInt(serviceSeekerId), fromDate, recurrence, startTime, endTime, and shiftTypeId are required'
       }, { status: 400 });
     }
 
     const shift = await prisma.shift.create({
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         fromDate: new Date(fromDate),
         untilDate: untilDate ? new Date(untilDate) : null,
         recurrence,

@@ -49,7 +49,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      serviceSeekerId,
+      serviceSeekerId: parseInt(serviceSeekerId),
       date,
       time,
       position,
@@ -62,7 +62,7 @@ export async function POST(request) {
 
     const task = await prisma.repositionTask.create({
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         date: new Date(date),
         time,
         position,

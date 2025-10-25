@@ -50,7 +50,7 @@ export async function POST(request) {
 
     const task = await prisma.physicalInterventionTask.create({
       data: {
-        serviceSeekerId: body.serviceSeekerId,
+        serviceSeekerId: body.serviceSeekerId: parseInt(serviceSeekerId),
         date: new Date(body.date),
         time: body.time,
         location: body.location,

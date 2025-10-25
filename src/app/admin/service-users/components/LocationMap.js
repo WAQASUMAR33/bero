@@ -27,6 +27,17 @@ export default function LocationMap({
         // Dynamically import Leaflet to avoid SSR issues
         const L = (await import('leaflet')).default;
         
+        // Check if map container is already initialized and clean it up
+        if (mapRef.current._leaflet_id) {
+          // Remove existing map instance
+          if (map) {
+            map.remove();
+            setMap(null);
+          }
+          // Clear the container
+          mapRef.current._leaflet_id = undefined;
+        }
+        
         // Fix default markers in Leaflet
         delete L.Icon.Default.prototype._getIconUrl;
         L.Icon.Default.mergeOptions({
@@ -93,9 +104,14 @@ export default function LocationMap({
       }
       if (map) {
         map.remove();
+        setMap(null);
+      }
+      // Clear the Leaflet container reference
+      if (mapRef.current && mapRef.current._leaflet_id) {
+        mapRef.current._leaflet_id = undefined;
       }
     };
-  }, []);
+  }, []); // Empty dependency array - only initialize once
 
   // Handle postal code geocoding
   useEffect(() => {

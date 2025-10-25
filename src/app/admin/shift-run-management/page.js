@@ -46,7 +46,13 @@ export default function ShiftRunManagementPage() {
   const fetchShiftRuns = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/shift-runs');
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/shift-runs', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       const result = await response.json();
       
       if (result.success) {
@@ -66,9 +72,11 @@ export default function ShiftRunManagementPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/shift-runs', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -98,9 +106,11 @@ export default function ShiftRunManagementPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/shift-runs/${selectedShiftRun.id}`, {
         method: 'PUT',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -137,8 +147,12 @@ export default function ShiftRunManagementPage() {
     if (!shiftRunToDelete) return;
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/shift-runs/${shiftRunToDelete.id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       const result = await response.json();

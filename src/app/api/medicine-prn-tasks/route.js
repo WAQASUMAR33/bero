@@ -51,7 +51,7 @@ export async function POST(request) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const body = await request.json();
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       applyDate,
       applyTime,
       prn,

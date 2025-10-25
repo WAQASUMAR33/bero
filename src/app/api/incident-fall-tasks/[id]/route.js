@@ -60,7 +60,7 @@ export async function PUT(request, { params }) {
     const taskId = parseInt(id);
     const body = await request.json();
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       incidentTypeId,

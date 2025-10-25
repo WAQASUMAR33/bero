@@ -48,7 +48,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { serviceSeekerId: parseInt(serviceSeekerId), date, time, description, messageFromResidence, photoUrl, emotion } = body;
+    const { serviceSeekerId, date, time, description, messageFromResidence, photoUrl, emotion } = body;
 
     const task = await prisma.familyPhotoMessageTask.create({
       data: {

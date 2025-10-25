@@ -48,7 +48,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { serviceSeekerId: parseInt(serviceSeekerId), date, time, foodDrinkOffer, main, fluidIntake, comments, assistance, foodDrinkOffered, pictureUrl, completed, emotion } = body;
+    const { serviceSeekerId, date, time, foodDrinkOffer, main, fluidIntake, comments, assistance, foodDrinkOffered, pictureUrl, completed, emotion } = body;
 
     const task = await prisma.foodDrinkTask.create({
       data: {

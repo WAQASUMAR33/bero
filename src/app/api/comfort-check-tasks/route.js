@@ -46,7 +46,7 @@ export async function POST(request) {
     const body = await request.json();
     
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       allNeedsMet,

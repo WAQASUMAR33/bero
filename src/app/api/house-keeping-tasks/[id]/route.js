@@ -56,7 +56,7 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const taskId = parseInt(id);
     const body = await request.json();
-    const { serviceSeekerId: parseInt(serviceSeekerId), date, time, task, notes, photoUrl, completed, emotion } = body;
+    const { serviceSeekerId, date, time, task, notes, photoUrl, completed, emotion } = body;
 
     const taskRecord = await prisma.houseKeepingTask.update({
       where: { id: taskId },

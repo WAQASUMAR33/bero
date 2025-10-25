@@ -49,7 +49,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { serviceSeekerId: parseInt(serviceSeekerId), date, time, notes, supportListId, emotion } = body;
+    const { serviceSeekerId, date, time, notes, supportListId, emotion } = body;
 
     const task = await prisma.generalSupportTask.create({
       data: {

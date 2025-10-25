@@ -59,14 +59,14 @@ export async function POST(request) {
       email,
       username,
       phoneNo,
-      roleId,
+      roleId: roleIdStr,
       status,
       password,
       permissions = [],
       employeeNumber,
       startDate,
       leaveDate,
-      regionId,
+      regionId: regionIdStr,
       emergencyName,
       emergencyContact,
       postalCode,
@@ -74,8 +74,12 @@ export async function POST(request) {
       niNumber
     } = body;
 
+    // Convert string IDs to integers
+    const roleId = roleIdStr ? parseInt(roleIdStr) : null;
+    const regionId = regionIdStr ? parseInt(regionIdStr) : null;
+
     // Validate required fields
-    if (!firstName || !lastName || !email || !username || !password || !phoneNo) {
+    if (!firstName || !lastName || !email || !username || !password || !phoneNo || !roleId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }

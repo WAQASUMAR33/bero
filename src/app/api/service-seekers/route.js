@@ -56,6 +56,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'firstName and lastName are required' }, { status: 400 });
     }
 
+    // Verify that the user exists before creating the service seeker
+    const userExists = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    });
+
+    if (!userExists) {
+      console.error('User not found for ID:', decoded.userId);
+      return NextResponse.json({ error: 'User not found' }, { status: 400 });
+    }
+
     const created = await prisma.serviceSeeker.create({
       data: {
         firstName,

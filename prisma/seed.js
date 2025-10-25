@@ -6,14 +6,14 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create default role definitions
+  // Create default system role definitions (cannot be edited or deleted)
   const adminRole = await prisma.roleDefinition.upsert({
     where: { name: 'ADMIN' },
     update: {},
     create: {
       name: 'ADMIN',
-      displayName: 'Administrator',
-      description: 'Full system access',
+      displayName: 'Admin',
+      description: 'Full system access with all permissions',
       permissions: [
         'users.create', 'users.read', 'users.update', 'users.delete',
         'service-seekers.create', 'service-seekers.read', 'service-seekers.update', 'service-seekers.delete',
@@ -21,7 +21,7 @@ async function main() {
         'shifts.create', 'shifts.read', 'shifts.update', 'shifts.delete',
         'funders.create', 'funders.read', 'funders.update', 'funders.delete',
         'regions.create', 'regions.read', 'regions.update', 'regions.delete',
-        'reports.read', 'settings.update'
+        'reports.read', 'settings.update', 'rota.manage'
       ],
       isSystem: true
     }
@@ -33,10 +33,82 @@ async function main() {
     create: {
       name: 'CAREWORKER',
       displayName: 'Care Worker',
-      description: 'Care worker access',
+      description: 'Front-line care staff with task and shift access',
+      permissions: [
+        'tasks.create', 'tasks.read', 'tasks.update',
+        'shifts.read', 'rota.view',
+        'service-seekers.read'
+      ],
+      isSystem: true
+    }
+  });
+
+  const directorRole = await prisma.roleDefinition.upsert({
+    where: { name: 'DIRECTOR' },
+    update: {},
+    create: {
+      name: 'DIRECTOR',
+      displayName: 'Director',
+      description: 'Senior management with strategic oversight',
+      permissions: [
+        'users.create', 'users.read', 'users.update', 'users.delete',
+        'service-seekers.create', 'service-seekers.read', 'service-seekers.update', 'service-seekers.delete',
+        'tasks.read', 'tasks.update',
+        'shifts.create', 'shifts.read', 'shifts.update', 'shifts.delete',
+        'funders.create', 'funders.read', 'funders.update', 'funders.delete',
+        'regions.create', 'regions.read', 'regions.update', 'regions.delete',
+        'reports.read', 'settings.update', 'rota.manage'
+      ],
+      isSystem: true
+    }
+  });
+
+  const hrRole = await prisma.roleDefinition.upsert({
+    where: { name: 'HR' },
+    update: {},
+    create: {
+      name: 'HR',
+      displayName: 'HR',
+      description: 'Human Resources with staff management access',
+      permissions: [
+        'users.create', 'users.read', 'users.update', 'users.delete',
+        'shifts.read', 'rota.view',
+        'reports.read'
+      ],
+      isSystem: true
+    }
+  });
+
+  const registerManagerRole = await prisma.roleDefinition.upsert({
+    where: { name: 'REGISTER_MANAGER' },
+    update: {},
+    create: {
+      name: 'REGISTER_MANAGER',
+      displayName: 'Register Manager',
+      description: 'Registered manager with operational oversight',
+      permissions: [
+        'users.create', 'users.read', 'users.update',
+        'service-seekers.create', 'service-seekers.read', 'service-seekers.update', 'service-seekers.delete',
+        'tasks.create', 'tasks.read', 'tasks.update', 'tasks.delete',
+        'shifts.create', 'shifts.read', 'shifts.update', 'shifts.delete',
+        'funders.read', 'funders.update',
+        'regions.read', 'regions.update',
+        'reports.read', 'rota.manage'
+      ],
+      isSystem: true
+    }
+  });
+
+  const supportWorkerRole = await prisma.roleDefinition.upsert({
+    where: { name: 'SUPPORT_WORKER' },
+    update: {},
+    create: {
+      name: 'SUPPORT_WORKER',
+      displayName: 'Support Worker',
+      description: 'Support staff with limited access to tasks and shifts',
       permissions: [
         'tasks.read', 'tasks.update',
-        'shifts.read',
+        'shifts.read', 'rota.view',
         'service-seekers.read'
       ],
       isSystem: true
@@ -142,14 +214,15 @@ async function main() {
   console.log('👤 Minimal Admin user created:');
   console.log('   Email: admin@gmail.com');
   console.log('   Password: 786@786');
-  console.log('   Role: Super Admin');
+  console.log('   Role: Admin (full access)');
   console.log('   Details: Only required fields (no region, no optional data)');
   console.log('📊 Created:');
-  console.log('   - 2 Role definitions');
-  console.log('   - 1 Minimal super admin user');
+  console.log('   - 6 System role definitions (Admin, Care Worker, Director, HR, Register Manager, Support Worker)');
+  console.log('   - 1 Minimal admin user');
   console.log('   - 5 Shift types');
   console.log('   - 1 Default funder');
   console.log('   - 1 Default service seeker');
+  console.log('🔒 System roles are protected and cannot be edited or deleted');
 }
 
 main()

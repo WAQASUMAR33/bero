@@ -86,7 +86,7 @@ export async function DELETE(request, { params }) {
     const { id } = await params;
     const taskId = parseInt(id);
 
-    await prisma.bathingTask.delete({ where: { id } });
+    await prisma.bathingTask.delete({ where: { id: taskId } });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('DELETE /bathing-tasks/[id] error:', error);

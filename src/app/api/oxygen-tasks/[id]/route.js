@@ -116,7 +116,7 @@ export async function DELETE(request, { params }) {
     const taskId = parseInt(id);
 
     await prisma.oxygenTask.delete({
-      where: { id }
+      where: { id: taskId }
     });
 
     return NextResponse.json({ message: 'Oxygen task deleted successfully' });

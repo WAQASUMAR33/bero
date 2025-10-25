@@ -67,7 +67,7 @@ export async function PUT(request, { params }) {
 
     // Fetch updated user
     const updatedUser = await prisma.user.findUnique({
-      where: { id },
+      where: { id: userId },
       include: {
         region: true,
         permissions: true,

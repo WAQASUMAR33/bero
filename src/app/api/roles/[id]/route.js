@@ -53,7 +53,7 @@ export async function PUT(request, { params }) {
 
     // Check if role exists and is not a system role
     const existingRole = await prisma.roleDefinition.findUnique({
-      where: { id }
+      where: { id: roleId }
     });
 
     if (!existingRole) {

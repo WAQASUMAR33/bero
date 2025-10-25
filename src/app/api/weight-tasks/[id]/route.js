@@ -117,7 +117,7 @@ export async function DELETE(request, { params }) {
     const taskId = parseInt(id);
 
     await prisma.weightTask.delete({
-      where: { id }
+      where: { id: taskId }
     });
 
     return NextResponse.json({ message: 'Weight task deleted successfully' });

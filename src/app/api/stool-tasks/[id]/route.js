@@ -118,7 +118,7 @@ export async function DELETE(request, { params }) {
     const taskId = parseInt(id);
 
     await prisma.stoolTask.delete({
-      where: { id }
+      where: { id: taskId }
     });
 
     return NextResponse.json({ message: 'Stool task deleted successfully' });

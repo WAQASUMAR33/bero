@@ -141,12 +141,12 @@ export async function DELETE(request, { params }) {
     
     // Delete related assignments first
     await prisma.shiftAssignment.deleteMany({
-      where: { shiftId: id }
+      where: { shiftId: shiftId }
     });
 
     // Then delete the shift
     await prisma.shift.delete({
-      where: { id }
+      where: { id: shiftId }
     });
 
     return NextResponse.json({ message: 'Shift deleted successfully' });

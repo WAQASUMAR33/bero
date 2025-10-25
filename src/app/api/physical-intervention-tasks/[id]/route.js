@@ -131,7 +131,7 @@ export async function DELETE(request, { params }) {
     const taskId = parseInt(id);
 
     await prisma.physicalInterventionTask.delete({
-      where: { id }
+      where: { id: taskId }
     });
 
     return NextResponse.json({ message: 'Physical intervention task deleted successfully' });

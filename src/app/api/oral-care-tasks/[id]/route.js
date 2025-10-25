@@ -120,7 +120,7 @@ export async function DELETE(request, { params }) {
     const taskId = parseInt(id);
 
     await prisma.oralCareTask.delete({
-      where: { id }
+      where: { id: taskId }
     });
 
     return NextResponse.json({ message: 'Oral care task deleted successfully' });

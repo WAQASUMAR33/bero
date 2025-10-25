@@ -116,7 +116,7 @@ export async function DELETE(request, { params }) {
     const taskId = parseInt(id);
 
     await prisma.temperatureTask.delete({
-      where: { id }
+      where: { id: taskId }
     });
 
     return NextResponse.json({ message: 'Temperature task deleted successfully' });

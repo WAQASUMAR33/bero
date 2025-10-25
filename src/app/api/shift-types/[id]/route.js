@@ -18,7 +18,7 @@ export async function GET(request, { params }) {
     const { id } = params;
     const shiftTypeId = parseInt(id);
     const shiftType = await prisma.shiftType.findUnique({
-      where: { id }
+      where: { id: shiftTypeId }
     });
 
     if (!shiftType) {
@@ -75,7 +75,7 @@ export async function DELETE(request, { params }) {
     const { id } = params;
     const shiftTypeId = parseInt(id);
     await prisma.shiftType.delete({
-      where: { id }
+      where: { id: shiftTypeId }
     });
 
     return NextResponse.json({ message: 'Shift type deleted successfully' });

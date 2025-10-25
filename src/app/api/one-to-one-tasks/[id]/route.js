@@ -114,7 +114,7 @@ export async function DELETE(request, { params }) {
     const taskId = parseInt(id);
 
     await prisma.oneToOneTask.delete({
-      where: { id }
+      where: { id: taskId }
     });
 
     return NextResponse.json({ message: 'One-to-one task deleted successfully' });

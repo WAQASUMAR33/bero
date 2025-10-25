@@ -72,9 +72,9 @@ export async function DELETE(request, { params }) {
     const seekerId = parseInt(id);
 
     // Ensure there are no dependent shifts blocking deletion
-    await prisma.shift.deleteMany({ where: { serviceSeekerId: id } });
+    await prisma.shift.deleteMany({ where: { serviceSeekerId: seekerId } });
 
-    await prisma.serviceSeeker.delete({ where: { id } });
+    await prisma.serviceSeeker.delete({ where: { id: seekerId } });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('DELETE /service-seekers/[id] error:', error);

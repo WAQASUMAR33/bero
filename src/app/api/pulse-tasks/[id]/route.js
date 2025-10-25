@@ -116,7 +116,7 @@ export async function DELETE(request, { params }) {
     const taskId = parseInt(id);
 
     await prisma.pulseTask.delete({
-      where: { id }
+      where: { id: taskId }
     });
 
     return NextResponse.json({ message: 'Pulse task deleted successfully' });

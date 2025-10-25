@@ -16,8 +16,9 @@ export async function GET(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = params;
+    const shiftRunId = parseInt(id);
     const shiftRun = await prisma.shiftRun.findUnique({
-      where: { id },
+      where: { id: shiftRunId },
       include: {
         createdBy: {
           select: { id: true, firstName: true, lastName: true }
@@ -49,11 +50,12 @@ export async function PUT(request, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = params;
+    const shiftRunId = parseInt(id);
     const body = await request.json();
     const { name, description } = body;
 
     const shiftRun = await prisma.shiftRun.update({
-      where: { id },
+      where: { id: shiftRunId },
       data: {
         ...(name && { name }),
         ...(description !== undefined && { description }),
@@ -86,6 +88,7 @@ export async function DELETE(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = params;
+    const shiftRunId = parseInt(id);
     await prisma.shiftRun.delete({
       where: { id }
     });

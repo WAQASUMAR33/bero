@@ -14,9 +14,10 @@ export async function GET(request, { params }) {
     }
 
     const { id } = params;
+    const userId = parseInt(id);
 
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id: userId },
       include: {
         region: true,
         permissions: true,
@@ -53,6 +54,7 @@ export async function PUT(request, { params }) {
     }
 
     const { id } = params;
+    const userId = parseInt(id);
     const body = await request.json();
     const {
       firstName,
@@ -77,7 +79,7 @@ export async function PUT(request, { params }) {
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: id }
+      where: { id: userId }
     });
 
     if (!existingUser) {
@@ -138,7 +140,7 @@ export async function PUT(request, { params }) {
 
     // Update user
     const user = await prisma.user.update({
-      where: { id: id },
+      where: { id: userId },
       data: updateData,
       include: {
         region: true,
@@ -163,7 +165,7 @@ export async function PUT(request, { params }) {
 
       // Fetch updated user with permissions
       const updatedUser = await prisma.user.findUnique({
-        where: { id: id },
+        where: { id: userId },
         include: {
           region: true,
           permissions: true,
@@ -197,10 +199,11 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = params;
+    const userId = parseInt(id);
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id }
+      where: { id: userId }
     });
 
     if (!existingUser) {
@@ -228,7 +231,7 @@ export async function DELETE(request, { params }) {
 
     // Now delete the user
     await prisma.user.delete({
-      where: { id }
+      where: { id: userId }
     });
 
     return NextResponse.json({ message: 'User deleted successfully' });

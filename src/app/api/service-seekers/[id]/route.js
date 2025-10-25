@@ -15,8 +15,10 @@ export async function GET(request, { params }) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
+    const seekerId = parseInt(id);
+    const seekerId = parseInt(id);
     const seeker = await prisma.serviceSeeker.findUnique({
-      where: { id },
+      where: { id: seekerId },
       include: {
         createdBy: true,
         updatedBy: true,
@@ -39,10 +41,11 @@ export async function PUT(request, { params }) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
+    const seekerId = parseInt(id);
     const body = await request.json();
 
     const updated = await prisma.serviceSeeker.update({
-      where: { id },
+      where: { id: seekerId },
       data: {
         ...body,
         dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
@@ -66,6 +69,7 @@ export async function DELETE(request, { params }) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
+    const seekerId = parseInt(id);
 
     // Ensure there are no dependent shifts blocking deletion
     await prisma.shift.deleteMany({ where: { serviceSeekerId: id } });

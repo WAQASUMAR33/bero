@@ -16,6 +16,7 @@ export async function GET(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = params;
+    const shiftTypeId = parseInt(id);
     const shiftType = await prisma.shiftType.findUnique({
       where: { id }
     });
@@ -41,11 +42,12 @@ export async function PUT(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = params;
+    const shiftTypeId = parseInt(id);
     const body = await request.json();
     const { name, careerPayRegular, careerPayBankHoliday, payCalculation } = body;
 
     const shiftType = await prisma.shiftType.update({
-      where: { id },
+      where: { id: shiftTypeId },
       data: {
         ...(name && { name }),
         ...(careerPayRegular !== undefined && { careerPayRegular: parseFloat(careerPayRegular) }),
@@ -71,6 +73,7 @@ export async function DELETE(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = params;
+    const shiftTypeId = parseInt(id);
     await prisma.shiftType.delete({
       where: { id }
     });

@@ -51,7 +51,7 @@ export async function POST(request) {
       date,
       time,
       type,
-      triggerId: parseInt(triggerId),
+      triggerId,
       othersInvolved,
       othersInvolvedDetails,
       antecedents,
@@ -63,7 +63,7 @@ export async function POST(request) {
 
     if (!serviceSeekerId || !date || !time || !type || !triggerId || !emotion) {
       return NextResponse.json(
-        { error: 'Required fields: serviceSeekerId: parseInt(serviceSeekerId), date, time, type, triggerId: parseInt(triggerId), emotion' },
+        { error: 'Required fields: serviceSeekerId, date, time, type, triggerId, emotion' },
         { status: 400 }
       );
     }

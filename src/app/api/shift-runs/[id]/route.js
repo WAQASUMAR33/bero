@@ -33,7 +33,10 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Shift run not found' }, { status: 404 });
     }
 
-    return NextResponse.json(shiftRun);
+    return NextResponse.json({
+      success: true,
+      data: shiftRun
+    });
   } catch (error) {
     console.error('GET /shift-runs/[id] error:', error);
     return NextResponse.json({ error: 'Failed to fetch shift run' }, { status: 500 });
@@ -71,7 +74,10 @@ export async function PUT(request, { params }) {
       }
     });
 
-    return NextResponse.json(shiftRun);
+    return NextResponse.json({
+      success: true,
+      data: shiftRun
+    });
   } catch (error) {
     console.error('PUT /shift-runs/[id] error:', error);
     return NextResponse.json({ error: 'Failed to update shift run' }, { status: 500 });

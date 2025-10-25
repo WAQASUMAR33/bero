@@ -11,7 +11,7 @@ export async function GET(request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
@@ -27,10 +27,13 @@ export async function GET(request) {
       orderBy: { createdAt: 'desc' }
     });
 
-    return NextResponse.json(shiftRuns);
+    return NextResponse.json({
+      success: true,
+      data: shiftRuns
+    });
   } catch (error) {
     console.error('GET /shift-runs error:', error);
-    return NextResponse.json({ error: 'Failed to fetch shift runs' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to fetch shift runs' }, { status: 500 });
   }
 }
 
@@ -39,7 +42,7 @@ export async function POST(request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
@@ -47,7 +50,7 @@ export async function POST(request) {
     const { name, description } = body;
 
     if (!name) {
-      return NextResponse.json({ error: 'name is required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'name is required' }, { status: 400 });
     }
 
     const shiftRun = await prisma.shiftRun.create({
@@ -67,9 +70,12 @@ export async function POST(request) {
       }
     });
 
-    return NextResponse.json(shiftRun, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      data: shiftRun
+    }, { status: 201 });
   } catch (error) {
     console.error('POST /shift-runs error:', error);
-    return NextResponse.json({ error: 'Failed to create shift run' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to create shift run' }, { status: 500 });
   }
 }

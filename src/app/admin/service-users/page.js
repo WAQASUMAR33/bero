@@ -58,9 +58,18 @@ export default function ServiceUsersPage() {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/service-seekers', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setSeekers(data);
+      
+      // Ensure we always set an array
+      if (Array.isArray(data)) {
+        setSeekers(data);
+      } else {
+        console.error('API returned non-array data:', data);
+        setSeekers([]);
+        setNotification({ show: true, message: data?.error || 'Failed to load service users.', type: 'error' });
+      }
     } catch (e) {
       console.error(e);
+      setSeekers([]);
       setNotification({ show: true, message: 'Failed to load service users.', type: 'error' });
     }
   };
@@ -198,7 +207,7 @@ export default function ServiceUsersPage() {
     );
   }
 
-  const filteredSeekers = seekers
+  const filteredSeekers = (Array.isArray(seekers) ? seekers : [])
     .filter((s) => {
       if (statusFilter !== 'ALL' && s.status !== statusFilter) return false;
       if (!searchTerm) return true;
@@ -210,7 +219,7 @@ export default function ServiceUsersPage() {
       );
     });
 
-  const countBy = (key, value) => seekers.filter((s) => s[key] === value).length;
+  const countBy = (key, value) => (Array.isArray(seekers) ? seekers : []).filter((s) => s[key] === value).length;
 
   const totalPages = Math.max(1, Math.ceil(filteredSeekers.length / pageSize));
   const pageSafe = Math.min(currentPage, totalPages);

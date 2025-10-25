@@ -16,9 +16,10 @@ export async function GET(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = await params;
+    const taskId = parseInt(id);
 
     const task = await prisma.physicalInterventionTask.findUnique({
-      where: { id },
+      where: { id: taskId },
       include: {
         serviceSeeker: true,
         createdBy: {
@@ -57,10 +58,11 @@ export async function PUT(request, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = await params;
+    const taskId = parseInt(id);
     const body = await request.json();
 
     const task = await prisma.physicalInterventionTask.update({
-      where: { id },
+      where: { id: taskId },
       data: {
         serviceSeekerId: body.serviceSeekerId,
         date: new Date(body.date),
@@ -126,6 +128,7 @@ export async function DELETE(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = await params;
+    const taskId = parseInt(id);
 
     await prisma.physicalInterventionTask.delete({
       where: { id }

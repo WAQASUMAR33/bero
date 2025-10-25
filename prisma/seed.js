@@ -43,20 +43,10 @@ async function main() {
     }
   });
 
-  // Create default region
-  const defaultRegion = await prisma.region.upsert({
-    where: { code: 'DEFAULT' },
-    update: {},
-    create: {
-      title: 'Default Region',
-      code: 'DEFAULT'
-    }
-  });
-
   // Hash the password
   const hashedPassword = await bcrypt.hash('786@786', 12);
 
-  // Create super admin user
+  // Create super admin user (without region - will be assigned later)
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@gmail.com' },
     update: {},
@@ -72,7 +62,7 @@ async function main() {
       profilePic: null,
       employeeNumber: 'ADMIN001',
       startDate: new Date(),
-      regionId: defaultRegion.id,
+      regionId: null, // No default region
       emergencyName: 'Emergency Contact',
       emergencyContact: '9876543210',
       postalCode: '12345',
@@ -158,10 +148,9 @@ async function main() {
   console.log('   Email: admin@gmail.com');
   console.log('   Password: 786@786');
   console.log('   Role: Super Admin');
-  console.log('   Region: Default Region');
+  console.log('   Region: None (assign manually)');
   console.log('📊 Created:');
   console.log('   - 2 Role definitions');
-  console.log('   - 1 Default region');
   console.log('   - 1 Super admin user');
   console.log('   - 5 Shift types');
   console.log('   - 1 Default funder');

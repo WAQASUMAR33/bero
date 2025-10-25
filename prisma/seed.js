@@ -46,11 +46,14 @@ async function main() {
   // Hash the password
   const hashedPassword = await bcrypt.hash('786@786', 12);
 
-  // Create super admin user (without region - will be assigned later)
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@gmail.com' },
-    update: {},
-    create: {
+  // Delete existing admin user if exists
+  await prisma.user.deleteMany({
+    where: { email: 'admin@gmail.com' }
+  });
+
+  // Create minimal super admin user with only required fields
+  const adminUser = await prisma.user.create({
+    data: {
       firstName: 'Super',
       lastName: 'Admin',
       username: 'admin',
@@ -58,16 +61,8 @@ async function main() {
       email: 'admin@gmail.com',
       roleId: adminRole.id,
       password: hashedPassword,
-      isEmailVerified: true,
-      profilePic: null,
-      employeeNumber: 'ADMIN001',
-      startDate: new Date(),
-      regionId: null, // No default region
-      emergencyName: 'Emergency Contact',
-      emergencyContact: '9876543210',
-      postalCode: '12345',
-      contractedHours: 40,
       status: 'CURRENT'
+      // No optional fields like regionId, employeeNumber, startDate, etc.
     }
   });
 
@@ -144,14 +139,14 @@ async function main() {
   });
 
   console.log('✅ Database seeded successfully!');
-  console.log('👤 Admin user created:');
+  console.log('👤 Minimal Admin user created:');
   console.log('   Email: admin@gmail.com');
   console.log('   Password: 786@786');
   console.log('   Role: Super Admin');
-  console.log('   Region: None (assign manually)');
+  console.log('   Details: Only required fields (no region, no optional data)');
   console.log('📊 Created:');
   console.log('   - 2 Role definitions');
-  console.log('   - 1 Super admin user');
+  console.log('   - 1 Minimal super admin user');
   console.log('   - 5 Shift types');
   console.log('   - 1 Default funder');
   console.log('   - 1 Default service seeker');

@@ -190,7 +190,7 @@ export async function DELETE(request, { params }) {
     }
 
     await prisma.funder.delete({
-      where: { id }
+      where: { id: funderId }
     });
 
     return NextResponse.json({

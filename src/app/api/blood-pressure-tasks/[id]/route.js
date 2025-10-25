@@ -15,9 +15,10 @@ export async function GET(request, { params }) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
+    const taskId = parseInt(id);
     
     const task = await prisma.bloodPressureTask.findUnique({
-      where: { id },
+      where: { id: taskId },
       include: {
         serviceSeeker: true,
         createdBy: {
@@ -46,10 +47,11 @@ export async function PUT(request, { params }) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
+    const taskId = parseInt(id);
     const body = await request.json();
 
     const updated = await prisma.bloodPressureTask.update({
-      where: { id },
+      where: { id: taskId },
       data: {
         ...body,
         date: body.date ? new Date(body.date) : undefined,
@@ -84,8 +86,9 @@ export async function DELETE(request, { params }) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
+    const taskId = parseInt(id);
 
-    await prisma.bloodPressureTask.delete({ where: { id } });
+    await prisma.bloodPressureTask.delete({ where: { id: taskId } });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('DELETE /blood-pressure-tasks/[id] error:', error);

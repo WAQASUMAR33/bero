@@ -15,10 +15,11 @@ export async function DELETE(request, { params }) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
+    const triggerId = parseInt(id);
 
     // Check if trigger is being used
     const tasksUsingTrigger = await prisma.behaviourTask.count({
-      where: { triggerId: id }
+      where: { triggerId: triggerId }
     });
 
     if (tasksUsingTrigger > 0) {
@@ -27,7 +28,7 @@ export async function DELETE(request, { params }) {
       }, { status: 400 });
     }
 
-    await prisma.behaviourTrigger.delete({ where: { id } });
+    await prisma.behaviourTrigger.delete({ where: { id: triggerId } });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('DELETE /behaviour-triggers/[id] error:', error);

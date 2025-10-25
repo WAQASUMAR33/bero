@@ -16,10 +16,11 @@ export async function DELETE(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { id } = await params;
+    const nameId = parseInt(id);
 
     // Check if the name is being used by any tasks
     const tasksUsingName = await prisma.personCentredTask.count({
-      where: { nameId: id }
+      where: { nameId: nameId }
     });
 
     if (tasksUsingName > 0) {
@@ -30,7 +31,7 @@ export async function DELETE(request, { params }) {
     }
 
     await prisma.personCentredTaskName.delete({
-      where: { id }
+      where: { id: nameId }
     });
 
     return NextResponse.json({ message: 'Person centred task name deleted successfully' });

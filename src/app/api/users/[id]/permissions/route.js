@@ -35,11 +35,12 @@ export async function PUT(request, { params }) {
     }
 
     const { id } = params;
+    const userId = parseInt(id);
     const { permissions } = await request.json();
 
     // Verify user exists
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -51,7 +52,7 @@ export async function PUT(request, { params }) {
 
     // Delete existing permissions
     await prisma.userPermission.deleteMany({
-      where: { userId: id },
+      where: { userId: userId },
     });
 
     // Create new permissions

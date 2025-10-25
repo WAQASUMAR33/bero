@@ -16,7 +16,6 @@ export async function GET(request, { params }) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = await params;
     const seekerId = parseInt(id);
-    const seekerId = parseInt(id);
     const seeker = await prisma.serviceSeeker.findUnique({
       where: { id: seekerId },
       include: {

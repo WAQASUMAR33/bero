@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
+import LocationMap from './components/LocationMap';
 
 export default function ServiceUsersPage() {
   const [user, setUser] = useState(null);
@@ -76,6 +77,14 @@ export default function ServiceUsersPage() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleLocationSelect = (lat, lng) => {
+    setFormData({
+      ...formData,
+      latitude: lat.toString(),
+      longitude: lng.toString()
+    });
   };
 
   const openAdd = () => {
@@ -454,24 +463,72 @@ export default function ServiceUsersPage() {
                   )}
 
                   {currentStep===2 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Address</label>
-                        <input value={formData.address} onChange={e=>setFormData({...formData, address:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">Address</label>
+                          <input value={formData.address} onChange={e=>setFormData({...formData, address:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">Postal Code</label>
+                          <input 
+                            value={formData.postalCode} 
+                            onChange={e=>setFormData({...formData, postalCode:e.target.value})} 
+                            className="w-full border rounded-lg px-3 py-2 text-gray-900" 
+                            placeholder="Enter postal code to show map"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Postal Code</label>
-                        <input value={formData.postalCode} onChange={e=>setFormData({...formData, postalCode:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+
+                      {/* Map Section */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-sm font-medium text-gray-700">Location</label>
+                          {formData.latitude && formData.longitude && (
+                            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                              📍 Location set: {parseFloat(formData.latitude).toFixed(4)}, {parseFloat(formData.longitude).toFixed(4)}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <LocationMap
+                          postalCode={formData.postalCode}
+                          latitude={formData.latitude ? parseFloat(formData.latitude) : null}
+                          longitude={formData.longitude ? parseFloat(formData.longitude) : null}
+                          onLocationSelect={handleLocationSelect}
+                          className="w-full h-80 rounded-lg border-2 border-gray-200"
+                        />
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">Latitude</label>
+                            <input 
+                              type="number" 
+                              step="any" 
+                              value={formData.latitude} 
+                              onChange={e=>setFormData({...formData, latitude:e.target.value})} 
+                              className="w-full border rounded-lg px-3 py-2 text-gray-900 bg-gray-50" 
+                              placeholder="Auto-filled from map"
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">Longitude</label>
+                            <input 
+                              type="number" 
+                              step="any" 
+                              value={formData.longitude} 
+                              onChange={e=>setFormData({...formData, longitude:e.target.value})} 
+                              className="w-full border rounded-lg px-3 py-2 text-gray-900 bg-gray-50" 
+                              placeholder="Auto-filled from map"
+                              readOnly
+                            />
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Profile Photo Section */}
                       <div>
-                        <label className="block text-sm text-gray-600 mb-1">Latitude</label>
-                        <input type="number" step="any" value={formData.latitude} onChange={e=>setFormData({...formData, latitude:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Longitude</label>
-                        <input type="number" step="any" value={formData.longitude} onChange={e=>setFormData({...formData, longitude:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-                      </div>
-                      <div className="md:col-span-2">
                         <label className="block text-sm text-gray-600 mb-1">Profile Photo</label>
                         <div className="flex items-center space-x-4">
                           {imagePreview && (
@@ -622,19 +679,42 @@ export default function ServiceUsersPage() {
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Address & Location</h4>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4">
-                      <div className="md:col-span-2">
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Address</p>
-                        <p className="text-gray-900 font-medium">{viewData.address || '-'}</p>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4">
+                        <div className="md:col-span-2">
+                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Address</p>
+                          <p className="text-gray-900 font-medium">{viewData.address || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Postal Code</p>
+                          <p className="text-gray-900 font-medium">{viewData.postalCode || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Coordinates</p>
+                          <p className="text-gray-900 font-medium">{viewData.latitude && viewData.longitude ? `${parseFloat(viewData.latitude).toFixed(4)}, ${parseFloat(viewData.longitude).toFixed(4)}` : '-'}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Postal Code</p>
-                        <p className="text-gray-900 font-medium">{viewData.postalCode || '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Coordinates</p>
-                        <p className="text-gray-900 font-medium">{viewData.latitude && viewData.longitude ? `${viewData.latitude}, ${viewData.longitude}` : '-'}</p>
-                      </div>
+                      
+                      {/* Location Map */}
+                      {viewData.latitude && viewData.longitude && (
+                        <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
+                          <div className="bg-gradient-to-r from-green-50 to-blue-50 px-4 py-2 border-b border-gray-200">
+                            <p className="text-sm font-medium text-gray-700 flex items-center">
+                              <svg className="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                              </svg>
+                              Service User Location
+                            </p>
+                          </div>
+                          <LocationMap
+                            latitude={parseFloat(viewData.latitude)}
+                            longitude={parseFloat(viewData.longitude)}
+                            readOnly={true}
+                            className="w-full h-64"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 

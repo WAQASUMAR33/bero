@@ -46,7 +46,7 @@ export async function POST(request) {
     const body = await request.json();
     
     const {
-      serviceSeekerId: parseInt(serviceSeekerId),
+      serviceSeekerId,
       date,
       time,
       bathingType,
@@ -61,7 +61,7 @@ export async function POST(request) {
 
     if (!serviceSeekerId || !date || !time || !bathingType || !compliance || !completed || !emotion) {
       return NextResponse.json(
-        { error: 'Required fields: serviceSeekerId: parseInt(serviceSeekerId), date, time, bathingType, compliance, completed, emotion' },
+        { error: 'Required fields: serviceSeekerId, date, time, bathingType, compliance, completed, emotion' },
         { status: 400 }
       );
     }

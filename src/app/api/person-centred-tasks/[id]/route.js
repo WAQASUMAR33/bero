@@ -65,7 +65,7 @@ export async function PUT(request, { params }) {
       serviceSeekerId,
       date,
       time,
-      nameId: parseInt(nameId),
+      nameId,
       notes,
       photoUrl,
       completed,

@@ -3019,7 +3019,7 @@ export default function DailyTasksPage() {
                       else if (task.taskType === 'weight') subInfo = `${task.weight} kg`;
                       else if (task.taskType === 'follow_up') subInfo = task.name;
                       return (
-                        <tr key={task.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
+                        <tr key={`${task.taskType}-${task.id}`} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}>
                           <td className="px-6 py-4">
                             <div className="flex items-center">
                               <div className={`w-10 h-10 rounded-lg ${COLOR_CLASSES[taskInfo.color]} flex items-center justify-center text-white text-xl mr-3`}>

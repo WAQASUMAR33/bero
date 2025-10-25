@@ -17,7 +17,6 @@ export async function GET(request, { params }) {
 
     const { id } = params;
     const shiftId = parseInt(id);
-    const shiftId = parseInt(id);
     const shift = await prisma.shift.findUnique({
       where: { id: shiftId },
       include: {

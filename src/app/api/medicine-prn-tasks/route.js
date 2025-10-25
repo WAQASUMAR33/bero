@@ -60,7 +60,7 @@ export async function POST(request) {
       administrated,
       notes,
       requestSignoffBy,
-      signoffByStaffId: parseInt(signoffByStaffId),
+      signoffByStaffId,
       completed,
       emotion
     } = body;
@@ -76,7 +76,7 @@ export async function POST(request) {
         administrated,
         notes: notes || null,
         requestSignoffBy,
-        signoffByStaffId: requestSignoffBy === 'REQUIRED' ? signoffByStaffId : null,
+        signoffByStaffId: requestSignoffBy === 'REQUIRED' ? parseInt(signoffByStaffId) : null,
         completed,
         emotion,
         createdById: decoded.userId,

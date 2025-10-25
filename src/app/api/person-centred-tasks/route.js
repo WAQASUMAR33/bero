@@ -53,7 +53,7 @@ export async function POST(request) {
       serviceSeekerId,
       date,
       time,
-      nameId: parseInt(nameId),
+      nameId,
       notes,
       photoUrl,
       completed,

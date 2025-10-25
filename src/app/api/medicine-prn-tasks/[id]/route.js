@@ -73,7 +73,7 @@ export async function PUT(request, { params }) {
       administrated,
       notes,
       requestSignoffBy,
-      signoffByStaffId: parseInt(signoffByStaffId),
+      signoffByStaffId,
       completed,
       emotion
     } = body;
@@ -90,7 +90,7 @@ export async function PUT(request, { params }) {
         administrated,
         notes: notes || null,
         requestSignoffBy,
-        signoffByStaffId: requestSignoffBy === 'REQUIRED' ? signoffByStaffId : null,
+        signoffByStaffId: requestSignoffBy === 'REQUIRED' ? parseInt(signoffByStaffId) : null,
         completed,
         emotion,
         updatedById: decoded.userId

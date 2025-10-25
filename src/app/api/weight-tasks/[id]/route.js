@@ -17,7 +17,6 @@ export async function GET(request, { params }) {
 
     const { id } = await params;
     const taskId = parseInt(id);
-    const taskId = parseInt(id);
 
     const task = await prisma.weightTask.findUnique({
       where: { id: taskId },

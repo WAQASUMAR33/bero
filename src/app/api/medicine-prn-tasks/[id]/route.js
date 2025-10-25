@@ -73,7 +73,7 @@ export async function PUT(request, { params }) {
       administrated,
       notes,
       requestSignoffBy,
-      signoffByStaffId,
+      signoffByStaffId: parseInt(signoffByStaffId),
       completed,
       emotion
     } = body;

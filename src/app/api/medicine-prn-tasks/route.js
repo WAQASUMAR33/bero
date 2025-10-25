@@ -60,7 +60,7 @@ export async function POST(request) {
       administrated,
       notes,
       requestSignoffBy,
-      signoffByStaffId,
+      signoffByStaffId: parseInt(signoffByStaffId),
       completed,
       emotion
     } = body;

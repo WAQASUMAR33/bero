@@ -85,17 +85,17 @@ export async function PUT(request, { params }) {
     const shift = await prisma.shift.update({
       where: { id: shiftId },
       data: {
-        ...(serviceSeekerId && { serviceSeekerId }),
+        ...(serviceSeekerId && { serviceSeekerId: parseInt(serviceSeekerId) }),
         ...(fromDate && { fromDate: new Date(fromDate) }),
         ...(untilDate !== undefined && { untilDate: untilDate ? new Date(untilDate) : null }),
         ...(recurrence && { recurrence }),
         ...(startTime && { startTime }),
         ...(endTime && { endTime }),
-        ...(shiftTypeId && { shiftTypeId }),
+        ...(shiftTypeId && { shiftTypeId: parseInt(shiftTypeId) }),
         ...(totalStaffRequired !== undefined && { totalStaffRequired }),
-        ...(funderId !== undefined && { funderId: funderId || null }),
+        ...(funderId !== undefined && { funderId: funderId ? parseInt(funderId) : null }),
         ...(timeCritical !== undefined && { timeCritical }),
-        ...(shiftRunId !== undefined && { shiftRunId: shiftRunId || null }),
+        ...(shiftRunId !== undefined && { shiftRunId: shiftRunId ? parseInt(shiftRunId) : null }),
         ...(notesForCarers !== undefined && { notesForCarers }),
         ...(notesForManager !== undefined && { notesForManager }),
         updatedById: decoded.userId

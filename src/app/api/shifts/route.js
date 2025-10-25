@@ -127,7 +127,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      serviceSeekerId,
+      serviceSeekerId: parseInt(serviceSeekerId),
       fromDate,
       untilDate,
       recurrence,
@@ -150,7 +150,7 @@ export async function POST(request) {
 
     const shift = await prisma.shift.create({
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         fromDate: new Date(fromDate),
         untilDate: untilDate ? new Date(untilDate) : null,
         recurrence,

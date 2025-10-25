@@ -49,7 +49,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      serviceSeekerId,
+      serviceSeekerId: parseInt(serviceSeekerId),
       date,
       time,
       temperatureInC,
@@ -60,7 +60,7 @@ export async function POST(request) {
 
     const task = await prisma.temperatureTask.create({
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         date: new Date(date),
         time,
         temperatureInC: parseFloat(temperatureInC),

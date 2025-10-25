@@ -70,7 +70,7 @@ export async function POST(request) {
 
     const created = await prisma.behaviourTask.create({
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         date: new Date(date),
         time,
         type,

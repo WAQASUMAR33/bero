@@ -61,7 +61,7 @@ export async function PUT(request, { params }) {
     const taskId = parseInt(id);
     const body = await request.json();
     const {
-      serviceSeekerId,
+      serviceSeekerId: parseInt(serviceSeekerId),
       date,
       time,
       position,
@@ -75,7 +75,7 @@ export async function PUT(request, { params }) {
     const task = await prisma.repositionTask.update({
       where: { id: taskId },
       data: {
-        serviceSeekerId,
+        serviceSeekerId: parseInt(serviceSeekerId),
         date: new Date(date),
         time,
         position,

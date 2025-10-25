@@ -15,9 +15,10 @@ export async function GET(request, { params }) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = params;
+    const roleId = parseInt(id);
 
     const role = await prisma.roleDefinition.findUnique({
-      where: { id },
+      where: { id: roleId },
       include: {
         _count: {
           select: { users: true }
@@ -47,6 +48,7 @@ export async function PUT(request, { params }) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = params;
+    const roleId = parseInt(id);
     const { name, displayName, description, permissions } = await request.json();
 
     // Check if role exists and is not a system role
@@ -70,7 +72,7 @@ export async function PUT(request, { params }) {
     if (permissions) updateData.permissions = permissions;
 
     const role = await prisma.roleDefinition.update({
-      where: { id },
+      where: { id: roleId },
       data: updateData
     });
 
@@ -95,10 +97,11 @@ export async function DELETE(request, { params }) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = params;
+    const roleId = parseInt(id);
 
     // Check if role exists and is not a system role
     const existingRole = await prisma.roleDefinition.findUnique({
-      where: { id },
+      where: { id: roleId },
       include: {
         _count: {
           select: { users: true }

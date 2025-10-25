@@ -124,7 +124,7 @@ export async function DELETE(request, { params }) {
     }
 
     await prisma.roleDefinition.delete({
-      where: { id }
+      where: { id: roleId }
     });
 
     return NextResponse.json({ message: 'Role deleted successfully' });

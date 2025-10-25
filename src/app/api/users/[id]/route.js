@@ -216,17 +216,17 @@ export async function DELETE(request, { params }) {
     // Delete related records first to avoid foreign key constraint errors
     // Delete permissions
     await prisma.userPermission.deleteMany({
-      where: { userId: id }
+      where: { userId: userId }
     });
 
     // Delete documents owned by user
     await prisma.document.deleteMany({
-      where: { userId: id }
+      where: { userId: userId }
     });
 
     // Delete standby shifts
     await prisma.standByShift.deleteMany({
-      where: { caretakerId: id }
+      where: { caretakerId: userId }
     });
 
     // Now delete the user

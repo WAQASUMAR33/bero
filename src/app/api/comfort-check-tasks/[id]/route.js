@@ -1,11 +1,8 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
-
 // GET /api/comfort-check-tasks/[id]
 export async function GET(request, { params }) {
   try {

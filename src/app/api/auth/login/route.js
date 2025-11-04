@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request) {
@@ -29,14 +27,26 @@ export async function POST(request) {
     }
 
     // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: {
-        region: true,
-        role: true,
-        permissions: true,
-      },
-    });
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          region: true,
+          role: true,
+          permissions: true,
+        },
+      });
+    } catch (dbErr) {
+      const message = (dbErr && (dbErr.message || '')).toString();
+      if (message.includes("Can't reach database server") || dbErr.code === 'P1001') {
+        return NextResponse.json(
+          { error: 'Database unavailable. Please try again shortly.' },
+          { status: 503 }
+        );
+      }
+      throw dbErr;
+    }
 
     if (!user) {
       return NextResponse.json(

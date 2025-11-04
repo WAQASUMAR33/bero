@@ -1,11 +1,8 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
-
 // POST /api/shift-types/seed - Seed default shift types
 export async function POST(request) {
   try {

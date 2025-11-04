@@ -1,11 +1,8 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
-
 const DEFAULT_TRIGGERS = [
   { name: 'Communication to express emotion to other', define: 'Using behaviour to communicate feelings or needs' },
   { name: 'Escape/Avoidance', define: 'Behaviour to avoid or escape from a situation' },

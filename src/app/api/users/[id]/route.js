@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-
+import { prisma } from '@/lib/prisma';
 // GET /api/users/[id] - Get a specific user
 export async function GET(request, { params }) {
   try {

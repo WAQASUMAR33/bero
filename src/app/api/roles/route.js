@@ -1,9 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
-
 // GET all roles
 export async function GET(request) {
   try {

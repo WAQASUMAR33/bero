@@ -1,11 +1,8 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
-
 // GET all reposition tasks
 export async function GET(request) {
   try {

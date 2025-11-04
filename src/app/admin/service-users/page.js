@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
 import LocationMap from './components/LocationMap';
 
 export default function ServiceUsersPage() {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [seekers, setSeekers] = useState([]);
@@ -40,9 +42,12 @@ export default function ServiceUsersPage() {
     photoUrl: '',
     // Step 3: Identity & Status
     gender: '',
+    genderOther: '',
     genderAtBirth: '',
+    genderAtBirthOther: '',
     pronouns: '',
     sexuality: '',
+    sexualityOther: '',
     dnar: false,
     status: 'LIVE',
   });
@@ -103,7 +108,7 @@ export default function ServiceUsersPage() {
     setFormData({
       firstName: '', lastName: '', preferredName: '', title: '', dateOfBirth: '',
       address: '', postalCode: '', latitude: '', longitude: '', photoUrl: '',
-      gender: '', genderAtBirth: '', pronouns: '', sexuality: '', dnar: false, status: 'LIVE',
+      gender: '', genderOther: '', genderAtBirth: '', genderAtBirthOther: '', pronouns: '', sexuality: '', sexualityOther: '', dnar: false, status: 'LIVE',
     });
     setCurrentStep(1);
     setShowModal(true);
@@ -125,9 +130,12 @@ export default function ServiceUsersPage() {
       longitude: s.longitude?.toString() || '',
       photoUrl: s.photoUrl || '',
       gender: s.gender || '',
+      genderOther: '',
       genderAtBirth: s.genderAtBirth || '',
+      genderAtBirthOther: '',
       pronouns: s.pronouns || '',
       sexuality: s.sexuality || '',
+      sexualityOther: '',
       dnar: !!s.dnar,
       status: s.status || 'LIVE',
     });
@@ -142,8 +150,15 @@ export default function ServiceUsersPage() {
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/service-seekers/${editing.id}` : '/api/service-seekers';
       const token = localStorage.getItem('token');
+      // Map dropdowns and conditional "other" fields
+      const resolvedGender = formData.gender === 'OTHER' && formData.genderOther ? formData.genderOther : formData.gender;
+      const resolvedGenderAtBirth = formData.genderAtBirth === 'OTHER' && formData.genderAtBirthOther ? formData.genderAtBirthOther : formData.genderAtBirth;
+      const resolvedSexuality = formData.sexuality === 'OTHER' && formData.sexualityOther ? formData.sexualityOther : formData.sexuality;
       const payload = {
         ...formData,
+        gender: resolvedGender,
+        genderAtBirth: resolvedGenderAtBirth,
+        sexuality: resolvedSexuality,
         latitude: formData.latitude === '' ? null : Number(formData.latitude),
         longitude: formData.longitude === '' ? null : Number(formData.longitude),
       };
@@ -153,9 +168,13 @@ export default function ServiceUsersPage() {
         body: JSON.stringify(payload),
       });
       if (response.ok) {
+        const resJson = await response.json().catch(()=>null);
         setShowModal(false);
         await fetchSeekers();
         setNotification({ show: true, message: editing ? 'Service user updated successfully.' : 'Service user created successfully.', type: 'success' });
+        if (!editing && resJson?.id) {
+          router.push(`/admin/service-users/${resJson.id}/admission`);
+        }
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
         setNotification({ show: true, message: err?.error || 'Failed to save service user.', type: 'error' });
@@ -565,23 +584,66 @@ export default function ServiceUsersPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Gender</label>
-                        <input value={formData.gender} onChange={e=>setFormData({...formData, gender:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        <select value={formData.gender} onChange={e=>setFormData({...formData, gender:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                          <option value="">Select gender</option>
+                          <option value="MALE">Male</option>
+                          <option value="FEMALE">Female</option>
+                          <option value="TRANSGENDER">Transgender</option>
+                          <option value="OTHER">Other</option>
+                          <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                        </select>
+                        {formData.gender === 'OTHER' && (
+                          <input placeholder="Please specify" value={formData.genderOther} onChange={e=>setFormData({...formData, genderOther:e.target.value})} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Gender at Birth</label>
-                        <input value={formData.genderAtBirth} onChange={e=>setFormData({...formData, genderAtBirth:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        <select value={formData.genderAtBirth} onChange={e=>setFormData({...formData, genderAtBirth:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                          <option value="">Select gender at birth</option>
+                          <option value="MALE">Male</option>
+                          <option value="FEMALE">Female</option>
+                          <option value="TRANSGENDER">Transgender</option>
+                          <option value="OTHER">Other</option>
+                          <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                        </select>
+                        {formData.genderAtBirth === 'OTHER' && (
+                          <input placeholder="Please specify" value={formData.genderAtBirthOther} onChange={e=>setFormData({...formData, genderAtBirthOther:e.target.value})} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Pronouns</label>
-                        <input value={formData.pronouns} onChange={e=>setFormData({...formData, pronouns:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        <select value={formData.pronouns} onChange={e=>setFormData({...formData, pronouns:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                          <option value="">Select pronouns</option>
+                          <option value="they">They</option>
+                          <option value="he">He</option>
+                          <option value="she">She</option>
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Sexuality</label>
-                        <input value={formData.sexuality} onChange={e=>setFormData({...formData, sexuality:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        <select value={formData.sexuality} onChange={e=>setFormData({...formData, sexuality:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                          <option value="">Select sexuality</option>
+                          <option value="HETEROSEXUAL">Heterosexual</option>
+                          <option value="GAY">Gay</option>
+                          <option value="LESBIAN">Lesbian</option>
+                          <option value="BISEXUAL">Bisexual</option>
+                          <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                        {formData.sexuality === 'OTHER' && (
+                          <input placeholder="Please specify" value={formData.sexualityOther} onChange={e=>setFormData({...formData, sexualityOther:e.target.value})} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        )}
                       </div>
-                      <div className="flex items-center space-x-2 md:col-span-2">
-                        <input id="dnar" type="checkbox" checked={formData.dnar} onChange={e=>setFormData({...formData, dnar:e.target.checked})} className="rounded border-gray-300 text-[#224fa6] focus:ring-[#224fa6]" />
-                        <label htmlFor="dnar" className="text-sm text-gray-700">DNAR (Do Not Attempt Resuscitation)</label>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm text-gray-600 mb-1">DNAR</label>
+                        <select
+                          value={formData.dnar ? 'DO_NOT_RESUSCITATE' : 'RESUSCITATE'}
+                          onChange={e=>setFormData({...formData, dnar: e.target.value === 'DO_NOT_RESUSCITATE'})}
+                          className="w-full border rounded-lg px-3 py-2 text-gray-900"
+                        >
+                          <option value="RESUSCITATE">Resuscitate</option>
+                          <option value="DO_NOT_RESUSCITATE">Do Not Resuscitate</option>
+                        </select>
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm text-gray-600 mb-1">Status</label>

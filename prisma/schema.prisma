@@ -40,6 +40,22 @@ enum FunderPaymentType {
   BY_PERCENTAGE_SPENT
 }
 
+enum OutcomeCategory {
+  ABOUT_ME
+  PHYSICAL_HEALTH
+  MENTAL_HEALTH
+  COMMUNICATION
+  ORAL_CARE
+  SKIN_INTEGRITY
+  MEDICATION
+  NUTRITION_HYDRATION
+  CONTINENCE_CARE
+  MOBILITY
+  MY_NEEDS_SUPPORT
+  DECISION_MAKING
+  EMOTIONAL_SUPPORT
+}
+
 enum ShiftRecurrence {
   DAILY
   WEEK
@@ -188,6 +204,7 @@ model User {
   createdShifts                  Shift[]                  @relation("ShiftCreatedBy")
   updatedShifts                  Shift[]                  @relation("ShiftUpdatedBy")
   shiftAssignments               ShiftAssignment[]        @relation("ShiftAssignments")
+  externalInboxAccesses          ServiceSeekerExternalInboxAccess[]
 }
 
 model UserPermission {
@@ -284,10 +301,325 @@ model ServiceSeeker {
   weightTasks             WeightTask[]
   encouragementTasks      EncouragementTask[]
   followUpTasks           FollowUpTask[]
+  residentMeetings        ServiceSeekerResidentMeeting[]
+  outcomes                ServiceSeekerOutcome[]
+  riskAssessments         ServiceSeekerRiskAssessment[]
+  safeguardingIncidents   ServiceSeekerSafeguarding[]
+  feedbackForms           ServiceSeekerFeedback[]
+  marReviews              ServiceSeekerMarReview[]
+  alertThresholds         ServiceSeekerAlertThreshold[]
+  mustAssessments         ServiceSeekerMustAssessment[]
+  waterlowAssessments     ServiceSeekerWaterlowAssessment[]
+  personalProperties      ServiceSeekerPersonalProperty[]
+  externalLogins          ServiceSeekerExternalLogin[]
+  externalInboxAccesses   ServiceSeekerExternalInboxAccess[]
+  allowanceSettings        ServiceSeekerAllowanceSettings?
+  allowanceTransactions    ServiceSeekerAllowanceTransaction[]
+  foodDrinksSchedules      ServiceSeekerFoodDrinksSchedule[]
+  foodDrinksSettings       ServiceSeekerFoodDrinksSettings?
+  houseKeepingSchedules    ServiceSeekerHouseKeepingSchedule[]
+  socialVisitInstructions  ServiceSeekerSocialVisitInstructions?
+  medicineAccessCodes      ServiceSeekerMedicineAccessCodes?
+  positioningHandling      ServiceSeekerPositioningHandling[]
+  bathingSchedule          ServiceSeekerBathingSchedule?
+  bathingDefaultTimes      ServiceSeekerBathingDefaultTime[]
 
   // Relations
   createdBy               User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
   updatedBy               User?    @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
+  admission               ServiceSeekerAdmission?
+  otherIds                 ServiceSeekerOtherId[]
+  otherTelephones          ServiceSeekerOtherTelephone[]
+  otherAddresses            ServiceSeekerOtherAddress[]
+  healthTags                ServiceSeekerHealthTag[]
+  mentalCapacities          ServiceSeekerMentalCapacity[]
+  mcaAssessments            ServiceSeekerMcaAssessment[]
+  contacts                  ServiceSeekerContact[]
+  documents                 ServiceSeekerDocument[]
+  confidentialNotes         ServiceSeekerConfidentialNote[]
+  fundings                  ServiceSeekerFunding[]
+}
+
+enum FuneralArrangement {
+  UNKNOWN
+  BURIAL
+  CREMATION
+}
+
+model ServiceSeekerAdmission {
+  id                   Int                 @id @default(autoincrement())
+  serviceSeekerId      Int                 @unique
+  advancedCarePlanUrl  String?
+  startDate            DateTime?
+  banding              String?
+  authorityCategory    String?
+  funeralArrangement   FuneralArrangement?
+  funeralDirector      String?
+  teamId               Int?
+  defaultShiftRunId    Int?
+  // Identification fields
+  nhsHscNo             String?
+  chiNumber            String?
+  niNumber             String?
+  personId             String?
+  // Council fields
+  councilServiceUserId String?
+  councilCareProviderId String?
+  serviceType          String?
+  serviceLevel         String?
+  // Background fields
+  maritalStatus        String?
+  religion             String?
+  ethnicity            String?
+  communicationPreference String?
+  emergencyRating      String?
+  addressLine1         String?
+  addressLine2         String?
+  addressLine3         String?
+  addressLine4         String?
+  addressLine5         String?
+  postcode             String?
+  addressLatitude      String?
+  addressLongitude     String?
+  region               String?
+  keySafeCode          String?
+  accessDetails        String?
+  telephone            String?
+  mobile               String?
+  email                String?
+  preferredContactMethod String?
+  // Health fields
+  height               Float?
+  weight               Float?
+  bmi                  Float?
+  medicalHistory       String?
+  medicineAllergies    String?
+  oxygen               String?
+  onCatheter           String?
+  teamInvolvement      Json?              // Array of selected team involvement options
+  // Diet fields
+  foodAllergies        String?
+  nilByMouth           String?
+  mainDiet             String?
+  specialDiet          String?
+  dietInstructions     String?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  // Relations
+  serviceSeeker        ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  defaultShiftRun      ShiftRun?           @relation(fields: [defaultShiftRunId], references: [id])
+}
+
+model ServiceSeekerOtherId {
+  id              Int       @id @default(autoincrement())
+  serviceSeekerId Int
+  idName          String
+  idNumber        String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerOtherTelephone {
+  id              Int       @id @default(autoincrement())
+  serviceSeekerId Int
+  telephoneType   String
+  number          String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerOtherAddress {
+  id              Int       @id @default(autoincrement())
+  serviceSeekerId Int
+  addressType     String
+  addressLine1    String?
+  addressLine2    String?
+  addressLine3    String?
+  addressLine4    String?
+  addressLine5    String?
+  postcode         String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerHealthTag {
+  id              Int       @id @default(autoincrement())
+  serviceSeekerId Int
+  tagName         String
+  isCustom        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model Diet {
+  id              Int       @id @default(autoincrement())
+  name            String    @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model ServiceSeekerMentalCapacity {
+  id                  Int       @id @default(autoincrement())
+  serviceSeekerId      Int
+  mca                  DateTime?
+  capacity             String?
+  bestInterests        String?
+  score                String?
+  dols                 String?
+  appliedForDate       DateTime?
+  dolsStartDate        DateTime?
+  dolsEndDate          DateTime?
+  dolsNotes            String?
+  cqcInformed          Boolean? @default(false)
+  dolsAppliedForDate   DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker        ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerMcaAssessment {
+  id                              Int       @id @default(autoincrement())
+  serviceSeekerId                  Int
+  risk                            String?
+  lastAssessed                    DateTime?
+  triggeredBy                     String?
+  hasImpairment                   String?
+  clinicalDiagnosis               String?   @db.Text
+  decisionToMake                  String?   @db.Text
+  isImpairment                    String?
+  fluctuatingCapacity             String?
+  fluctuatingCapacityReason       String?   @db.Text
+  generalUnderstanding            String?
+  generalUnderstandingDetails     String?   @db.Text
+  canRetainInformation            String?
+  canRetainInformationDetails     String?   @db.Text
+  canUseWeighInformation          String?
+  canUseWeighInformationDetails  String?   @db.Text
+  canCommunicate                  String?
+  healthWelfareLpa                String?
+  advancedDecision                String?
+  deputyAppointed                 String?
+  imcaRequired                    String?
+  imcaName                        String?
+  imcaTelephone                   String?
+  option1                         String?   @db.Text
+  option2                         String?   @db.Text
+  option3                         String?   @db.Text
+  pastPresentWishes               String?
+  pastPresentWishesDetails        String?   @db.Text
+  consultedInterestedParties      String?
+  consultedInterestedPartiesDetails String? @db.Text
+  consultedProfessionals          String?
+  consultedProfessionalsDetails   String?   @db.Text
+  bestInterestDecision            String?   @db.Text
+  decisionMade                    String?   @db.Text
+  leastRestrictivePrinciple       String?   @db.Text
+  disagreement                    String?
+  disagreementDetails             String?   @db.Text
+  everyOptionExplored            String?
+  patientRecordsUpdated           String?
+  useOfRestraint                  String?
+  misinformation                  String?
+  anyoneObjected                  String?
+  restraintForTreatment           String?
+  relativesRequestedDischarge     String?
+  restrictedAccessToFamily        String?
+  leastRestrictiveOptions         String?
+  restrictedAccessToCommunity     String?
+  continuousSupervision           String?
+  riskLevel                       String?
+  totalScore                      String?
+  staffTeam                       String?
+  office                          String?
+  sendSignoffs                    String?
+  conductedBy                     String?
+  createdAt                       DateTime  @default(now())
+  updatedAt                       DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker                   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerContact {
+  id                Int       @id @default(autoincrement())
+  serviceSeekerId   Int
+  contactType       String    // FAMILY or PROFESSIONAL
+  name              String
+  role              String?
+  otherRole         String?
+  mobile            String?
+  work              String?
+  home              String?
+  email             String?
+  address           String?   @db.Text
+  practiceCode      String?
+  emergencyContact  Boolean?  @default(false)
+  pictureUrl        String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker     ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerDocument {
+  id               Int       @id @default(autoincrement())
+  serviceSeekerId  Int
+  docType          String
+  name             String
+  fileUrl          String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerConfidentialNote {
+  id               Int       @id @default(autoincrement())
+  serviceSeekerId  Int
+  noteDate         DateTime
+  staffName        String?
+  notes            String?   @db.Text
+  pictureUrl       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
 }
 
 model Funder {
@@ -301,6 +633,40 @@ model Funder {
   updatedAt       DateTime @updatedAt
 
   shifts          Shift[]
+}
+
+model FundingSource {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  organisation String?
+  contact     String?
+  email       String?
+  address     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  serviceSeekerFundings ServiceSeekerFunding[]
+}
+
+model ServiceSeekerFunding {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  fundingSourceId  Int
+  percentageSplit  Float?
+  contractNumber   String?
+  typeOfService    String?
+  costNotes        String?
+  paymentType      FunderPaymentType
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  fundingSource    FundingSource @relation(fields: [fundingSourceId], references: [id])
+
+  @@index([serviceSeekerId])
+  @@index([fundingSourceId])
 }
 
 model StandByShift {
@@ -1241,6 +1607,267 @@ model VisitTask {
   updatedBy           User                @relation("VisitTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
+model ServiceSeekerResidentMeeting {
+  id               Int       @id @default(autoincrement())
+  serviceSeekerId  Int
+  meetingDate      DateTime
+  chairedBy        String?
+  about            String?
+  notes            String?
+  actions          String?
+  concerns         String?
+  invites          Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerOutcome {
+  id               Int              @id @default(autoincrement())
+  serviceSeekerId  Int
+  category         OutcomeCategory
+  data             Json
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+  @@index([category])
+}
+
+model ServiceSeekerRiskAssessment {
+  id                        Int       @id @default(autoincrement())
+  serviceSeekerId          Int
+  riskType                 String
+  lastAssessed             DateTime?
+  reviewFrequency          String?
+  whatIsRisk               String?   @db.Text
+  riskBeforeIntervention   String?
+  whoIsAtRisk              String?
+  isHistorical             String?
+  whatCouldHappen          String?   @db.Text
+  actionToTake             String?   @db.Text
+  riskAfterControls        String?
+  summary                  String?   @db.Text
+  riskLevel                String?
+  totalScore               String?
+  staffTeam                Json?
+  conductedBy              String?
+  office                   String?
+  sendSignoffs             Boolean?  @default(false)
+  extra                    Json?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker            ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+  @@index([riskType])
+}
+
+model ServiceSeekerSafeguarding {
+  id                         Int       @id @default(autoincrement())
+  serviceSeekerId           Int
+  investigatorName          String?
+  serviceUserLocation       String?
+  incidentDate              DateTime?
+  incidentHour              Int?
+  incidentMinute            Int?
+  preciseLocation           String?
+  incidentOverview          String?
+  incidentDetails           String?   @db.Text
+  witnesses                 String?
+  medicalAttentionRequired  String?
+  injuriesDetails           String?
+  decisionReached           String?   @db.Text
+  immediateAction           String?   @db.Text
+  lessonsLearned            String?   @db.Text
+  outsideAgenciesContacted  String?
+  managerRecommendations    String?   @db.Text
+  summary                   String?   @db.Text
+  preventionActions         String?   @db.Text
+  conductedBy               String?
+  meetingReportedDate       DateTime?
+  reportedToManagementBy    String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker             ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerFeedback {
+  id               Int       @id @default(autoincrement())
+  serviceSeekerId  Int
+  name             String
+  lastAssessed     DateTime?
+  score            String?
+  conductedBy      String?
+  data             Json
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+  @@index([name])
+}
+
+model ServiceSeekerMarReview {
+  id               Int       @id @default(autoincrement())
+  serviceSeekerId  Int
+  reviewDate       DateTime?
+  reviewer         String?
+  review           String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerAlertThreshold {
+  id                 Int       @id @default(autoincrement())
+  serviceSeekerId    Int
+  maxBloodGlucose    String?
+  minBloodGlucose    String?
+  maxInsulin         String?
+  minInsulin         String?
+  maxFood            String?
+  minFood            String?
+  maxUrine           String?
+  minUrine           String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker      ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerMustAssessment {
+  id                 Int       @id @default(autoincrement())
+  serviceSeekerId    Int
+  assessedOn         DateTime?
+  currentWeightKg    Float?
+  heightM            Float?
+  previousWeightKg   Float?
+  score              Int?
+  riskLevel          String?
+  conductedBy        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker      ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerWaterlowAssessment {
+  id                      Int       @id @default(autoincrement())
+  serviceSeekerId        Int
+  assessedOn             DateTime?
+  currentWeightKg        Float?
+  heightM                Float?
+  previousWeightKg       Float?
+  continence             String?
+  skinType               String?
+  mobility               String?
+  specialSurgeryTrauma   String?
+  specialTissue          Json?
+  specialNeuro           Json?
+  specialMedication      Json?
+  photos                 Json?
+  score                  Int?
+  riskLevel              String?
+  conductedBy            String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker          ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerPersonalProperty {
+  id               Int       @id @default(autoincrement())
+  serviceSeekerId  Int
+  item             String
+  pictureUrl       String?
+  enteredBy        String?
+  archived         Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ExternalLoginProfile {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  type      String
+  email     String   @unique
+  password  String
+  picture   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  serviceSeekerExternalLogins ServiceSeekerExternalLogin[]
+}
+
+model ServiceSeekerExternalLogin {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  profileId        Int
+  showRota         Boolean  @default(true)
+  showAllowance    Boolean  @default(true)
+  showCarePlan     Boolean  @default(true)
+  showDailyNotes   Boolean  @default(false)
+  showMarChart     Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
+  profile          ExternalLoginProfile @relation(fields: [profileId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerExternalInboxAccess {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  userId           Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  user             User          @relation(fields: [userId], references: [id])
+
+  @@unique([serviceSeekerId, userId])
+}
+
 model WeightTask {
   id                  Int                 @id @default(autoincrement())
   serviceSeekerId     Int
@@ -1330,6 +1957,7 @@ model ShiftRun {
   createdBy           User?             @relation("ShiftRunCreatedBy", fields: [createdById], references: [id])
   updatedBy           User?             @relation("ShiftRunUpdatedBy", fields: [updatedById], references: [id])
   shifts              Shift[]
+  admissions          ServiceSeekerAdmission[]
 }
 
 model Shift {
@@ -1376,4 +2004,174 @@ model ShiftAssignment {
   user                User              @relation("ShiftAssignments", fields: [userId], references: [id])
 
   @@unique([shiftId, userId, date])
+}
+
+model ServiceSeekerAllowanceSettings {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int      @unique
+  receivesAllowance Boolean @default(false)
+  allowanceAmount   Float?   @default(0)
+  allowanceFrequency String? // 'week', 'month', 'year'
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerAllowanceTransaction {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  transaction      String   // 'Credit', 'Debit'
+  amount           Float
+  balance          Float    @default(0)
+  isAllowance      Boolean  @default(false)
+  item             String?
+  signature        String?  @db.Text // Base64 signature image
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerFoodDrinksSchedule {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  meal             String   // e.g., "Breakfast", "Lunch", "Dinner", "Snack"
+  times            Json     // Array of {hour: string, minute: string}
+  directions       String?  @db.Text
+  frequency        String   // e.g., "Daily", "Weekly", "Monthly"
+  team             String   // e.g., "All", "Team 1", etc.
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerFoodDrinksSettings {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int      @unique
+  pegMonitoring    Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerHouseKeepingSchedule {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  task             String   @db.Text
+  temperatureCheck String?  // e.g., "Yes", "No", or null
+  times            Json     // Array of {hour: string, minute: string}
+  frequency        String   // e.g., "Daily", "Weekly", "Monthly", etc.
+  team             String   // e.g., "All", "Team 1", etc.
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerSocialVisitInstructions {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int      @unique
+  instructions     String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerMedicineAccessCodes {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int      @unique
+  accessCodes      String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerPositioningHandling {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  position         String?  @db.Text
+  skinIntactOrGrade String?
+  times            Json     // Array of {hour: string, minute: string}
+  frequency        String   // e.g., "Daily", "Weekly", etc.
+  team             String   // e.g., "All", "Team 1", etc.
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerBathingSchedule {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int      @unique
+  showerGelSoapShampoo String? @db.Text
+  directions       String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  scheduleItems    ServiceSeekerBathingScheduleItem[]
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerBathingScheduleItem {
+  id               Int      @id @default(autoincrement())
+  scheduleId       Int
+  bathingType      String   // e.g., "Bath", "Bed bath", "Shower", etc.
+  frequency        String   // e.g., "Daily", "Weekly", etc.
+  times            Json     // Array of {day: string, hour: string, minute: string}
+  team             String   // e.g., "All", "Team 1", etc.
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  schedule         ServiceSeekerBathingSchedule @relation(fields: [scheduleId], references: [id])
+
+  @@index([scheduleId])
+}
+
+model ServiceSeekerBathingDefaultTime {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  day              String   // e.g., "Monday", "Tuesday", etc.
+  hour             String
+  minute           String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@unique([serviceSeekerId, day, hour, minute])
+  @@index([serviceSeekerId])
 }

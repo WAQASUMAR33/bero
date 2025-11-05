@@ -1,40 +1,67 @@
 export default function IdentificationForm({ identification, setField, serviceSeekerId, onSave, saving }) {
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Identification</h2>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+      {/* Blue Header */}
+      <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Identification</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 mb-1">NHS / HSC No.</label>
-          <input value={identification.nhsHscNo} onChange={e=>setField('nhsHscNo', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+      
+      {/* Form Content */}
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">NHS / HSC No.</label>
+            <input 
+              value={identification.nhsHscNo} 
+              onChange={e=>setField('nhsHscNo', e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+              placeholder="Enter NHS / HSC Number"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">CHI Number</label>
+            <input 
+              value={identification.chiNumber} 
+              onChange={e=>setField('chiNumber', e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+              placeholder="Enter CHI Number"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">NI No.</label>
+            <input 
+              value={identification.niNumber} 
+              onChange={e=>setField('niNumber', e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+              placeholder="Enter NI Number"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Person ID</label>
+            <input 
+              value={identification.personId} 
+              onChange={e=>setField('personId', e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+              placeholder="Enter Person ID"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">QR Code</label>
+            <QrControls identification={identification} serviceSeekerId={serviceSeekerId} />
+          </div>
         </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 mb-1">CHI Number</label>
-          <input value={identification.chiNumber} onChange={e=>setField('chiNumber', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+        
+        {/* Save Button */}
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={() => onSave?.(identification)}
+            disabled={!!saving}
+            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
         </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 mb-1">NI No.</label>
-          <input value={identification.niNumber} onChange={e=>setField('niNumber', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 mb-1">Person ID</label>
-          <input value={identification.personId} onChange={e=>setField('personId', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 mb-2">QR</label>
-          <QrControls identification={identification} serviceSeekerId={serviceSeekerId} />
-        </div>
-      </div>
-      <div className="mt-6 flex justify-end">
-        <button
-          type="button"
-          onClick={() => onSave?.(identification)}
-          disabled={!!saving}
-          className="px-4 py-2 rounded bg-[#224fa6] text-white disabled:opacity-70"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
       </div>
     </div>
   );
@@ -68,14 +95,31 @@ function QrControls({ identification, serviceSeekerId }){
   };
 
   return (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center space-x-4">
       {qrDataUrl ? (
-        <img src={qrDataUrl} alt="QR Code" className="w-20 h-20" />
+        <div className="w-24 h-24 border-2 border-gray-300 rounded-lg p-2 bg-white shadow-sm">
+          <img src={qrDataUrl} alt="QR Code" className="w-full h-full" />
+        </div>
       ) : (
-        <div className="w-20 h-20 border rounded flex items-center justify-center text-gray-400 text-xs">QR</div>
+        <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-sm bg-gray-50">QR Code</div>
       )}
-      <button type="button" onClick={generateQr} className="px-3 py-2 rounded border text-gray-700 bg-gray-100 hover:bg-gray-200">Generate QR Code</button>
-      <button type="button" onClick={printQr} className="px-3 py-2 rounded border text-gray-700 bg-gray-100 hover:bg-gray-200">Print</button>
+      <div className="flex flex-col space-y-2">
+        <button 
+          type="button" 
+          onClick={generateQr} 
+          className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium transition-all shadow-sm hover:shadow"
+        >
+          Generate QR Code
+        </button>
+        <button 
+          type="button" 
+          onClick={printQr} 
+          disabled={!qrDataUrl}
+          className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Print
+        </button>
+      </div>
     </div>
   );
 }

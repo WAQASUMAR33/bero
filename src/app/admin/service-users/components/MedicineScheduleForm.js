@@ -220,105 +220,117 @@ export default function MedicineScheduleForm({ serviceSeekerId, onNotification }
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="bg-orange-500 text-white px-4 py-3 rounded-t-lg flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-xl font-semibold">Medicine</h2>
-          <span className="text-white text-lg">▼</span>
-          <span className="text-white text-lg">ℹ️</span>
-        </div>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-orange-500">
+      {/* Orange Header */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Medicine</h2>
       </div>
 
-      {loading ? (
-        <div className="text-center py-8 text-gray-500">Loading...</div>
-      ) : (
-        <>
-          <div className="overflow-x-auto mb-4">
-            <table className="w-full border border-gray-200">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Medicine Name</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Type</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">PRN</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Time</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Frequency</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Team</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Created</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Modified</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayRows.map((r, idx) => (
-                  <tr
-                    key={r.id}
-                    className={`border-b ${idx % 2 === 0 ? 'bg-blue-50' : 'bg-white'}`}
-                  >
-                    <td className="py-3 px-4 text-sm text-gray-900">{r.medicineName || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{r.medicineType || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{r.prn || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatTime(r.times)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{r.frequency || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{r.team || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.updatedAt)}</td>
-                    <td className="py-3 px-4 text-sm">
-                      {r.isSchedule ? (
-                        <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => openEdit(r)}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteScheduleItem(r.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-gray-500 text-xs">Task</span>
-                      )}
-                    </td>
+      <div className="p-6">
+        {loading ? (
+          <div className="text-center py-12 text-gray-500">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+            <p className="mt-2">Loading...</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto mb-6">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Medicine Name</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Type</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">PRN</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Time</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Frequency</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Team</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Created</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Modified</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {displayRows.map((r, idx) => (
+                    <tr
+                      key={r.id}
+                      className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                    >
+                      <td className="py-4 px-5 text-sm text-gray-900 font-medium">{r.medicineName || '-'}</td>
+                      <td className="py-4 px-5 text-sm text-gray-900">{r.medicineType || '-'}</td>
+                      <td className="py-4 px-5 text-sm text-gray-900">{r.prn || '-'}</td>
+                      <td className="py-4 px-5 text-sm text-gray-900">{formatTime(r.times)}</td>
+                      <td className="py-4 px-5 text-sm text-gray-900">{r.frequency || '-'}</td>
+                      <td className="py-4 px-5 text-sm text-gray-900">{r.team || '-'}</td>
+                      <td className="py-4 px-5 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
+                      <td className="py-4 px-5 text-sm text-gray-600">{formatDate(r.updatedAt)}</td>
+                      <td className="py-4 px-5 text-sm">
+                        {r.isSchedule ? (
+                          <div className="flex items-center space-x-3">
+                            <button
+                              type="button"
+                              onClick={() => openEdit(r)}
+                              className="text-[#224fa6] hover:text-[#1a3d85] font-medium transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteScheduleItem(r.id)}
+                              className="text-red-600 hover:text-red-700 font-medium transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs bg-gray-100 px-2 py-1 rounded">Task</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="flex items-center justify-between mt-4 mb-4">
-            <button
-              type="button"
-              className="text-red-600 hover:text-red-800"
-            >
-              🗑️
-            </button>
-            <button
-              type="button"
-              onClick={openAdd}
-              className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-700 text-xl"
-            >
-              +
-            </button>
-          </div>
-        </>
-      )}
+            <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+              <button
+                type="button"
+                className="text-gray-600 hover:text-red-600 transition-colors"
+                title="Delete selected"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={openAdd}
+                className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full flex items-center justify-center hover:from-orange-600 hover:to-orange-700 text-2xl font-light shadow-lg hover:shadow-xl transition-all"
+                title="Add new schedule item"
+              >
+                +
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="bg-orange-500 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-white text-lg">ℹ️</span>
+            {/* Orange Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
+              <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold">
                   {editingId ? 'Edit Medicine Task' : 'New Medicine Task'}
                 </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
+                >
+                  ×
+                </button>
               </div>
-              <span className="text-white text-lg">📤</span>
             </div>
             <div className="flex-1 overflow-y-auto p-6 bg-white space-y-4">
               <div className="flex items-center space-x-2">
@@ -413,7 +425,7 @@ export default function MedicineScheduleForm({ serviceSeekerId, onNotification }
                 <button
                   type="button"
                   onClick={addTimeInput}
-                  className="text-green-600 hover:text-green-800 text-sm mt-2"
+                  className="text-orange-600 hover:text-orange-800 text-sm mt-2"
                 >
                   + Add Time
                 </button>
@@ -454,12 +466,12 @@ export default function MedicineScheduleForm({ serviceSeekerId, onNotification }
                 />
               </div>
             </div>
-            <div className="p-6 bg-white border-t border-gray-200 flex justify-end space-x-3 rounded-b-xl">
+            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
                 disabled={saving}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70"
+                className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all font-medium"
               >
                 Cancel
               </button>
@@ -467,7 +479,7 @@ export default function MedicineScheduleForm({ serviceSeekerId, onNotification }
                 type="button"
                 onClick={saveScheduleItem}
                 disabled={saving}
-                className="px-6 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-70"
+                className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:from-orange-600 hover:to-orange-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>

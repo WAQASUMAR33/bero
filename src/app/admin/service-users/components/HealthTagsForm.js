@@ -144,10 +144,13 @@ export default function HealthTagsForm({ serviceSeekerId, onNotification }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Health Tags</h2>
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+        {/* Blue Header */}
+        <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+          <h2 className="text-xl font-semibold">Health Tags</h2>
         </div>
+        
+        <div className="p-6">
 
         {loading ? (
           <div className="text-center py-4 text-gray-500">Loading...</div>
@@ -232,11 +235,12 @@ export default function HealthTagsForm({ serviceSeekerId, onNotification }) {
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="w-10 h-10 rounded-lg bg-green-600 hover:bg-green-700 flex items-center justify-center text-white text-2xl font-light transition-colors"
+            className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] hover:from-[#1a3d85] hover:to-[#2859c7] flex items-center justify-center text-white text-2xl font-light transition-all shadow-md hover:shadow-lg"
             aria-label="Add health tag"
           >
             +
           </button>
+        </div>
         </div>
       </div>
 
@@ -244,13 +248,14 @@ export default function HealthTagsForm({ serviceSeekerId, onNotification }) {
       {showAddModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
+            {/* Blue Header */}
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">Add Health Tags</h3>
+                <h3 className="text-xl font-semibold">Add Health Tags</h3>
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+                  className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
                 >
                   ×
                 </button>
@@ -335,15 +340,15 @@ export default function HealthTagsForm({ serviceSeekerId, onNotification }) {
                   type="button"
                   onClick={handleCancel}
                   disabled={saving}
-                  className="px-4 py-2 rounded border text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-70"
-                >
-                  Cancel
+                    className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all font-medium"
+                  >
+                    Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddTags}
                   disabled={saving}
-                  className="px-4 py-2 rounded bg-[#224fa6] text-white disabled:opacity-70"
+                  className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
                 >
                   {saving ? 'Adding...' : 'Add Tags'}
                 </button>

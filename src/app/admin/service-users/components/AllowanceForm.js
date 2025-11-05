@@ -255,205 +255,227 @@ export default function AllowanceForm({ serviceSeekerId, onNotification }) {
   }, [showSignatureModal]);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="bg-teal-600 text-white px-4 py-3 rounded-t-lg flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-xl font-semibold">Allowance</h2>
-          <span className="text-white text-lg">▼</span>
-          <span className="text-white text-lg">ℹ️</span>
-        </div>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-orange-500">
+      {/* Orange Header */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Allowance</h2>
       </div>
 
-      {loading ? (
-        <div className="text-center py-8 text-gray-500">Loading...</div>
-      ) : (
-        <>
-          <div className="overflow-x-auto mb-4">
-            <table className="w-full border border-gray-200">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Transaction</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Amount</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Balance</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Allowance?</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Item</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Service User Signature</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Created</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 border-b">Modified</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((t, idx) => (
-                  <tr
-                    key={t.id}
-                    className={`border-b ${idx % 2 === 0 ? 'bg-blue-50' : 'bg-white'}`}
-                  >
-                    <td className="py-3 px-4 text-sm text-gray-900">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(t.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedIds([...selectedIds, t.id]);
-                          } else {
-                            setSelectedIds(selectedIds.filter((id) => id !== t.id));
-                          }
-                        }}
-                        className="mr-2"
-                      />
-                      {t.transaction}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatCurrency(t.amount)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatCurrency(t.balance)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{t.isAllowance ? 'Yes' : 'No'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{t.item || '-'}</td>
-                    <td className="py-3 px-4 text-sm">
-                      {t.signature ? (
-                        <img src={t.signature} alt="Signature" className="w-24 h-12 object-contain border border-gray-300 cursor-pointer" onClick={() => openSignatureModal(t.signature)} />
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => openSignatureModal()}
-                          className="text-blue-600 hover:text-blue-800 text-sm underline"
-                        >
-                          Sign
-                        </button>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{formatDate(t.createdAt)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{formatDate(t.updatedAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="p-6">
+        {loading ? (
+          <div className="text-center py-12 text-gray-500">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+            <p className="mt-2">Loading...</p>
           </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto mb-6">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Transaction</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Amount</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Balance</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Allowance?</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Item</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Service User Signature</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Created</th>
+                    <th className="text-left py-4 px-5 text-sm font-semibold text-gray-700 border-b border-gray-200">Modified</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((t, idx) => (
+                    <tr
+                      key={t.id}
+                      className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                    >
+                      <td className="py-4 px-5 text-sm text-gray-900">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(t.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds([...selectedIds, t.id]);
+                              } else {
+                                setSelectedIds(selectedIds.filter((id) => id !== t.id));
+                              }
+                            }}
+                            className="mr-3 w-4 h-4 text-orange-600 focus:ring-orange-500 rounded"
+                          />
+                          <span className="font-medium">{t.transaction}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-5 text-sm text-gray-900 font-medium">{formatCurrency(t.amount)}</td>
+                      <td className="py-4 px-5 text-sm text-gray-900 font-medium">{formatCurrency(t.balance)}</td>
+                      <td className="py-4 px-5 text-sm">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${t.isAllowance ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                          {t.isAllowance ? 'Yes' : 'No'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-5 text-sm text-gray-900">{t.item || '-'}</td>
+                      <td className="py-4 px-5 text-sm">
+                        {t.signature ? (
+                          <img 
+                            src={t.signature} 
+                            alt="Signature" 
+                            className="w-24 h-12 object-contain border-2 border-gray-300 rounded cursor-pointer hover:border-orange-500 transition-colors" 
+                            onClick={() => openSignatureModal(t.signature)} 
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openSignatureModal()}
+                            className="text-[#224fa6] hover:text-[#1a3d85] text-sm font-medium underline transition-colors"
+                          >
+                            Sign
+                          </button>
+                        )}
+                      </td>
+                      <td className="py-4 px-5 text-sm text-gray-600">{formatDate(t.createdAt)}</td>
+                      <td className="py-4 px-5 text-sm text-gray-600">{formatDate(t.updatedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg mb-4">
+              <div className="flex items-center space-x-4">
+                <button
+                  type="button"
+                  onClick={deleteTransactions}
+                  disabled={selectedIds.length === 0 || saving}
+                  className="text-gray-600 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Delete selected"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.receivesAllowance}
+                    onChange={(e) => {
+                      setSettings({ ...settings, receivesAllowance: e.target.checked });
+                    }}
+                    className="w-4 h-4 text-orange-600 focus:ring-orange-500 rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Receives allowance</span>
+                </label>
+                {settings.receivesAllowance && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-700">of £</span>
+                    <input
+                      type="number"
+                      value={settings.allowanceAmount || ''}
+                      onChange={(e) => {
+                        setSettings({ ...settings, allowanceAmount: parseFloat(e.target.value) || 0 });
+                      }}
+                      className="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                    <span className="text-sm text-gray-700">per</span>
+                    <select
+                      value={settings.allowanceFrequency || ''}
+                      onChange={(e) => {
+                        setSettings({ ...settings, allowanceFrequency: e.target.value });
+                      }}
+                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    >
+                      <option value="">Please Select</option>
+                      <option value="week">week</option>
+                      <option value="month">month</option>
+                      <option value="year">year</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={saveSettings}
+                      disabled={saving}
+                      className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 disabled:opacity-70 transition-all shadow-md hover:shadow-lg text-sm font-medium"
+                    >
+                      {saving ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
-                onClick={deleteTransactions}
-                disabled={selectedIds.length === 0 || saving}
-                className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={openAdd}
+                className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full flex items-center justify-center hover:from-orange-600 hover:to-orange-700 text-2xl font-light shadow-lg hover:shadow-xl transition-all"
+                title="Add new transaction"
               >
-                🗑️
+                +
               </button>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={settings.receivesAllowance}
-                  onChange={(e) => {
-                    setSettings({ ...settings, receivesAllowance: e.target.checked });
-                  }}
-                />
-                <span className="text-sm text-gray-700">Receives allowance</span>
-              </label>
-              {settings.receivesAllowance && (
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-700">of £</span>
-                  <input
-                    type="number"
-                    value={settings.allowanceAmount || ''}
-                    onChange={(e) => {
-                      setSettings({ ...settings, allowanceAmount: parseFloat(e.target.value) || 0 });
-                    }}
-                    className="w-20 border rounded px-2 py-1 text-sm text-gray-900"
-                    placeholder="0"
-                  />
-                  <span className="text-sm text-gray-700">per</span>
-                  <select
-                    value={settings.allowanceFrequency || ''}
-                    onChange={(e) => {
-                      setSettings({ ...settings, allowanceFrequency: e.target.value });
-                    }}
-                    className="border rounded px-2 py-1 text-sm text-gray-900"
-                  >
-                    <option value="">Please Select</option>
-                    <option value="week">week</option>
-                    <option value="month">month</option>
-                    <option value="year">year</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={saveSettings}
-                    disabled={saving}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-70"
-                  >
-                    Save
-                  </button>
-                </div>
-              )}
             </div>
-            <button
-              type="button"
-              onClick={openAdd}
-              className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-700 text-xl"
-            >
-              +
-            </button>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-lg">
-            <div className="bg-teal-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-white text-lg">ℹ️</span>
-                <h3 className="text-xl font-semibold">Add Transaction</h3>
-              </div>
-              <span className="text-white text-lg">📤</span>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Add Transaction</h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            <div className="p-6 bg-white space-y-4">
-              <div className="flex items-center space-x-2">
-                <label className="block text-sm font-medium text-gray-700 w-32">Transaction:</label>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Transaction:</label>
                 <select
                   value={formData.transaction}
                   onChange={(e) => setFormData({ ...formData, transaction: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                 >
                   <option value="Credit">Credit</option>
                   <option value="Debit">Debit</option>
                 </select>
               </div>
-              <div className="flex items-center space-x-2">
-                <label className="block text-sm font-medium text-gray-700 w-32">Amount:</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Amount:</label>
                 <input
                   type="number"
                   step="0.01"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                   placeholder="0.00"
                 />
               </div>
-              <div className="flex items-center space-x-2">
-                <label className="block text-sm font-medium text-gray-700 w-32">Item:</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Item:</label>
                 <input
                   type="text"
                   value={formData.item}
                   onChange={(e) => setFormData({ ...formData, item: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                   placeholder="Enter item"
                 />
               </div>
-              <div className="flex items-center space-x-2">
-                <label className="block text-sm font-medium text-gray-700 w-32">Allowance?:</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Allowance?:</label>
                 <select
                   value={formData.isAllowance ? 'true' : 'false'}
                   onChange={(e) => setFormData({ ...formData, isAllowance: e.target.value === 'true' })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                 >
                   <option value="false">No</option>
                   <option value="true">Yes</option>
                 </select>
               </div>
-              <div className="flex items-start space-x-2">
-                <label className="block text-sm font-medium text-gray-700 w-32">Service Users Signature:</label>
-                <div className="flex-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Service User Signature:</label>
+                <div>
                   {signatureDataUrl ? (
-                    <div className="border border-gray-300 rounded-lg p-2">
+                    <div className="border-2 border-gray-300 rounded-lg p-3 bg-gray-50">
                       <img src={signatureDataUrl} alt="Signature" className="w-full h-24 object-contain" />
                       <button
                         type="button"

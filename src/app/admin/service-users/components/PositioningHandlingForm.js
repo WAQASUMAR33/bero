@@ -172,13 +172,13 @@ export default function PositioningHandlingForm({ serviceSeekerId, onNotificatio
   const frequencyOptions = ['Daily', 'Rota Days', 'Weekly', 'Fortnightly', 'Every 3 weeks', 'Monthly', 'Quarterly', 'Yearly'];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="bg-orange-500 text-white px-4 py-3 rounded-t-lg flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-xl font-semibold">Positioning / Handling Required</h2>
-          <span className="text-white text-lg">▼</span>
-        </div>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-orange-500">
+      {/* Orange Header */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Positioning / Handling Required</h2>
       </div>
+      
+      <div className="p-6">
 
       {loading ? (
         <div className="text-center py-8 text-gray-500">Loading...</div>
@@ -254,21 +254,32 @@ export default function PositioningHandlingForm({ serviceSeekerId, onNotificatio
             <button
               type="button"
               onClick={openAdd}
-              className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-700 text-xl"
+              className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full flex items-center justify-center hover:from-orange-600 hover:to-orange-700 text-2xl font-light shadow-lg hover:shadow-xl transition-all"
             >
               +
             </button>
           </div>
         </>
       )}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900">
-                {editingId ? 'Edit Positioning / Handling' : 'Add Positioning / Handling'}
-              </h3>
+            {/* Orange Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">
+                  {editingId ? 'Edit Positioning / Handling' : 'Add Positioning / Handling'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
+                >
+                  ×
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               <div>
@@ -347,7 +358,7 @@ export default function PositioningHandlingForm({ serviceSeekerId, onNotificatio
                 <button
                   type="button"
                   onClick={addTimeInput}
-                  className="w-10 h-10 bg-green-600 text-white rounded flex items-center justify-center hover:bg-green-700 text-xl"
+                  className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded flex items-center justify-center hover:from-orange-600 hover:to-orange-700 text-xl transition-all"
                 >
                   +
                 </button>
@@ -370,7 +381,7 @@ export default function PositioningHandlingForm({ serviceSeekerId, onNotificatio
                 type="button"
                 onClick={() => setShowModal(false)}
                 disabled={saving}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70"
+                className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all font-medium"
               >
                 Cancel
               </button>
@@ -378,7 +389,7 @@ export default function PositioningHandlingForm({ serviceSeekerId, onNotificatio
                 type="button"
                 onClick={saveRecord}
                 disabled={saving}
-                className="px-6 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-70"
+                className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:from-orange-600 hover:to-orange-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>

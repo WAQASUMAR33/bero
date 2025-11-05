@@ -2,36 +2,39 @@
 
 export default function CouncilForm({ council, setField, onSave, saving }) {
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Council</h2>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+      {/* Blue Header */}
+      <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Council</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 mb-1">Council : Service User ID</label>
-          <input
-            value={council.councilServiceUserId || ''}
-            onChange={e => setField('councilServiceUserId', e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-gray-900"
-            placeholder="Enter Council Service User ID"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 mb-1">Council : Care Provider ID</label>
-          <input
-            value={council.councilCareProviderId || ''}
-            onChange={e => setField('councilCareProviderId', e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-gray-900"
-            placeholder="Enter Council Care Provider ID"
-          />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Service Type</label>
-          <select
-            value={council.serviceType || ''}
-            onChange={e => setField('serviceType', e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-gray-900"
-          >
+      
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Council : Service User ID</label>
+            <input
+              value={council.councilServiceUserId || ''}
+              onChange={e => setField('councilServiceUserId', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+              placeholder="Enter Council Service User ID"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Council : Care Provider ID</label>
+            <input
+              value={council.councilCareProviderId || ''}
+              onChange={e => setField('councilCareProviderId', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+              placeholder="Enter Council Care Provider ID"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Service Type</label>
+            <select
+              value={council.serviceType || ''}
+              onChange={e => setField('serviceType', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+            >
             <option value="">Please Select</option>
             <option value="1NTC Night Time Care South">1NTC Night Time Care South</option>
             <option value="99FN Home Care Framework Hour">99FN Home Care Framework Hour</option>
@@ -80,13 +83,13 @@ export default function CouncilForm({ council, setField, onSave, saving }) {
             <option value="Waking Night">Waking Night</option>
           </select>
         </div>
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Service Level</label>
-          <select
-            value={council.serviceLevel || ''}
-            onChange={e => setField('serviceLevel', e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-gray-900"
-          >
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Service Level</label>
+            <select
+              value={council.serviceLevel || ''}
+              onChange={e => setField('serviceLevel', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+            >
             <option value="">Please Select</option>
             <option value="Maintenance - 5 Carers">Maintenance - 5 Carers</option>
             <option value="Outreach - Support">Outreach - Support</option>
@@ -136,16 +139,17 @@ export default function CouncilForm({ council, setField, onSave, saving }) {
             <option value="Maintenance 5 Carers">Maintenance 5 Carers</option>
           </select>
         </div>
-      </div>
-      <div className="mt-6 flex justify-end">
-        <button
-          type="button"
-          onClick={() => onSave?.(council)}
-          disabled={!!saving}
-          className="px-4 py-2 rounded bg-[#224fa6] text-white disabled:opacity-70"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
+        </div>
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={() => onSave?.(council)}
+            disabled={!!saving}
+            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
       </div>
     </div>
   );

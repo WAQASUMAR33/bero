@@ -108,11 +108,19 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }){
   const saveAccess = async () => { setSaving(true); try{ const token = localStorage.getItem('token'); await fetch(`/api/service-seekers/${serviceSeekerId}/external-inbox-access`,{ method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` }, body: JSON.stringify({ userIds: selectedUserIds }) }); if(onNotification) onNotification({ show:true, message:'Access saved.', type:'success' }); }catch(e){ console.error(e); if(onNotification) onNotification({ show:true, message:'Failed to save access.', type:'error' }); } finally{ setSaving(false); } };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">External Logins</h2>
-        <button type="button" onClick={openAdd} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Add</button>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+      {/* Blue Header */}
+      <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">External Logins</h2>
+          <button type="button" onClick={openAdd} className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors flex items-center space-x-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+            <span>Add</span>
+          </button>
+        </div>
       </div>
+      
+      <div className="p-6">
 
       {loading ? (
         <div className="text-center py-8 text-gray-500">Loading...</div>
@@ -158,7 +166,7 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }){
       <div className="mb-2 text-sm text-gray-600">Please note only the &apos;family&apos; external login type has access to an inbox</div>
 
       <div className="border rounded-lg">
-        <div className="bg-teal-600 text-white px-4 py-3 rounded-t-lg font-semibold">Allow External Logins to inbox ({users.length})</div>
+        <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-4 py-3 rounded-t-lg font-semibold">Allow External Logins to inbox ({users.length})</div>
         <div className="p-4 max-h-64 overflow-y-auto">
           {users.map(u => (
             <label key={u.id} className="flex items-center space-x-2 text-sm text-gray-800">
@@ -171,13 +179,20 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }){
           <button type="button" onClick={saveAccess} className="px-4 py-2 bg-[#224fa6] text-white rounded-lg">Save</button>
         </div>
       </div>
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-gray-900">Add External Login</h3>
-              <button type="button" onClick={openProfileModal} title="Create Login" className="text-gray-600 hover:text-gray-800">⚙️</button>
+            {/* Blue Header */}
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Add External Login</h3>
+                <div className="flex items-center space-x-2">
+                  <button type="button" onClick={openProfileModal} title="Create Login" className="text-white/80 hover:text-white transition-colors">⚙️</button>
+                  <button type="button" onClick={()=>setShowModal(false)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
+                </div>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -194,8 +209,8 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }){
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
-              <button type="button" onClick={()=>setShowModal(false)} disabled={saving} className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70">Cancel</button>
-              <button type="button" onClick={saveLogin} disabled={saving || !formData.profileId} className="px-6 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-70">{saving ? 'Saving...' : 'Save'}</button>
+              <button type="button" onClick={()=>setShowModal(false)} disabled={saving} className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all font-medium">Cancel</button>
+              <button type="button" onClick={saveLogin} disabled={saving || !formData.profileId} className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">{saving ? 'Saving...' : 'Save'}</button>
             </div>
           </div>
         </div>
@@ -204,7 +219,7 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }){
       {showProfileModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-lg">
-            <div className="bg-teal-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-white text-lg">ℹ️</span>
                 <h3 className="text-xl font-semibold">Add Login</h3>
@@ -255,9 +270,9 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }){
                 </div>
               </div>
             </div>
-            <div className="p-6 bg-white border-t border-gray-200 flex justify-end space-x-3 rounded-b-xl">
-              <button type="button" onClick={()=>{setShowProfileModal(false); setProfileData({ firstName:'', lastName:'', type:loginTypes[0] || 'family', email:'', password:'', picture:null });}} disabled={saving} className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70">Cancel</button>
-              <button type="button" onClick={createProfile} disabled={saving} className="px-6 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-70">{saving ? 'Saving...' : 'Save'}</button>
+            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
+              <button type="button" onClick={()=>{setShowProfileModal(false); setProfileData({ firstName:'', lastName:'', type:loginTypes[0] || 'family', email:'', password:'', picture:null });}} disabled={saving} className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all font-medium">Cancel</button>
+              <button type="button" onClick={createProfile} disabled={saving} className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">{saving ? 'Saving...' : 'Save'}</button>
             </div>
           </div>
         </div>
@@ -266,8 +281,12 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }){
       {showTypeModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900">Manage Login Types</h3>
+            {/* Blue Header */}
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Manage Login Types</h3>
+                <button type="button" onClick={()=>setShowTypeModal(false)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
+              </div>
             </div>
             <div className="p-6 space-y-2 max-h-64 overflow-y-auto">
               {loginTypes.map((type, idx) => (
@@ -278,11 +297,11 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }){
               ))}
               <div className="mt-4 pt-4 border-t">
                 <input type="text" id="new-type-input" placeholder="Enter new type" className="w-full border rounded-lg px-3 py-2 text-gray-900 mb-2" onKeyPress={(e)=>{if(e.key==='Enter'){const val = e.target.value.trim(); if(val && !loginTypes.includes(val)){setLoginTypes(prev=>[...prev, val]); e.target.value='';}}}} />
-                <button type="button" onClick={()=>{const input = document.getElementById('new-type-input'); const val = input.value.trim(); if(val && !loginTypes.includes(val)){setLoginTypes(prev=>[...prev, val]); input.value='';}}} className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Add</button>
+                <button type="button" onClick={()=>{const input = document.getElementById('new-type-input'); const val = input.value.trim(); if(val && !loginTypes.includes(val)){setLoginTypes(prev=>[...prev, val]); input.value='';}}} className="w-full px-4 py-2 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:from-[#1a3d85] hover:to-[#2859c7] transition-all shadow-md hover:shadow-lg font-medium">Add</button>
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex justify-end">
-              <button type="button" onClick={()=>setShowTypeModal(false)} className="px-4 py-2 border rounded-lg">Close</button>
+              <button type="button" onClick={()=>setShowTypeModal(false)} className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all font-medium">Close</button>
             </div>
           </div>
         </div>

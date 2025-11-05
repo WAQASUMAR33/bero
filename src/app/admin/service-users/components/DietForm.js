@@ -145,11 +145,14 @@ export default function DietForm({ diet, setField, onSave, saving }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Diet</h2>
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+        {/* Blue Header */}
+        <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+          <h2 className="text-xl font-semibold">Diet</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-600 mb-1">Food Allergies</label>
             <textarea
@@ -195,7 +198,7 @@ export default function DietForm({ diet, setField, onSave, saving }) {
                   setShowDietModal(true);
                   fetchDiets();
                 }}
-                className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-green-600 font-bold transition-colors"
+                className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-[#224fa6] font-bold transition-colors"
                 title="Manage Diets"
               >
                 +
@@ -226,7 +229,7 @@ export default function DietForm({ diet, setField, onSave, saving }) {
               rows={4}
               placeholder="Enter instructions"
             />
-            <p className="text-xs text-green-600 mt-1">Will be shown to carer</p>
+            <p className="text-xs text-gray-600 mt-1">Will be shown to carer</p>
           </div>
         </div>
         <div className="mt-6 flex justify-end">
@@ -234,10 +237,11 @@ export default function DietForm({ diet, setField, onSave, saving }) {
             type="button"
             onClick={() => onSave?.(diet)}
             disabled={!!saving}
-            className="px-4 py-2 rounded bg-[#224fa6] text-white disabled:opacity-70"
+            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
+        </div>
         </div>
       </div>
 
@@ -245,16 +249,17 @@ export default function DietForm({ diet, setField, onSave, saving }) {
       {showDietModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
+            {/* Blue Header */}
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">Manage Main Diets</h3>
+                <h3 className="text-xl font-semibold">Manage Main Diets</h3>
                 <button
                   type="button"
                   onClick={() => {
                     setShowDietModal(false);
                     handleCancelEdit();
                   }}
-                  className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+                  className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
                 >
                   ×
                 </button>

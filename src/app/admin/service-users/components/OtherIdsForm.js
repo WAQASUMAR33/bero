@@ -135,10 +135,13 @@ export default function OtherIdsForm({ serviceSeekerId, onNotification }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Other IDs</h2>
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+        {/* Blue Header */}
+        <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+          <h2 className="text-xl font-semibold">Other IDs</h2>
         </div>
+        
+        <div className="p-6">
 
         {loading ? (
           <div className="text-center py-4 text-gray-500">Loading...</div>
@@ -196,7 +199,7 @@ export default function OtherIdsForm({ serviceSeekerId, onNotification }) {
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            <span className="text-green-600">You can add other IDs for the Service User here such as their Passport number</span>
+            <span className="text-gray-600">You can add other IDs for the Service User here such as their Passport number</span>
           </div>
           <button
             type="button"
@@ -205,11 +208,12 @@ export default function OtherIdsForm({ serviceSeekerId, onNotification }) {
               setNewId({ idName: '', idNumber: '' });
               setShowModal(true);
             }}
-            className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-2xl text-green-600 font-light transition-colors"
+            className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-2xl text-[#224fa6] font-light transition-colors"
             aria-label="Add other ID"
           >
             +
           </button>
+        </div>
         </div>
       </div>
 
@@ -217,13 +221,14 @@ export default function OtherIdsForm({ serviceSeekerId, onNotification }) {
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
+            {/* Blue Header */}
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">{editingId ? 'Edit Other ID' : 'Add Other ID'}</h3>
+                <h3 className="text-xl font-semibold">{editingId ? 'Edit Other ID' : 'Add Other ID'}</h3>
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+                  className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
                 >
                   ×
                 </button>
@@ -236,30 +241,30 @@ export default function OtherIdsForm({ serviceSeekerId, onNotification }) {
                 <h4 className="text-sm font-semibold text-gray-700 mb-4">{editingId ? 'Edit ID' : 'Add New ID'}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">ID name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ID name</label>
                     <input
                       value={newId.idName}
                       onChange={e => setNewId(prev => ({ ...prev, idName: e.target.value }))}
-                      className="w-full border rounded-lg px-3 py-2 text-gray-900"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                       placeholder="e.g., Passport"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">ID number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ID number</label>
                     <input
                       value={newId.idNumber}
                       onChange={e => setNewId(prev => ({ ...prev, idNumber: e.target.value }))}
-                      className="w-full border rounded-lg px-3 py-2 text-gray-900"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                       placeholder="Enter ID number"
                     />
                   </div>
                 </div>
-                <div className="mt-4 flex justify-end space-x-2">
+                <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"
                     onClick={handleCancel}
                     disabled={saving}
-                    className="px-4 py-2 rounded border text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-70"
+                    className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all font-medium"
                   >
                     Cancel
                   </button>
@@ -267,7 +272,7 @@ export default function OtherIdsForm({ serviceSeekerId, onNotification }) {
                     type="button"
                     onClick={handleAdd}
                     disabled={saving}
-                    className="px-4 py-2 rounded bg-[#224fa6] text-white disabled:opacity-70"
+                    className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
                   >
                     {saving ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? 'Update ID' : 'Add ID')}
                   </button>

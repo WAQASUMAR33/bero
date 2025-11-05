@@ -59,20 +59,20 @@ export default function MedicineAccessCodesForm({ serviceSeekerId, onNotificatio
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="bg-orange-500 text-white px-4 py-3 rounded-t-lg flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-xl font-semibold">Medicine Access Codes</h2>
-          <span className="text-white text-lg">▼</span>
-        </div>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-orange-500">
+      {/* Orange Header */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Medicine Access Codes</h2>
       </div>
+      
+      <div className="p-6">
 
       {loading ? (
         <div className="text-center py-8 text-gray-500">Loading...</div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <label className="block text-sm font-medium text-green-600 mb-2">
-            Medicine Location and access Codes
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Medicine Location and Access Codes
           </label>
           <textarea
             value={accessCodes}
@@ -81,18 +81,19 @@ export default function MedicineAccessCodesForm({ serviceSeekerId, onNotificatio
             placeholder="Enter medicine location and access codes..."
           />
 
-          <div className="mt-4 flex justify-end">
+          <div className="mt-6 flex justify-end">
             <button
               type="button"
               onClick={saveAccessCodes}
               disabled={saving}
-              className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-70"
+              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:from-orange-600 hover:to-orange-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -2,11 +2,14 @@
 
 export default function BackgroundForm({ background, setField, onSave, saving }) {
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Background</h2>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+      {/* Blue Header */}
+      <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Background</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm text-gray-600 mb-1">Marital Status</label>
           <select
@@ -253,15 +256,16 @@ export default function BackgroundForm({ background, setField, onSave, saving })
           </select>
         </div>
       </div>
-      <div className="mt-6 flex justify-end">
-        <button
-          type="button"
-          onClick={() => onSave?.(background)}
-          disabled={!!saving}
-          className="px-4 py-2 rounded bg-[#224fa6] text-white disabled:opacity-70"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={() => onSave?.(background)}
+            disabled={!!saving}
+            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
       </div>
     </div>
   );

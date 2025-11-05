@@ -59,13 +59,13 @@ export default function SocialVisitInstructionsForm({ serviceSeekerId, onNotific
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="bg-orange-500 text-white px-4 py-3 rounded-t-lg flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-xl font-semibold">Social Visit Instructions</h2>
-          <span className="text-white text-lg">▼</span>
-        </div>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-orange-500">
+      {/* Orange Header */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Social Visit Instructions</h2>
       </div>
+      
+      <div className="p-6">
 
       {loading ? (
         <div className="text-center py-8 text-gray-500">Loading...</div>
@@ -94,6 +94,7 @@ export default function SocialVisitInstructionsForm({ serviceSeekerId, onNotific
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

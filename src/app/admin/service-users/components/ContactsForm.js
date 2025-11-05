@@ -166,10 +166,13 @@ export default function ContactsForm({ serviceSeekerId, onNotification }){
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Family, Doctor, Contacts</h2>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+      {/* Blue Header */}
+      <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Family, Doctor, Contacts</h2>
       </div>
+      
+      <div className="p-6">
 
       {loading ? (
         <div className="text-center py-8 text-gray-500">Loading...</div>
@@ -220,24 +223,26 @@ export default function ContactsForm({ serviceSeekerId, onNotification }){
         </div>
       )}
 
-      <div className="mt-6 flex items-center justify-between">
-        <div className="flex items-center space-x-2 text-sm text-green-600">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-          <span>Select items to delete or edit</span>
+        <div className="mt-6 flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            <span>Select items to delete or edit</span>
+          </div>
+          <button type="button" onClick={handleAdd} className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:from-[#1a3d85] hover:to-[#2859c7] transition-all shadow-md hover:shadow-lg font-medium">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            <span>Add</span>
+          </button>
         </div>
-        <button type="button" onClick={handleAdd} className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          <span>Add</span>
-        </button>
       </div>
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
+            {/* Blue Header */}
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">{editingId ? 'Edit Contact' : 'Add Contact'}</h3>
-                <button type="button" onClick={() => { setShowModal(false); }} className="text-gray-500 hover:text-gray-700 text-2xl leading-none">×</button>
+                <h3 className="text-xl font-semibold">{editingId ? 'Edit Contact' : 'Add Contact'}</h3>
+                <button type="button" onClick={() => { setShowModal(false); }} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
               </div>
             </div>
 

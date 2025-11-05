@@ -56,11 +56,19 @@ export default function MedicineRiskAssessmentsForm({ serviceSeekerId, serviceUs
   const deleteRow = async (id) => { setSaving(true); try{ const token = localStorage.getItem('token'); await fetch(`/api/service-seekers/${serviceSeekerId}/risk-assessments?id=${id}`,{ method:'DELETE', headers:{ Authorization:`Bearer ${token}` }}); await fetchRows(); if(onNotification) onNotification({ show:true, message:'Deleted.', type:'success' }); }catch(e){ console.error(e); if(onNotification) onNotification({ show:true, message:'Delete failed.', type:'error' }); } finally{ setSaving(false); } };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Risk Assessment - Medicine</h2>
-        <button type="button" onClick={openAdd} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Add</button>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+      {/* Blue Header */}
+      <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Risk Assessment - Medicine</h2>
+          <button type="button" onClick={openAdd} className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors flex items-center space-x-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+            <span>Add</span>
+          </button>
+        </div>
       </div>
+      
+      <div className="p-6">
 
       {loading ? (
         <div className="text-center py-8 text-gray-500">Loading...</div>
@@ -103,6 +111,7 @@ export default function MedicineRiskAssessmentsForm({ serviceSeekerId, serviceUs
           </table>
         </div>
       )}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
@@ -184,8 +193,8 @@ export default function MedicineRiskAssessmentsForm({ serviceSeekerId, serviceUs
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
-              <button type="button" onClick={()=>setShowModal(false)} disabled={saving} className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70">Cancel</button>
-              <button type="button" onClick={save} disabled={saving || !formData.riskType} className="px-6 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-70">{saving ? 'Saving...' : 'Save'}</button>
+              <button type="button" onClick={()=>setShowModal(false)} disabled={saving} className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all font-medium">Cancel</button>
+              <button type="button" onClick={save} disabled={saving || !formData.riskType} className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">{saving ? 'Saving...' : 'Save'}</button>
             </div>
           </div>
         </div>

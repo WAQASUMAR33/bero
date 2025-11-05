@@ -40,13 +40,42 @@ export async function PUT(request, { params }) {
     const seekerId = parseInt(id);
     const body = await request.json();
 
+    // Define allowed fields for ServiceSeeker model
+    const allowedFields = [
+      'firstName', 'lastName', 'postalCode', 'address', 'latitude', 'longitude',
+      'photoUrl', 'title', 'preferredName', 'dateOfBirth', 'gender', 'genderAtBirth',
+      'pronouns', 'dnar', 'sexuality', 'status'
+    ];
+
+    // Filter out invalid fields (like genderOther, genderAtBirthOther, sexualityOther, etc.)
+    const filteredData = {};
+    allowedFields.forEach(field => {
+      if (body.hasOwnProperty(field)) {
+        filteredData[field] = body[field];
+      }
+    });
+
+    // Handle dateOfBirth conversion
+    if (filteredData.dateOfBirth) {
+      filteredData.dateOfBirth = new Date(filteredData.dateOfBirth);
+    } else if (filteredData.dateOfBirth === null || filteredData.dateOfBirth === '') {
+      filteredData.dateOfBirth = null;
+    }
+
+    // Handle numeric conversions
+    if (filteredData.latitude !== undefined) {
+      filteredData.latitude = filteredData.latitude === '' || filteredData.latitude === null ? null : parseFloat(filteredData.latitude);
+    }
+    if (filteredData.longitude !== undefined) {
+      filteredData.longitude = filteredData.longitude === '' || filteredData.longitude === null ? null : parseFloat(filteredData.longitude);
+    }
+
+    // Always set updatedById
+    filteredData.updatedById = decoded.userId;
+
     const updated = await prisma.serviceSeeker.update({
       where: { id: seekerId },
-      data: {
-        ...body,
-        dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
-        updatedById: decoded.userId,
-      },
+      data: filteredData,
     });
 
     return NextResponse.json(updated, { status: 200 });

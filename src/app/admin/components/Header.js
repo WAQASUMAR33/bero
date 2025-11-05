@@ -2,9 +2,11 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Inbox from './Inbox';
 
 export default function Header({ user }) {
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  const [showInbox, setShowInbox] = useState(false);
   const router = useRouter();
   const dropdownRef = useRef(null);
 
@@ -216,16 +218,26 @@ export default function Header({ user }) {
             </div>
 
             {/* Messages */}
-            <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors relative">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <button 
+              onClick={() => setShowInbox(true)}
+              className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group"
+            >
+              <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              {/* Message count */}
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">2</span>
+              {/* Message count - can be updated based on unread messages */}
+              {/* <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">2</span> */}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Inbox Component */}
+      <Inbox 
+        isOpen={showInbox} 
+        onClose={() => setShowInbox(false)} 
+        currentUser={user}
+      />
     </header>
   );
 }

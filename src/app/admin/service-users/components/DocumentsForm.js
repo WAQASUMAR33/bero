@@ -114,10 +114,13 @@ export default function DocumentsForm({ serviceSeekerId, onNotification }){
   const filteredDocs = documents.filter(d => selectedType === 'All' ? true : d.docType === selectedType);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Documents</h2>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
+      {/* Blue Header */}
+      <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+        <h2 className="text-xl font-semibold">Documents</h2>
       </div>
+      
+      <div className="p-6">
 
       {/* Filter Row */}
       <div className="flex items-center justify-between mb-4">
@@ -204,9 +207,12 @@ export default function DocumentsForm({ serviceSeekerId, onNotification }){
       {showManageTypes && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-gray-900">Manage Document Types</h3>
-              <button type="button" onClick={()=>setShowManageTypes(false)} className="text-gray-500 hover:text-gray-700 text-2xl leading-none">×</button>
+            {/* Blue Header */}
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Manage Document Types</h3>
+                <button type="button" onClick={()=>setShowManageTypes(false)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
+              </div>
             </div>
             <div className="p-6 space-y-3">
               {docTypes.filter(t=>t!=='All').map((t,idx) => (
@@ -217,12 +223,13 @@ export default function DocumentsForm({ serviceSeekerId, onNotification }){
               ))}
               <div className="flex items-center space-x-2">
                 <input type="text" id="newDocTypeInput" placeholder="Add new type" className="flex-1 border rounded-lg px-3 py-2 text-gray-900" />
-                <button type="button" onClick={()=>{ const el = document.getElementById('newDocTypeInput'); const val = (el?.value||'').trim(); if(!val) return; const next = Array.from(new Set([...docTypes.filter(t=>t!=='All'), val])); persistTypes(next); el.value=''; }} className="px-3 py-2 bg-[#224fa6] text-white rounded-lg">Add</button>
+                <button type="button" onClick={()=>{ const el = document.getElementById('newDocTypeInput'); const val = (el?.value||'').trim(); if(!val) return; const next = Array.from(new Set([...docTypes.filter(t=>t!=='All'), val])); persistTypes(next); el.value=''; }} className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] transition-all shadow-md hover:shadow-lg">Add</button>
               </div>
             </div>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

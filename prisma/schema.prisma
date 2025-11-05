@@ -320,6 +320,9 @@ model ServiceSeeker {
   houseKeepingSchedules    ServiceSeekerHouseKeepingSchedule[]
   socialVisitInstructions  ServiceSeekerSocialVisitInstructions?
   medicineAccessCodes      ServiceSeekerMedicineAccessCodes?
+  medicineSchedule         ServiceSeekerMedicineSchedule[]
+  oralCareSchedule         ServiceSeekerOralCareSchedule[]
+  oralCareDefaultTimes     ServiceSeekerOralCareDefaultTime[]
   positioningHandling      ServiceSeekerPositioningHandling[]
   bathingSchedule          ServiceSeekerBathingSchedule?
   bathingDefaultTimes      ServiceSeekerBathingDefaultTime[]
@@ -2173,5 +2176,57 @@ model ServiceSeekerBathingDefaultTime {
   serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@unique([serviceSeekerId, day, hour, minute])
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerMedicineSchedule {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  medicineName     String
+  medicineType     String   // e.g., "CAPSULE", "LIQUID", etc.
+  prn              String?  // PRN reason
+  times            Json     // Array of {hour: string, minute: string}
+  frequency        String   // e.g., "Daily", "Weekly", "Monthly", etc.
+  team             String   // e.g., "All", "Team 1", etc.
+  requestSignoffBy String?  // Signoff requirement
+  notes            String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerOralCareSchedule {
+  id                    Int      @id @default(autoincrement())
+  serviceSeekerId       Int
+  toothpasteMouthwashBrand String?  @db.Text
+  directions            String?  @db.Text
+  times                 Json     // Array of {hour: string, minute: string}
+  frequency             String   // e.g., "Daily", "Weekly", "Monthly", etc.
+  team                  String   // e.g., "All", "Team 1", etc.
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  serviceSeeker         ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerOralCareDefaultTime {
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  hour             String
+  minute           String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@unique([serviceSeekerId, hour, minute])
   @@index([serviceSeekerId])
 }

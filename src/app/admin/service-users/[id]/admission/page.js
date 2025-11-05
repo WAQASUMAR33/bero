@@ -35,6 +35,10 @@ import SocialVisitInstructionsForm from '../../components/SocialVisitInstruction
 import MedicineAccessCodesForm from '../../components/MedicineAccessCodesForm';
 import PositioningHandlingForm from '../../components/PositioningHandlingForm';
 import BathingForm from '../../components/BathingForm';
+import FoodDrinksForm from '../../components/FoodDrinksForm';
+import HouseKeepingForm from '../../components/HouseKeepingForm';
+import MedicineScheduleForm from '../../components/MedicineScheduleForm';
+import OralCareScheduleForm from '../../components/OralCareScheduleForm';
 
 function SummaryRow({ label, value }){
   return (
@@ -877,6 +881,26 @@ export default function AdmissionPage(){
           />
 
           <BathingForm
+            serviceSeekerId={serviceSeekerId}
+            onNotification={setNotification}
+          />
+
+          <FoodDrinksForm
+            serviceSeekerId={serviceSeekerId}
+            onNotification={setNotification}
+          />
+
+          <HouseKeepingForm
+            serviceSeekerId={serviceSeekerId}
+            onNotification={setNotification}
+          />
+
+          <MedicineScheduleForm
+            serviceSeekerId={serviceSeekerId}
+            onNotification={setNotification}
+          />
+
+          <OralCareScheduleForm
             serviceSeekerId={serviceSeekerId}
             onNotification={setNotification}
           />

@@ -167,6 +167,12 @@ export default function Sidebar({ user }) {
           path: '/admin/staff-management',
         },
         {
+          id: 'teams',
+          name: 'Teams',
+          permission: 'staff.manage',
+          path: '/admin/teams',
+        },
+        {
           id: 'role-management',
           name: 'Roles',
           permission: 'roles.manage',

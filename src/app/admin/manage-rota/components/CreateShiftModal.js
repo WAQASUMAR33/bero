@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 export default function CreateShiftModal({
   shift,
   serviceSeekers,
+  staff,
   shiftTypes,
   funders,
   shiftRuns,
@@ -47,6 +48,11 @@ export default function CreateShiftModal({
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [shiftTypeToDelete, setShiftTypeToDelete] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [selectedStaffIds, setSelectedStaffIds] = useState([]);
+  const [availableStaff, setAvailableStaff] = useState([]);
+  const [staffSearch, setStaffSearch] = useState('');
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState(null);
 
   // Show notification
   const showNotification = (message, type = 'success') => {
@@ -71,8 +77,27 @@ export default function CreateShiftModal({
         notesForCarers: shift.notesForCarers || '',
         notesForManager: shift.notesForManager || ''
       });
+      setSelectedStaffIds(
+        Array.isArray(shift.assignments)
+          ? [...new Set(shift.assignments.map((assignment) => assignment.user.id))]
+          : []
+      );
+    } else {
+      setSelectedStaffIds([]);
     }
   }, [shift]);
+
+  useEffect(() => {
+    if (Array.isArray(staff)) {
+      setAvailableStaff(
+        staff.map((member) => ({
+          ...member,
+          conflicts: [],
+          isAvailable: true,
+        }))
+      );
+    }
+  }, [staff]);
 
   // Calculate wage whenever relevant fields change
   useEffect(() => {
@@ -80,6 +105,27 @@ export default function CreateShiftModal({
       calculateWage();
     }
   }, [formData.shiftTypeId, formData.startTime, formData.endTime]);
+
+  useEffect(() => {
+    if (!formData.fromDate || !formData.startTime || !formData.endTime || !formData.recurrence) {
+      return;
+    }
+
+    if (!Array.isArray(staff) || staff.length === 0) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      fetchAvailability(controller.signal);
+    }, 300);
+
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.fromDate, formData.untilDate, formData.startTime, formData.endTime, formData.recurrence, shift?.id, staff]);
 
   const calculateWage = () => {
     const shiftType = shiftTypes.find(st => st.id === formData.shiftTypeId);
@@ -115,8 +161,168 @@ export default function CreateShiftModal({
     });
   };
 
+  const fetchAvailability = async (signal) => {
+    try {
+      if (!formData.fromDate || !formData.startTime || !formData.endTime || !formData.recurrence) {
+        return;
+      }
+
+      setAvailabilityLoading(true);
+      setAvailabilityError(null);
+
+      const params = new URLSearchParams({
+        fromDate: formData.fromDate,
+        recurrence: formData.recurrence,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+      });
+
+      if (formData.untilDate) {
+        params.set('untilDate', formData.untilDate);
+      }
+
+      if (shift?.id) {
+        params.set('shiftId', String(shift.id));
+      }
+
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/shifts/available-staff?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        signal,
+      });
+
+      if (!res.ok) {
+        const errorPayload = await res.json().catch(() => ({}));
+        throw new Error(errorPayload.error || 'Failed to fetch availability');
+      }
+
+      const result = await res.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch availability');
+      }
+
+      const availabilityMap = new Map(
+        result.data.map((item) => [item.id, item])
+      );
+
+      const merged = staff.map((member) => {
+        const availability = availabilityMap.get(member.id);
+        if (availability) {
+          return availability;
+        }
+        return {
+          ...member,
+          conflicts: [],
+          isAvailable: true,
+        };
+      });
+
+      setAvailableStaff(merged);
+
+      setSelectedStaffIds((prevSelected) => {
+        const filtered = prevSelected.filter((id) => {
+          const availability = merged.find((member) => member.id === id);
+          return availability ? availability.isAvailable : true;
+        });
+
+        if (filtered.length !== prevSelected.length) {
+          setAvailabilityError('Some staff were removed from this shift because they are no longer available.');
+        }
+
+        return filtered;
+      });
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      console.error('Availability error:', error);
+      setAvailabilityError(error.message || 'Failed to fetch availability');
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
+
+  const getRequiredStaffCount = () => {
+    const parsed = Number(formData.totalStaffRequired);
+    if (Number.isNaN(parsed) || parsed < 1) {
+      return 1;
+    }
+    return Math.floor(parsed);
+  };
+
+  const toggleStaffSelection = (staffId) => {
+    const isSelected = selectedStaffIds.includes(staffId);
+    const requiredStaff = getRequiredStaffCount();
+    const availability = availableStaff.find((member) => member.id === staffId);
+
+    if (isSelected) {
+      setSelectedStaffIds((prev) => prev.filter((id) => id !== staffId));
+      return;
+    }
+
+    if (availability && !availability.isAvailable) {
+      return;
+    }
+
+    if (selectedStaffIds.length >= requiredStaff) {
+      showNotification(
+        `This shift requires ${requiredStaff} ${requiredStaff === 1 ? 'staff member' : 'staff members'}.`,
+        'error'
+      );
+      return;
+    }
+
+    setSelectedStaffIds((prev) => [...prev, staffId]);
+  };
+
+  useEffect(() => {
+    const requiredStaff = getRequiredStaffCount();
+    setSelectedStaffIds((prev) => {
+      if (prev.length <= requiredStaff) {
+        return prev;
+      }
+
+      const trimmed = prev.slice(0, requiredStaff);
+      if (trimmed.length !== prev.length) {
+        showNotification(
+          `Selection adjusted to ${requiredStaff} ${requiredStaff === 1 ? 'staff member' : 'staff members'}.`,
+          'error'
+        );
+      }
+      return trimmed;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.totalStaffRequired]);
+
+  const requiredStaffCount = getRequiredStaffCount();
+  const staffSearchTerm = staffSearch.trim().toLowerCase();
+  const filteredStaff = availableStaff.filter((member) => {
+    if (!staffSearchTerm) return true;
+    const fullName = `${member.firstName} ${member.lastName}`.toLowerCase();
+    const email = member.email ? member.email.toLowerCase() : '';
+    return fullName.includes(staffSearchTerm) || email.includes(staffSearchTerm);
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const normalisedRequiredStaff = getRequiredStaffCount();
+
+    if (normalisedRequiredStaff > 0 && selectedStaffIds.length !== normalisedRequiredStaff) {
+      showNotification(
+        `Please select exactly ${normalisedRequiredStaff} ${normalisedRequiredStaff === 1 ? 'staff member' : 'staff members'} for this shift.`,
+        'error'
+      );
+      return;
+    }
+
+    if (selectedStaffIds.some((id) => {
+      const availability = availableStaff.find((member) => member.id === id);
+      return availability && !availability.isAvailable;
+    })) {
+      showNotification('One or more selected staff members are no longer available for this shift.', 'error');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -126,9 +332,11 @@ export default function CreateShiftModal({
 
       const payload = {
         ...formData,
+        totalStaffRequired: normalisedRequiredStaff || 1,
         funderId: formData.funderId || null,
         shiftRunId: formData.shiftRunId || null,
-        untilDate: formData.untilDate || null
+        untilDate: formData.untilDate || null,
+        assignedUserIds: selectedStaffIds,
       };
 
       const res = await fetch(url, {
@@ -491,6 +699,128 @@ export default function CreateShiftModal({
                 </div>
               </div>
             )}
+
+            {/* Staff Assignment */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Assign Staff</h3>
+                  <p className="text-sm text-gray-600">
+                    Select staff members to cover this shift. Only staff without conflicting shifts are selectable.
+                  </p>
+                </div>
+                <div className="text-sm text-gray-600 font-medium whitespace-nowrap">
+                  {selectedStaffIds.length}/{requiredStaffCount} selected
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-3 mt-4">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search staff by name or email"
+                    value={staffSearch}
+                    onChange={(e) => setStaffSearch(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent pl-9"
+                  />
+                  <svg className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
+                  </svg>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fetchAvailability()}
+                  className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+                >
+                  Refresh availability
+                </button>
+              </div>
+
+              {availabilityError && (
+                <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  {availabilityError}
+                </div>
+              )}
+
+              <div className="mt-4 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-lg divide-y divide-gray-100">
+                {availabilityLoading ? (
+                  <div className="flex items-center justify-center py-8 text-gray-500">
+                    <svg className="animate-spin h-5 w-5 mr-2 text-[#224fa6]" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Checking availability...
+                  </div>
+                ) : filteredStaff.length === 0 ? (
+                  <div className="py-6 text-center text-sm text-gray-500">
+                    No staff found. Adjust your search or shift details.
+                  </div>
+                ) : (
+                  filteredStaff.map((member) => {
+                    const isSelected = selectedStaffIds.includes(member.id);
+                    return (
+                      <label
+                        key={member.id}
+                        className={`flex items-start gap-3 px-4 py-3 transition-colors cursor-pointer ${
+                          member.isAvailable ? 'hover:bg-gray-50' : 'opacity-60 cursor-not-allowed'
+                        } ${isSelected ? 'bg-blue-50' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          disabled={!member.isAvailable}
+                          onChange={() => toggleStaffSelection(member.id)}
+                          className="mt-1 w-4 h-4 text-[#224fa6] rounded border-gray-300 focus:ring-[#224fa6]"
+                        />
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium text-gray-900">
+                              {member.firstName} {member.lastName}
+                            </span>
+                            {member.role && (
+                              <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700">
+                                {member.role}
+                              </span>
+                            )}
+                            {member.team && (
+                              <span className="px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700">
+                                {member.team}
+                              </span>
+                            )}
+                          </div>
+                          {member.email && (
+                            <div className="text-xs text-gray-500 mt-1">{member.email}</div>
+                          )}
+                          {member.isAvailable ? (
+                            <div className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L8.5 11.086l6.543-6.543a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Available
+                            </div>
+                          ) : (
+                            <div className="text-xs text-red-600 mt-2">
+                              <div className="font-semibold">Unavailable due to conflicts:</div>
+                              <ul className="list-disc list-inside space-y-1 mt-1">
+                                {member.conflicts.slice(0, 3).map((conflict, conflictIndex) => (
+                                  <li key={conflictIndex}>
+                                    {conflict.date} · {conflict.startTime}-{conflict.endTime}
+                                    {conflict.serviceSeeker ? ` with ${conflict.serviceSeeker}` : ''}
+                                  </li>
+                                ))}
+                                {member.conflicts.length > 3 && (
+                                  <li className="italic">and {member.conflicts.length - 3} more…</li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+            </div>
 
             {/* Funder */}
             <div>

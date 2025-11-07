@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { buildShiftAssignmentData } from '@/lib/shiftScheduling';
 import jwt from 'jsonwebtoken';
 // GET /api/shifts
 export async function GET(request) {
@@ -136,7 +137,8 @@ export async function POST(request) {
       timeCritical,
       shiftRunId,
       notesForCarers,
-      notesForManager
+      notesForManager,
+      assignedUserIds
     } = body;
 
     if (!serviceSeekerId || !fromDate || !recurrence || !startTime || !endTime || !shiftTypeId) {
@@ -144,6 +146,8 @@ export async function POST(request) {
         error: 'serviceSeekerId, fromDate, recurrence, startTime, endTime, and shiftTypeId are required'
       }, { status: 400 });
     }
+
+    const parsedTotalStaff = totalStaffRequired ? parseInt(totalStaffRequired, 10) : 1;
 
     const shift = await prisma.shift.create({
       data: {
@@ -154,7 +158,7 @@ export async function POST(request) {
         startTime,
         endTime,
         shiftTypeId: parseInt(shiftTypeId),
-        totalStaffRequired: totalStaffRequired || 1,
+        totalStaffRequired: Number.isNaN(parsedTotalStaff) ? 1 : parsedTotalStaff,
         funderId: funderId ? parseInt(funderId) : null,
         timeCritical: timeCritical || false,
         shiftRunId: shiftRunId ? parseInt(shiftRunId) : null,
@@ -179,11 +183,65 @@ export async function POST(request) {
         },
         updatedBy: {
           select: { id: true, firstName: true, lastName: true }
+        },
+        assignments: {
+          include: {
+            user: {
+              select: { id: true, firstName: true, lastName: true, profilePic: true }
+            }
+          }
         }
       }
     });
 
-    return NextResponse.json(shift, { status: 201 });
+    const uniqueAssignedUserIds = Array.isArray(assignedUserIds)
+      ? [...new Set(assignedUserIds.map((value) => parseInt(value, 10)).filter((value) => Number.isInteger(value)))]
+      : [];
+
+    if (uniqueAssignedUserIds.length > 0) {
+      const assignmentData = buildShiftAssignmentData({
+        shiftId: shift.id,
+        userIds: uniqueAssignedUserIds,
+        fromDate,
+        untilDate,
+        recurrence,
+      });
+
+      if (assignmentData.length > 0) {
+        await prisma.shiftAssignment.createMany({ data: assignmentData, skipDuplicates: true });
+      }
+    }
+
+    const shiftWithAssignments = await prisma.shift.findUnique({
+      where: { id: shift.id },
+      include: {
+        serviceSeeker: {
+          select: { id: true, firstName: true, lastName: true, preferredName: true }
+        },
+        shiftType: true,
+        funder: {
+          select: { id: true, fundingSource: true, contractNumber: true }
+        },
+        shiftRun: {
+          select: { id: true, name: true }
+        },
+        createdBy: {
+          select: { id: true, firstName: true, lastName: true }
+        },
+        updatedBy: {
+          select: { id: true, firstName: true, lastName: true }
+        },
+        assignments: {
+          include: {
+            user: {
+              select: { id: true, firstName: true, lastName: true, profilePic: true }
+            }
+          }
+        }
+      }
+    });
+
+    return NextResponse.json(shiftWithAssignments ?? shift, { status: 201 });
   } catch (error) {
     console.error('POST /shifts error:', error);
     return NextResponse.json({ error: 'Failed to create shift' }, { status: 500 });

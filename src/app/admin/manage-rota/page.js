@@ -11,6 +11,7 @@ export default function ManageRotaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [shifts, setShifts] = useState([]);
   const [serviceSeekers, setServiceSeekers] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [shiftTypes, setShiftTypes] = useState([]);
   const [funders, setFunders] = useState([]);
   const [shiftRuns, setShiftRuns] = useState([]);
@@ -32,6 +33,7 @@ export default function ManageRotaPage() {
     if (user) {
       fetchShifts();
       fetchServiceSeekers();
+      fetchStaff();
       fetchShiftTypes();
       fetchFunders();
       fetchShiftRuns();
@@ -67,6 +69,36 @@ export default function ManageRotaPage() {
     } catch (e) {
       console.error(e);
       setServiceSeekers([]);
+    }
+  };
+
+  const fetchStaff = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!Array.isArray(data)) return;
+
+      const transformed = data
+        .filter((user) => user.status === 'CURRENT')
+        .map((user) => ({
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          profilePic: user.profilePic,
+          role: user.role?.displayName || user.role?.name || null,
+          teamId: user.teamId || null,
+          team: user.team?.name || null,
+        }));
+
+      setStaff(transformed);
+    } catch (e) {
+      console.error(e);
+      setStaff([]);
     }
   };
 
@@ -177,6 +209,7 @@ export default function ManageRotaPage() {
     setShowCreateModal(false);
     setEditingShift(null);
     fetchShifts();
+    fetchStaff();
     setNotification({
       show: true,
       message: editingShift ? 'Shift updated successfully!' : 'Shift created successfully!',
@@ -400,6 +433,18 @@ export default function ManageRotaPage() {
                               <div className="text-xs text-blue-700 mt-1 font-medium">
                                 {shift.shiftType.name}
                               </div>
+                              <div className="text-[11px] text-gray-500 mt-1 flex flex-wrap gap-1">
+                                {shift.assignments?.length
+                                  ? shift.assignments.map((assignment) => (
+                                      <span
+                                        key={assignment.id}
+                                        className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-200 text-gray-700"
+                                      >
+                                        {assignment.user.firstName} {assignment.user.lastName}
+                                      </span>
+                                    ))
+                                  : <span className="italic text-gray-400">Unassigned</span>}
+                              </div>
                               {shift.timeCritical && (
                                 <div className="text-xs text-red-600 mt-1 flex items-center gap-1">
                                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -426,6 +471,7 @@ export default function ManageRotaPage() {
         <CreateShiftModal
           shift={editingShift}
           serviceSeekers={serviceSeekers}
+          staff={staff}
           shiftTypes={shiftTypes}
           funders={funders}
           shiftRuns={shiftRuns}

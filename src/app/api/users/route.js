@@ -19,6 +19,12 @@ export async function GET(request) {
         region: true,
         role: true,
         permissions: true,
+        team: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc'

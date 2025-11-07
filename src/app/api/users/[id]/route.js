@@ -149,13 +149,13 @@ export async function PUT(request, { params }) {
     if (permissions.length >= 0) {
       // Delete existing permissions
       await prisma.userPermission.deleteMany({
-        where: { userId: id }
+        where: { userId }
       });
 
       // Create new permissions
       await prisma.userPermission.createMany({
         data: permissions.map(permission => ({
-          userId: id,
+          userId,
           key: permission
         }))
       });

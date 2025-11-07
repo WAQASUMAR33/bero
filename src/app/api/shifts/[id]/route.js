@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { buildShiftAssignmentData } from '@/lib/shiftScheduling';
 import jwt from 'jsonwebtoken';
 // GET /api/shifts/[id]
 export async function GET(request, { params }) {
@@ -78,6 +79,7 @@ export async function PUT(request, { params }) {
       notesForManager
     } = body;
 
+    const parsedTotalStaff = totalStaffRequired !== undefined ? parseInt(totalStaffRequired, 10) : undefined;
     const shift = await prisma.shift.update({
       where: { id: shiftId },
       data: {
@@ -88,7 +90,7 @@ export async function PUT(request, { params }) {
         ...(startTime && { startTime }),
         ...(endTime && { endTime }),
         ...(shiftTypeId && { shiftTypeId: parseInt(shiftTypeId) }),
-        ...(totalStaffRequired !== undefined && { totalStaffRequired }),
+        ...(parsedTotalStaff !== undefined && !Number.isNaN(parsedTotalStaff) && { totalStaffRequired: parsedTotalStaff }),
         ...(funderId !== undefined && { funderId: funderId ? parseInt(funderId) : null }),
         ...(timeCritical !== undefined && { timeCritical }),
         ...(shiftRunId !== undefined && { shiftRunId: shiftRunId ? parseInt(shiftRunId) : null }),
@@ -112,11 +114,69 @@ export async function PUT(request, { params }) {
         },
         updatedBy: {
           select: { id: true, firstName: true, lastName: true }
+        },
+        assignments: {
+          include: {
+            user: {
+              select: { id: true, firstName: true, lastName: true, profilePic: true }
+            }
+          }
         }
       }
     });
 
-    return NextResponse.json(shift);
+    if (body.assignedUserIds !== undefined) {
+      const uniqueAssignedUserIds = Array.isArray(body.assignedUserIds)
+        ? [...new Set(body.assignedUserIds.map((value) => parseInt(value, 10)).filter((value) => Number.isInteger(value)))]
+        : [];
+
+      await prisma.shiftAssignment.deleteMany({ where: { shiftId } });
+
+      if (uniqueAssignedUserIds.length > 0) {
+        const assignmentData = buildShiftAssignmentData({
+          shiftId,
+          userIds: uniqueAssignedUserIds,
+          fromDate: shift.fromDate,
+          untilDate: shift.untilDate,
+          recurrence: shift.recurrence,
+        });
+
+        if (assignmentData.length > 0) {
+          await prisma.shiftAssignment.createMany({ data: assignmentData, skipDuplicates: true });
+        }
+      }
+    }
+
+    const shiftWithAssignments = await prisma.shift.findUnique({
+      where: { id: shiftId },
+      include: {
+        serviceSeeker: {
+          select: { id: true, firstName: true, lastName: true, preferredName: true }
+        },
+        shiftType: true,
+        funder: {
+          select: { id: true, fundingSource: true, contractNumber: true }
+        },
+        shiftRun: {
+          select: { id: true, name: true }
+        },
+        createdBy: {
+          select: { id: true, firstName: true, lastName: true }
+        },
+        updatedBy: {
+          select: { id: true, firstName: true, lastName: true }
+        },
+        assignments: {
+          include: {
+            user: {
+              select: { id: true, firstName: true, lastName: true, profilePic: true }
+            }
+          }
+        }
+      }
+    });
+
+    return NextResponse.json(shiftWithAssignments ?? shift);
   } catch (error) {
     console.error('PUT /shifts/[id] error:', error);
     return NextResponse.json({ error: 'Failed to update shift' }, { status: 500 });

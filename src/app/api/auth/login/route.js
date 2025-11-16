@@ -39,12 +39,28 @@ export async function POST(request) {
       });
     } catch (dbErr) {
       const message = (dbErr && (dbErr.message || '')).toString();
+
+      // MySQL connection / resource limits
+      // Example error:
+      // ERROR 42000 (1226): User 'xxx' has exceeded the 'max_connections_per_hour' resource
+      if (message.includes('max_connections_per_hour') || message.includes('ERROR 42000 (1226)')) {
+        return NextResponse.json(
+          {
+            error: 'Database connection limit reached. Please try again in a few minutes.',
+            details: 'The database user has exceeded the allowed number of connections per hour.',
+          },
+          { status: 503 }
+        );
+      }
+
+      // Generic database-unavailable handling
       if (message.includes("Can't reach database server") || dbErr.code === 'P1001') {
         return NextResponse.json(
           { error: 'Database unavailable. Please try again shortly.' },
           { status: 503 }
         );
       }
+
       throw dbErr;
     }
 

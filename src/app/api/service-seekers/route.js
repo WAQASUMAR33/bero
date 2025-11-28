@@ -11,14 +11,45 @@ export async function GET(request) {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    
+    try {
+      jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (jwtError) {
+      console.error('JWT verification error:', jwtError);
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+    }
+    
     const seekers = await prisma.serviceSeeker.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(seekers, { status: 200 });
+    
+    // Always return an array, even if empty
+    return NextResponse.json(Array.isArray(seekers) ? seekers : [], { status: 200 });
   } catch (error) {
     console.error('GET /service-seekers error:', error);
-    return NextResponse.json({ error: 'Failed to fetch service users' }, { status: 500 });
+    
+    // Handle database connection errors
+    const message = (error && (error.message || '')).toString();
+    
+    if (message.includes('max_connections_per_hour') || message.includes('ERROR 42000 (1226)')) {
+      return NextResponse.json({ 
+        error: 'Database connection limit reached. Please try again in a few minutes.',
+        details: 'The database user has exceeded the allowed number of connections per hour.'
+      }, { status: 503 });
+    }
+    
+    if (message.includes("Can't reach database server") || error.code === 'P1001') {
+      return NextResponse.json({ 
+        error: 'Database unavailable. Please check your database connection.',
+        details: 'Cannot reach database server',
+        code: 'P1001'
+      }, { status: 503 });
+    }
+    
+    return NextResponse.json({ 
+      error: 'Failed to fetch service users',
+      details: error.message || 'Unknown error'
+    }, { status: 500 });
   }
 }
 

@@ -62,20 +62,32 @@ export default function ServiceUsersPage() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/service-seekers', { headers: { Authorization: `Bearer ${token}` } });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData?.error || `HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       // Ensure we always set an array
       if (Array.isArray(data)) {
         setSeekers(data);
+      } else if (data && typeof data === 'object' && data.error) {
+        // Handle error response
+        console.error('API returned error:', data);
+        setSeekers([]);
+        setNotification({ show: true, message: data.error || 'Failed to load service users.', type: 'error' });
       } else {
+        // Handle empty object or unexpected response
         console.error('API returned non-array data:', data);
         setSeekers([]);
-        setNotification({ show: true, message: data?.error || 'Failed to load service users.', type: 'error' });
+        setNotification({ show: true, message: 'Failed to load service users. Invalid response format.', type: 'error' });
       }
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching service users:', e);
       setSeekers([]);
-      setNotification({ show: true, message: 'Failed to load service users.', type: 'error' });
+      setNotification({ show: true, message: e.message || 'Failed to load service users.', type: 'error' });
     }
   };
 

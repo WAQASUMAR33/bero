@@ -81,7 +81,7 @@ export async function GET(request) {
       where: whereClause,
       include: {
         serviceSeeker: {
-          select: { id: true, firstName: true, lastName: true, preferredName: true }
+          select: { id: true, firstName: true, lastName: true, preferredName: true, address: true, latitude: true, longitude: true }
         },
         shiftType: true,
         funder: {
@@ -107,10 +107,117 @@ export async function GET(request) {
       orderBy: { fromDate: 'asc' }
     });
 
+    // If view is 'my', enhance with clock in/out status and shift assignment IDs
+    if (view === 'my') {
+      // Get clock in/out records for this user for the date range
+      const dateFilter = date || week;
+      let clockInOutWhere = {
+        userId: decoded.userId
+      };
+
+      if (date) {
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+        clockInOutWhere.date = {
+          gte: startOfDay,
+          lte: endOfDay
+        };
+      } else if (week) {
+        const startOfWeek = new Date(week);
+        const endOfWeek = new Date(week);
+        endOfWeek.setDate(endOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+        clockInOutWhere.date = {
+          gte: startOfWeek,
+          lte: endOfWeek
+        };
+      }
+
+      const clockInOuts = await prisma.clockInOut.findMany({
+        where: clockInOutWhere,
+        select: {
+          id: true,
+          shiftAssignmentId: true,
+          date: true,
+          clockInTime: true,
+          clockOutTime: true,
+          isLate: true,
+          isEarly: true
+        }
+      });
+
+      // Map clock in/out by shift assignment ID and date
+      const clockInOutMap = {};
+      clockInOuts.forEach(cio => {
+        if (cio.shiftAssignmentId) {
+          const key = `${cio.shiftAssignmentId}_${cio.date.toISOString().split('T')[0]}`;
+          clockInOutMap[key] = cio;
+        }
+      });
+
+      // Enhance shifts with clock in/out status
+      const enhancedShifts = shifts.map(shift => {
+        // Find the assignment for this user
+        const userAssignment = shift.assignments.find(a => a.userId === decoded.userId);
+        
+        if (userAssignment) {
+          const assignmentDate = new Date(userAssignment.date);
+          const dateKey = `${userAssignment.id}_${assignmentDate.toISOString().split('T')[0]}`;
+          const clockInOut = clockInOutMap[dateKey];
+
+          return {
+            ...shift,
+            shiftAssignmentId: userAssignment.id,
+            assignmentDate: userAssignment.date,
+            assignmentStatus: userAssignment.status,
+            clockedIn: !!clockInOut,
+            clockInTime: clockInOut?.clockInTime || null,
+            clockOutTime: clockInOut?.clockOutTime || null,
+            isLate: clockInOut?.isLate || false,
+            isEarly: clockInOut?.isEarly || false,
+            clockInOutId: clockInOut?.id || null
+          };
+        }
+        
+        return shift;
+      });
+
+      return NextResponse.json(enhancedShifts);
+    }
+
     return NextResponse.json(shifts);
   } catch (error) {
     console.error('GET /shifts error:', error);
-    return NextResponse.json({ error: 'Failed to fetch shifts' }, { status: 500 });
+    
+    // Handle database connection errors
+    const message = (error && (error.message || '')).toString();
+    
+    // MySQL connection / resource limits
+    if (message.includes('max_connections_per_hour') || message.includes('ERROR 42000 (1226)')) {
+      return NextResponse.json(
+        {
+          error: 'Database connection limit reached. Please try again in a few minutes.',
+          details: 'The database user has exceeded the allowed number of connections per hour.',
+        },
+        { status: 503 }
+      );
+    }
+    
+    // Database unavailable
+    if (message.includes("Can't reach database server") || error.code === 'P1001') {
+      return NextResponse.json(
+        { 
+          error: 'Database unavailable. Please check your database connection.',
+          details: 'Cannot reach database server at ' + (process.env.DATABASE_URL?.match(/@([^:]+):/)?.[1] || 'database server'),
+          code: 'P1001'
+        },
+        { status: 503 }
+      );
+    }
+    
+    return NextResponse.json({ error: 'Failed to fetch shifts', details: error.message }, { status: 500 });
   }
 }
 

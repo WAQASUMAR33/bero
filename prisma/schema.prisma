@@ -204,6 +204,7 @@ model User {
   createdShifts                  Shift[]                  @relation("ShiftCreatedBy")
   updatedShifts                  Shift[]                  @relation("ShiftUpdatedBy")
   shiftAssignments               ShiftAssignment[]        @relation("ShiftAssignments")
+  clockInOuts                    ClockInOut[]            @relation("ClockInOuts")
   externalInboxAccesses          ServiceSeekerExternalInboxAccess[]
 
   // Team
@@ -291,6 +292,7 @@ model ServiceSeeker {
   updatedById    Int?
 
   shifts                  Shift[]
+  clockInOuts             ClockInOut[]
   bathingTasks            BathingTask[]
   behaviourTasks          BehaviourTask[]
   bloodTestTasks          BloodTestTask[]
@@ -339,6 +341,7 @@ model ServiceSeeker {
   socialVisitInstructions  ServiceSeekerSocialVisitInstructions?
   medicineAccessCodes      ServiceSeekerMedicineAccessCodes?
   medicineSchedule         ServiceSeekerMedicineSchedule[]
+  medicinePrnPlans         ServiceSeekerMedicinePrnPlan[]
   oralCareSchedule         ServiceSeekerOralCareSchedule[]
   oralCareDefaultTimes     ServiceSeekerOralCareDefaultTime[]
   positioningHandling      ServiceSeekerPositioningHandling[]
@@ -2023,8 +2026,37 @@ model ShiftAssignment {
   // Relations
   shift               Shift             @relation(fields: [shiftId], references: [id])
   user                User              @relation("ShiftAssignments", fields: [userId], references: [id])
+  clockInOuts         ClockInOut[]
 
   @@unique([shiftId, userId, date])
+}
+
+model ClockInOut {
+  id                  Int               @id @default(autoincrement())
+  userId              Int
+  shiftAssignmentId   Int?
+  serviceSeekerId      Int?
+  date                DateTime          // The date of the shift
+  clockInTime         DateTime?         // When they clocked in
+  clockOutTime        DateTime?         // When they clocked out
+  workType            String            @default("REGULAR") // REGULAR, STANDBY
+  isLate              Boolean           @default(false)     // Clocked in late
+  isEarly             Boolean           @default(false)     // Clocked out early
+  clockInLocation     String?           // GPS coordinates or address for clock in
+  clockOutLocation    String?           // GPS coordinates or address for clock out
+  notes               String?           @db.Text
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  // Relations
+  user                User              @relation("ClockInOuts", fields: [userId], references: [id])
+  shiftAssignment     ShiftAssignment?  @relation(fields: [shiftAssignmentId], references: [id])
+  serviceSeeker       ServiceSeeker?   @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([userId])
+  @@index([date])
+  @@index([serviceSeekerId])
+  @@index([shiftAssignmentId])
 }
 
 model ServiceSeekerAllowanceSettings {
@@ -2203,6 +2235,16 @@ model ServiceSeekerMedicineSchedule {
   medicineName     String
   medicineType     String   // e.g., "CAPSULE", "LIQUID", etc.
   prn              String?  // PRN reason
+  dosage           String?
+  givenBy          String?
+  directions       String?  @db.Text
+  applicationGuide String?  @default("NONE")
+  showBodyMap      Boolean  @default(false)
+  medicineWarning  String?  @db.Text
+  startDate        DateTime?
+  endDate          DateTime?
+  status           String?  @default("ACTIVE")
+  days             Json?
   times            Json     // Array of {hour: string, minute: string}
   frequency        String   // e.g., "Daily", "Weekly", "Monthly", etc.
   team             String   // e.g., "All", "Team 1", etc.
@@ -2213,6 +2255,36 @@ model ServiceSeekerMedicineSchedule {
 
   // Relations
   serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerMedicinePrnPlan {
+  id                         Int      @id @default(autoincrement())
+  serviceSeekerId            Int
+  medicineName               String
+  medicineType               String
+  team                       String?
+  directions                 String?   @db.Text
+  applicationGuide           String?   @default("NONE")
+  showBodyMap                Boolean   @default(false)
+  medicineWarning            String?   @db.Text
+  startDate                  DateTime?
+  endDate                    DateTime?
+  givenBy                    String?
+  howToTake                  String?   @db.Text
+  communication              String?   @db.Text
+  medicineDetails            String?   @db.Text
+  maxDose24h                 String?
+  reasonForMedication        String?   @db.Text
+  expectedOutcome            String?   @db.Text
+  expectedOutcomeTimeframe   String?
+  actionIfNoOutcome          String?   @db.Text
+  whenToReferGp              String?   @db.Text
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }

@@ -32,6 +32,7 @@ import PersonalPropertyForm from '../../components/PersonalPropertyForm';
 import ExternalLoginsForm from '../../components/ExternalLoginsForm';
 import AllowanceForm from '../../components/AllowanceForm';
 import SocialVisitInstructionsForm from '../../components/SocialVisitInstructionsForm';
+import MedicineForm from '../../components/MedicineForm';
 import MedicineAccessCodesForm from '../../components/MedicineAccessCodesForm';
 import PositioningHandlingForm from '../../components/PositioningHandlingForm';
 import BathingForm from '../../components/BathingForm';
@@ -1121,6 +1122,11 @@ export default function AdmissionPage(){
           />
 
           <SocialVisitInstructionsForm
+            serviceSeekerId={serviceSeekerId}
+            onNotification={setNotification}
+          />
+
+          <MedicineForm
             serviceSeekerId={serviceSeekerId}
             onNotification={setNotification}
           />

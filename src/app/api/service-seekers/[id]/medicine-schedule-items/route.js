@@ -38,13 +38,34 @@ export async function POST(request, { params }) {
 
     const b = await request.json();
 
+    const normalizedTimes = Array.isArray(b.times)
+      ? b.times
+          .filter((t) => t.hour && t.minute)
+          .map((t) => ({
+            hour: String(t.hour).padStart(2, '0'),
+            minute: String(t.minute).padStart(2, '0'),
+          }))
+      : [];
+
+    const normalizedDays = Array.isArray(b.days) ? b.days.filter(Boolean) : [];
+
     const created = await prisma.serviceSeekerMedicineSchedule.create({
       data: {
         serviceSeekerId,
         medicineName: b.medicineName || '',
         medicineType: b.medicineType || 'CAPSULE',
         prn: b.prn || null,
-        times: b.times || [],
+        // dosage: b.dosage || null, // TODO: Uncomment after regenerating Prisma client
+        givenBy: b.givenBy || null,
+        directions: b.directions || null,
+        applicationGuide: b.applicationGuide || 'NONE',
+        showBodyMap: Boolean(b.showBodyMap),
+        medicineWarning: b.medicineWarning || null,
+        startDate: b.startDate ? new Date(b.startDate) : null,
+        endDate: b.endDate ? new Date(b.endDate) : null,
+        status: b.status || 'ACTIVE',
+        days: normalizedDays,
+        times: normalizedTimes,
         frequency: b.frequency || 'Daily',
         team: b.team || 'All',
         requestSignoffBy: b.requestSignoffBy || 'NOT_NEEDED',
@@ -52,66 +73,51 @@ export async function POST(request, { params }) {
       },
     });
 
-    // Create corresponding medicine PRN tasks if needed
-    if (b.createTasks && Array.isArray(b.times) && b.times.length > 0) {
+    if (b.createTasks && normalizedTimes.length > 0) {
       const today = new Date();
-      
-      // Determine how many days/weeks to create tasks for based on frequency
-      let daysToCreate = 7; // Default: 1 week
-      if (b.frequency === 'Daily') {
-        daysToCreate = 30; // 1 month for daily
-      } else if (b.frequency === 'Weekly') {
-        daysToCreate = 56; // 8 weeks for weekly
-      } else if (b.frequency === 'Fortnightly') {
-        daysToCreate = 84; // 12 weeks for fortnightly
-      } else if (b.frequency === 'Every 3 weeks') {
-        daysToCreate = 84; // 12 weeks
-      } else if (b.frequency === 'Monthly') {
-        daysToCreate = 90; // 3 months
-      } else if (b.frequency === 'Quarterly') {
-        daysToCreate = 365; // 1 year
-      } else if (b.frequency === 'Yearly') {
-        daysToCreate = 365; // 1 year
-      }
 
-      // For medicine, times are typically just hour:minute without day specification
-      const selectedDays = b.times.map(t => t.day).filter(Boolean);
-      const isDaily = b.frequency === 'Daily' || selectedDays.length === 0;
+      let daysToCreate = 7;
+      const freq = b.frequency || 'Daily';
+      if (freq === 'Daily') daysToCreate = 30;
+      else if (freq === 'Weekly') daysToCreate = 56;
+      else if (freq === 'Fortnightly') daysToCreate = 84;
+      else if (freq === 'Every 3 weeks') daysToCreate = 84;
+      else if (freq === 'Monthly') daysToCreate = 90;
+      else if (freq === 'Quarterly' || freq === 'Yearly') daysToCreate = 365;
+
+      const dayFilters = normalizedDays.map((d) => d.toLowerCase());
+      const isDaily = dayFilters.length === 0;
 
       for (let i = 0; i < daysToCreate; i++) {
         const date = new Date(today);
         date.setDate(date.getDate() + i);
         const dayName = date.toLocaleDateString('en-GB', { weekday: 'long' });
+        const normalizedDayName = dayName.toLowerCase();
 
-        // Check if this day should have tasks
-        if (isDaily || selectedDays.includes(dayName)) {
-          for (const timeSlot of b.times) {
-            // For daily, use all times. For specific days, match the day
-            if (isDaily || timeSlot.day === dayName || !timeSlot.day) {
-              try {
-                await prisma.medicinePrnTask.create({
-                  data: {
-                    serviceSeekerId,
-                    applyDate: date,
-                    applyTime: `${timeSlot.hour || '00'}:${timeSlot.minute || '00'}`,
-                    prn: b.prn || '',
-                    medicineName: b.medicineName || '',
-                    medicineType: b.medicineType || 'CAPSULE',
-                    administrated: false,
-                    notes: b.notes || null,
-                    requestSignoffBy: b.requestSignoffBy || 'NOT_NEEDED',
-                    signoffByStaffId: null,
-                    completed: 'NO',
-                    emotion: 'NEUTRAL',
-                    createdById: decoded.userId || 1,
-                    updatedById: decoded.userId || 1,
-                  },
-                });
-              } catch (taskError) {
-                // Skip if task already exists (duplicate date/time)
-                if (taskError.code !== 'P2002') {
-                  console.error('Error creating medicine task:', taskError);
-                }
+        if (isDaily || dayFilters.includes(normalizedDayName)) {
+          for (const timeSlot of normalizedTimes) {
+            try {
+              await prisma.medicinePrnTask.create({
+                data: {
+                  serviceSeekerId,
+                  applyDate: date,
+                  applyTime: `${timeSlot.hour}:${timeSlot.minute}`,
+                  prn: b.prn || '',
+                  medicineName: b.medicineName || '',
+                  medicineType: b.medicineType || 'CAPSULE',
+                  administrated: false,
+                  notes: b.notes || null,
+                  requestSignoffBy: b.requestSignoffBy || 'NOT_NEEDED',
+                  signoffByStaffId: null,
+                  completed: 'NO',
+                  emotion: 'NEUTRAL',
+                  createdById: decoded.userId || 1,
+                  updatedById: decoded.userId || 1,
+                },
+              });
+            } catch (taskError) {
+              if (taskError.code !== 'P2002') {
+                console.error('Error creating medicine task:', taskError);
               }
             }
           }
@@ -140,13 +146,34 @@ export async function PUT(request, { params }) {
     const id = parseInt(b.id, 10);
     if (Number.isNaN(id)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
 
+    const normalizedTimes = Array.isArray(b.times)
+      ? b.times
+          .filter((t) => t.hour && t.minute)
+          .map((t) => ({
+            hour: String(t.hour).padStart(2, '0'),
+            minute: String(t.minute).padStart(2, '0'),
+          }))
+      : [];
+
+    const normalizedDays = Array.isArray(b.days) ? b.days.filter(Boolean) : [];
+
     const updated = await prisma.serviceSeekerMedicineSchedule.update({
       where: { id },
       data: {
         medicineName: b.medicineName || '',
         medicineType: b.medicineType || 'CAPSULE',
         prn: b.prn || null,
-        times: b.times || [],
+        // dosage: b.dosage || null, // TODO: Uncomment after regenerating Prisma client
+        givenBy: b.givenBy || null,
+        directions: b.directions || null,
+        applicationGuide: b.applicationGuide || 'NONE',
+        showBodyMap: Boolean(b.showBodyMap),
+        medicineWarning: b.medicineWarning || null,
+        startDate: b.startDate ? new Date(b.startDate) : null,
+        endDate: b.endDate ? new Date(b.endDate) : null,
+        status: b.status || 'ACTIVE',
+        days: normalizedDays,
+        times: normalizedTimes,
         frequency: b.frequency || 'Daily',
         team: b.team || 'All',
         requestSignoffBy: b.requestSignoffBy || 'NOT_NEEDED',

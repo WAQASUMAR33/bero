@@ -706,7 +706,7 @@ export default function CreateShiftModal({
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Assign Staff</h3>
                   <p className="text-sm text-gray-600">
-                    Select staff members to cover this shift. Only staff without conflicting shifts are selectable.
+                    Select staff members to cover this shift. Staff with conflicting shifts or approved holidays are not selectable.
                   </p>
                 </div>
                 <div className="text-sm text-gray-600 font-medium whitespace-nowrap">
@@ -799,19 +799,72 @@ export default function CreateShiftModal({
                               Available
                             </div>
                           ) : (
-                            <div className="text-xs text-red-600 mt-2">
-                              <div className="font-semibold">Unavailable due to conflicts:</div>
-                              <ul className="list-disc list-inside space-y-1 mt-1">
-                                {member.conflicts.slice(0, 3).map((conflict, conflictIndex) => (
-                                  <li key={conflictIndex}>
-                                    {conflict.date} · {conflict.startTime}-{conflict.endTime}
-                                    {conflict.serviceSeeker ? ` with ${conflict.serviceSeeker}` : ''}
-                                  </li>
-                                ))}
-                                {member.conflicts.length > 3 && (
-                                  <li className="italic">and {member.conflicts.length - 3} more…</li>
-                                )}
-                              </ul>
+                            <div className="text-xs mt-2">
+                              {member.conflicts.some(c => c.type === 'holiday') ? (
+                                <div>
+                                  <div className="font-semibold text-amber-700 mb-1.5 flex items-center gap-1.5">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                    On Leave
+                                  </div>
+                                  <ul className="space-y-1.5 mt-1.5">
+                                    {member.conflicts
+                                      .filter(c => c.type === 'holiday')
+                                      .slice(0, 3)
+                                      .map((conflict, conflictIndex) => (
+                                        <li key={conflictIndex} className="flex items-start gap-2">
+                                          <span 
+                                            className="inline-block w-3 h-3 rounded-full mt-0.5 flex-shrink-0"
+                                            style={{ backgroundColor: conflict.holidayColor || '#3B82F6' }}
+                                          ></span>
+                                          <span className="flex-1">
+                                            <span className="font-medium text-amber-700">
+                                              {conflict.holidayType || 'Holiday'}
+                                            </span>
+                                            {' · '}
+                                            <span className="text-gray-600">
+                                              {conflict.startDate === conflict.endDate 
+                                                ? conflict.date
+                                                : `${conflict.startDate} to ${conflict.endDate}`
+                                              }
+                                              {conflict.startTime && conflict.endTime && conflict.startTime !== '00:00' && conflict.endTime !== '23:59' 
+                                                ? ` · ${conflict.startTime}-${conflict.endTime}`
+                                                : ''
+                                              }
+                                            </span>
+                                          </span>
+                                        </li>
+                                      ))}
+                                    {member.conflicts.filter(c => c.type === 'holiday').length > 3 && (
+                                      <li className="italic text-gray-500">
+                                        and {member.conflicts.filter(c => c.type === 'holiday').length - 3} more holiday(s)…
+                                      </li>
+                                    )}
+                                  </ul>
+                                </div>
+                              ) : null}
+                              {member.conflicts.some(c => c.type !== 'holiday') && (
+                                <div className={member.conflicts.some(c => c.type === 'holiday') ? 'mt-2 pt-2 border-t border-gray-200' : ''}>
+                                  <div className="font-semibold text-red-600 mb-1">Unavailable due to shift conflicts:</div>
+                                  <ul className="space-y-1 mt-1">
+                                    {member.conflicts
+                                      .filter(c => c.type !== 'holiday')
+                                      .slice(0, 3)
+                                      .map((conflict, conflictIndex) => (
+                                        <li key={conflictIndex} className="text-red-600">
+                                          {conflict.date} · {conflict.startTime}-{conflict.endTime}
+                                          {conflict.serviceSeeker ? ` with ${conflict.serviceSeeker}` : ''}
+                                        </li>
+                                      ))}
+                                    {member.conflicts.filter(c => c.type !== 'holiday').length > 3 && (
+                                      <li className="italic text-gray-500">
+                                        and {member.conflicts.filter(c => c.type !== 'holiday').length - 3} more…
+                                      </li>
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

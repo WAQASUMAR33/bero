@@ -214,6 +214,12 @@ model User {
   // Chat/Messaging relations
   conversations   ConversationParticipant[]
   sentMessages    Message[]
+
+  // Holiday relations
+  holidays        Holiday[]            @relation("UserHolidays")
+  approvedHolidays Holiday[]           @relation("ApprovedHolidays")
+  createdHolidays Holiday[]           @relation("HolidayCreatedBy")
+  updatedHolidays Holiday[]           @relation("HolidayUpdatedBy")
 }
 
 model Team {
@@ -2365,4 +2371,54 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([createdAt])
+}
+
+// Holiday Models
+model HolidayType {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  isPaid      Boolean   @default(true)
+  color       String?   // Hex color for calendar display
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  holidays    Holiday[]
+
+  @@index([name])
+}
+
+model Holiday {
+  id              Int          @id @default(autoincrement())
+  userId          Int
+  holidayTypeId   Int
+  startDate       DateTime
+  endDate         DateTime
+  startTime       String?      // Optional time (HH:mm format)
+  endTime         String?      // Optional time (HH:mm format)
+  includeWeekends Boolean      @default(false)
+  description     String?      @db.Text
+  holidayHours   Float?        // Total hours for the holiday
+  status          String       @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedById    Int?
+  approvedAt      DateTime?
+  rejectionReason String?      @db.Text
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  createdById     Int
+  updatedById     Int
+
+  // Relations
+  user            User         @relation("UserHolidays", fields: [userId], references: [id])
+  holidayType     HolidayType  @relation(fields: [holidayTypeId], references: [id])
+  approvedBy      User?        @relation("ApprovedHolidays", fields: [approvedById], references: [id])
+  createdBy       User         @relation("HolidayCreatedBy", fields: [createdById], references: [id])
+  updatedBy       User         @relation("HolidayUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([userId])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([status])
+  @@index([holidayTypeId])
 }

@@ -142,13 +142,117 @@ export async function GET(request) {
           serviceSeeker: assignment.shift.serviceSeeker
             ? `${assignment.shift.serviceSeeker.preferredName || assignment.shift.serviceSeeker.firstName} ${assignment.shift.serviceSeeker.lastName}`.trim()
             : null,
+          type: 'shift',
         });
         conflictsByUser.set(assignment.userId, collection);
       }
     });
 
+    // Check for holidays during shift dates
+    const holidays = await prisma.holiday.findMany({
+      where: {
+        userId: { in: staff.map(s => s.id) },
+        status: 'APPROVED',
+        OR: [
+          {
+            AND: [
+              { startDate: { lte: maxDate } },
+              { endDate: { gte: minDate } },
+            ],
+          },
+        ],
+      },
+      include: {
+        holidayType: {
+          select: {
+            name: true,
+            color: true,
+          },
+        },
+      },
+    });
+
+    // Check each occurrence against holidays
+    occurrences.forEach((occurrence) => {
+      const occurrenceDate = new Date(occurrence);
+      occurrenceDate.setHours(0, 0, 0, 0);
+      const occurrenceDateOnly = new Date(occurrenceDate);
+
+      holidays.forEach((holiday) => {
+        const holidayStart = new Date(holiday.startDate);
+        holidayStart.setHours(0, 0, 0, 0);
+        const holidayEnd = new Date(holiday.endDate);
+        holidayEnd.setHours(23, 59, 59, 999);
+
+        // Check if occurrence date falls within holiday date range (inclusive)
+        const isDateInHolidayRange = occurrenceDateOnly >= holidayStart && occurrenceDateOnly <= holidayEnd;
+        
+        if (!isDateInHolidayRange) {
+          return; // Skip this holiday if date doesn't match
+        }
+
+        // Check weekend logic: if occurrence is a weekend and holiday doesn't include weekends, skip
+        const isWeekend = occurrenceDateOnly.getDay() === 0 || occurrenceDateOnly.getDay() === 6;
+        if (isWeekend && !holiday.includeWeekends) {
+          return; // Skip weekends if holiday doesn't include them
+        }
+
+        // If holiday has specific times, check time overlap
+        // If no times specified, the entire day is considered unavailable
+        let hasTimeConflict = true;
+        if (holiday.startTime && holiday.endTime) {
+          try {
+            const holidayStartTime = parseTimeToMinutes(holiday.startTime);
+            const holidayEndTime = parseTimeToMinutes(holiday.endTime);
+            const holidayRange = normaliseTimeRange(holidayStartTime, holidayEndTime);
+            if (holidayRange && newShiftRange) {
+              hasTimeConflict = doTimeRangesOverlap(newShiftRange, holidayRange);
+            }
+          } catch (error) {
+            // If time parsing fails, assume full day conflict
+            console.warn('Error parsing holiday times:', error);
+            hasTimeConflict = true;
+          }
+        }
+
+        // If there's a conflict (date matches and time overlaps if specified), mark as unavailable
+        if (hasTimeConflict) {
+          const collection = conflictsByUser.get(holiday.userId) || [];
+          const holidayTypeName = holiday.holidayType?.name || 'Holiday';
+          const dateKey = formatDateKey(occurrence);
+          
+          // Check if this holiday conflict already exists for this date
+          const existingConflict = collection.find(
+            c => c.type === 'holiday' && c.date === dateKey && c.holidayId === holiday.id
+          );
+          
+          if (!existingConflict) {
+            collection.push({
+              type: 'holiday',
+              holidayId: holiday.id,
+              date: dateKey,
+              startTime: holiday.startTime || '00:00',
+              endTime: holiday.endTime || '23:59',
+              holidayType: holidayTypeName,
+              holidayColor: holiday.holidayType?.color || '#3B82F6',
+              description: holiday.description || '',
+              startDate: formatDateKey(holiday.startDate),
+              endDate: formatDateKey(holiday.endDate),
+            });
+            conflictsByUser.set(holiday.userId, collection);
+          }
+        }
+      });
+    });
+
     const response = staff.map((member) => {
       const conflicts = conflictsByUser.get(member.id) || [];
+      // Sort conflicts: holidays first, then by date
+      conflicts.sort((a, b) => {
+        if (a.type === 'holiday' && b.type !== 'holiday') return -1;
+        if (a.type !== 'holiday' && b.type === 'holiday') return 1;
+        return a.date.localeCompare(b.date);
+      });
       return {
         id: member.id,
         firstName: member.firstName,

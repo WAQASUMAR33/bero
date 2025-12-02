@@ -275,7 +275,7 @@ export default function CalendarPage() {
 
               {/* Filters */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                   {/* Search */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Search</label>
@@ -304,7 +304,7 @@ export default function CalendarPage() {
                   </div>
 
                   {/* Type filter */}
-                  <div>
+                  <div className="md:col-span-1">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
                     <select
                       value={filterType}
@@ -321,7 +321,7 @@ export default function CalendarPage() {
                   </div>
 
                   {/* Service user filter */}
-                  <div>
+                  <div className="md:col-span-1">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Service User</label>
                     <select
                       value={filterServiceSeekerId}
@@ -336,11 +336,9 @@ export default function CalendarPage() {
                       ))}
                     </select>
                   </div>
-                </div>
 
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Announced filter */}
-                  <div>
+                  <div className="md:col-span-1">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Announced</label>
                     <select
                       value={filterAnnounced}

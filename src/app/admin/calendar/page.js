@@ -18,6 +18,12 @@ export default function CalendarPage() {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Filters
+  const [filterType, setFilterType] = useState('all');
+  const [filterServiceSeekerId, setFilterServiceSeekerId] = useState('');
+  const [filterAnnounced, setFilterAnnounced] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
 
   const entryTypes = [
@@ -192,6 +198,43 @@ export default function CalendarPage() {
     }
   };
 
+  // Apply filters and search
+  const filteredEntries = entries.filter((entry) => {
+    if (filterType !== 'all' && entry.entryType !== filterType) {
+      return false;
+    }
+
+    if (filterServiceSeekerId && String(entry.serviceSeekerId || '') !== filterServiceSeekerId) {
+      return false;
+    }
+
+    if (filterAnnounced !== 'all') {
+      const announcedValue = entry.announced || null;
+      if (filterAnnounced === 'YES' && announcedValue !== 'YES') return false;
+      if (filterAnnounced === 'NO' && announcedValue !== 'NO') return false;
+    }
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      const residentName = entry.serviceSeeker
+        ? (entry.serviceSeeker.preferredName ||
+            `${entry.serviceSeeker.firstName} ${entry.serviceSeeker.lastName}`).toLowerCase()
+        : '';
+      const details = (getEntryDetails(entry) || '').toLowerCase();
+      const typeLabel = getEntryTypeLabel(entry.entryType).toLowerCase();
+
+      if (
+        !residentName.includes(q) &&
+        !details.includes(q) &&
+        !typeLabel.includes(q)
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
   if (!user) {
     return null;
   }
@@ -230,6 +273,88 @@ export default function CalendarPage() {
                 </div>
               </div>
 
+              {/* Filters */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Search */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Search</label>
+                    <div className="relative">
+                      <svg
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="Search by type, resident or details..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Type filter */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
+                    <select
+                      value={filterType}
+                      onChange={(e) => setFilterType(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                    >
+                      <option value="all">All Types</option>
+                      {entryTypes.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Service user filter */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Service User</label>
+                    <select
+                      value={filterServiceSeekerId}
+                      onChange={(e) => setFilterServiceSeekerId(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                    >
+                      <option value="">All Service Users</option>
+                      {serviceSeekers.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.preferredName || `${s.firstName} ${s.lastName}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Announced filter */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Announced</label>
+                    <select
+                      value={filterAnnounced}
+                      onChange={(e) => setFilterAnnounced(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                    >
+                      <option value="all">All</option>
+                      <option value="YES">Announced</option>
+                      <option value="NO">Unannounced</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               {/* Entries List */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-200">
@@ -248,14 +373,14 @@ export default function CalendarPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
-                      {entries.length === 0 ? (
+                      {filteredEntries.length === 0 ? (
                         <tr>
                           <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
                             No entries found. Click &quot;Add Entry&quot; to create one.
                           </td>
                         </tr>
                       ) : (
-                        entries.map((entry) => (
+                        filteredEntries.map((entry) => (
                           <tr key={entry.id} className="hover:bg-gray-50 transition-colors duration-200">
                             <td className="px-6 py-5 whitespace-nowrap">
                               <div className="flex items-center space-x-2">

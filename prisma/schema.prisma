@@ -85,6 +85,15 @@ enum PayCalculation {
   PER_SHIFT
 }
 
+enum CalendarEntryType {
+  MANAGEMENT_MEETING
+  STAFF_MEETING
+  RESIDENT_MEETING
+  FAMILY_VISIT
+  PROFESSIONAL_VISIT
+  EVENT
+}
+
 //
 // MODELS
 //
@@ -218,6 +227,11 @@ model User {
   // Holiday relations
   holidays        Holiday[]            @relation("UserHolidays")
   approvedHolidays Holiday[]           @relation("ApprovedHolidays")
+  
+  // Calendar entry relations
+  eventCareWorkerEntries ServiceSeekerCalendarEntry[] @relation("EventCareWorker")
+  createdCalendarEntries ServiceSeekerCalendarEntry[] @relation("CalendarEntryCreatedBy")
+  updatedCalendarEntries ServiceSeekerCalendarEntry[] @relation("CalendarEntryUpdatedBy")
   createdHolidays Holiday[]           @relation("HolidayCreatedBy")
   updatedHolidays Holiday[]           @relation("HolidayUpdatedBy")
 }
@@ -328,6 +342,7 @@ model ServiceSeeker {
   encouragementTasks      EncouragementTask[]
   followUpTasks           FollowUpTask[]
   residentMeetings        ServiceSeekerResidentMeeting[]
+  calendarEntries         ServiceSeekerCalendarEntry[]  @relation("CalendarEntries")
   outcomes                ServiceSeekerOutcome[]
   riskAssessments         ServiceSeekerRiskAssessment[]
   safeguardingIncidents   ServiceSeekerSafeguarding[]
@@ -1654,6 +1669,47 @@ model ServiceSeekerResidentMeeting {
   serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
+}
+
+model ServiceSeekerCalendarEntry {
+  id               Int                 @id @default(autoincrement())
+  serviceSeekerId  Int?
+  entryType        CalendarEntryType
+  date             DateTime
+  time             String?             // HH:mm format
+  // Meeting fields (Management, Staff, Resident)
+  chairedBy        String?
+  about            String?
+  notes            String?              @db.Text
+  actions          String?              @db.Text
+  concerns         String?              @db.Text
+  invites          Json?                // Array of user IDs with signedOn status
+  // Visit fields (Family, Professional)
+  announced        VisitAnnounced?
+  name             String?
+  relationship     String?              // For family visits
+  role             ProfessionalRole?    // For professional visits
+  purpose          String?              @db.Text
+  summary          String?              @db.Text
+  completed        VisitCompletion?
+  // Event fields
+  careWorkerId     Int?
+  eventDescription String?              @db.Text
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  createdById      Int
+  updatedById      Int
+
+  // Relations
+  serviceSeeker    ServiceSeeker?       @relation("CalendarEntries", fields: [serviceSeekerId], references: [id])
+  careWorker       User?                @relation("EventCareWorker", fields: [careWorkerId], references: [id])
+  createdBy        User                 @relation("CalendarEntryCreatedBy", fields: [createdById], references: [id])
+  updatedBy        User                 @relation("CalendarEntryUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([serviceSeekerId])
+  @@index([date])
+  @@index([entryType])
+  @@index([careWorkerId])
 }
 
 model ServiceSeekerOutcome {

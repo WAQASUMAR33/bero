@@ -1,19 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import jwt from 'jsonwebtoken';
 
 // GET all quality assurance entries
 export async function GET(request) {
   try {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
@@ -82,15 +79,12 @@ export async function GET(request) {
 // POST create new quality assurance entry
 export async function POST(request) {
   try {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const body = await request.json();
     const { date, type, from, youSaid, weDid, lessonsLearnt, status } = body;

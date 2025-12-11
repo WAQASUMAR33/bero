@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export default function QualityAssurancePage() {
   const [user, setUser] = useState(null);
@@ -160,6 +162,137 @@ export default function QualityAssurancePage() {
     return badges[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF();
+      
+      // Title
+      doc.setFontSize(18);
+      doc.setTextColor(34, 79, 166); // #224fa6
+      doc.text('Quality Assurance Report', 14, 20);
+      
+      // Date generated
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generated on: ${new Date().toLocaleDateString('en-GB', { 
+        day: '2-digit', 
+        month: 'long', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })}`, 14, 28);
+      
+      // Summary
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Total Entries: ${filteredEntries.length}`, 14, 38);
+      
+      // Group entries by type for summary
+      const typeCounts = {
+        'COMPLIMENT': filteredEntries.filter(e => e.type === 'COMPLIMENT').length,
+        'SUGGESTION': filteredEntries.filter(e => e.type === 'SUGGESTION').length,
+        'CONCERN': filteredEntries.filter(e => e.type === 'CONCERN').length
+      };
+      
+      doc.text(`Compliments: ${typeCounts.COMPLIMENT} | Suggestions: ${typeCounts.SUGGESTION} | Concerns: ${typeCounts.CONCERN}`, 14, 45);
+      
+      let yPosition = 55;
+      
+      // Add each entry
+      filteredEntries.forEach((entry, index) => {
+        // Check if we need a new page
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        
+        // Entry header
+        doc.setFontSize(14);
+        doc.setTextColor(34, 79, 166);
+        doc.text(`Entry ${index + 1}: ${getEntryTypeLabel(entry.type)}`, 14, yPosition);
+        yPosition += 8;
+        
+        // Entry details
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        
+        const details = [
+          [`Date:`, new Date(entry.date).toLocaleDateString('en-GB')],
+          [`From:`, entry.from || 'N/A'],
+          [`Status:`, statusOptions.find(s => s.value === entry.status)?.label || entry.status],
+          [`Created By:`, entry.createdBy ? `${entry.createdBy.firstName} ${entry.createdBy.lastName}` : 'N/A'],
+          [`Created At:`, entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('en-GB') : 'N/A'],
+          [`Updated By:`, entry.updatedBy ? `${entry.updatedBy.firstName} ${entry.updatedBy.lastName}` : 'N/A'],
+          [`Updated At:`, entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString('en-GB') : 'N/A'],
+        ];
+        
+        details.forEach(([label, value]) => {
+          doc.setFont('helvetica', 'bold');
+          doc.text(label, 14, yPosition);
+          doc.setFont('helvetica', 'normal');
+          const textWidth = doc.getTextWidth(value);
+          const maxWidth = 180;
+          if (textWidth > maxWidth) {
+            const lines = doc.splitTextToSize(value, maxWidth);
+            doc.text(lines, 50, yPosition);
+            yPosition += (lines.length - 1) * 5;
+          } else {
+            doc.text(value, 50, yPosition);
+          }
+          yPosition += 6;
+        });
+        
+        // You Said
+        if (entry.youSaid) {
+          doc.setFont('helvetica', 'bold');
+          doc.text('You Said:', 14, yPosition);
+          yPosition += 5;
+          doc.setFont('helvetica', 'normal');
+          const youSaidLines = doc.splitTextToSize(entry.youSaid, 180);
+          doc.text(youSaidLines, 14, yPosition);
+          yPosition += youSaidLines.length * 5 + 3;
+        }
+        
+        // We Did
+        if (entry.weDid) {
+          doc.setFont('helvetica', 'bold');
+          doc.text('We Did:', 14, yPosition);
+          yPosition += 5;
+          doc.setFont('helvetica', 'normal');
+          const weDidLines = doc.splitTextToSize(entry.weDid, 180);
+          doc.text(weDidLines, 14, yPosition);
+          yPosition += weDidLines.length * 5 + 3;
+        }
+        
+        // Lessons Learnt
+        if (entry.lessonsLearnt) {
+          doc.setFont('helvetica', 'bold');
+          doc.text('Lessons Learnt:', 14, yPosition);
+          yPosition += 5;
+          doc.setFont('helvetica', 'normal');
+          const lessonsLines = doc.splitTextToSize(entry.lessonsLearnt, 180);
+          doc.text(lessonsLines, 14, yPosition);
+          yPosition += lessonsLines.length * 5 + 3;
+        }
+        
+        // Separator line
+        yPosition += 5;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, yPosition, 196, yPosition);
+        yPosition += 10;
+      });
+      
+      // Save the PDF
+      const fileName = `Quality_Assurance_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      
+      showNotification('PDF exported successfully!', 'success');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showNotification('Error generating PDF. Please try again.', 'error');
+    }
+  };
+
   // Filter entries based on search term
   const filteredEntries = entries.filter(entry => {
     if (searchTerm) {
@@ -209,18 +342,29 @@ export default function QualityAssurancePage() {
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Quality Assurance</h1>
                     <p className="text-gray-600">Manage compliments, suggestions, and concerns</p>
                   </div>
-                  <button
-                    onClick={() => {
-                      setSelectedEntry(null);
-                      setShowAddModal(true);
-                    }}
-                    className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span>Add Entry</span>
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={handleExportPDF}
+                      className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Save as PDF</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedEntry(null);
+                        setShowAddModal(true);
+                      }}
+                      className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      <span>Add Entry</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -304,13 +448,15 @@ export default function QualityAssurancePage() {
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">You Said</th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created By</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Updated By</th>
                         <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {filteredEntries.length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                          <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
                             No entries found. Click &quot;Add Entry&quot; to create one.
                           </td>
                         </tr>
@@ -346,6 +492,26 @@ export default function QualityAssurancePage() {
                               <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(entry.status)}`}>
                                 {statusOptions.find(s => s.value === entry.status)?.label || entry.status}
                               </span>
+                            </td>
+                            <td className="px-6 py-5 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {entry.createdBy ? `${entry.createdBy.firstName} ${entry.createdBy.lastName}` : '-'}
+                              </div>
+                              {entry.createdBy && (
+                                <div className="text-xs text-gray-500">
+                                  {new Date(entry.createdAt).toLocaleDateString('en-GB')}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-5 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {entry.updatedBy ? `${entry.updatedBy.firstName} ${entry.updatedBy.lastName}` : '-'}
+                              </div>
+                              {entry.updatedBy && (
+                                <div className="text-xs text-gray-500">
+                                  {new Date(entry.updatedAt).toLocaleDateString('en-GB')}
+                                </div>
+                              )}
                             </td>
                             <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex items-center justify-end space-x-2">

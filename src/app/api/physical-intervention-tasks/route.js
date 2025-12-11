@@ -12,7 +12,27 @@ export async function GET(request) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
+    const { searchParams } = new URL(request.url);
+    const serviceSeekerId = searchParams.get('serviceSeekerId');
+    const dateParam = searchParams.get('date');
+    
+    const where = {};
+    if (serviceSeekerId) {
+      where.serviceSeekerId = parseInt(serviceSeekerId);
+    }
+    if (dateParam) {
+      const date = new Date(dateParam);
+      date.setHours(0, 0, 0, 0);
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      where.date = {
+        gte: date,
+        lt: nextDay
+      };
+    }
+
     const tasks = await prisma.physicalInterventionTask.findMany({
+      where,
       include: {
         serviceSeeker: true,
         createdBy: {

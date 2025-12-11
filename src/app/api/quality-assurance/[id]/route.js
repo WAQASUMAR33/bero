@@ -1,19 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import jwt from 'jsonwebtoken';
 
 // GET single quality assurance entry
 export async function GET(request, { params }) {
   try {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
-    }
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const id = parseInt(params.id);
 
@@ -62,15 +59,12 @@ export async function GET(request, { params }) {
 // PUT update quality assurance entry
 export async function PUT(request, { params }) {
   try {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const id = parseInt(params.id);
     const body = await request.json();
@@ -137,15 +131,12 @@ export async function PUT(request, { params }) {
 // DELETE quality assurance entry
 export async function DELETE(request, { params }) {
   try {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
-    }
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const id = parseInt(params.id);
 

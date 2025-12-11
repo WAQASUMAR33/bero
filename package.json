@@ -16,6 +16,8 @@
     "bcryptjs": "^3.0.2",
     "i": "^0.3.7",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "leaflet": "^1.9.4",
     "next": "15.5.4",
     "prisma": "^6.17.1",

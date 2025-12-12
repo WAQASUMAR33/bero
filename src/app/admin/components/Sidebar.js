@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
+import { getAllUserPermissions } from '@/lib/permissions';
 
 export default function Sidebar({ user }) {
   const [activeItem, setActiveItem] = useState('Dashboard');
@@ -148,6 +149,14 @@ export default function Sidebar({ user }) {
         </svg>
       ),
       hasArrow: true,
+      subItems: [
+        {
+          id: 'care-plan',
+          name: 'Care Plan',
+          permission: 'care-plan.manage',
+          path: '/admin/care-plan',
+        },
+      ],
     },
     {
       id: 'staff',
@@ -320,10 +329,10 @@ export default function Sidebar({ user }) {
     },
   ];
 
-  // Filter menu items based on user permissions
-  const userPermissions = user?.permissions?.map(p => p.key) || [];
+  // Filter menu items based on user permissions (with permission inheritance)
+  const allPermissions = getAllUserPermissions(user);
   const menuItems = allMenuItems.filter(item => 
-    userPermissions.includes(item.permission) || user?.role?.name === 'ADMIN'
+    allPermissions.includes(item.permission) || user?.role?.name === 'ADMIN'
   );
 
   // Don't render sidebar if user is not loaded
@@ -403,7 +412,7 @@ export default function Sidebar({ user }) {
                 <div className="ml-4 mt-1 space-y-1">
                   {item.subItems
                     .filter(subItem => 
-                      userPermissions.includes(subItem.permission) || user?.role?.name === 'ADMIN'
+                      allPermissions.includes(subItem.permission) || user?.role?.name === 'ADMIN'
                     )
                     .map((subItem) => (
                     <button

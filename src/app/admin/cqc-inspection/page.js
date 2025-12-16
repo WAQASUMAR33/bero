@@ -70,18 +70,6 @@ export default function CQCInspectionPage() {
       path: '/admin/cqc-inspection/medicine-refusal'
     },
     {
-      id: '24hr-clock',
-      title: 'Do you use a 24hr clock?',
-      description: 'Verify 24-hour clock usage across the system',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      gradient: 'from-yellow-500 to-yellow-600',
-      path: '/admin/cqc-inspection/24hr-clock'
-    },
-    {
       id: 'air-filter',
       title: 'For house keeping tasks do you check the air filter on the clothes dryer on a weekly basis?',
       description: 'Track weekly air filter checks for clothes dryers',
@@ -104,18 +92,6 @@ export default function CQCInspectionPage() {
       ),
       gradient: 'from-pink-500 to-pink-600',
       path: '/admin/cqc-inspection/late-arrivals'
-    },
-    {
-      id: 'feedback',
-      title: 'How much feedback do you take?',
-      description: 'Monitor feedback collection and response rates',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-        </svg>
-      ),
-      gradient: 'from-teal-500 to-teal-600',
-      path: '/admin/cqc-inspection/feedback'
     }
   ];
 

@@ -13,17 +13,17 @@ All API endpoints require authentication using a JWT token obtained from the log
 **Endpoint:** `POST /api/auth/login`
 
 **Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "secret"
-}
-```
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "secret"
+  }
+  ```
 
 **Response:**
-```json
-{
-  "success": true,
+  ```json
+  {
+    "success": true,
   "user": {
     "id": 21,
     "firstName": "John",
@@ -32,8 +32,8 @@ All API endpoints require authentication using a JWT token obtained from the log
     "role": "CAREWORKER"
   },
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
+  }
+  ```
 
 **Usage:** Use the returned `token` in the `Authorization` header for all subsequent requests:
 ```
@@ -52,8 +52,8 @@ Authorization: Bearer <token>
 - `date` (optional) - Date in `YYYY-MM-DD` format (defaults to today)
 
 **Response:**
-```json
-{
+  ```json
+  {
   "success": true,
   "data": [
     {
@@ -62,8 +62,8 @@ Authorization: Bearer <token>
       "date": "2025-01-14T00:00:00.000Z",
       "expectedStartTime": "2025-01-14T08:00:00.000Z",
       "expectedEndTime": "2025-01-14T16:00:00.000Z",
-      "startTime": "08:00",
-      "endTime": "16:00",
+    "startTime": "08:00",
+    "endTime": "16:00",
       "serviceSeeker": {
         "id": 12,
         "firstName": "John",
@@ -75,7 +75,7 @@ Authorization: Bearer <token>
       },
       "shiftType": { "id": 1, "name": "Day Shift" },
       "funder": { "id": 5, "fundingSource": "NHS" },
-      "timeCritical": true,
+    "timeCritical": true,
       "notesForCarers": "Arrive 15 minutes early",
       "status": "SCHEDULED",
       "clockedIn": true,
@@ -97,8 +97,8 @@ Authorization: Bearer <token>
 **Endpoint:** `POST /api/clock-in-out/clock-in`
 
 **Request Body:**
-```json
-{
+  ```json
+  {
   "shiftAssignmentId": 123,
   "serviceSeekerId": 12,
   "date": "2025-01-14",
@@ -114,7 +114,7 @@ Authorization: Bearer <token>
   "success": true,
   "data": {
     "id": 789,
-    "userId": 21,
+            "userId": 21,
     "shiftAssignmentId": 123,
     "serviceSeekerId": 12,
     "date": "2025-01-14T00:00:00.000Z",
@@ -141,12 +141,12 @@ Authorization: Bearer <token>
   "clockInOutId": 789,
   "location": "51.5074,-0.1278",
   "notes": "Shift completed"
-}
-```
+  }
+  ```
 
 **Response:**
-```json
-{
+  ```json
+  {
   "success": true,
   "data": {
     "id": 789,
@@ -154,8 +154,8 @@ Authorization: Bearer <token>
     "isEarly": false
   },
   "message": "Clocked out successfully"
-}
-```
+  }
+  ```
 
 ---
 
@@ -188,8 +188,8 @@ Get all tasks for service users assigned to the logged-in caretaker.
 - `date` (optional) - Date in `YYYY-MM-DD` format (defaults to today)
 
 **Response:**
-```json
-{
+  ```json
+  {
   "success": true,
   "data": {
     "tasks": {
@@ -233,8 +233,8 @@ Get all tasks for service users assigned to the logged-in caretaker.
     ],
     "date": "2025-01-14"
   }
-}
-```
+  }
+  ```
 
 ---
 
@@ -251,8 +251,8 @@ Each task type has three main endpoints:
 **Endpoint:** `PUT /api/{task-type}-tasks/{id}`
 
 **Request Body:** Send only the fields you want to update (partial updates supported)
-```json
-{
+  ```json
+  {
   "completed": "YES",
   "emotion": "HAPPY",
   "notes": "Task completed successfully",
@@ -442,10 +442,10 @@ All endpoints return appropriate HTTP status codes:
 - `500` - Server error
 
 Error responses follow this format:
-```json
-{
+  ```json
+  {
   "success": false,
   "error": "Error message",
   "details": "Additional error details (optional)"
-}
-```
+  }
+  ```

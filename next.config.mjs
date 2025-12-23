@@ -24,6 +24,9 @@ const nextConfig = {
 
     return config;
   },
+  // Turbopack configuration (Next.js 16+ uses Turbopack by default)
+  // Empty config allows webpack to be used when needed
+  turbopack: {},
   // Explicitly set the base path to current directory
   basePath: ''
 };

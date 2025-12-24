@@ -248,6 +248,10 @@ model User {
   updatedHolidays Holiday[]           @relation("HolidayUpdatedBy")
   createdQualityAssurances QualityAssurance[] @relation("QualityAssuranceCreatedBy")
   updatedQualityAssurances QualityAssurance[] @relation("QualityAssuranceUpdatedBy")
+  createdPolicies Policy[]            @relation("PolicyCreatedBy")
+  updatedPolicies Policy[]            @relation("PolicyUpdatedBy")
+  policyReviews PolicyReview[]        @relation("PolicyReviewCreatedBy")
+  policySignatures PolicySignature[]  @relation("PolicySignatureUser")
 }
 
 model Team {
@@ -2515,4 +2519,57 @@ model QualityAssurance {
   @@index([type])
   @@index([status])
   @@index([createdById])
+}
+
+// Policy and Procedures Models
+model Policy {
+  id               Int               @id @default(autoincrement())
+  name             String
+  fileName         String            // Name of the uploaded file
+  fileUrl          String?           // URL to the PDF file (pending upload system)
+  reviewIn         Int?              // Days until next review (e.g., 30, 90, 365)
+  lastReviewed     DateTime?         // When the policy was last reviewed
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  createdById      Int
+  updatedById      Int
+
+  // Relations
+  createdBy        User              @relation("PolicyCreatedBy", fields: [createdById], references: [id])
+  updatedBy        User              @relation("PolicyUpdatedBy", fields: [updatedById], references: [id])
+  reviews          PolicyReview[]
+  signatures       PolicySignature[]
+
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+model PolicyReview {
+  id               Int               @id @default(autoincrement())
+  policyId         Int
+  reviewText       String            @db.Text
+  createdAt        DateTime          @default(now())
+  createdById      Int
+
+  // Relations
+  policy           Policy            @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  createdBy        User              @relation("PolicyReviewCreatedBy", fields: [createdById], references: [id])
+
+  @@index([policyId])
+  @@index([createdById])
+}
+
+model PolicySignature {
+  id               Int               @id @default(autoincrement())
+  policyId         Int
+  userId           Int
+  signedAt         DateTime          @default(now())
+
+  // Relations
+  policy           Policy            @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  user             User              @relation("PolicySignatureUser", fields: [userId], references: [id])
+
+  @@unique([policyId, userId])
+  @@index([policyId])
+  @@index([userId])
 }

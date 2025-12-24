@@ -9,6 +9,7 @@ export default function Sidebar({ user }) {
   const [activeItem, setActiveItem] = useState('Dashboard');
   const [expandedItems, setExpandedItems] = useState({});
   const [showLogoutDropdown, setShowLogoutDropdown] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const router = useRouter();
   const pathname = usePathname();
   const dropdownRef = useRef(null);
@@ -23,6 +24,21 @@ export default function Sidebar({ user }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Listen for beforeinstallprompt event for PWA installation
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
 
@@ -243,6 +259,18 @@ export default function Sidebar({ user }) {
       hasArrow: false,
     },
     {
+      id: 'profile',
+      name: 'Profile',
+      permission: 'profile.view',
+      path: '/admin/profile',
+      icon: (
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+        </svg>
+      ),
+      hasArrow: false,
+    },
+    {
       id: 'service-users',
       name: 'Service Users',
       permission: 'service-users.manage',
@@ -278,6 +306,45 @@ export default function Sidebar({ user }) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     router.push('/login');
+  };
+
+  const handleInstallApp = async () => {
+    setShowLogoutDropdown(false);
+
+    // Check if we have a deferred prompt (PWA install prompt)
+    if (deferredPrompt) {
+      // Show the install prompt
+      deferredPrompt.prompt();
+      
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      
+      // Clear the deferredPrompt so it can only be used once
+      setDeferredPrompt(null);
+      return;
+    }
+
+    // Check if app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      alert('This app is already installed on your device.');
+      return;
+    }
+
+    // Try to detect if it's iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      alert('To install this app on iOS:\n1. Tap the Share button (square with arrow)\n2. Tap "Add to Home Screen"\n3. Tap "Add"');
+    } else if (/Android/.test(navigator.userAgent)) {
+      alert('To install this app on Android:\n1. Tap the menu (three dots) in your browser\n2. Tap "Install app" or "Add to Home Screen"');
+    } else {
+      alert('To install this app:\nLook for the install icon (⊕) in your browser\'s address bar or menu.\n\nIf it doesn\'t appear, this app may not support installation on your device.');
+    }
   };
 
   return (
@@ -384,9 +451,18 @@ export default function Sidebar({ user }) {
           </svg>
         </button>
 
-        {/* Logout Dropdown */}
+        {/* User Dropdown */}
         {showLogoutDropdown && (
           <div className="absolute bottom-full left-4 right-4 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+            <button
+              onClick={handleInstallApp}
+              className="w-full flex items-center px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border-b border-gray-100"
+            >
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Install App
+            </button>
             <button
               onClick={handleLogout}
               className="w-full flex items-center px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors"

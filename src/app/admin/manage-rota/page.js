@@ -218,20 +218,37 @@ export default function ManageRotaPage() {
   };
 
   const getShiftsForTimeSlot = (date, hour) => {
-    return shifts.filter(shift => {
-      const shiftStartHour = parseInt(shift.startTime.split(':')[0]);
-      const shiftEndHour = parseInt(shift.endTime.split(':')[0]);
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    // Get all shifts that match the time and date criteria
+    const matchingShifts = shifts.filter(shift => {
+      // Parse start and end times more accurately
+      const [startHourStr, startMinStr] = shift.startTime.split(':');
+      const [endHourStr, endMinStr] = shift.endTime.split(':');
+      const shiftStartHour = parseInt(startHourStr);
+      const shiftStartMin = parseInt(startMinStr || 0);
+      const shiftEndHour = parseInt(endHourStr);
+      const shiftEndMin = parseInt(endMinStr || 0);
       
-      // Check if this hour falls within the shift time
-      const isInTimeRange = hour >= shiftStartHour && hour < shiftEndHour;
+      // Convert to total minutes for more accurate comparison
+      const shiftStartTotalMinutes = shiftStartHour * 60 + shiftStartMin;
+      const shiftEndTotalMinutes = shiftEndHour * 60 + shiftEndMin;
+      const slotStartTotalMinutes = hour * 60;
+      const slotEndTotalMinutes = (hour + 1) * 60;
+      
+      // Check if shift overlaps with this time slot
+      // Shift should appear if it starts in this hour OR is ongoing during this hour
+      const shiftStartsInSlot = shiftStartTotalMinutes >= slotStartTotalMinutes && shiftStartTotalMinutes < slotEndTotalMinutes;
+      const shiftOverlapsSlot = shiftStartTotalMinutes < slotEndTotalMinutes && shiftEndTotalMinutes > slotStartTotalMinutes;
+      
+      const isInTimeRange = shiftStartsInSlot || shiftOverlapsSlot;
       if (!isInTimeRange) return false;
 
       // Check if shift occurs on this date based on recurrence
       const fromDate = new Date(shift.fromDate);
       fromDate.setHours(0, 0, 0, 0);
       const untilDate = shift.untilDate ? new Date(shift.untilDate) : null;
-      const checkDate = new Date(date);
-      checkDate.setHours(0, 0, 0, 0);
 
       // Check if date is within the shift's date range
       if (checkDate < fromDate) return false;
@@ -276,6 +293,53 @@ export default function ManageRotaPage() {
         default:
           return false;
       }
+    });
+    
+    // Remove duplicates by shift ID (in case same shift appears multiple times)
+    const uniqueShifts = [];
+    const seenShiftIds = new Set();
+    for (const shift of matchingShifts) {
+      if (!seenShiftIds.has(shift.id)) {
+        seenShiftIds.add(shift.id);
+        uniqueShifts.push(shift);
+      }
+    }
+    
+    // Filter assignments to only show ones for the current date
+    const shiftsWithFilteredAssignments = uniqueShifts.map(shift => {
+      // Filter assignments to only show ones for the current date
+      const dateStr = checkDate.toISOString().split('T')[0];
+      const filteredAssignments = shift.assignments?.filter(assignment => {
+        const assignmentDate = new Date(assignment.date);
+        assignmentDate.setHours(0, 0, 0, 0);
+        return assignmentDate.getTime() === checkDate.getTime();
+      }) || [];
+      
+      // Remove duplicate assignments (same user on same date)
+      const uniqueAssignments = [];
+      const seenUserIds = new Set();
+      for (const assignment of filteredAssignments) {
+        if (!seenUserIds.has(assignment.userId)) {
+          seenUserIds.add(assignment.userId);
+          uniqueAssignments.push(assignment);
+        }
+      }
+      
+      return {
+        ...shift,
+        assignments: uniqueAssignments
+      };
+    });
+    
+    // Sort shifts by start time, then by service seeker name
+    return shiftsWithFilteredAssignments.sort((a, b) => {
+      const aStart = a.startTime;
+      const bStart = b.startTime;
+      if (aStart !== bStart) return aStart.localeCompare(bStart);
+      // If same start time, sort by service seeker name
+      const aName = a.serviceSeeker?.preferredName || a.serviceSeeker?.firstName || '';
+      const bName = b.serviceSeeker?.preferredName || b.serviceSeeker?.firstName || '';
+      return aName.localeCompare(bName);
     });
   };
 
@@ -416,14 +480,37 @@ export default function ManageRotaPage() {
                     </div>
                     {weekDays.map((day, idx) => {
                       const shiftsInSlot = getShiftsForTimeSlot(day, hour);
+                      // Calculate minimum height based on number of shifts (at least 60px, +80px per additional shift)
+                      const minHeight = Math.max(60, 60 + (shiftsInSlot.length - 1) * 80);
                       return (
-                        <div key={idx} className="border-b border-gray-200 p-2 min-h-[60px] hover:bg-gray-50 transition-colors">
-                          {shiftsInSlot.map(shift => (
-                            <div
-                              key={shift.id}
-                              onClick={() => handleShiftClick(shift)}
-                              className="mb-2 p-2 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-500 cursor-pointer hover:shadow-md transition-all"
-                            >
+                        <div 
+                          key={idx} 
+                          className="border-b border-gray-200 p-2 hover:bg-gray-50 transition-colors relative"
+                          style={{ minHeight: `${minHeight}px` }}
+                        >
+                          {shiftsInSlot.length > 1 && (
+                            <div className="absolute top-1 right-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-semibold z-10">
+                              {shiftsInSlot.length} shifts
+                            </div>
+                          )}
+                          {shiftsInSlot.length > 0 ? (
+                            shiftsInSlot.map((shift, shiftIdx) => {
+                              // Use different colors for different shifts to make them more distinguishable
+                              const colorVariants = [
+                                'from-blue-50 to-blue-100 border-blue-500',
+                                'from-purple-50 to-purple-100 border-purple-500',
+                                'from-green-50 to-green-100 border-green-500',
+                                'from-yellow-50 to-yellow-100 border-yellow-500',
+                                'from-pink-50 to-pink-100 border-pink-500',
+                              ];
+                              const colorClass = colorVariants[shiftIdx % colorVariants.length];
+                              return (
+                              <div
+                                key={`shift-${shift.id}-${shiftIdx}`}
+                                onClick={() => handleShiftClick(shift)}
+                                className={`mb-2 p-2 rounded-lg bg-gradient-to-r ${colorClass} border-l-4 cursor-pointer hover:shadow-md transition-all relative`}
+                                title={`Shift ${shiftIdx + 1} of ${shiftsInSlot.length}: ${shift.serviceSeeker?.preferredName || shift.serviceSeeker?.firstName} ${shift.serviceSeeker?.lastName} - ${shift.startTime} to ${shift.endTime}`}
+                              >
                               <div className="font-semibold text-sm text-gray-900">
                                 {shift.serviceSeeker.preferredName || shift.serviceSeeker.firstName} {shift.serviceSeeker.lastName}
                               </div>
@@ -434,15 +521,28 @@ export default function ManageRotaPage() {
                                 {shift.shiftType.name}
                               </div>
                               <div className="text-[11px] text-gray-500 mt-1 flex flex-wrap gap-1">
-                                {shift.assignments?.length
-                                  ? shift.assignments.map((assignment) => (
-                                      <span
-                                        key={assignment.id}
-                                        className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-200 text-gray-700"
-                                      >
-                                        {assignment.user.firstName} {assignment.user.lastName}
-                                      </span>
-                                    ))
+                                {shift.assignments && shift.assignments.length > 0
+                                  ? (() => {
+                                      // Remove duplicate users (in case of duplicate assignments)
+                                      const uniqueUsers = [];
+                                      const seenUserIds = new Set();
+                                      shift.assignments.forEach(assignment => {
+                                        if (assignment.user && !seenUserIds.has(assignment.user.id)) {
+                                          seenUserIds.add(assignment.user.id);
+                                          uniqueUsers.push(assignment);
+                                        }
+                                      });
+                                      
+                                      return uniqueUsers.map((assignment) => (
+                                        <span
+                                          key={`${shift.id}-${assignment.user.id}`}
+                                          className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-200 text-gray-700"
+                                          title={`Assigned: ${assignment.user.firstName} ${assignment.user.lastName}`}
+                                        >
+                                          {assignment.user.firstName} {assignment.user.lastName}
+                                        </span>
+                                      ));
+                                    })()
                                   : <span className="italic text-gray-400">Unassigned</span>}
                               </div>
                               {shift.timeCritical && (
@@ -453,8 +553,12 @@ export default function ManageRotaPage() {
                                   Critical
                                 </div>
                               )}
-                            </div>
-                          ))}
+                              </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-xs text-gray-400 text-center py-2">No shifts</div>
+                          )}
                         </div>
                       );
                     })}

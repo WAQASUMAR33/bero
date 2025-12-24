@@ -178,12 +178,6 @@ export default function Sidebar({ user }) {
           permission: 'care-plan.manage',
           path: '/admin/care-plan',
         },
-        {
-          id: 'settings',
-          name: 'Settings',
-          permission: 'setup.manage',
-          path: '/admin/settings',
-        },
       ],
     },
     {

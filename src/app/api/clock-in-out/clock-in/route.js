@@ -62,18 +62,34 @@ export async function POST(request) {
         }
       });
 
-      if (assignment) {
-        // Verify the assignment belongs to this user
-        if (assignment.userId !== decoded.userId) {
-          return NextResponse.json({ 
-            success: false, 
-            error: 'This shift assignment does not belong to you' 
-          }, { status: 403 });
-        }
-        finalShiftAssignmentId = assignment.id;
-        if (!finalServiceSeekerId && assignment.shift) {
-          finalServiceSeekerId = assignment.shift.serviceSeekerId;
-        }
+      if (!assignment) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Shift assignment not found' 
+        }, { status: 404 });
+      }
+
+      // Verify the assignment belongs to this user
+      // Convert both to integers to handle type mismatches (string vs number)
+      const assignmentUserId = Number(assignment.userId);
+      const decodedUserId = Number(decoded.userId);
+      if (assignmentUserId !== decodedUserId) {
+        console.error('Shift assignment ownership mismatch:', {
+          assignmentUserId,
+          decodedUserId,
+          shiftAssignmentId,
+          assignmentUserIdType: typeof assignment.userId,
+          decodedUserIdType: typeof decoded.userId
+        });
+        return NextResponse.json({ 
+          success: false, 
+          error: 'This shift assignment does not belong to you' 
+        }, { status: 403 });
+      }
+      
+      finalShiftAssignmentId = assignment.id;
+      if (!finalServiceSeekerId && assignment.shift) {
+        finalServiceSeekerId = assignment.shift.serviceSeekerId;
       }
     } else {
       // Auto-find shift assignment for today

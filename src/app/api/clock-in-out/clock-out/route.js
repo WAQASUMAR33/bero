@@ -44,7 +44,10 @@ export async function POST(request) {
         }, { status: 404 });
       }
 
-      if (clockInOut.userId !== decoded.userId) {
+      // Convert both to integers to handle type mismatches (string vs number)
+      const clockInOutUserId = Number(clockInOut.userId);
+      const decodedUserId = Number(decoded.userId);
+      if (clockInOutUserId !== decodedUserId) {
         return NextResponse.json({ 
           success: false, 
           error: 'Unauthorized to clock out this record' 

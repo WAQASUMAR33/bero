@@ -29,22 +29,6 @@ export async function POST(request) {
     const clockInDate = date ? new Date(date) : new Date();
     clockInDate.setHours(0, 0, 0, 0);
 
-    // Check if there's already a clock in record for this user on this date
-    const existingRecord = await prisma.clockInOut.findFirst({
-      where: {
-        userId: decoded.userId,
-        date: clockInDate,
-        clockInTime: { not: null }
-      }
-    });
-
-    if (existingRecord) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'You have already clocked in for this date' 
-      }, { status: 400 });
-    }
-
     // Find shift assignment if not provided
     let assignment = null;
     let finalShiftAssignmentId = null;
@@ -312,14 +296,11 @@ export async function POST(request) {
         }
       }
     } else {
-      // Auto-find shift assignment for today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
+      // Auto-find shift assignment for the clock-in date
       assignment = await prisma.shiftAssignment.findFirst({
         where: {
           userId: decoded.userId,
-          date: today,
+          date: clockInDate,
           status: 'SCHEDULED'
         },
         include: {
@@ -340,6 +321,32 @@ export async function POST(request) {
           finalServiceSeekerId = assignment.shift.serviceSeekerId;
         }
       }
+    }
+
+    // Validate that we have an assignment before proceeding
+    if (!assignment || !finalShiftAssignmentId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'No valid shift assignment found. Please ensure you are assigned to a shift for this date.' 
+      }, { status: 404 });
+    }
+
+    // Check if there's already an active (not clocked out) clock in record for this specific shift assignment
+    // This allows multiple shifts per day, but prevents double clock-in for the same shift
+    const existingActiveRecord = await prisma.clockInOut.findFirst({
+      where: {
+        userId: decoded.userId,
+        shiftAssignmentId: finalShiftAssignmentId,
+        clockInTime: { not: null },
+        clockOutTime: null
+      }
+    });
+
+    if (existingActiveRecord) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'You have already clocked in for this shift. Please clock out first before clocking in again.' 
+      }, { status: 400 });
     }
 
     // Check if late based on shift start time

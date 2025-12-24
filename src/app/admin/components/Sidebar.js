@@ -149,10 +149,40 @@ export default function Sidebar({ user }) {
       hasArrow: true,
       subItems: [
         {
+          id: 'funder-management',
+          name: 'Funder Management',
+          permission: 'setup.manage',
+          path: '/admin/funder-management',
+        },
+        {
+          id: 'region-management',
+          name: 'Region Management',
+          permission: 'setup.manage',
+          path: '/admin/region-management',
+        },
+        {
+          id: 'shift-run-management',
+          name: 'Shift Run Management',
+          permission: 'setup.manage',
+          path: '/admin/shift-run-management',
+        },
+        {
+          id: 'staff-management',
+          name: 'Staff Management',
+          permission: 'staff.manage',
+          path: '/admin/staff-management',
+        },
+        {
           id: 'care-plan',
           name: 'Care Plan',
           permission: 'care-plan.manage',
           path: '/admin/care-plan',
+        },
+        {
+          id: 'settings',
+          name: 'Settings',
+          permission: 'setup.manage',
+          path: '/admin/settings',
         },
       ],
     },

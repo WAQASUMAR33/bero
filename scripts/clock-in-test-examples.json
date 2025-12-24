@@ -1,0 +1,110 @@
+{
+  "examples": {
+    "clockInWithShiftAssignmentId": {
+      "description": "Preferred method - Use shiftAssignmentId from my-shifts endpoint",
+      "endpoint": "POST /api/clock-in-out/clock-in",
+      "request": {
+        "shiftAssignmentId": 123,
+        "shiftId": 45,
+        "serviceSeekerId": 12,
+        "date": "2025-01-20",
+        "workType": "REGULAR",
+        "location": "51.5074,-0.1278",
+        "notes": "Arrived on time"
+      },
+      "expectedResponse": {
+        "success": true,
+        "data": {
+          "id": 789,
+          "userId": 21,
+          "shiftAssignmentId": 123,
+          "serviceSeekerId": 12,
+          "date": "2025-01-20T00:00:00.000Z",
+          "clockInTime": "2025-01-20T08:05:00.000Z",
+          "clockOutTime": null,
+          "workType": "REGULAR",
+          "isLate": false,
+          "clockInLocation": "51.5074,-0.1278",
+          "notes": "Arrived on time"
+        },
+        "message": "Clocked in successfully"
+      }
+    },
+    "clockInWithShiftIdOnly": {
+      "description": "Fallback method - Use shiftId if assignment doesn't exist",
+      "endpoint": "POST /api/clock-in-out/clock-in",
+      "request": {
+        "shiftId": 45,
+        "serviceSeekerId": 12,
+        "date": "2025-01-20",
+        "location": "51.5074,-0.1278"
+      }
+    },
+    "clockInMinimal": {
+      "description": "Minimal request - Auto-find shift assignment",
+      "endpoint": "POST /api/clock-in-out/clock-in",
+      "request": {
+        "serviceSeekerId": 12,
+        "date": "2025-01-20",
+        "location": "51.5074,-0.1278"
+      }
+    },
+    "clockInWithStandby": {
+      "description": "Clock in with STANDBY work type",
+      "endpoint": "POST /api/clock-in-out/clock-in",
+      "request": {
+        "shiftAssignmentId": 123,
+        "serviceSeekerId": 12,
+        "date": "2025-01-20",
+        "workType": "STANDBY",
+        "location": "51.5074,-0.1278",
+        "notes": "Standby shift"
+      }
+    },
+    "clockOut": {
+      "description": "Clock out using clockInOutId",
+      "endpoint": "POST /api/clock-in-out/clock-out",
+      "request": {
+        "clockInOutId": 789,
+        "location": "51.5074,-0.1278",
+        "notes": "Shift completed"
+      },
+      "expectedResponse": {
+        "success": true,
+        "data": {
+          "id": 789,
+          "clockOutTime": "2025-01-20T16:05:00.000Z",
+          "isEarly": false,
+          "clockOutLocation": "51.5074,-0.1278"
+        },
+        "message": "Clocked out successfully"
+      }
+    }
+  },
+  "errorScenarios": {
+    "duplicateClockIn": {
+      "description": "Try to clock in again for same shift (should fail)",
+      "request": {
+        "shiftAssignmentId": 123,
+        "date": "2025-01-20"
+      },
+      "expectedError": "You have already clocked in for this shift. Please clock out first before clocking in again."
+    },
+    "invalidShiftAssignment": {
+      "description": "Invalid shiftAssignmentId (should fail)",
+      "request": {
+        "shiftAssignmentId": 999999,
+        "date": "2025-01-20"
+      },
+      "expectedError": "Shift assignment not found"
+    },
+    "noAssignment": {
+      "description": "No shift assignment found (should fail gracefully)",
+      "request": {
+        "date": "2025-01-20"
+      },
+      "expectedError": "No valid shift assignment found"
+    }
+  }
+}
+

@@ -4,6 +4,59 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
+// Helper function to check if a date matches the shift recurrence pattern
+function doesDateMatchRecurrence(shift, checkDate) {
+  const fromDate = new Date(shift.fromDate);
+  fromDate.setHours(0, 0, 0, 0);
+  const untilDate = shift.untilDate ? new Date(shift.untilDate) : null;
+  const date = new Date(checkDate);
+  date.setHours(0, 0, 0, 0);
+
+  // Check if date is within the shift's date range
+  if (date < fromDate) return false;
+  if (untilDate && date > untilDate) return false;
+
+  // Check recurrence pattern
+  const daysDiff = Math.floor((date - fromDate) / (1000 * 60 * 60 * 24));
+
+  switch (shift.recurrence) {
+    case 'DAILY':
+      return true;
+    case 'WEEK':
+      return daysDiff % 7 === 0;
+    case 'TWO_WEEK':
+      return daysDiff % 14 === 0;
+    case 'THREE_WEEK':
+      return daysDiff % 21 === 0;
+    case 'FOUR_WEEK':
+      return daysDiff % 28 === 0;
+    case 'FIVE_WEEK':
+      return daysDiff % 35 === 0;
+    case 'SIX_WEEK':
+      return daysDiff % 42 === 0;
+    case 'SEVEN_WEEK':
+      return daysDiff % 49 === 0;
+    case 'EIGHT_WEEK':
+      return daysDiff % 56 === 0;
+    case 'NINE_WEEK':
+      return daysDiff % 63 === 0;
+    case 'TEN_WEEK':
+      return daysDiff % 70 === 0;
+    case 'TWO_DAY':
+      return daysDiff % 2 === 0;
+    case 'THREE_DAY':
+      return daysDiff % 3 === 0;
+    case 'FOUR_DAY':
+      return daysDiff % 4 === 0;
+    case 'FIVE_DAY':
+      return daysDiff % 5 === 0;
+    case 'SIX_DAY':
+      return daysDiff % 6 === 0;
+    default:
+      return false;
+  }
+}
+
 // POST /api/clock-in-out/clock-in
 export async function POST(request) {
   try {
@@ -64,14 +117,8 @@ export async function POST(request) {
         });
         
         if (shift) {
-          // Verify the shift is valid for this date
-          const fromDate = new Date(shift.fromDate);
-          fromDate.setHours(0, 0, 0, 0);
-          const untilDate = shift.untilDate ? new Date(shift.untilDate) : null;
-          const checkDate = new Date(clockInDate);
-          checkDate.setHours(0, 0, 0, 0);
-          
-          if (checkDate >= fromDate && (!untilDate || checkDate <= untilDate)) {
+          // Verify the shift is valid for this date (including recurrence pattern)
+          if (doesDateMatchRecurrence(shift, clockInDate)) {
             try {
               // Create assignment on-the-fly
               assignment = await prisma.shiftAssignment.create({
@@ -150,14 +197,8 @@ export async function POST(request) {
             
             // If no assignment exists, create one
             if (!assignment) {
-              // Verify the shift is valid for this date
-              const fromDate = new Date(shift.fromDate);
-              fromDate.setHours(0, 0, 0, 0);
-              const untilDate = shift.untilDate ? new Date(shift.untilDate) : null;
-              const checkDate = new Date(clockInDate);
-              checkDate.setHours(0, 0, 0, 0);
-              
-              if (checkDate >= fromDate && (!untilDate || checkDate <= untilDate)) {
+              // Verify the shift is valid for this date (including recurrence pattern)
+              if (doesDateMatchRecurrence(shift, clockInDate)) {
                 try {
                   assignment = await prisma.shiftAssignment.create({
                     data: {

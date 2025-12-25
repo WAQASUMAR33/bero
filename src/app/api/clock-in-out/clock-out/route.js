@@ -47,10 +47,23 @@ export async function POST(request) {
       // Convert both to integers to handle type mismatches (string vs number)
       const clockInOutUserId = Number(clockInOut.userId);
       const decodedUserId = Number(decoded.userId);
+      
+      // Debug logging for authorization mismatch
       if (clockInOutUserId !== decodedUserId) {
+        console.error('Clock-out authorization mismatch:', {
+          clockInOutId: clockInOut.id,
+          clockInOutUserId: clockInOutUserId,
+          clockInOutUserIdType: typeof clockInOut.userId,
+          decodedUserId: decodedUserId,
+          decodedUserIdType: typeof decoded.userId,
+          rawClockInOutUserId: clockInOut.userId,
+          rawDecodedUserId: decoded.userId
+        });
+        
         return NextResponse.json({ 
           success: false, 
-          error: 'Unauthorized to clock out this record' 
+          error: 'Unauthorized to clock out this record',
+          details: `Clock-in record belongs to user ${clockInOutUserId}, but token is for user ${decodedUserId}`
         }, { status: 403 });
       }
 

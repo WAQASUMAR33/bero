@@ -1,0 +1,173 @@
+{
+  "endpoint": {
+    "url": "/api/clock-in-out/clock-out",
+    "method": "POST",
+    "description": "Clock out from a shift. Updates the clock-out time for the specified clock-in record."
+  },
+  "request": {
+    "headers": {
+      "Authorization": "Bearer <your-jwt-token>",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "clockInOutId": 8,
+      "location": "51.5074, -0.1278",
+      "notes": "Optional notes for clock-out"
+    },
+    "parameters": {
+      "clockInOutId": {
+        "type": "integer",
+        "required": false,
+        "description": "ID of the clock-in record to clock out from. If not provided, finds the most recent active clock-in for the user."
+      },
+      "location": {
+        "type": "string",
+        "required": false,
+        "description": "GPS coordinates or address where the user is clocking out (format: 'latitude, longitude' or address string)"
+      },
+      "notes": {
+        "type": "string",
+        "required": false,
+        "description": "Optional notes about the clock-out"
+      }
+    }
+  },
+  "response_success": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "id": 8,
+        "userId": 14,
+        "shiftAssignmentId": 42,
+        "serviceSeekerId": 9,
+        "date": "2025-12-24T00:00:00.000Z",
+        "clockInTime": "2025-12-24T11:49:08.684Z",
+        "clockOutTime": "2025-12-24T16:30:00.000Z",
+        "workType": "REGULAR",
+        "isLate": true,
+        "isEarly": false,
+        "clockInLocation": "51.5074,-0.1278",
+        "clockOutLocation": "51.5074, -0.1278",
+        "notes": "Clock-out notes",
+        "createdAt": "2025-12-24T11:49:08.694Z",
+        "updatedAt": "2025-12-24T16:30:00.000Z",
+        "user": {
+          "id": 14,
+          "firstName": "care",
+          "lastName": "3"
+        },
+        "serviceSeeker": {
+          "id": 9,
+          "firstName": "Zain",
+          "lastName": "Ahmad",
+          "preferredName": "Zain"
+        },
+        "shiftAssignment": {
+          "id": 42,
+          "shiftId": 9,
+          "userId": 14,
+          "date": "2025-12-24T00:00:00.000Z",
+          "status": "SCHEDULED",
+          "shift": {
+            "id": 9,
+            "startTime": "15:50",
+            "endTime": "03:49",
+            "shiftType": {
+              "id": 2,
+              "name": "Shadow 10am - 6pm"
+            }
+          }
+        }
+      },
+      "message": "Clocked out successfully"
+    }
+  },
+  "response_errors": {
+    "401_unauthorized": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": "Unauthorized"
+      },
+      "description": "Missing or invalid JWT token"
+    },
+    "403_forbidden": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": "Unauthorized to clock out this record",
+        "details": "Clock-in record belongs to user 14, but token is for user 15"
+      },
+      "description": "The clock-in record belongs to a different user than the one authenticated"
+    },
+    "404_not_found": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": "Clock in record not found"
+      },
+      "description": "The specified clockInOutId does not exist"
+    },
+    "404_no_active": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": "No active clock in found"
+      },
+      "description": "No active clock-in found when clockInOutId is not provided"
+    },
+    "400_already_clocked_out": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": "Already clocked out"
+      },
+      "description": "The clock-in record already has a clock-out time"
+    }
+  },
+  "workflow": {
+    "step1": "User clocks in to a shift",
+    "step2": "User performs work during the shift",
+    "step3": "User calls clock-out API with clockInOutId",
+    "step4": "API updates the clockOutTime field in the database",
+    "step5": "User is now free and can clock in to the next shift",
+    "notes": "Once clockOutTime is set, the record is no longer considered 'active', so the user can clock in to new shifts"
+  },
+  "important_notes": [
+    "After clocking out, the user shows as 'free' and can clock in to new shifts",
+    "The clock-out API sets clockOutTime, which marks the record as inactive",
+    "Clock-in API checks for active records using: clockInTime IS NOT NULL AND clockOutTime IS NULL",
+    "Once clockOutTime is set, the user can clock in to multiple shifts on the same day",
+    "The API checks if the user owns the clock-in record before allowing clock-out",
+    "If clockInOutId is not provided, the API finds the most recent active clock-in for the user"
+  ],
+  "example_usage": {
+    "scenario": "User completes a shift and needs to clock out",
+    "request": {
+      "method": "POST",
+      "url": "/api/clock-in-out/clock-out",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIs...",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "clockInOutId": 8,
+        "location": "51.5074, -0.1278",
+        "notes": "Shift completed successfully"
+      }
+    },
+    "expected_response": {
+      "success": true,
+      "data": {
+        "id": 8,
+        "clockOutTime": "2025-12-24T16:30:00.000Z",
+        "clockOutLocation": "51.5074, -0.1278",
+        "isEarly": false
+      },
+      "message": "Clocked out successfully"
+    },
+    "next_step": "User can now clock in to a new shift without issues"
+  }
+}
+

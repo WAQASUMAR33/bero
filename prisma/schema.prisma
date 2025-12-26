@@ -106,6 +106,21 @@ enum QualityAssuranceStatus {
   IN_PROGRESS
 }
 
+enum MaintenanceIssueType {
+  MAINTENANCE
+  HEALTH_AND_SAFETY
+  WELFARE
+  OTHER
+}
+
+enum MaintenanceIssueRepeat {
+  NO
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
 //
 // MODELS
 //
@@ -248,6 +263,8 @@ model User {
   updatedHolidays Holiday[]           @relation("HolidayUpdatedBy")
   createdQualityAssurances QualityAssurance[] @relation("QualityAssuranceCreatedBy")
   updatedQualityAssurances QualityAssurance[] @relation("QualityAssuranceUpdatedBy")
+  createdMaintenanceIssues MaintenanceIssue[] @relation("MaintenanceIssueCreatedBy")
+  updatedMaintenanceIssues MaintenanceIssue[] @relation("MaintenanceIssueUpdatedBy")
   createdPolicies Policy[]            @relation("PolicyCreatedBy")
   updatedPolicies Policy[]            @relation("PolicyUpdatedBy")
   policyReviews PolicyReview[]        @relation("PolicyReviewCreatedBy")
@@ -2572,4 +2589,29 @@ model PolicySignature {
   @@unique([policyId, userId])
   @@index([policyId])
   @@index([userId])
+}
+
+// Maintenance Issues Model
+model MaintenanceIssue {
+  id          Int                    @id @default(autoincrement())
+  issueType   MaintenanceIssueType
+  for         String?                // For field (optional)
+  issue       String                 @db.Text // Issue description
+  repeats     MaintenanceIssueRepeat @default(NO)
+  issueDate   DateTime
+  completed   String                 @default("NO") // "YES" or "NO"
+  photoUrls   String?                @db.Text // JSON array of photo URLs (pending)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  createdById Int
+  updatedById Int
+
+  // Relations
+  createdBy   User                   @relation("MaintenanceIssueCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User                   @relation("MaintenanceIssueUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([issueType])
+  @@index([completed])
+  @@index([issueDate])
+  @@index([createdById])
 }

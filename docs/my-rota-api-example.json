@@ -1,0 +1,164 @@
+{
+  "example_request": {
+    "method": "GET",
+    "url": "/api/shifts?view=my&date=2025-12-24",
+    "headers": {
+      "Authorization": "Bearer <your-jwt-token>"
+    },
+    "description": "Get user's shifts for a specific date"
+  },
+  "example_response": [
+    {
+      "id": 9,
+      "serviceSeekerId": 9,
+      "fromDate": "2025-12-24T00:00:00.000Z",
+      "untilDate": "2025-12-25T00:00:00.000Z",
+      "recurrence": "WEEK",
+      "startTime": "15:50",
+      "endTime": "03:49",
+      "shiftTypeId": 2,
+      "totalStaffRequired": 1,
+      "funderId": null,
+      "timeCritical": false,
+      "shiftRunId": null,
+      "notesForCarers": null,
+      "notesForManager": null,
+      "createdAt": "2025-12-24T10:43:34.229Z",
+      "updatedAt": "2025-12-24T10:43:34.229Z",
+      "createdById": 4,
+      "updatedById": 4,
+      "serviceSeeker": {
+        "id": 9,
+        "firstName": "Zain",
+        "lastName": "Ahmad",
+        "preferredName": "Zain",
+        "address": "123 Main Street",
+        "latitude": 51.5074,
+        "longitude": -0.1278
+      },
+      "shiftType": {
+        "id": 2,
+        "name": "Shadow 10am - 6pm",
+        "careerPayRegular": 12,
+        "careerPayBankHoliday": 18,
+        "payCalculation": "PER_HOUR",
+        "createdAt": "2025-10-23T20:17:28.075Z",
+        "updatedAt": "2025-10-23T20:17:28.075Z"
+      },
+      "funder": null,
+      "shiftRun": null,
+      "createdBy": {
+        "id": 4,
+        "firstName": "Admin",
+        "lastName": "User"
+      },
+      "updatedBy": {
+        "id": 4,
+        "firstName": "Admin",
+        "lastName": "User"
+      },
+      "assignments": [
+        {
+          "id": 42,
+          "shiftId": 9,
+          "userId": 14,
+          "date": "2025-12-24T00:00:00.000Z",
+          "status": "SCHEDULED",
+          "createdAt": "2025-12-24T10:43:37.562Z",
+          "updatedAt": "2025-12-24T10:43:37.562Z",
+          "user": {
+            "id": 14,
+            "firstName": "care",
+            "lastName": "3",
+            "profilePic": null
+          }
+        }
+      ],
+      "shiftAssignmentId": 42,
+      "assignmentDate": "2025-12-24T00:00:00.000Z",
+      "assignmentStatus": "SCHEDULED",
+      "clockedIn": true,
+      "clockInTime": "2025-12-24T11:49:08.684Z",
+      "clockOutTime": null,
+      "isLate": true,
+      "isEarly": false,
+      "clockInOutId": 8
+    }
+  ],
+  "example_request_weekly": {
+    "method": "GET",
+    "url": "/api/shifts?view=my&week=2025-12-23",
+    "headers": {
+      "Authorization": "Bearer <your-jwt-token>"
+    },
+    "description": "Get user's shifts for a week (starts from Monday)"
+  },
+  "alternative_endpoint": {
+    "method": "GET",
+    "url": "/api/clock-in-out/my-shifts?date=2025-12-24",
+    "headers": {
+      "Authorization": "Bearer <your-jwt-token>"
+    },
+    "description": "Alternative endpoint for today's shifts with clock-in status",
+    "example_response": {
+      "success": true,
+      "data": [
+        {
+          "shiftAssignmentId": 42,
+          "shiftId": 9,
+          "date": "2025-12-24T00:00:00.000Z",
+          "expectedStartTime": "2025-12-24T15:50:00.000Z",
+          "expectedEndTime": "2025-12-25T03:49:00.000Z",
+          "startTime": "15:50",
+          "endTime": "03:49",
+          "serviceSeeker": {
+            "id": 9,
+            "firstName": "Zain",
+            "lastName": "Ahmad",
+            "preferredName": "Zain",
+            "address": "123 Main Street",
+            "latitude": 51.5074,
+            "longitude": -0.1278
+          },
+          "shiftType": {
+            "id": 2,
+            "name": "Shadow 10am - 6pm"
+          },
+          "funder": null,
+          "timeCritical": false,
+          "notesForCarers": null,
+          "status": "SCHEDULED",
+          "clockedIn": true,
+          "clockInTime": "2025-12-24T11:49:08.684Z",
+          "clockOutTime": null,
+          "isLate": true,
+          "isEarly": false,
+          "clockInOutId": 8
+        }
+      ],
+      "date": "2025-12-24"
+    }
+  },
+  "fields_explanation": {
+    "id": "Shift ID",
+    "shiftAssignmentId": "Assignment ID for this user's shift",
+    "assignmentDate": "Date of the shift assignment",
+    "assignmentStatus": "Status: SCHEDULED, COMPLETED, or CANCELLED",
+    "startTime": "Shift start time in HH:mm format",
+    "endTime": "Shift end time in HH:mm format",
+    "expectedStartTime": "ISO datetime for expected start",
+    "expectedEndTime": "ISO datetime for expected end",
+    "serviceSeeker": "Service user details",
+    "shiftType": "Type of shift with pay information",
+    "funder": "Funding source (if any)",
+    "timeCritical": "Boolean indicating if shift is time critical",
+    "notesForCarers": "Notes for care workers",
+    "clockedIn": "Boolean indicating if user has clocked in",
+    "clockInTime": "ISO datetime when user clocked in (null if not clocked in)",
+    "clockOutTime": "ISO datetime when user clocked out (null if not clocked out)",
+    "isLate": "Boolean indicating if clock-in was late",
+    "isEarly": "Boolean indicating if clock-out was early",
+    "clockInOutId": "Clock-in record ID (null if not clocked in)"
+  }
+}
+

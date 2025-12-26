@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
+import LocationMap from '../service-users/components/LocationMap';
 
 export default function ClockInOutPage() {
   const [user, setUser] = useState(null);
@@ -17,6 +18,8 @@ export default function ClockInOutPage() {
   const [filterStatus, setFilterStatus] = useState('all'); // all, late, early, on-time
   const [filterUserId, setFilterUserId] = useState('');
   const [users, setUsers] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [showMapModal, setShowMapModal] = useState(false);
   const router = useRouter();
 
   const showNotification = (message, type = 'success') => {
@@ -146,6 +149,36 @@ export default function ClockInOutPage() {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
+  };
+
+  const parseLocation = (locationString) => {
+    if (!locationString) return null;
+    const parts = locationString.split(',');
+    if (parts.length >= 2) {
+      const lat = parseFloat(parts[0].trim());
+      const lng = parseFloat(parts[1].trim());
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return { lat, lng };
+      }
+    }
+    return null;
+  };
+
+  const handleLocationClick = (record) => {
+    // Try clock-in location first, then clock-out location
+    const location = parseLocation(record.clockInLocation) || parseLocation(record.clockOutLocation);
+    if (location) {
+      setSelectedLocation(location);
+      setShowMapModal(true);
+    }
+  };
+
+  const formatLocationDisplay = (record) => {
+    const location = parseLocation(record.clockInLocation) || parseLocation(record.clockOutLocation);
+    if (location) {
+      return `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+    }
+    return '-';
   };
 
   // Calculate stats
@@ -342,13 +375,14 @@ export default function ClockInOutPage() {
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service User</th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Work Type</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {filteredRecords.length === 0 ? (
                         <tr>
-                          <td colSpan="9" className="px-6 py-12 text-center text-gray-500">
+                          <td colSpan="10" className="px-6 py-12 text-center text-gray-500">
                             No clock in/out records found
                           </td>
                         </tr>
@@ -426,6 +460,22 @@ export default function ClockInOutPage() {
                               </span>
                             </td>
                             <td className="px-6 py-5 whitespace-nowrap">
+                              {formatLocationDisplay(record) !== '-' ? (
+                                <button
+                                  onClick={() => handleLocationClick(record)}
+                                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer flex items-center gap-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                  {formatLocationDisplay(record)}
+                                </button>
+                              ) : (
+                                <span className="text-sm text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-5 whitespace-nowrap">
                               <div className="flex flex-col gap-1">
                                 {record.isLate && (
                                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
@@ -466,6 +516,54 @@ export default function ClockInOutPage() {
               type={notification.type}
               onClose={() => setNotification({ show: false, message: '', type: 'success' })}
             />
+          )}
+
+          {/* Map Modal */}
+          {showMapModal && selectedLocation && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-900">Location on Map</h2>
+                  <button
+                    onClick={() => {
+                      setShowMapModal(false);
+                      setSelectedLocation(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="flex-1 p-6 overflow-auto">
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-semibold">Coordinates:</span> {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                    </p>
+                  </div>
+                  <LocationMap
+                    latitude={selectedLocation.lat}
+                    longitude={selectedLocation.lng}
+                    readOnly={true}
+                    className="w-full h-96 rounded-lg border-2 border-gray-200"
+                  />
+                  <div className="mt-4 flex justify-end">
+                    <a
+                      href={`https://www.google.com/maps?q=${selectedLocation.lat},${selectedLocation.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      Open in Google Maps
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </main>
       </div>

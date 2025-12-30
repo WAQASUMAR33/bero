@@ -121,6 +121,12 @@ enum MaintenanceIssueRepeat {
   YEARLY
 }
 
+enum PPStockTransactionAction {
+  PURCHASE
+  RESTOCK
+  TAKEN
+}
+
 //
 // MODELS
 //
@@ -269,6 +275,7 @@ model User {
   updatedPolicies Policy[]            @relation("PolicyUpdatedBy")
   policyReviews PolicyReview[]        @relation("PolicyReviewCreatedBy")
   policySignatures PolicySignature[]  @relation("PolicySignatureUser")
+  ppStockTransactions PPStockTransaction[] @relation("PPStockTransactionUser")
 }
 
 model Team {
@@ -2614,4 +2621,35 @@ model MaintenanceIssue {
   @@index([completed])
   @@index([issueDate])
   @@index([createdById])
+}
+
+model PPProduct {
+  id              Int       @id @default(autoincrement())
+  name            String
+  threshold       Int       @default(0) // Minimum quantity before alerting
+  currentQuantity Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  transactions    PPStockTransaction[]
+
+  @@index([name])
+}
+
+model PPStockTransaction {
+  id        Int                    @id @default(autoincrement())
+  productId Int
+  action    PPStockTransactionAction
+  quantity  Int
+  userId    Int
+  createdAt DateTime               @default(now())
+
+  // Relations
+  product   PPProduct              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User                   @relation("PPStockTransactionUser", fields: [userId], references: [id])
+
+  @@index([productId])
+  @@index([userId])
+  @@index([createdAt])
 }

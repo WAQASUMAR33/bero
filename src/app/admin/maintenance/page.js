@@ -443,12 +443,12 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
+    <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-4 rounded-t-2xl">
+        <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Report Issue</h2>
+            <h2 className="text-xl font-semibold">Report Issue</h2>
             <button
               onClick={onClose}
               className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
@@ -459,7 +459,7 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Issue Type */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -468,8 +468,8 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
             <select
               value={formData.issueType}
               onChange={(e) => setFormData({ ...formData, issueType: e.target.value })}
-              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200 ${
-                errors.issueType ? 'border-red-500' : 'border-gray-200'
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200 ${
+                errors.issueType ? 'border-red-500' : 'border-gray-300'
               }`}
             >
               <option value="">Please Select</option>
@@ -492,7 +492,7 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
               value={formData.for}
               onChange={(e) => setFormData({ ...formData, for: e.target.value })}
               placeholder="Enter details"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
             />
           </div>
 
@@ -506,8 +506,8 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
               onChange={(e) => setFormData({ ...formData, issue: e.target.value })}
               placeholder="Provide a description of the issue here"
               rows={4}
-              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200 resize-y ${
-                errors.issue ? 'border-red-500' : 'border-gray-200'
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200 resize-y ${
+                errors.issue ? 'border-red-500' : 'border-gray-300'
               }`}
             />
             {errors.issue && (
@@ -521,7 +521,7 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
             <select
               value={formData.repeats}
               onChange={(e) => setFormData({ ...formData, repeats: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
             >
               {repeatOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -541,8 +541,8 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
                 type="date"
                 value={formData.issueDate}
                 onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200 ${
-                  errors.issueDate ? 'border-red-500' : 'border-gray-200'
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200 ${
+                  errors.issueDate ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               <svg
@@ -565,7 +565,7 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
             <select
               value={formData.completed}
               onChange={(e) => setFormData({ ...formData, completed: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
             >
               <option value="NO">No</option>
               <option value="YES">Yes</option>
@@ -575,7 +575,7 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
           {/* Photos */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Photos</label>
-            <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-not-allowed">
+            <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-not-allowed">
               <div className="text-center">
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.26A2 2 0 0110.07 4h3.86a2 2 0 001.664.89l.812 1.26A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -594,7 +594,7 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
                 type="text"
                 value={user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : ''}
                 disabled
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
               />
             </div>
             <div>
@@ -603,24 +603,25 @@ function ReportIssueModal({ issueTypes, repeatOptions, user, onClose, onSave, is
                 type="text"
                 value={new Date().toLocaleString('en-GB')}
                 disabled
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
               />
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed transition-all font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Saving...' : 'Save'}
             </button>

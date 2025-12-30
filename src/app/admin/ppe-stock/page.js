@@ -240,6 +240,22 @@ export default function PPEStockPage() {
                       <span>Settings</span>
                     </button>
                     <button
+                      onClick={() => {
+                        if (products.length === 0) {
+                          showNotification('Please add a product first', 'error');
+                          return;
+                        }
+                        setShowStockTakenModal(true);
+                        setSelectedProduct(null); // Will show product selector in modal
+                      }}
+                      className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                      <span>Stock Taken</span>
+                    </button>
+                    <button
                       onClick={() => setShowRestockModal(true)}
                       className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
                     >
@@ -277,18 +293,34 @@ export default function PPEStockPage() {
                       ) : (
                         products.map((product) => {
                           const status = getStockStatus(product.currentQuantity, product.threshold);
+                          const isLowStock = product.currentQuantity <= product.threshold;
                           return (
-                            <tr key={product.id} className="hover:bg-gray-50 transition-colors duration-200">
+                            <tr 
+                              key={product.id} 
+                              className={`transition-colors duration-200 ${
+                                isLowStock 
+                                  ? 'bg-red-50 hover:bg-red-100 border-l-4 border-red-500' 
+                                  : 'hover:bg-gray-50'
+                              }`}
+                            >
                               <td className="px-6 py-5 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                                <div className={`text-sm font-medium ${isLowStock ? 'text-red-900' : 'text-gray-900'}`}>
+                                  {product.name}
+                                </div>
                               </td>
                               <td className="px-6 py-5 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{product.threshold}</div>
+                                <div className={`text-sm ${isLowStock ? 'text-red-900' : 'text-gray-900'}`}>
+                                  {product.threshold}
+                                </div>
                               </td>
                               <td className="px-6 py-5 whitespace-nowrap">
                                 <button
                                   onClick={() => handleQuantityClick(product)}
-                                  className="text-sm font-medium text-[#224fa6] hover:text-[#1a3d85] hover:underline cursor-pointer"
+                                  className={`text-sm font-medium hover:underline cursor-pointer ${
+                                    isLowStock 
+                                      ? 'text-red-700 hover:text-red-900' 
+                                      : 'text-[#224fa6] hover:text-[#1a3d85]'
+                                  }`}
                                 >
                                   {product.currentQuantity}
                                 </button>
@@ -299,10 +331,14 @@ export default function PPEStockPage() {
                                 </span>
                               </td>
                               <td className="px-6 py-5 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{formatDate(product.createdAt)}</div>
+                                <div className={`text-sm ${isLowStock ? 'text-red-900' : 'text-gray-900'}`}>
+                                  {formatDate(product.createdAt)}
+                                </div>
                               </td>
                               <td className="px-6 py-5 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{formatDate(product.updatedAt)}</div>
+                                <div className={`text-sm ${isLowStock ? 'text-red-900' : 'text-gray-900'}`}>
+                                  {formatDate(product.updatedAt)}
+                                </div>
                               </td>
                               <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
                                 <div className="flex items-center justify-end space-x-2">
@@ -367,9 +403,10 @@ export default function PPEStockPage() {
       )}
 
       {/* Stock Taken Modal */}
-      {showStockTakenModal && selectedProduct && (
+      {showStockTakenModal && (
         <StockTakenModal
           product={selectedProduct}
+          products={products}
           onClose={() => {
             setShowStockTakenModal(false);
             setSelectedProduct(null);
@@ -681,25 +718,36 @@ function RestockModal({ products, onClose, onRestock, isSubmitting }) {
 }
 
 // Stock Taken Modal Component
-function StockTakenModal({ product, onClose, onTake, isSubmitting }) {
+function StockTakenModal({ product, products, onClose, onTake, isSubmitting }) {
+  const [selectedProductId, setSelectedProductId] = useState(product?.id?.toString() || '');
   const [quantity, setQuantity] = useState('');
   const [errors, setErrors] = useState({});
+
+  const selectedProduct = selectedProductId ? products.find(p => p.id === parseInt(selectedProductId)) : null;
+  const displayProduct = product || selectedProduct;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
+
+    if (!product && !selectedProductId) {
+      setErrors({ product: 'Please select a product' });
+      return;
+    }
 
     if (!quantity || quantity <= 0) {
       setErrors({ quantity: 'Valid quantity is required' });
       return;
     }
 
-    if (parseInt(quantity) > product.currentQuantity) {
-      setErrors({ quantity: `Cannot take more than available stock (${product.currentQuantity})` });
+    if (displayProduct && parseInt(quantity) > displayProduct.currentQuantity) {
+      setErrors({ quantity: `Cannot take more than available stock (${displayProduct.currentQuantity})` });
       return;
     }
 
-    await onTake(product.id, quantity);
+    const productIdToUse = product ? product.id : parseInt(selectedProductId);
+    await onTake(productIdToUse, quantity);
+    setSelectedProductId('');
     setQuantity('');
   };
 
@@ -707,11 +755,13 @@ function StockTakenModal({ product, onClose, onTake, isSubmitting }) {
     <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold">Stock Taken</h2>
-              <p className="text-sm text-white/90 mt-1">{product.name} - Available: {product.currentQuantity}</p>
+              <p className="text-sm text-white/90 mt-1">
+                {product ? `${product.name} - Available: ${product.currentQuantity}` : 'Record when stock items are used'}
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -724,6 +774,45 @@ function StockTakenModal({ product, onClose, onTake, isSubmitting }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Product Selection - only show if no product is passed */}
+          {!product && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Product <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedProductId}
+                onChange={(e) => {
+                  setSelectedProductId(e.target.value);
+                  setQuantity('');
+                  setErrors({ ...errors, product: '' });
+                }}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white text-gray-900 transition-all duration-200 ${
+                  errors.product ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Please Select</option>
+                {products.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} (Available: {p.currentQuantity})
+                  </option>
+                ))}
+              </select>
+              {errors.product && (
+                <p className="mt-1 text-sm text-red-500">{errors.product}</p>
+              )}
+            </div>
+          )}
+
+          {/* Show product info if product is passed */}
+          {product && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-sm font-semibold text-gray-700 mb-1">Product</div>
+              <div className="text-lg text-gray-900">{product.name}</div>
+              <div className="text-sm text-gray-600 mt-1">Available: {product.currentQuantity}</div>
+            </div>
+          )}
+
           {/* Quantity */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -732,18 +821,26 @@ function StockTakenModal({ product, onClose, onTake, isSubmitting }) {
             <input
               type="number"
               min="1"
-              max={product.currentQuantity}
+              max={displayProduct?.currentQuantity}
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 ${
+              onChange={(e) => {
+                setQuantity(e.target.value);
+                setErrors({ ...errors, quantity: '' });
+              }}
+              disabled={!displayProduct}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 ${
                 errors.quantity ? 'border-red-500' : 'border-gray-300'
-              }`}
+              } ${!displayProduct ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder="Enter quantity"
             />
             {errors.quantity && (
               <p className="mt-1 text-sm text-red-500">{errors.quantity}</p>
             )}
-            <p className="mt-1 text-sm text-gray-500">Available stock: {product.currentQuantity}</p>
+            {displayProduct && (
+              <p className="mt-1 text-sm text-gray-500">
+                Available stock: {displayProduct.currentQuantity}
+              </p>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -758,8 +855,8 @@ function StockTakenModal({ product, onClose, onTake, isSubmitting }) {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2.5 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting || !displayProduct}
+              className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Processing...' : 'Confirm'}
             </button>

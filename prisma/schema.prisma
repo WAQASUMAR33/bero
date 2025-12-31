@@ -276,6 +276,7 @@ model User {
   policyReviews PolicyReview[]        @relation("PolicyReviewCreatedBy")
   policySignatures PolicySignature[]  @relation("PolicySignatureUser")
   ppStockTransactions PPStockTransaction[] @relation("PPStockTransactionUser")
+  createdHandovers Handover[]         @relation("HandoverCreatedBy")
 }
 
 model Team {
@@ -398,6 +399,7 @@ model ServiceSeeker {
   externalInboxAccesses   ServiceSeekerExternalInboxAccess[]
   allowanceSettings        ServiceSeekerAllowanceSettings?
   allowanceTransactions    ServiceSeekerAllowanceTransaction[]
+  handovers                Handover[]
   foodDrinksSchedules      ServiceSeekerFoodDrinksSchedule[]
   foodDrinksSettings       ServiceSeekerFoodDrinksSettings?
   houseKeepingSchedules    ServiceSeekerHouseKeepingSchedule[]
@@ -2131,6 +2133,8 @@ model ShiftAssignment {
   shift               Shift             @relation(fields: [shiftId], references: [id])
   user                User              @relation("ShiftAssignments", fields: [userId], references: [id])
   clockInOuts         ClockInOut[]
+  handoversFrom       Handover[]        @relation("HandoverFromShift")
+  handoversTo         Handover[]        @relation("HandoverToShift")
 
   @@unique([shiftId, userId, date])
 }
@@ -2651,5 +2655,30 @@ model PPStockTransaction {
 
   @@index([productId])
   @@index([userId])
+  @@index([createdAt])
+}
+
+model Handover {
+  id                  Int       @id @default(autoincrement())
+  fromShiftAssignmentId Int     // Shift assignment being handed over FROM
+  toShiftAssignmentId   Int     // Shift assignment receiving handover TO
+  serviceSeekerId       Int     // Must match between both shifts (validation)
+  handoverNotes         String? @db.Text // General handover notes
+  remainingTasks        Json?   // Array of task references (taskType, taskId)
+  visits                Json?   // Array of visit references (visitTask IDs)
+  issues                String? @db.Text // Service user issues/concerns
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  createdById           Int     // User creating the handover
+
+  // Relations
+  fromShiftAssignment   ShiftAssignment @relation("HandoverFromShift", fields: [fromShiftAssignmentId], references: [id])
+  toShiftAssignment     ShiftAssignment @relation("HandoverToShift", fields: [toShiftAssignmentId], references: [id])
+  serviceSeeker         ServiceSeeker   @relation(fields: [serviceSeekerId], references: [id])
+  createdBy             User            @relation("HandoverCreatedBy", fields: [createdById], references: [id])
+
+  @@index([fromShiftAssignmentId])
+  @@index([toShiftAssignmentId])
+  @@index([serviceSeekerId])
   @@index([createdAt])
 }

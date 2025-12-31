@@ -38,7 +38,8 @@ input[type="url"],
 input[type="search"],
 textarea,
 select {
-  color: #111827 !important; /* gray-900 */
+  color: #111827 !important;
+  /* gray-900 */
 }
 
 input[type="text"]::placeholder,
@@ -51,5 +52,6 @@ input[type="time"]::placeholder,
 input[type="url"]::placeholder,
 input[type="search"]::placeholder,
 textarea::placeholder {
-  color: #9ca3af !important; /* gray-400 */
+  color: #9ca3af !important;
+  /* gray-400 */
 }

@@ -127,17 +127,6 @@ export default function Sidebar({ user }) {
       ],
     },
     {
-      id: 'handover',
-      name: 'Handover',
-      permission: 'handover.manage',
-      icon: (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
-        </svg>
-      ),
-      hasArrow: true,
-    },
-    {
       id: 'setup',
       name: 'Setup',
       permission: 'setup.manage',

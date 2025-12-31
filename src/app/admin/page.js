@@ -24,6 +24,19 @@ export default function DashboardPage() {
 
     try {
       const parsedUser = JSON.parse(userData);
+      
+      // Check if user role is allowed to access web portal
+      const allowedWebRoles = ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'];
+      const userRoleName = parsedUser?.role?.name;
+      
+      if (!allowedWebRoles.includes(userRoleName)) {
+        // User is not allowed to access web portal, redirect to use-app page
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.push('/use-app');
+        return;
+      }
+      
       setUser(parsedUser);
     } catch (error) {
       console.error('Error parsing user data:', error);

@@ -33,7 +33,12 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(data.user));
         router.push('/admin');
       } else {
-        setError(data.error || 'Login failed');
+        // Check if user needs to use mobile app
+        if (data.requiresApp) {
+          router.push('/use-app');
+        } else {
+          setError(data.error || 'Login failed');
+        }
       }
     } catch (error) {
       setError('Network error. Please try again.');

@@ -20,7 +20,8 @@ function getUserIdFromToken(request) {
 // GET policy by ID
 export async function GET(request, { params }) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
 
     const policy = await prisma.policy.findUnique({
       where: { id },
@@ -165,7 +166,8 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const body = await request.json();
     const { name, fileName, fileUrl, reviewIn, lastReviewed } = body;
 

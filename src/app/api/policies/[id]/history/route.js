@@ -4,7 +4,8 @@ import { prisma } from '@/lib/prisma';
 // GET policy history (creates, edits, signatures)
 export async function GET(request, { params }) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
 
     // Check if policy exists
     const policy = await prisma.policy.findUnique({

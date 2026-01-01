@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const taskId = parseInt(id);
     const task = await prisma.familyPhotoMessageTask.findUnique({
       where: { id: taskId },
@@ -51,7 +51,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const taskId = parseInt(id);
     const body = await request.json();
     const { serviceSeekerId, date, time, description, messageFromResidence, photoUrl, emotion } = body;
@@ -89,7 +89,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const taskId = parseInt(id);
     await prisma.familyPhotoMessageTask.delete({ where: { id: taskId } });
 

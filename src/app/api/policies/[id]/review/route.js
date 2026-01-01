@@ -28,7 +28,8 @@ export async function POST(request, { params }) {
       );
     }
 
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const body = await request.json();
     const { reviewText } = body;
 

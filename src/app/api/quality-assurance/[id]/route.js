@@ -12,7 +12,8 @@ export async function GET(request, { params }) {
 
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
 
     const entry = await prisma.qualityAssurance.findUnique({
       where: { id },
@@ -66,7 +67,8 @@ export async function PUT(request, { params }) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const body = await request.json();
     const { date, type, from, youSaid, weDid, lessonsLearnt, status } = body;
 
@@ -138,7 +140,8 @@ export async function DELETE(request, { params }) {
 
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
 
     await prisma.qualityAssurance.delete({
       where: { id }

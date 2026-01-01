@@ -32,7 +32,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const userId = parseInt(id);
     const { permissions } = await request.json();
 
@@ -57,7 +57,7 @@ export async function PUT(request, { params }) {
     for (const permission of permissions) {
       await prisma.userPermission.create({
         data: {
-          userId: id,
+          userId: userId,
           key: permission,
         }
       });

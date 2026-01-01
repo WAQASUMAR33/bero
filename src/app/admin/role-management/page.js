@@ -51,13 +51,18 @@ export default function RoleManagementPage() {
     { key: 'cqc-inspection.manage', label: 'CQC Inspection', category: 'Compliance' },
     { key: 'quality-assurance.manage', label: 'Quality Assurance', category: 'Compliance' },
     { key: 'holidays.manage', label: 'Manage Holidays', category: 'HR' },
-    { key: 'handover.manage', label: 'Handover', category: 'Operations' },
+    { key: 'handovers.manage', label: 'Manage Handovers', category: 'Operations' },
+    { key: 'handovers.view', label: 'View Handovers', category: 'Operations' },
     { key: 'maintenance.manage', label: 'Maintenance', category: 'Operations' },
+    { key: 'ppe-stock.manage', label: 'PPE Stock Management', category: 'Operations' },
+    { key: 'rota.manage', label: 'Manage Rota', category: 'Operations' },
+    { key: 'rota.view', label: 'View Rota', category: 'Operations' },
+    { key: 'care-plan.manage', label: 'Manage Care Plans', category: 'Service' },
+    { key: 'policy-procedures.manage', label: 'Policy and Procedures', category: 'Compliance' },
+    { key: 'profile.view', label: 'View Profile', category: 'General' },
     { key: 'agenda.manage', label: 'Agenda', category: 'General' },
     { key: 'setup.manage', label: 'Setup', category: 'Settings' },
-    { key: 'incidents.manage', label: 'Manage Incidents', category: 'Compliance' },
-    { key: 'temperature-monitoring.manage', label: 'Temperature Monitoring', category: 'Compliance' },
-    { key: 'well-being.manage', label: 'Well-being', category: 'Service' }
+    { key: 'incidents.manage', label: 'Manage Incidents', category: 'Compliance' }
   ];
 
   // Group permissions by category

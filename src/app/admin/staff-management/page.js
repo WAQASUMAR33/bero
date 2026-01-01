@@ -68,13 +68,19 @@ export default function StaffManagementPage() {
     'cqc-inspection.manage',
     'quality-assurance.manage',
     'holidays.manage',
-    'handover.manage',
+    'handovers.manage',
     'maintenance.manage',
     'agenda.manage',
     'setup.manage',
     'incidents.manage',
-    'temperature-monitoring.manage',
-    'well-being.manage'
+    'handovers.manage',
+    'handovers.view',
+    'ppe-stock.manage',
+    'rota.manage',
+    'rota.view',
+    'care-plan.manage',
+    'policy-procedures.manage',
+    'profile.view'
   ];
 
 

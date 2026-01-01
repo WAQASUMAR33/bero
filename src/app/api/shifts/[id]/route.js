@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
-    const { id } = params;
+    const { id } = await params;
     const shiftId = parseInt(id);
     const shift = await prisma.shift.findUnique({
       where: { id: shiftId },
@@ -60,7 +60,7 @@ export async function PUT(request, { params }) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
-    const { id } = params;
+    const { id } = await params;
     const shiftId = parseInt(id);
     const body = await request.json();
     const {
@@ -192,7 +192,7 @@ export async function DELETE(request, { params }) {
     }
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
-    const { id } = params;
+    const { id } = await params;
     const shiftId = parseInt(id);
     
     // Delete related assignments first

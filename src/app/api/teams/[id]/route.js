@@ -23,7 +23,8 @@ async function getTeamById(teamId) {
 
 export async function GET(_request, { params }) {
   try {
-    const teamId = parseInt(params.id, 10);
+    const { id } = await params;
+    const teamId = parseInt(id, 10);
     if (Number.isNaN(teamId)) {
       return NextResponse.json({ success: false, error: 'Invalid team id' }, { status: 400 });
     }
@@ -42,7 +43,8 @@ export async function GET(_request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const teamId = parseInt(params.id, 10);
+    const { id } = await params;
+    const teamId = parseInt(id, 10);
     if (Number.isNaN(teamId)) {
       return NextResponse.json({ success: false, error: 'Invalid team id' }, { status: 400 });
     }
@@ -107,7 +109,8 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(_request, { params }) {
   try {
-    const teamId = parseInt(params.id, 10);
+    const { id } = await params;
+    const teamId = parseInt(id, 10);
     if (Number.isNaN(teamId)) {
       return NextResponse.json({ success: false, error: 'Invalid team id' }, { status: 400 });
     }

@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const taskId = parseInt(id);
     const task = await prisma.foodDrinkTask.findUnique({
       where: { id: taskId },
@@ -51,7 +51,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const taskId = parseInt(id);
     const body = await request.json();
     const { serviceSeekerId, date, time, foodDrinkOffer, main, fluidIntake, comments, assistance, foodDrinkOffered, pictureUrl, completed, emotion } = body;
@@ -94,7 +94,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const taskId = parseInt(id);
     await prisma.foodDrinkTask.delete({ where: { id: taskId } });
 

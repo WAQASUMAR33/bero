@@ -12,9 +12,10 @@ export async function POST(request) {
           'shifts.manage', 'daily-tasks.manage', 'documents.manage', 'regions.manage',
           'finance.manage', 'reports.view', 'settings.manage', 'roles.manage',
           'audit.view', 'calendar.manage', 'clock-in-out.manage', 'cqc-inspection.manage',
-          'quality-assurance.manage', 'holidays.manage', 'handover.manage',
-          'maintenance.manage', 'agenda.manage', 'setup.manage', 'incidents.manage',
-          'temperature-monitoring.manage', 'well-being.manage'
+          'quality-assurance.manage', 'holidays.manage', 'handovers.manage', 'handovers.view',
+          'maintenance.manage', 'ppe-stock.manage', 'rota.manage', 'rota.view',
+          'care-plan.manage', 'policy-procedures.manage', 'profile.view',
+          'agenda.manage', 'setup.manage', 'incidents.manage'
         ],
         isSystem: true
       },
@@ -27,7 +28,8 @@ export async function POST(request) {
           'shifts.manage', 'daily-tasks.manage', 'documents.manage', 'regions.manage',
           'finance.manage', 'reports.view', 'settings.manage', 'audit.view',
           'calendar.manage', 'cqc-inspection.manage', 'quality-assurance.manage',
-          'holidays.manage', 'handover.manage', 'incidents.manage'
+          'holidays.manage', 'handovers.manage', 'handovers.view', 'rota.manage', 'rota.view',
+          'care-plan.manage', 'policy-procedures.manage', 'incidents.manage'
         ],
         isSystem: true
       },
@@ -48,7 +50,7 @@ export async function POST(request) {
         permissions: [
           'dashboard.view', 'shifts.manage', 'daily-tasks.manage',
           'documents.manage', 'calendar.manage', 'clock-in-out.manage',
-          'handover.manage'
+          'handovers.manage', 'handovers.view', 'rota.view', 'profile.view'
         ],
         isSystem: true
       },
@@ -58,7 +60,8 @@ export async function POST(request) {
         description: 'Support worker with basic permissions',
         permissions: [
           'dashboard.view', 'shifts.manage', 'daily-tasks.manage',
-          'calendar.manage', 'clock-in-out.manage', 'handover.manage'
+          'calendar.manage', 'clock-in-out.manage', 'handovers.manage', 'handovers.view',
+          'rota.view', 'profile.view'
         ],
         isSystem: true
       },
@@ -70,7 +73,8 @@ export async function POST(request) {
           'dashboard.view', 'staff.manage', 'service-users.manage',
           'shifts.manage', 'documents.manage', 'regions.manage',
           'reports.view', 'calendar.manage', 'cqc-inspection.manage',
-          'quality-assurance.manage', 'incidents.manage'
+          'quality-assurance.manage', 'handovers.manage', 'handovers.view',
+          'rota.manage', 'rota.view', 'care-plan.manage', 'incidents.manage', 'profile.view'
         ],
         isSystem: true
       }

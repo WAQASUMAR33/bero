@@ -10,7 +10,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const userId = parseInt(id);
 
     const user = await prisma.user.findUnique({
@@ -50,7 +50,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const userId = parseInt(id);
     const body = await request.json();
     const {
@@ -91,7 +91,7 @@ export async function PUT(request, { params }) {
       const duplicateUser = await prisma.user.findFirst({
         where: {
           AND: [
-            { id: { not: id } },
+            { id: { not: userId } },
             {
               OR: [
                 { email },
@@ -195,7 +195,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const userId = parseInt(id);
 
     // Check if user exists

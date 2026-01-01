@@ -28,7 +28,8 @@ export async function POST(request, { params }) {
       );
     }
 
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
 
     // Check if policy exists
     const policy = await prisma.policy.findUnique({

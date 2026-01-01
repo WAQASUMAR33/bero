@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -22,16 +22,33 @@ export default function ClockInOutPage() {
   const [showMapModal, setShowMapModal] = useState(false);
   const router = useRouter();
 
+  const notificationTimeoutRef = useRef(null);
+
   const showNotification = (message, type = 'success') => {
+    // Clear any existing timeout
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
     setNotification({ show: true, message, type });
-    setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3000);
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'success' });
+      notificationTimeoutRef.current = null;
+    }, 3000);
   };
+
+  useEffect(() => {
+    // Cleanup timeout on unmount
+    return () => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-      fetchClockInOuts();
       fetchUsers();
     } else {
       router.push('/login');
@@ -39,10 +56,15 @@ export default function ClockInOutPage() {
   }, [router]);
 
   useEffect(() => {
-    if (user) {
-      fetchClockInOuts();
-    }
-  }, [filterDate, filterWorkType, filterStatus, filterUserId]);
+    if (!user) return;
+
+    const abortController = new AbortController();
+    fetchClockInOuts(abortController.signal);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [filterDate, filterWorkType, filterStatus, filterUserId, user]);
 
   const fetchUsers = async () => {
     try {
@@ -55,11 +77,13 @@ export default function ClockInOutPage() {
         setUsers(data);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      if (error.name !== 'AbortError') {
+        console.error('Error fetching users:', error);
+      }
     }
   };
 
-  const fetchClockInOuts = async () => {
+  const fetchClockInOuts = async (signal) => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
@@ -81,21 +105,28 @@ export default function ClockInOutPage() {
       }
 
       const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        signal
       });
       const result = await response.json();
       
-      if (result.success) {
-        setClockInOuts(result.data);
-      } else {
-        console.error('Error fetching clock in/out records:', result.error);
-        setClockInOuts([]);
+      if (!signal?.aborted) {
+        if (result.success) {
+          setClockInOuts(result.data);
+        } else {
+          console.error('Error fetching clock in/out records:', result.error);
+          setClockInOuts([]);
+        }
       }
     } catch (error) {
-      console.error('Error fetching clock in/out records:', error);
-      setClockInOuts([]);
+      if (error.name !== 'AbortError' && !signal?.aborted) {
+        console.error('Error fetching clock in/out records:', error);
+        setClockInOuts([]);
+      }
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) {
+        setIsLoading(false);
+      }
     }
   };
 

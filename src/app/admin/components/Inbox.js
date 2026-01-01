@@ -47,13 +47,29 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
     };
   }, [isOpen]);
 
+  const closeTimeoutRef = useRef(null);
+
   const handleClose = () => {
     setIsAnimating(false);
+    // Clear any existing timeout
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
     // Wait for animation to complete before calling onClose
-    setTimeout(() => {
+    closeTimeoutRef.current = setTimeout(() => {
       onClose();
+      closeTimeoutRef.current = null;
     }, 300); // Match the animation duration
   };
+
+  useEffect(() => {
+    // Cleanup timeout on unmount
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const fetchConversations = async () => {
     try {

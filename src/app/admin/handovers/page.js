@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -20,10 +20,28 @@ export default function HandoversPage() {
   const [users, setUsers] = useState([]);
   const router = useRouter();
 
+  const notificationTimeoutRef = useRef(null);
+
   const showNotification = (message, type = 'success') => {
+    // Clear any existing timeout
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
     setNotification({ show: true, message, type });
-    setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3000);
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'success' });
+      notificationTimeoutRef.current = null;
+    }, 3000);
   };
+
+  useEffect(() => {
+    // Cleanup timeout on unmount
+    return () => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');

@@ -14,13 +14,28 @@ export default function Chat({ conversation, currentUser, onBack }) {
     p => p.user.id !== currentUser?.id
   );
 
+  const abortControllerRef = useRef(null);
+
   useEffect(() => {
-    if (conversation?.id) {
-      fetchMessages();
-      // Poll for new messages every 3 seconds
-      const interval = setInterval(fetchMessages, 3000);
-      return () => clearInterval(interval);
-    }
+    if (!conversation?.id) return;
+
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    fetchMessages(signal);
+    // Poll for new messages every 3 seconds, only if tab is visible
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchMessages(signal);
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [conversation?.id]);
 
   useEffect(() => {
@@ -31,23 +46,26 @@ export default function Chat({ conversation, currentUser, onBack }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (signal) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token || signal?.aborted) return;
       
       const response = await fetch(`/api/conversations/${conversation.id}/messages`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
+        signal
       });
 
-      if (response.ok) {
+      if (!signal?.aborted && response.ok) {
         const data = await response.json();
         setMessages(data.messages || []);
       }
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      if (error.name !== 'AbortError' && !signal?.aborted) {
+        console.error('Error fetching messages:', error);
+      }
     }
   };
 

@@ -84,6 +84,9 @@ export default function CarePlanViewPage() {
 
   useEffect(() => {
     if (!user || !serviceSeekerId) return;
+    
+    const abortController = new AbortController();
+    const signal = abortController.signal;
     const token = localStorage.getItem('token');
     
     (async () => {
@@ -125,100 +128,115 @@ export default function CarePlanViewPage() {
           medicineScheduleRes,
           oralCareScheduleRes,
         ] = await Promise.all([
-          fetch(`/api/service-seekers/${serviceSeekerId}`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/admission`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/other-ids`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/other-telephones`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/other-addresses`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/health-tags`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/mental-capacity`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/mca-assessments`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/contacts`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/documents`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/confidential-notes`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/funding`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/calendar/visits`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/calendar/resident-meetings`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/outcomes`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/risk-assessments`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/medicine-risk-assessments`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/safeguarding`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/feedback`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/waterlow`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/mar-reviews`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/personal-property`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/external-logins`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/allowance-settings`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/allowance-transactions`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/social-visit-instructions`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/medicine-prn-plans`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/medicine-access-codes`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/positioning-handling`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/bathing-default-times`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/food-drinks-settings`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/house-keeping-schedule-items`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/medicine-schedule-items`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/service-seekers/${serviceSeekerId}/oral-care-schedule-items`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`/api/service-seekers/${serviceSeekerId}`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/admission`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/other-ids`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/other-telephones`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/other-addresses`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/health-tags`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/mental-capacity`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/mca-assessments`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/contacts`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/documents`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/confidential-notes`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/funding`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/calendar/visits`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/calendar/resident-meetings`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/outcomes`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/risk-assessments`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/medicine-risk-assessments`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/safeguarding`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/feedback`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/waterlow`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/mar-reviews`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/personal-property`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/external-logins`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/allowance-settings`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/allowance-transactions`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/social-visit-instructions`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/medicine-prn-plans`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/medicine-access-codes`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/positioning-handling`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/bathing-default-times`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/food-drinks-settings`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/house-keeping-schedule-items`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/medicine-schedule-items`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+          fetch(`/api/service-seekers/${serviceSeekerId}/oral-care-schedule-items`, { headers: { Authorization: `Bearer ${token}` }, signal }),
         ]);
+
+        // Check if request was aborted
+        if (signal.aborted) return;
 
         // Parse all responses
         const seekerData = await seekerRes.json();
         const admissionData = admissionRes.ok ? await admissionRes.json() : null;
-        setSeeker(seekerData);
-        setAdmission(admissionData);
         
-        if (otherIdsRes.ok) setOtherIds(await otherIdsRes.json() || []);
-        if (otherTelephonesRes.ok) setOtherTelephones(await otherTelephonesRes.json() || []);
-        if (otherAddressesRes.ok) setOtherAddresses(await otherAddressesRes.json() || []);
-        if (healthTagsRes.ok) setHealthTags(await healthTagsRes.json() || []);
-        if (mentalCapacityRes.ok) {
-          const mcData = await mentalCapacityRes.json();
-          setMentalCapacity(mcData || null);
+        if (!signal.aborted) {
+          setSeeker(seekerData);
+          setAdmission(admissionData);
         }
-        if (mcaAssessmentsRes.ok) setMcaAssessments(await mcaAssessmentsRes.json() || []);
-        if (contactsRes.ok) setContacts(await contactsRes.json() || []);
-        if (documentsRes.ok) setDocuments(await documentsRes.json() || []);
-        if (confidentialNotesRes.ok) setConfidentialNotes(await confidentialNotesRes.json() || []);
-        if (fundingRes.ok) setFunding(await fundingRes.json() || []);
-        if (calendarVisitsRes.ok) setCalendarVisits(await calendarVisitsRes.json() || []);
-        if (calendarMeetingsRes.ok) setCalendarMeetings(await calendarMeetingsRes.json() || []);
-        if (outcomesRes.ok) setOutcomes(await outcomesRes.json() || []);
-        if (riskAssessmentsRes.ok) setRiskAssessments(await riskAssessmentsRes.json() || []);
-        if (medicineRiskAssessmentsRes.ok) setMedicineRiskAssessments(await medicineRiskAssessmentsRes.json() || []);
-        if (safeguardingRes.ok) setSafeguarding(await safeguardingRes.json() || []);
-        if (feedbackRes.ok) setFeedback(await feedbackRes.json() || []);
-        if (waterlowRes.ok) setWaterlow(await waterlowRes.json() || []);
-        if (marReviewsRes.ok) setMarReviews(await marReviewsRes.json() || []);
-        if (personalPropertyRes.ok) setPersonalProperty(await personalPropertyRes.json() || []);
-        if (externalLoginsRes.ok) setExternalLogins(await externalLoginsRes.json() || []);
-        if (allowanceSettingsRes.ok) {
-          const allowData = await allowanceSettingsRes.json();
-          setAllowanceSettings(allowData || null);
+        
+        // Only update state if request wasn't aborted
+        if (!signal.aborted) {
+          if (otherIdsRes.ok) setOtherIds(await otherIdsRes.json() || []);
+          if (otherTelephonesRes.ok) setOtherTelephones(await otherTelephonesRes.json() || []);
+          if (otherAddressesRes.ok) setOtherAddresses(await otherAddressesRes.json() || []);
+          if (healthTagsRes.ok) setHealthTags(await healthTagsRes.json() || []);
+          if (mentalCapacityRes.ok) {
+            const mcData = await mentalCapacityRes.json();
+            if (!signal.aborted) setMentalCapacity(mcData || null);
+          }
+          if (mcaAssessmentsRes.ok && !signal.aborted) setMcaAssessments(await mcaAssessmentsRes.json() || []);
+          if (contactsRes.ok && !signal.aborted) setContacts(await contactsRes.json() || []);
+          if (documentsRes.ok && !signal.aborted) setDocuments(await documentsRes.json() || []);
+          if (confidentialNotesRes.ok && !signal.aborted) setConfidentialNotes(await confidentialNotesRes.json() || []);
+          if (fundingRes.ok && !signal.aborted) setFunding(await fundingRes.json() || []);
+          if (calendarVisitsRes.ok && !signal.aborted) setCalendarVisits(await calendarVisitsRes.json() || []);
+          if (calendarMeetingsRes.ok && !signal.aborted) setCalendarMeetings(await calendarMeetingsRes.json() || []);
+          if (outcomesRes.ok && !signal.aborted) setOutcomes(await outcomesRes.json() || []);
+          if (riskAssessmentsRes.ok && !signal.aborted) setRiskAssessments(await riskAssessmentsRes.json() || []);
+          if (medicineRiskAssessmentsRes.ok && !signal.aborted) setMedicineRiskAssessments(await medicineRiskAssessmentsRes.json() || []);
+          if (safeguardingRes.ok && !signal.aborted) setSafeguarding(await safeguardingRes.json() || []);
+          if (feedbackRes.ok && !signal.aborted) setFeedback(await feedbackRes.json() || []);
+          if (waterlowRes.ok && !signal.aborted) setWaterlow(await waterlowRes.json() || []);
+          if (marReviewsRes.ok && !signal.aborted) setMarReviews(await marReviewsRes.json() || []);
+          if (personalPropertyRes.ok && !signal.aborted) setPersonalProperty(await personalPropertyRes.json() || []);
+          if (externalLoginsRes.ok && !signal.aborted) setExternalLogins(await externalLoginsRes.json() || []);
+          if (allowanceSettingsRes.ok && !signal.aborted) {
+            const allowData = await allowanceSettingsRes.json();
+            if (!signal.aborted) setAllowanceSettings(allowData || null);
+          }
+          if (allowanceTransactionsRes.ok && !signal.aborted) setAllowanceTransactions(await allowanceTransactionsRes.json() || []);
+          if (socialVisitInstructionsRes.ok && !signal.aborted) setSocialVisitInstructions(await socialVisitInstructionsRes.json() || []);
+          if (medicinePrnPlansRes.ok && !signal.aborted) setMedicinePrnPlans(await medicinePrnPlansRes.json() || []);
+          if (medicineAccessCodesRes.ok && !signal.aborted) setMedicineAccessCodes(await medicineAccessCodesRes.json() || []);
+          if (positioningHandlingRes.ok && !signal.aborted) {
+            const phData = await positioningHandlingRes.json();
+            if (!signal.aborted) setPositioningHandling(phData || null);
+          }
+          if (bathingSettingsRes.ok && !signal.aborted) {
+            const bathData = await bathingSettingsRes.json();
+            if (!signal.aborted) setBathingSettings(bathData || null);
+          }
+          if (foodDrinksSettingsRes.ok && !signal.aborted) {
+            const foodData = await foodDrinksSettingsRes.json();
+            if (!signal.aborted) setFoodDrinksSettings(foodData || null);
+          }
+          if (houseKeepingScheduleRes.ok && !signal.aborted) setHouseKeepingSchedule(await houseKeepingScheduleRes.json() || []);
+          if (medicineScheduleRes.ok && !signal.aborted) setMedicineSchedule(await medicineScheduleRes.json() || []);
+          if (oralCareScheduleRes.ok && !signal.aborted) setOralCareSchedule(await oralCareScheduleRes.json() || []);
         }
-        if (allowanceTransactionsRes.ok) setAllowanceTransactions(await allowanceTransactionsRes.json() || []);
-        if (socialVisitInstructionsRes.ok) setSocialVisitInstructions(await socialVisitInstructionsRes.json() || []);
-        if (medicinePrnPlansRes.ok) setMedicinePrnPlans(await medicinePrnPlansRes.json() || []);
-        if (medicineAccessCodesRes.ok) setMedicineAccessCodes(await medicineAccessCodesRes.json() || []);
-        if (positioningHandlingRes.ok) {
-          const phData = await positioningHandlingRes.json();
-          setPositioningHandling(phData || null);
-        }
-        if (bathingSettingsRes.ok) {
-          const bathData = await bathingSettingsRes.json();
-          setBathingSettings(bathData || null);
-        }
-        if (foodDrinksSettingsRes.ok) {
-          const foodData = await foodDrinksSettingsRes.json();
-          setFoodDrinksSettings(foodData || null);
-        }
-        if (houseKeepingScheduleRes.ok) setHouseKeepingSchedule(await houseKeepingScheduleRes.json() || []);
-        if (medicineScheduleRes.ok) setMedicineSchedule(await medicineScheduleRes.json() || []);
-        if (oralCareScheduleRes.ok) setOralCareSchedule(await oralCareScheduleRes.json() || []);
       } catch (e) {
-        console.error('Error loading data:', e);
-        setNotification({ show: true, message: 'Failed to load some care plan data.', type: 'error' });
+        if (e.name !== 'AbortError' && !signal.aborted) {
+          console.error('Error loading data:', e);
+          setNotification({ show: true, message: 'Failed to load some care plan data.', type: 'error' });
+        }
       }
     })();
+
+    return () => {
+      abortController.abort();
+    };
   }, [user, serviceSeekerId]);
 
   if (isLoading || !user) {

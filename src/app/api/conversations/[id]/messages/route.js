@@ -28,7 +28,8 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const conversationId = parseInt(params.id);
+    const { id } = await params;
+    const conversationId = parseInt(id);
     
     if (!conversationId) {
       return NextResponse.json(
@@ -128,7 +129,8 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
-    const conversationId = parseInt(params.id);
+    const { id } = await params;
+    const conversationId = parseInt(id);
     const body = await request.json();
     const { content } = body;
 

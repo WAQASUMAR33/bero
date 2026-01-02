@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
+import FileUpload from '../components/FileUpload';
 import LocationMap from './components/LocationMap';
 
 export default function ServiceUsersPage() {
@@ -103,6 +104,13 @@ export default function ServiceUsersPage() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handlePhotoUpload = (fileUrl) => {
+    setFormData({ ...formData, photoUrl: fileUrl });
+    setImagePreview(fileUrl);
+    setSelectedImage(null);
+    setNotification({ show: true, message: 'Photo uploaded successfully!', type: 'success' });
   };
 
   const handleLocationSelect = (lat, lng) => {
@@ -587,13 +595,27 @@ export default function ServiceUsersPage() {
                             </div>
                           )}
                           <div className="flex-1">
-                            <input
-                              type="file"
+                            <FileUpload
                               accept="image/*"
-                              onChange={handleImageChange}
-                              className="w-full border rounded-lg px-3 py-2 text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#224fa6] file:text-white hover:file:bg-[#1a3d85] cursor-pointer"
+                              label="Choose Photo"
+                              onUploadComplete={handlePhotoUpload}
+                              onError={(error) => {
+                                setNotification({ show: true, message: `Photo upload failed: ${error}`, type: 'error' });
+                              }}
                             />
-                            <p className="text-xs text-gray-500 mt-1">Upload a profile photo (cloud storage integration pending)</p>
+                            {formData.photoUrl && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData({ ...formData, photoUrl: '' });
+                                  setImagePreview(null);
+                                  setSelectedImage(null);
+                                }}
+                                className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium"
+                              >
+                                Remove Photo
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

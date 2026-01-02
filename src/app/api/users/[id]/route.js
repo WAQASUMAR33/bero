@@ -71,7 +71,8 @@ export async function PUT(request, { params }) {
       emergencyContact,
       postalCode,
       contractedHours,
-      niNumber
+      niNumber,
+      profilePic
     } = body;
 
     // Check if user exists
@@ -127,7 +128,8 @@ export async function PUT(request, { params }) {
       emergencyContact: emergencyContact || null,
       postalCode: postalCode || null,
       contractedHours: contractedHours || null,
-      niNumber: niNumber || null
+      niNumber: niNumber || null,
+      profilePic: profilePic !== undefined ? profilePic : undefined
     };
 
     // Only hash and update password if provided

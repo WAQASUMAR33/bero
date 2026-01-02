@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
+import FileUpload from '../components/FileUpload';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -31,7 +32,8 @@ export default function ProfilePage() {
     emergencyContact: '',
     contractedHours: '',
     status: '',
-    niNumber: ''
+    niNumber: '',
+    profilePic: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -71,7 +73,8 @@ export default function ProfilePage() {
         emergencyContact: userData.emergencyContact || '',
         contractedHours: userData.contractedHours?.toString() || '',
         status: userData.status || '',
-        niNumber: userData.niNumber || ''
+        niNumber: userData.niNumber || '',
+        profilePic: userData.profilePic || ''
       });
     } else {
       router.push('/login');
@@ -83,16 +86,33 @@ export default function ProfilePage() {
     e.preventDefault();
     setIsUpdating(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local storage
-      const updatedUser = { ...user, ...profileData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-      
-      setIsEditing(false);
-      showNotification('Profile updated successfully!', 'success');
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          phoneNo: profileData.phoneNo,
+          emergencyName: profileData.emergencyName,
+          emergencyContact: profileData.emergencyContact,
+          postalCode: profileData.postalCode,
+          profilePic: profileData.profilePic
+        })
+      });
+
+      if (response.ok) {
+        const updatedUserData = await response.json();
+        const updatedUser = { ...user, ...updatedUserData };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        setIsEditing(false);
+        showNotification('Profile updated successfully!', 'success');
+      } else {
+        const error = await response.json();
+        showNotification(error.error || 'Error updating profile. Please try again.', 'error');
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       showNotification('Error updating profile. Please try again.', 'error');
@@ -210,18 +230,43 @@ export default function ProfilePage() {
                     <form onSubmit={handleProfileUpdate} className="space-y-6">
                       {/* Profile Picture */}
                       <div className="flex items-center space-x-6">
-                        <div className="w-24 h-24 bg-gradient-to-r from-[#224fa6] to-[#3270e9] rounded-full flex items-center justify-center shadow-lg">
-                          <span className="text-white font-bold text-2xl">
-                            {user.firstName?.[0]}{user.lastName?.[0]}
-                          </span>
-                        </div>
-                        <div>
+                        {profileData.profilePic ? (
+                          <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                            <img src={profileData.profilePic} alt={`${user.firstName} ${user.lastName}`} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-24 h-24 bg-gradient-to-r from-[#224fa6] to-[#3270e9] rounded-full flex items-center justify-center shadow-lg">
+                            <span className="text-white font-bold text-2xl">
+                              {user.firstName?.[0]}{user.lastName?.[0]}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900">{user.firstName} {user.lastName}</h3>
                           <p className="text-gray-600">{user?.role?.displayName || user?.role?.name || 'User'}</p>
                           {isEditing && (
-                            <button type="button" className="mt-2 text-[#224fa6] hover:text-[#3270e9] text-sm font-medium">
-                              Change Photo
-                            </button>
+                            <div className="mt-3">
+                              <FileUpload
+                                accept="image/*"
+                                label="Upload Photo"
+                                onUploadComplete={(fileUrl) => {
+                                  setProfileData({ ...profileData, profilePic: fileUrl });
+                                  showNotification('Photo uploaded successfully!', 'success');
+                                }}
+                                onError={(error) => {
+                                  showNotification(`Photo upload failed: ${error}`, 'error');
+                                }}
+                              />
+                              {profileData.profilePic && (
+                                <button
+                                  type="button"
+                                  onClick={() => setProfileData({ ...profileData, profilePic: '' })}
+                                  className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium"
+                                >
+                                  Remove Photo
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>

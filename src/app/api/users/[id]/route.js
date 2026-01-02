@@ -87,50 +87,63 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Check if email or username is taken by another user
-    if (email !== existingUser.email || username !== existingUser.username) {
-      const duplicateUser = await prisma.user.findFirst({
+    // Check if email or username is taken by another user (only if they're being changed)
+    if (email !== undefined && email !== existingUser.email) {
+      const duplicateEmail = await prisma.user.findFirst({
         where: {
           AND: [
             { id: { not: userId } },
-            {
-              OR: [
-                { email },
-                { username }
-              ]
-            }
+            { email }
           ]
         }
       });
 
-      if (duplicateUser) {
+      if (duplicateEmail) {
         return NextResponse.json(
-          { error: 'User with this email or username already exists' },
+          { error: 'User with this email already exists' },
           { status: 400 }
         );
       }
     }
 
-    // Prepare update data
-    const updateData = {
-      firstName,
-      lastName,
-      email,
-      username,
-      phoneNo,
-      roleId,
-      status,
-      employeeNumber: employeeNumber || null,
-      startDate: startDate ? new Date(startDate) : null,
-      leaveDate: leaveDate ? new Date(leaveDate) : null,
-      regionId: regionId || null,
-      emergencyName: emergencyName || null,
-      emergencyContact: emergencyContact || null,
-      postalCode: postalCode || null,
-      contractedHours: contractedHours || null,
-      niNumber: niNumber || null,
-      profilePic: profilePic !== undefined ? profilePic : undefined
-    };
+    if (username !== undefined && username !== existingUser.username) {
+      const duplicateUsername = await prisma.user.findFirst({
+        where: {
+          AND: [
+            { id: { not: userId } },
+            { username }
+          ]
+        }
+      });
+
+      if (duplicateUsername) {
+        return NextResponse.json(
+          { error: 'User with this username already exists' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Prepare update data - only include fields that are provided (partial update)
+    const updateData = {};
+    
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (email !== undefined) updateData.email = email;
+    if (username !== undefined) updateData.username = username;
+    if (phoneNo !== undefined) updateData.phoneNo = phoneNo;
+    if (roleId !== undefined) updateData.roleId = roleId;
+    if (status !== undefined) updateData.status = status;
+    if (employeeNumber !== undefined) updateData.employeeNumber = employeeNumber || null;
+    if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
+    if (leaveDate !== undefined) updateData.leaveDate = leaveDate ? new Date(leaveDate) : null;
+    if (regionId !== undefined) updateData.regionId = regionId || null;
+    if (emergencyName !== undefined) updateData.emergencyName = emergencyName || null;
+    if (emergencyContact !== undefined) updateData.emergencyContact = emergencyContact || null;
+    if (postalCode !== undefined) updateData.postalCode = postalCode || null;
+    if (contractedHours !== undefined) updateData.contractedHours = contractedHours || null;
+    if (niNumber !== undefined) updateData.niNumber = niNumber || null;
+    if (profilePic !== undefined) updateData.profilePic = profilePic || null;
 
     // Only hash and update password if provided
     if (password && password.trim() !== '') {

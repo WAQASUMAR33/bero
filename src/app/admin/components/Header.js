@@ -1,14 +1,59 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Inbox from './Inbox';
+import EmergencyAlert from './EmergencyAlert';
 
 export default function Header({ user }) {
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showInbox, setShowInbox] = useState(false);
+  const [showEmergencyAlert, setShowEmergencyAlert] = useState(false);
+  const [emergencyCount, setEmergencyCount] = useState(0);
   const router = useRouter();
   const dropdownRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
+
+  // Check if user can view emergencies (ADMIN, DIRECTOR, HR, REGISTER_MANAGER)
+  const canViewEmergencies = user?.role?.name && 
+    ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'].includes(user.role.name);
+
+  // Poll for emergency alerts
+  useEffect(() => {
+    if (!canViewEmergencies) return;
+
+    const fetchEmergencyCount = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/emergency?status=ACTIVE', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setEmergencyCount(data.activeCount || 0);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching emergency count:', error);
+      }
+    };
+
+    // Initial fetch
+    fetchEmergencyCount();
+
+    // Poll every 5 seconds
+    pollingIntervalRef.current = setInterval(fetchEmergencyCount, 5000);
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [canViewEmergencies]);
 
   return (
     <header className="sticky top-0 bg-white shadow-sm border-b border-gray-200 px-6 py-4 z-30">
@@ -36,6 +81,24 @@ export default function Header({ user }) {
 
           {/* Action Icons */}
           <div className="flex items-center space-x-3">
+            {/* Emergency Alert Button */}
+            {canViewEmergencies && (
+              <button
+                onClick={() => setShowEmergencyAlert(true)}
+                className="p-2 text-gray-400 hover:text-red-600 transition-colors relative group"
+                title="Emergency Alerts"
+              >
+                <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {emergencyCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
+                    {emergencyCount > 9 ? '9+' : emergencyCount}
+                  </span>
+                )}
+              </button>
+            )}
+
             {/* Notifications */}
             <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors relative">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,6 +187,14 @@ export default function Header({ user }) {
         onClose={() => setShowInbox(false)} 
         currentUser={user}
       />
+
+      {/* Emergency Alert Component */}
+      {showEmergencyAlert && (
+        <EmergencyAlert
+          user={user}
+          onClose={() => setShowEmergencyAlert(false)}
+        />
+      )}
     </header>
   );
 }

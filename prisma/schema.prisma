@@ -277,6 +277,8 @@ model User {
   policySignatures PolicySignature[]  @relation("PolicySignatureUser")
   ppStockTransactions PPStockTransaction[] @relation("PPStockTransactionUser")
   createdHandovers Handover[]         @relation("HandoverCreatedBy")
+  triggeredEmergencies EmergencyAlert[] @relation("EmergencyTriggeredBy")
+  acknowledgedEmergencies EmergencyAlert[] @relation("EmergencyAcknowledgedBy")
 }
 
 model Team {
@@ -287,6 +289,7 @@ model Team {
 
   // Relations
   members   User[]
+  emergencyAlerts EmergencyAlert[]
 }
 
 model UserPermission {
@@ -2681,4 +2684,34 @@ model Handover {
   @@index([toShiftAssignmentId])
   @@index([serviceSeekerId])
   @@index([createdAt])
+}
+
+enum EmergencyAlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model EmergencyAlert {
+  id          Int                   @id @default(autoincrement())
+  triggeredBy Int                   // User who triggered the emergency
+  teamId      Int?                  // Team of the user who triggered
+  status      EmergencyAlertStatus  @default(ACTIVE)
+  location    String?               // GPS location if available
+  message     String?               // Optional message from care worker
+  acknowledgedBy Int?               // User who acknowledged
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  // Relations
+  triggeredByUser User               @relation("EmergencyTriggeredBy", fields: [triggeredBy], references: [id])
+  acknowledgedByUser User?           @relation("EmergencyAcknowledgedBy", fields: [acknowledgedBy], references: [id])
+  team            Team?              @relation(fields: [teamId], references: [id])
+
+  @@index([status])
+  @@index([teamId])
+  @@index([createdAt])
+  @@index([triggeredBy])
 }

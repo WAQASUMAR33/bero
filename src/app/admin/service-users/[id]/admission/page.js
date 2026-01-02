@@ -40,6 +40,7 @@ import FoodDrinksForm from '../../components/FoodDrinksForm';
 import HouseKeepingForm from '../../components/HouseKeepingForm';
 import MedicineScheduleForm from '../../components/MedicineScheduleForm';
 import OralCareScheduleForm from '../../components/OralCareScheduleForm';
+import EncouragementForm from '../../components/EncouragementForm';
 
 function SummaryRow({ label, value }){
   return (
@@ -1162,6 +1163,11 @@ export default function AdmissionPage(){
           />
 
           <OralCareScheduleForm
+            serviceSeekerId={serviceSeekerId}
+            onNotification={setNotification}
+          />
+
+          <EncouragementForm
             serviceSeekerId={serviceSeekerId}
             onNotification={setNotification}
           />

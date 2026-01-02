@@ -1,5 +1,7 @@
 'use client';
 
+import FileUpload from '../../components/FileUpload';
+
 export default function IncidentFallTaskForm({ 
   formData, 
   setFormData, 
@@ -258,12 +260,22 @@ export default function IncidentFallTaskForm({
       {/* Photo URL */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Photo Upload</label>
+        <FileUpload
+          accept="image/*"
+          label="Choose Photo"
+          onUploadComplete={(fileUrl) => {
+            setFormData({ ...formData, photoUrl: fileUrl });
+          }}
+          onError={(error) => {
+            console.error('Photo upload error:', error);
+          }}
+        />
         <input 
           type="text"
-          value={formData.photoUrl} 
+          value={formData.photoUrl || ''} 
           onChange={(e)=>setFormData({...formData, photoUrl:e.target.value})}
-          placeholder="Photo URL (cloud upload will be added later)"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          placeholder="Or enter photo URL manually"
+          className="w-full mt-2 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
         />
       </div>
 

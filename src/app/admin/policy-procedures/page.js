@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
+import FileUpload from '../components/FileUpload';
 
 export default function PolicyProceduresPage() {
   const [user, setUser] = useState(null);
@@ -487,14 +488,36 @@ export default function PolicyProceduresPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">File URL (Pending upload system)</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">File Upload</label>
+                      <FileUpload
+                        accept="application/pdf,.pdf,.doc,.docx"
+                        label="Choose File"
+                        onUploadComplete={(fileUrl, fileName) => {
+                          setFormData({
+                            ...formData,
+                            fileUrl: fileUrl,
+                            fileName: fileName || formData.fileName
+                          });
+                          showNotification('File uploaded successfully!', 'success');
+                        }}
+                        onError={(error) => {
+                          showNotification(`Upload failed: ${error}`, 'error');
+                        }}
+                        className="mb-2"
+                      />
+                      {formData.fileUrl && (
+                        <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                          <p className="text-sm text-green-700">
+                            ✓ File uploaded: <a href={formData.fileUrl} target="_blank" rel="noopener noreferrer" className="underline">{formData.fileUrl}</a>
+                          </p>
+                        </div>
+                      )}
                       <input
                         type="text"
-                        value={formData.fileUrl}
+                        value={formData.fileUrl || ''}
                         onChange={(e) => setFormData({...formData, fileUrl: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-200"
-                        placeholder="File upload system pending"
-                        disabled
+                        className="w-full mt-2 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                        placeholder="Or enter file URL manually"
                       />
                     </div>
                     <div>

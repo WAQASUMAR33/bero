@@ -1,5 +1,7 @@
 'use client';
 
+import FileUpload from '../../components/FileUpload';
+
 export default function RepositionTaskForm({ 
   formData, 
   setFormData, 
@@ -95,18 +97,28 @@ export default function RepositionTaskForm({
       {/* Photo Upload */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Photo</label>
-        <input
-          type="file"
+        <FileUpload
           accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              setFormData({ ...formData, photoUrl: file.name });
-            }
+          label="Choose Photo"
+          onUploadComplete={(fileUrl) => {
+            setFormData({ ...formData, photoUrl: fileUrl });
           }}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+          onError={(error) => {
+            console.error('Photo upload error:', error);
+          }}
         />
-        <p className="mt-1 text-xs text-gray-500">Cloud upload will be implemented later</p>
+        {formData.photoUrl && (
+          <div className="mt-2">
+            <p className="text-xs text-green-600">✓ Photo uploaded</p>
+            <input
+              type="text"
+              value={formData.photoUrl}
+              onChange={(e) => setFormData({ ...formData, photoUrl: e.target.value })}
+              placeholder="Or enter photo URL manually"
+              className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
+            />
+          </div>
+        )}
       </div>
 
       {/* Notes */}

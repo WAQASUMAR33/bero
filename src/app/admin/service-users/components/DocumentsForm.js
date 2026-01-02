@@ -82,23 +82,79 @@ export default function DocumentsForm({ serviceSeekerId, onNotification }){
     setSaving(true);
     try{
       const token = localStorage.getItem('token');
-      // Backend file storage not wired; we save metadata only
-      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/documents`,{
-        method:'POST',
-        headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
-        body: JSON.stringify({ docType: uploadDocType || 'Other', name: uploadingFile.name, fileUrl: null })
-      });
-      if(res.ok){
-        await fetchDocuments();
-        setUploadingFile(null);
-        setUploadDocType('');
-        if(onNotification) onNotification({ show:true, message:'Document saved.', type:'success' });
-      }else{
-        const err = await res.json();
-        if(onNotification) onNotification({ show:true, message: err.error || 'Failed to save document.', type:'error' });
-      }
-    }catch(e){ console.error(e); if(onNotification) onNotification({ show:true, message:'Failed to save document.', type:'error' }); }
-    finally{ setSaving(false); }
+      
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64DataUri = reader.result;
+          
+          // Upload file to external service
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ file: base64DataUri })
+          });
+
+          const uploadData = await uploadRes.json();
+          let fileUrl = null;
+
+          if (uploadRes.ok && uploadData.success) {
+            fileUrl = uploadData.fileUrl;
+          } else {
+            if(onNotification) onNotification({ 
+              show:true, 
+              message: uploadData.error || 'Failed to upload file. Document metadata will be saved without file.', 
+              type: 'warning' 
+            });
+          }
+
+          // Save document with file URL
+          const res = await fetch(`/api/service-seekers/${serviceSeekerId}/documents`,{
+            method:'POST',
+            headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+            body: JSON.stringify({ 
+              docType: uploadDocType || 'Other', 
+              name: uploadingFile.name, 
+              fileUrl: fileUrl 
+            })
+          });
+          
+          if(res.ok){
+            await fetchDocuments();
+            setUploadingFile(null);
+            setUploadDocType('');
+            if(onNotification) onNotification({ 
+              show:true, 
+              message: fileUrl ? 'Document uploaded and saved successfully.' : 'Document saved (file upload failed).', 
+              type: fileUrl ? 'success' : 'warning' 
+            });
+          }else{
+            const err = await res.json();
+            if(onNotification) onNotification({ show:true, message: err.error || 'Failed to save document.', type:'error' });
+          }
+        } catch (error) {
+          console.error('Upload error:', error);
+          if(onNotification) onNotification({ show:true, message:'Failed to upload file.', type:'error' });
+        } finally {
+          setSaving(false);
+        }
+      };
+      
+      reader.onerror = () => {
+        if(onNotification) onNotification({ show:true, message:'Failed to read file.', type:'error' });
+        setSaving(false);
+      };
+      
+      reader.readAsDataURL(uploadingFile);
+    }catch(e){ 
+      console.error(e); 
+      if(onNotification) onNotification({ show:true, message:'Failed to save document.', type:'error' }); 
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id) => {

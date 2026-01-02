@@ -494,26 +494,92 @@ export default function ServiceUsersPage() {
                   handleSubmit(e);
                 }} className="space-y-4">
                   {currentStep===1 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">First Name *</label>
-                        <input required value={formData.firstName} onChange={e=>setFormData({...formData, firstName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                    <div className="space-y-6">
+                      {/* Profile Photo Section - Prominent at top */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
+                        <div className="flex items-start space-x-6">
+                          {/* Photo Preview */}
+                          <div className="flex-shrink-0">
+                            {imagePreview ? (
+                              <div className="relative w-32 h-32 rounded-xl overflow-hidden border-4 border-white shadow-lg">
+                                <img src={imagePreview} alt="Profile Preview" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData({ ...formData, photoUrl: '' });
+                                    setImagePreview(null);
+                                    setSelectedImage(null);
+                                  }}
+                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md"
+                                  title="Remove photo"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-[#224fa6] to-[#3270e9] flex items-center justify-center border-4 border-white shadow-lg">
+                                <svg className="w-16 h-16 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Upload Section */}
+                          <div className="flex-1">
+                            <label className="block text-base font-semibold text-gray-900 mb-3">
+                              Profile Photo
+                            </label>
+                            <p className="text-sm text-gray-600 mb-4">
+                              Upload a profile photo for this service user. This will help identify them in the system.
+                            </p>
+                            <FileUpload
+                              accept="image/*"
+                              label="📷 Upload Photo"
+                              onUploadComplete={handlePhotoUpload}
+                              onError={(error) => {
+                                setNotification({ show: true, message: `Photo upload failed: ${error}`, type: 'error' });
+                              }}
+                              className="mb-2"
+                            />
+                            {formData.photoUrl && (
+                              <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                <p className="text-xs text-green-700 flex items-center">
+                                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                  </svg>
+                                  Photo uploaded successfully
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Last Name *</label>
-                        <input required value={formData.lastName} onChange={e=>setFormData({...formData, lastName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Preferred Name</label>
-                        <input value={formData.preferredName} onChange={e=>setFormData({...formData, preferredName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Title</label>
-                        <input value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Date of Birth</label>
-                        <input type="date" value={formData.dateOfBirth} onChange={e=>setFormData({...formData, dateOfBirth:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+
+                      {/* Basic Information */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">First Name *</label>
+                          <input required value={formData.firstName} onChange={e=>setFormData({...formData, firstName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">Last Name *</label>
+                          <input required value={formData.lastName} onChange={e=>setFormData({...formData, lastName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">Preferred Name</label>
+                          <input value={formData.preferredName} onChange={e=>setFormData({...formData, preferredName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">Title</label>
+                          <input value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">Date of Birth</label>
+                          <input type="date" value={formData.dateOfBirth} onChange={e=>setFormData({...formData, dateOfBirth:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -581,41 +647,6 @@ export default function ServiceUsersPage() {
                               placeholder="Auto-filled from map"
                               readOnly
                             />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Profile Photo Section */}
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Profile Photo</label>
-                        <div className="flex items-center space-x-4">
-                          {imagePreview && (
-                            <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200">
-                              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <FileUpload
-                              accept="image/*"
-                              label="Choose Photo"
-                              onUploadComplete={handlePhotoUpload}
-                              onError={(error) => {
-                                setNotification({ show: true, message: `Photo upload failed: ${error}`, type: 'error' });
-                              }}
-                            />
-                            {formData.photoUrl && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setFormData({ ...formData, photoUrl: '' });
-                                  setImagePreview(null);
-                                  setSelectedImage(null);
-                                }}
-                                className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium"
-                              >
-                                Remove Photo
-                              </button>
-                            )}
                           </div>
                         </div>
                       </div>

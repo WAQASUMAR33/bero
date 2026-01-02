@@ -230,11 +230,11 @@ export default function ClockInOutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex overflow-x-hidden w-full max-w-full">
       <Sidebar user={user} />
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className="flex-1 flex flex-col lg:ml-64 min-w-0 max-w-full overflow-x-hidden">
         <Header user={user} />
-        <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto">
+        <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto overflow-x-hidden max-w-full w-full">
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
@@ -243,11 +243,11 @@ export default function ClockInOutPage() {
               </div>
             </div>
           ) : (
-            <>
+            <div className="w-full max-w-full">
               {/* Header */}
-              <div className="mb-6 sm:mb-8">
-                <div className="flex items-center justify-between">
-                  <div>
+              <div className="mb-6 sm:mb-8 w-full max-w-full">
+                <div className="flex items-center justify-between w-full">
+                  <div className="min-w-0 flex-1">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Clock In/Out Management</h1>
                     <p className="text-sm sm:text-base text-gray-600">View and monitor care worker attendance</p>
                   </div>
@@ -255,7 +255,7 @@ export default function ClockInOutPage() {
               </div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8 w-full max-w-full">
                 <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
                   <div className="flex items-center">
                     <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex-shrink-0">
@@ -328,7 +328,7 @@ export default function ClockInOutPage() {
               </div>
 
               {/* Filters */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6 w-full max-w-full">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
                   <div className="sm:col-span-2 lg:col-span-2 xl:col-span-2">
                     <div className="relative">
@@ -393,10 +393,11 @@ export default function ClockInOutPage() {
               </div>
 
               {/* Clock In/Out Table */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden w-full max-w-full">
                 {/* Desktop Table View */}
-                <div className="hidden lg:block overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                <div className="hidden lg:block w-full max-w-full">
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full divide-y divide-gray-200">
                     <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                       <tr>
                         <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Day</th>
@@ -535,17 +536,18 @@ export default function ClockInOutPage() {
                         ))
                       )}
                     </tbody>
-                  </table>
+                    </table>
+                  </div>
                 </div>
 
                 {/* Mobile/Tablet Card View */}
-                <div className="lg:hidden">
+                <div className="lg:hidden w-full max-w-full">
                   {filteredRecords.length === 0 ? (
                     <div className="px-6 py-12 text-center text-gray-500">
                       No clock in/out records found
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-200">
+                    <div className="divide-y divide-gray-200 w-full">
                       {filteredRecords.map((record) => (
                         <div key={record.id} className="p-4 hover:bg-gray-50 transition-colors duration-200">
                           <div className="flex items-start justify-between mb-3">
@@ -670,7 +672,7 @@ export default function ClockInOutPage() {
                   )}
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {/* Notification */}

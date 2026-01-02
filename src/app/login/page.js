@@ -29,16 +29,21 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        // Check if user role is allowed to access web portal (frontend check)
+        const allowedWebRoles = ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'];
+        const userRoleName = data.user?.role?.name;
+        
+        if (!allowedWebRoles.includes(userRoleName)) {
+          // User is not allowed to access web portal (CAREWORKER, SUPPORT_WORKER, etc.)
+          router.push('/use-app');
+          return;
+        }
+
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         router.push('/admin');
       } else {
-        // Check if user needs to use mobile app
-        if (data.requiresApp) {
-          router.push('/use-app');
-        } else {
-          setError(data.error || 'Login failed');
-        }
+        setError(data.error || 'Login failed');
       }
     } catch (error) {
       setError('Network error. Please try again.');

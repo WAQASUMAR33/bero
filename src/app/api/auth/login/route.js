@@ -95,23 +95,6 @@ export async function POST(request) {
       data: { lastLoggedIn: new Date() },
     });
 
-    // Check if user role is allowed to access web portal
-    const allowedWebRoles = ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'];
-    const userRoleName = user.role?.name;
-    
-    if (!allowedWebRoles.includes(userRoleName)) {
-      // User is not allowed to access web portal (CAREWORKER, SUPPORT_WORKER, etc.)
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Web access is not available for your role. Please use the mobile app.',
-          requiresApp: true,
-          role: userRoleName
-        },
-        { status: 403 }
-      );
-    }
-
     // Create JWT token
     const token = jwt.sign(
       {

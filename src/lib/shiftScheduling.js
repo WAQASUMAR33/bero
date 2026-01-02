@@ -39,16 +39,20 @@ export function generateOccurrences(fromDateInput, untilDateInput, recurrence, l
     occurrence.setHours(0, 0, 0, 0);
     occurrences.push(occurrence);
 
-    if (!untilDate) break;
-
+    // If no increment days (invalid recurrence), only schedule the first occurrence
     if (!incrementDays) {
-      // No recognised recurrence increment, only schedule the first occurrence
       break;
     }
 
-    current.setDate(current.getDate() + incrementDays);
-    if (current > untilDate) {
-      break;
+    // If untilDate is provided, check if we've reached it
+    if (untilDate) {
+      current.setDate(current.getDate() + incrementDays);
+      if (current > untilDate) {
+        break;
+      }
+    } else {
+      // If no untilDate, continue generating occurrences up to the limit
+      current.setDate(current.getDate() + incrementDays);
     }
 
     iterations += 1;

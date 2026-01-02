@@ -30,12 +30,29 @@ export default function FileUpload({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      if (onError) {
+        onError(`File size exceeds 10MB limit. Selected file is ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      } else {
+        alert(`File size exceeds 10MB limit. Selected file is ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      }
+      e.target.value = ''; // Reset input
+      return;
+    }
+
     setSelectedFile(file);
 
     // Create preview for images
     if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result);
+      reader.onerror = () => {
+        if (onError) {
+          onError('Failed to read file for preview');
+        }
+      };
       reader.readAsDataURL(file);
     } else {
       setPreview(null);
@@ -64,7 +81,14 @@ export default function FileUpload({
             body: JSON.stringify({ file: base64DataUri })
           });
 
-          const result = await response.json();
+          let result;
+          try {
+            result = await response.json();
+          } catch (parseError) {
+            // If response is not JSON, get text instead
+            const errorText = await response.text().catch(() => 'Unknown error');
+            throw new Error(`Upload failed: ${response.status} ${response.statusText}. ${errorText}`);
+          }
 
           if (response.ok && result.success) {
             if (onUploadComplete) {
@@ -77,7 +101,7 @@ export default function FileUpload({
             const input = document.getElementById(inputId);
             if (input) input.value = '';
           } else {
-            const error = result.error || 'Failed to upload file';
+            const error = result?.error || `Upload failed: ${response.status} ${response.statusText}`;
             if (onError) {
               onError(error);
             } else {

@@ -38,15 +38,42 @@ export async function uploadFile(base64DataUri) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      let errorText = '';
+      try {
+        errorText = await response.text();
+      } catch (e) {
+        errorText = `HTTP ${response.status}: ${response.statusText}`;
+      }
       console.error('Upload API error:', errorText);
+      
+      // Try to parse as JSON if possible
+      let errorMessage = `Upload failed: ${response.status} ${response.statusText}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorJson.error || errorMessage;
+      } catch (e) {
+        // Not JSON, use the text as is
+        if (errorText) {
+          errorMessage = errorText.length > 200 ? errorMessage : errorText;
+        }
+      }
+      
       return {
         success: false,
-        error: `Upload failed: ${response.status} ${response.statusText}`
+        error: errorMessage
       };
     }
 
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      console.error('Failed to parse upload response:', parseError);
+      return {
+        success: false,
+        error: 'Invalid response format from upload server'
+      };
+    }
 
     if (result.status && result.file_url) {
       return {

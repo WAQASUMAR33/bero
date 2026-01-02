@@ -13,8 +13,9 @@ export default function DashboardContent({ user }) {
     staff: 0,
     serviceUsers: 0
   });
-  const [events, setEvents] = useState([]);
+  const [holidays, setHolidays] = useState([]);
   const [patients, setPatients] = useState([]);
+  const [visits, setVisits] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Refs for optimization
@@ -50,19 +51,23 @@ export default function DashboardContent({ user }) {
       const signal = abortControllerRef.current.signal;
 
       // Fetch all dashboard data in parallel with abort signal
-      let statsRes, eventsRes, serviceUsersRes;
+      let statsRes, holidaysRes, serviceUsersRes, visitsRes;
       
       try {
-        [statsRes, eventsRes, serviceUsersRes] = await Promise.all([
+        [statsRes, holidaysRes, serviceUsersRes, visitsRes] = await Promise.all([
           fetch('/api/dashboard/stats', {
             headers: { 'Authorization': `Bearer ${token}` },
             signal
           }),
-          fetch('/api/dashboard/events', {
+          fetch('/api/dashboard/holidays', {
             headers: { 'Authorization': `Bearer ${token}` },
             signal
           }),
           fetch('/api/dashboard/service-users', {
+            headers: { 'Authorization': `Bearer ${token}` },
+            signal
+          }),
+          fetch('/api/dashboard/visits', {
             headers: { 'Authorization': `Bearer ${token}` },
             signal
           })
@@ -81,19 +86,23 @@ export default function DashboardContent({ user }) {
       }
 
       // Parse JSON responses
-      const [statsData, eventsData, serviceUsersData] = await Promise.all([
+      const [statsData, holidaysData, serviceUsersData, visitsData] = await Promise.all([
         statsRes.ok ? statsRes.json().catch(e => {
           console.error('Error parsing stats JSON:', e);
           return { success: false, error: 'Failed to parse response' };
         }) : { success: false, error: `HTTP ${statsRes.status}: ${statsRes.statusText}` },
-        eventsRes.ok ? eventsRes.json().catch(e => {
-          console.error('Error parsing events JSON:', e);
+        holidaysRes.ok ? holidaysRes.json().catch(e => {
+          console.error('Error parsing holidays JSON:', e);
           return { success: false, error: 'Failed to parse response' };
-        }) : { success: false, error: `HTTP ${eventsRes.status}: ${eventsRes.statusText}` },
+        }) : { success: false, error: `HTTP ${holidaysRes.status}: ${holidaysRes.statusText}` },
         serviceUsersRes.ok ? serviceUsersRes.json().catch(e => {
           console.error('Error parsing service users JSON:', e);
           return { success: false, error: 'Failed to parse response' };
-        }) : { success: false, error: `HTTP ${serviceUsersRes.status}: ${serviceUsersRes.statusText}` }
+        }) : { success: false, error: `HTTP ${serviceUsersRes.status}: ${serviceUsersRes.statusText}` },
+        visitsRes.ok ? visitsRes.json().catch(e => {
+          console.error('Error parsing visits JSON:', e);
+          return { success: false, error: 'Failed to parse response' };
+        }) : { success: false, error: `HTTP ${visitsRes.status}: ${visitsRes.statusText}` }
       ]);
 
       // Only update state if component is still mounted and request wasn't aborted
@@ -102,12 +111,16 @@ export default function DashboardContent({ user }) {
           setStats(statsData.data);
         }
 
-        if (eventsData.success && eventsData.data) {
-          setEvents(eventsData.data);
+        if (holidaysData.success && holidaysData.data) {
+          setHolidays(holidaysData.data);
         }
 
         if (serviceUsersData.success && serviceUsersData.data) {
           setPatients(serviceUsersData.data);
+        }
+
+        if (visitsData.success && visitsData.data) {
+          setVisits(visitsData.data);
         }
 
         isInitialLoadRef.current = false;
@@ -270,58 +283,77 @@ export default function DashboardContent({ user }) {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Patient Visit Chart */}
+        {/* Visits */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Patient Visit</h3>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Sort by</span>
-              <select className="text-sm border border-gray-300 rounded px-2 py-1">
-                <option>Monthly</option>
-              </select>
-            </div>
-          </div>
-          
-          {/* Simple Chart Representation */}
-          <div className="h-64 flex items-end justify-between space-x-2">
-            {[20, 45, 30, 60, 40, 80, 65, 90, 70, 85, 75, 95].map((height, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div 
-                  className="w-8 bg-gradient-to-t from-[#224fa6] to-[#3270e9] rounded-t"
-                  style={{ height: `${height}%` }}
-                ></div>
-                <span className="text-xs text-gray-500 mt-2">
-                  {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][index]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Upcoming Events */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Upcoming Event</h3>
-          <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Visits</h3>
+          <div className="space-y-4" style={{ maxHeight: '400px', overflowY: 'auto' }}>
             {isLoading ? (
               <div className="text-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#224fa6] mx-auto"></div>
               </div>
-            ) : events.length > 0 ? (
-              events.map((event, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            ) : visits.length > 0 ? (
+              visits.map((visit) => (
+                <div key={visit.id} className="flex items-start justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-[#224fa6]">{event.date}</p>
-                    <p className="text-xs text-gray-600">{event.time}</p>
-                    <p className="text-sm font-semibold text-gray-900">{event.title}</p>
-                    <p className="text-xs text-gray-600">{event.description}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm font-medium text-[#224fa6]">{visit.date}</p>
+                      <p className="text-xs text-gray-600">{visit.time}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        visit.type === 'Family Visit' 
+                          ? 'bg-pink-100 text-pink-700' 
+                          : 'bg-purple-100 text-purple-700'
+                      }`}>
+                        {visit.type}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900">{visit.visitorName}</p>
+                    <p className="text-xs text-gray-600">{visit.serviceUserName}</p>
+                    {visit.additionalInfo && (
+                      <p className="text-xs text-gray-500 mt-1">{visit.additionalInfo}</p>
+                    )}
+                    {visit.purpose && (
+                      <p className="text-xs text-gray-600 mt-1">{visit.purpose}</p>
+                    )}
                   </div>
-                  <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-500 text-center py-4">No upcoming events</p>
+              <p className="text-sm text-gray-500 text-center py-4">No visits found</p>
+            )}
+          </div>
+        </div>
+
+        {/* Holidays */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Holidays</h3>
+          <div className="space-y-4" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {isLoading ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#224fa6] mx-auto"></div>
+              </div>
+            ) : holidays.length > 0 ? (
+              holidays.map((holiday) => (
+                <div key={holiday.id} className="flex items-start justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm font-medium text-[#224fa6]">{holiday.date}</p>
+                      {holiday.time && (
+                        <p className="text-xs text-gray-600">{holiday.time}</p>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded ${holiday.statusColor}`}>
+                        {holiday.status}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900">{holiday.userName}</p>
+                    <p className="text-xs text-gray-600">{holiday.holidayType}</p>
+                    {holiday.description && (
+                      <p className="text-xs text-gray-600 mt-1">{holiday.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">No holiday requests found</p>
             )}
           </div>
         </div>

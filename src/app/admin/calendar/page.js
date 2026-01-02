@@ -14,6 +14,9 @@ export default function CalendarPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
+  const [showRecentVisits, setShowRecentVisits] = useState(false);
+  const [recentVisits, setRecentVisits] = useState([]);
+  const [loadingVisits, setLoadingVisits] = useState(false);
   const [selectedEntryType, setSelectedEntryType] = useState(null);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
@@ -198,8 +201,47 @@ export default function CalendarPage() {
     }
   };
 
-  // Apply filters and search
+  // Fetch recent visits when modal opens
+  const fetchRecentVisits = async () => {
+    setLoadingVisits(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/calendar-entries', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        // Filter only visits (FAMILY_VISIT and PROFESSIONAL_VISIT)
+        const visits = result.data.filter(entry => 
+          entry.entryType === 'FAMILY_VISIT' || entry.entryType === 'PROFESSIONAL_VISIT'
+        );
+        // Sort by date descending (most recent first)
+        visits.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setRecentVisits(visits);
+      }
+    } catch (error) {
+      console.error('Error fetching recent visits:', error);
+      setRecentVisits([]);
+    } finally {
+      setLoadingVisits(false);
+    }
+  };
+
+  // Apply filters and search - exclude past visits
   const filteredEntries = entries.filter((entry) => {
+    // Exclude visits with past dates from the main list
+    const isVisit = entry.entryType === 'FAMILY_VISIT' || entry.entryType === 'PROFESSIONAL_VISIT';
+    if (isVisit) {
+      const entryDate = new Date(entry.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      entryDate.setHours(0, 0, 0, 0);
+      if (entryDate < today) {
+        return false; // Exclude past visits
+      }
+    }
+
     if (filterType !== 'all' && entry.entryType !== filterType) {
       return false;
     }
@@ -261,15 +303,29 @@ export default function CalendarPage() {
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Calendar</h1>
                     <p className="text-gray-600">Manage visits and meetings for service users</p>
                   </div>
-                  <button
-                    onClick={() => setShowTypeSelector(true)}
-                    className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span>Add Entry</span>
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => {
+                        setShowRecentVisits(true);
+                        fetchRecentVisits();
+                      }}
+                      className="bg-white border-2 border-[#224fa6] text-[#224fa6] px-6 py-3 rounded-xl hover:bg-[#224fa6] hover:text-white transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                      <span>Recent Visits</span>
+                    </button>
+                    <button
+                      onClick={() => setShowTypeSelector(true)}
+                      className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      <span>Add Entry</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -451,20 +507,23 @@ export default function CalendarPage() {
 
           {/* Type Selector Modal */}
           {showTypeSelector && (
-            <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-md w-full">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">Select Entry Type</h3>
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-semibold">Select Entry Type</h3>
                     <button
                       onClick={() => setShowTypeSelector(false)}
-                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                      className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
                     >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      ×
                     </button>
                   </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6">
                   <div className="space-y-3">
                     {entryTypes.map(type => (
                       <button
@@ -541,6 +600,15 @@ export default function CalendarPage() {
             />
           )}
 
+          {/* Recent Visits Modal */}
+          {showRecentVisits && (
+            <RecentVisitsModal
+              visits={recentVisits}
+              loading={loadingVisits}
+              onClose={() => setShowRecentVisits(false)}
+            />
+          )}
+
           <Notification
             show={notification.show}
             message={notification.message}
@@ -548,6 +616,122 @@ export default function CalendarPage() {
             onClose={() => setNotification({ show: false, message: '', type: 'success' })}
           />
         </main>
+      </div>
+    </div>
+  );
+}
+
+// Recent Visits Modal Component
+function RecentVisitsModal({ visits, loading, onClose }) {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const getVisitTypeLabel = (type) => {
+    return type === 'FAMILY_VISIT' ? 'Family Visit' : 'Professional Visit';
+  };
+
+  return (
+    <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold">Recent Visits</h3>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#224fa6]"></div>
+            </div>
+          ) : visits.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <p>No visits found</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service User</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Visitor Name</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Purpose</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Completed</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {visits.map((visit) => (
+                    <tr key={visit.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatDate(visit.date)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {visit.time || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          visit.entryType === 'FAMILY_VISIT' 
+                            ? 'bg-pink-100 text-pink-700' 
+                            : 'bg-purple-100 text-purple-700'
+                        }`}>
+                          {getVisitTypeLabel(visit.entryType)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {visit.serviceSeeker 
+                          ? (visit.serviceSeeker.preferredName || `${visit.serviceSeeker.firstName} ${visit.serviceSeeker.lastName}`)
+                          : '-'
+                        }
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {visit.name || '-'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        {visit.purpose || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          visit.announced === 'YES' 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {visit.announced === 'YES' ? 'Announced' : 'Unannounced'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          visit.completed === 'YES' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {visit.completed === 'YES' ? 'Completed' : 'Pending'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -704,23 +888,23 @@ function CalendarEntryFormModal({ entryType, entry, serviceSeekers, staff, onClo
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-4xl w-full max-h-[95vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
+    <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-bold text-gray-900">{getEntryTypeTitle()}</h3>
+            <h3 className="text-xl font-semibold">{getEntryTypeTitle()}</h3>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+              className="text-white/80 hover:text-white text-2xl leading-none transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              ×
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Common Fields */}
           {(entryType === 'FAMILY_VISIT' || entryType === 'PROFESSIONAL_VISIT' || entryType === 'EVENT') && (
             <div>

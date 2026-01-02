@@ -111,7 +111,6 @@ export async function GET(request) {
       prisma.bloodPressureTask.count({ where: { date: { lte: yesterday }, completed: { not: 'YES' } } }),
       prisma.comfortCheckTask.count({ where: { date: { lte: yesterday }, completed: { not: 'YES' } } }),
       prisma.foodDrinkTask.count({ where: { date: { lte: yesterday }, completed: { not: 'YES' } } }),
-      prisma.generalSupportTask.count({ where: { date: { lte: yesterday }, completed: { not: 'YES' } } }),
       prisma.houseKeepingTask.count({ where: { date: { lte: yesterday }, completed: { not: 'YES' } } }),
       prisma.muacTask.count({ where: { date: { lte: yesterday }, completed: { not: 'YES' } } }),
       prisma.oralCareTask.count({ where: { date: { lte: yesterday }, completed: { not: 'YES' } } }),

@@ -75,7 +75,8 @@ export async function POST(request) {
       emergencyContact,
       postalCode,
       contractedHours,
-      niNumber
+      niNumber,
+      profilePic
     } = body;
 
     // Convert string IDs to integers
@@ -122,6 +123,7 @@ export async function POST(request) {
         status,
         password: hashedPassword,
         isEmailVerified: true,
+        profilePic: profilePic || null,
         employeeNumber: employeeNumber || null,
         startDate: startDate ? new Date(startDate) : null,
         leaveDate: leaveDate ? new Date(leaveDate) : null,

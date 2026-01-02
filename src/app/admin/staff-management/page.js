@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
+import FileUpload from '../components/FileUpload';
 
 export default function StaffManagementPage() {
   const [user, setUser] = useState(null);
@@ -31,6 +32,7 @@ export default function StaffManagementPage() {
     password: '',
     phoneNo: '',
     roleId: '',
+    profilePic: '',
     // Step 2: Employment Details
     employeeNumber: '',
     startDate: '',
@@ -289,6 +291,7 @@ export default function StaffManagementPage() {
       password: '',
       phoneNo: '',
       roleId: roles.length > 0 ? roles[0].id : '',
+      profilePic: '',
       employeeNumber: '',
       startDate: '',
       leaveDate: '',
@@ -315,6 +318,7 @@ export default function StaffManagementPage() {
       password: '',
       phoneNo: staffMember.phoneNo || '',
       roleId: staffMember.roleId || (roles.length > 0 ? roles[0].id : ''),
+      profilePic: staffMember.profilePic || '',
       employeeNumber: staffMember.employeeNumber || '',
       startDate: staffMember.startDate ? new Date(staffMember.startDate).toISOString().split('T')[0] : '',
       leaveDate: staffMember.leaveDate ? new Date(staffMember.leaveDate).toISOString().split('T')[0] : '',
@@ -626,6 +630,68 @@ export default function StaffManagementPage() {
                 {/* Step 1: Basic Info */}
                 {currentStep === 1 && (
                   <div className="space-y-4">
+                    {/* Profile Photo Section - Prominent at top */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
+                      <div className="flex items-start space-x-4 sm:space-x-6">
+                        {/* Photo Preview */}
+                        <div className="flex-shrink-0">
+                          {formData.profilePic ? (
+                            <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden border-4 border-white shadow-lg">
+                              <img src={formData.profilePic} alt="Profile Preview" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setFormData({ ...formData, profilePic: '' })}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md"
+                                title="Remove photo"
+                              >
+                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-gradient-to-br from-[#224fa6] to-[#3270e9] flex items-center justify-center border-4 border-white shadow-lg">
+                              <svg className="w-12 h-12 sm:w-16 sm:h-16 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Upload Section */}
+                        <div className="flex-1 min-w-0">
+                          <label className="block text-base font-semibold text-gray-900 mb-2 sm:mb-3">
+                            Profile Photo
+                          </label>
+                          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+                            Upload a profile photo for this staff member. This will help identify them in the system.
+                          </p>
+                          <FileUpload
+                            accept="image/*"
+                            label="📷 Upload Photo"
+                            onUploadComplete={(fileUrl) => {
+                              setFormData({ ...formData, profilePic: fileUrl });
+                              showNotification('Photo uploaded successfully!', 'success');
+                            }}
+                            onError={(error) => {
+                              showNotification(`Photo upload failed: ${error}`, 'error');
+                            }}
+                            className="mb-2"
+                          />
+                          {formData.profilePic && (
+                            <div className="mt-2 sm:mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                              <p className="text-xs text-green-700 flex items-center">
+                                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                Photo uploaded successfully
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
@@ -917,6 +983,68 @@ export default function StaffManagementPage() {
               </div>
 
               <form onSubmit={handleEditStaff} className="space-y-4">
+                {/* Profile Photo Section */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
+                  <div className="flex items-start space-x-4 sm:space-x-6">
+                    {/* Photo Preview */}
+                    <div className="flex-shrink-0">
+                      {formData.profilePic ? (
+                        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden border-4 border-white shadow-lg">
+                          <img src={formData.profilePic} alt="Profile Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, profilePic: '' })}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md"
+                            title="Remove photo"
+                          >
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-gradient-to-br from-[#224fa6] to-[#3270e9] flex items-center justify-center border-4 border-white shadow-lg">
+                          <svg className="w-12 h-12 sm:w-16 sm:h-16 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Upload Section */}
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-base font-semibold text-gray-900 mb-2 sm:mb-3">
+                        Profile Photo
+                      </label>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+                        Upload or update the profile photo for this staff member.
+                      </p>
+                      <FileUpload
+                        accept="image/*"
+                        label="📷 Upload Photo"
+                        onUploadComplete={(fileUrl) => {
+                          setFormData({ ...formData, profilePic: fileUrl });
+                          showNotification('Photo uploaded successfully!', 'success');
+                        }}
+                        onError={(error) => {
+                          showNotification(`Photo upload failed: ${error}`, 'error');
+                        }}
+                        className="mb-2"
+                      />
+                      {formData.profilePic && (
+                        <div className="mt-2 sm:mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                          <p className="text-xs text-green-700 flex items-center">
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Photo uploaded successfully
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>

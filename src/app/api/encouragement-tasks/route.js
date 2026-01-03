@@ -3,6 +3,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { generateEncouragementTasksFromSchedules } from '@/lib/generateEncouragementTasks';
+
 // GET all encouragement tasks
 export async function GET(request) {
   try {
@@ -29,18 +31,20 @@ export async function GET(request) {
     const serviceSeekerId = searchParams.get('serviceSeekerId');
     const dateParam = searchParams.get('date');
     
+    // Determine the target date
+    const targetDate = dateParam ? new Date(dateParam) : new Date();
+    targetDate.setHours(0, 0, 0, 0);
+    
     const where = {};
+    let serviceSeekerIds = [];
     
     // For care workers, filter by shift assignments
     if (isCareWorker) {
-      const date = dateParam ? new Date(dateParam) : new Date();
-      date.setHours(0, 0, 0, 0);
-      
       // Get shift assignments for this user on this date
       const assignments = await prisma.shiftAssignment.findMany({
         where: {
           userId: decoded.userId,
-          date: date,
+          date: targetDate,
           status: 'SCHEDULED'
         },
         include: {
@@ -53,16 +57,26 @@ export async function GET(request) {
       });
 
       // Extract unique service seeker IDs from assignments
-      const assignedServiceSeekerIds = [...new Set(assignments.map(a => a.shift.serviceSeekerId))];
+      serviceSeekerIds = [...new Set(assignments.map(a => a.shift.serviceSeekerId))];
       
-      if (assignedServiceSeekerIds.length === 0) {
+      if (serviceSeekerIds.length === 0) {
         return NextResponse.json([], { status: 200 });
       }
       
-      where.serviceSeekerId = { in: assignedServiceSeekerIds };
+      where.serviceSeekerId = { in: serviceSeekerIds };
     } else if (serviceSeekerId) {
       // For non-care workers, allow filtering by serviceSeekerId if provided
-      where.serviceSeekerId = parseInt(serviceSeekerId);
+      const id = parseInt(serviceSeekerId);
+      serviceSeekerIds = [id];
+      where.serviceSeekerId = id;
+    } else {
+      // No filter - get all service seekers (for admins)
+      // We'll generate tasks for all schedules
+      const allSchedules = await prisma.serviceSeekerEncouragementSchedule.findMany({
+        select: { serviceSeekerId: true },
+        distinct: ['serviceSeekerId'],
+      });
+      serviceSeekerIds = allSchedules.map(s => s.serviceSeekerId);
     }
     
     if (dateParam) {
@@ -74,6 +88,11 @@ export async function GET(request) {
         gte: date,
         lt: nextDay
       };
+    }
+
+    // Generate tasks from schedules for the target date (if date is specified)
+    if (dateParam && serviceSeekerIds.length > 0) {
+      await generateEncouragementTasksFromSchedules(serviceSeekerIds, targetDate, decoded.userId);
     }
 
     const tasks = await prisma.encouragementTask.findMany({

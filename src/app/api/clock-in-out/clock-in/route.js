@@ -372,22 +372,30 @@ export async function POST(request) {
       }, { status: 404 });
     }
 
-    // Check if there's already an active (not clocked out) clock in record for this specific shift assignment
-    // This allows multiple shifts per day, but prevents double clock-in for the same shift
-    const existingActiveRecord = await prisma.clockInOut.findFirst({
+    // Check if there's already a clock in record for this specific shift assignment
+    // This prevents clocking in multiple times to the same shift, even after clocking out
+    const existingRecord = await prisma.clockInOut.findFirst({
       where: {
         userId: decoded.userId,
         shiftAssignmentId: finalShiftAssignmentId,
-        clockInTime: { not: null },
-        clockOutTime: null
+        clockInTime: { not: null }
       }
     });
 
-    if (existingActiveRecord) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'You have already clocked in for this shift. Please clock out first before clocking in again.' 
-      }, { status: 400 });
+    if (existingRecord) {
+      if (existingRecord.clockOutTime === null) {
+        // Active clock in exists
+        return NextResponse.json({ 
+          success: false, 
+          error: 'You have already clocked in for this shift. Please clock out first before clocking in again.' 
+        }, { status: 400 });
+      } else {
+        // Already clocked in and out for this shift
+        return NextResponse.json({ 
+          success: false, 
+          error: 'You have already completed this shift. You cannot clock in again to the same shift assignment.' 
+        }, { status: 400 });
+      }
     }
 
     // Check if late based on shift start time

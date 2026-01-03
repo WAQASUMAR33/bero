@@ -11,107 +11,38 @@ All endpoints require JWT authentication. Include the token in the Authorization
 Authorization: Bearer <your_jwt_token>
 ```
 
+## Important Note for Mobile App
+**Mobile app users can ONLY view their own assigned shifts.** All shift queries must use `view=my` parameter to retrieve only shifts assigned to the authenticated user.
+
 ---
 
-## 1. Get Shifts
+## 1. Get My Shifts
 
 ### Endpoint
 ```
-GET /api/shifts
+GET /api/shifts?view=my
 ```
 
 ### Query Parameters
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `view` | string | No | Filter view: `'all'` (all shifts) or `'my'` (only shifts assigned to current user) |
+| `view` | string | **Yes** | Must be set to `'my'` to view only shifts assigned to current user |
 | `date` | string | No | ISO date string (YYYY-MM-DD) to filter shifts for a specific date |
 | `week` | string | No | ISO date string (YYYY-MM-DD) for week start to filter shifts for a week |
 
-### Request Example
+### Request Examples
 ```javascript
-// Get all shifts
-GET /api/shifts
+// Get all my shifts
+GET /api/shifts?view=my
 
 // Get my shifts for today
 GET /api/shifts?view=my&date=2024-01-15
 
-// Get my shifts for a week
+// Get my shifts for a week (starting from Monday)
 GET /api/shifts?view=my&week=2024-01-15
 ```
 
-### Response (view='all')
-```json
-[
-  {
-    "id": 1,
-    "serviceSeekerId": 5,
-    "fromDate": "2024-01-15T00:00:00.000Z",
-    "untilDate": "2024-12-31T00:00:00.000Z",
-    "recurrence": "DAILY",
-    "startTime": "09:00",
-    "endTime": "17:00",
-    "shiftTypeId": 2,
-    "totalStaffRequired": 1,
-    "funderId": 3,
-    "timeCritical": false,
-    "shiftRunId": null,
-    "notesForCarers": "Please arrive on time",
-    "notesForManager": "Regular shift",
-    "createdAt": "2024-01-10T10:00:00.000Z",
-    "updatedAt": "2024-01-10T10:00:00.000Z",
-    "serviceSeeker": {
-      "id": 5,
-      "firstName": "John",
-      "lastName": "Doe",
-      "preferredName": "Johnny",
-      "address": "123 Main St, London",
-      "latitude": 51.5074,
-      "longitude": -0.1278
-    },
-    "shiftType": {
-      "id": 2,
-      "name": "Regular Care",
-      "description": "Standard care shift"
-    },
-    "funder": {
-      "id": 3,
-      "fundingSource": "NHS",
-      "contractNumber": "NHS-2024-001"
-    },
-    "shiftRun": {
-      "id": 1,
-      "name": "Morning Run"
-    },
-    "createdBy": {
-      "id": 1,
-      "firstName": "Admin",
-      "lastName": "User"
-    },
-    "updatedBy": {
-      "id": 1,
-      "firstName": "Admin",
-      "lastName": "User"
-    },
-    "assignments": [
-      {
-        "id": 10,
-        "shiftId": 1,
-        "userId": 8,
-        "date": "2024-01-15T00:00:00.000Z",
-        "status": "ASSIGNED",
-        "user": {
-          "id": 8,
-          "firstName": "Jane",
-          "lastName": "Smith",
-          "profilePic": "https://example.com/photos/jane.jpg"
-        }
-      }
-    ]
-  }
-]
-```
-
-### Response (view='my') - Enhanced with Clock In/Out Status
+### Response - Enhanced with Clock In/Out Status
 ```json
 [
   {
@@ -192,11 +123,11 @@ GET /api/shifts?view=my&week=2024-01-15
 ]
 ```
 
-### Additional Fields for `view='my'`
-When `view=my`, the response includes additional fields:
+### Additional Fields Included in Response
+The response includes additional fields specific to your assigned shifts:
 - `shiftAssignmentId`: ID of the shift assignment for the current user
 - `assignmentDate`: Date of the assignment
-- `assignmentStatus`: Status of the assignment (ASSIGNED, COMPLETED, etc.)
+- `assignmentStatus`: Status of the assignment (ASSIGNED, COMPLETED, CANCELLED, etc.)
 - `clockedIn`: Boolean indicating if user has clocked in
 - `clockInTime`: Clock in timestamp (if clocked in)
 - `clockOutTime`: Clock out timestamp (if clocked out)
@@ -226,7 +157,7 @@ When `view=my`, the response includes additional fields:
 
 ---
 
-## 2. Get Single Shift
+## 2. Get Single Shift (My Shifts Only)
 
 ### Endpoint
 ```
@@ -236,12 +167,15 @@ GET /api/shifts/[id]
 ### Path Parameters
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | integer | Yes | Shift ID |
+| `id` | integer | Yes | Shift ID (must be a shift assigned to the current user) |
 
 ### Request Example
 ```javascript
 GET /api/shifts/1
 ```
+
+### Note
+This endpoint will only return shift details if the shift is assigned to the authenticated user. If the shift is not assigned to you, you will receive a 404 error.
 
 ### Response
 ```json
@@ -337,6 +271,9 @@ GET /api/shifts/1
 ```
 POST /api/shifts
 ```
+
+### Note for Mobile App
+**Mobile app users typically cannot create shifts.** This endpoint is primarily for web portal administrators and managers. If your mobile app needs to create shifts, ensure proper role-based permissions are implemented.
 
 ### Request Body
 | Field | Type | Required | Description |
@@ -470,6 +407,9 @@ POST /api/shifts
 PUT /api/shifts/[id]
 ```
 
+### Note for Mobile App
+**Mobile app users typically cannot update shifts.** This endpoint is primarily for web portal administrators and managers. If your mobile app needs to update shifts, ensure proper role-based permissions are implemented.
+
 ### Path Parameters
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -530,6 +470,9 @@ Same structure as GET /api/shifts/[id]
 DELETE /api/shifts/[id]
 ```
 
+### Note for Mobile App
+**Mobile app users cannot delete shifts.** This endpoint is only available to web portal administrators and managers.
+
 ### Path Parameters
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -568,6 +511,9 @@ DELETE /api/shifts/1
 ```
 GET /api/shifts/available-staff
 ```
+
+### Note for Mobile App
+**Mobile app users typically cannot view available staff.** This endpoint is primarily for web portal administrators and managers who need to assign staff to shifts.
 
 ### Query Parameters
 | Parameter | Type | Required | Description |
@@ -640,6 +586,27 @@ When `recurrence` is set and `untilDate` is provided, the system automatically c
 ### React Native Example
 
 ```javascript
+// Get all my shifts
+const getMyShifts = async (token) => {
+  const response = await fetch(
+    'https://your-domain.com/api/shifts?view=my',
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  if (response.ok) {
+    const shifts = await response.json();
+    return shifts;
+  } else {
+    throw new Error('Failed to fetch shifts');
+  }
+};
+
 // Get my shifts for today
 const getMyShiftsToday = async (token) => {
   const today = new Date().toISOString().split('T')[0];
@@ -659,6 +626,57 @@ const getMyShiftsToday = async (token) => {
     return shifts;
   } else {
     throw new Error('Failed to fetch shifts');
+  }
+};
+
+// Get my shifts for current week
+const getMyShiftsThisWeek = async (token) => {
+  // Get Monday of current week
+  const today = new Date();
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+  const monday = new Date(today.setDate(diff));
+  const weekStart = monday.toISOString().split('T')[0];
+  
+  const response = await fetch(
+    `https://your-domain.com/api/shifts?view=my&week=${weekStart}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  if (response.ok) {
+    const shifts = await response.json();
+    return shifts;
+  } else {
+    throw new Error('Failed to fetch shifts');
+  }
+};
+
+// Get single shift details (must be assigned to user)
+const getMyShiftDetails = async (token, shiftId) => {
+  const response = await fetch(
+    `https://your-domain.com/api/shifts/${shiftId}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  if (response.ok) {
+    const shift = await response.json();
+    return shift;
+  } else if (response.status === 404) {
+    throw new Error('Shift not found or not assigned to you');
+  } else {
+    throw new Error('Failed to fetch shift');
   }
 };
 
@@ -682,11 +700,52 @@ const clockIn = async (token, shiftAssignmentId, latitude, longitude) => {
   
   return response.json();
 };
+
+// Clock out for a shift
+const clockOut = async (token, clockInOutId, latitude, longitude) => {
+  const response = await fetch(
+    'https://your-domain.com/api/clock-in-out/clock-out',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        clockInOutId,
+        latitude,
+        longitude
+      })
+    }
+  );
+  
+  return response.json();
+};
 ```
 
 ### Flutter Example
 
 ```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+// Get all my shifts
+Future<List<dynamic>> getMyShifts(String token) async {
+  final response = await http.get(
+    Uri.parse('https://your-domain.com/api/shifts?view=my'),
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+  );
+  
+  if (response.statusCode == 200) {
+    return json.decode(response.body);
+  } else {
+    throw Exception('Failed to fetch shifts');
+  }
+}
+
 // Get my shifts for today
 Future<List<dynamic>> getMyShiftsToday(String token) async {
   final today = DateTime.now().toIso8601String().split('T')[0];
@@ -704,18 +763,121 @@ Future<List<dynamic>> getMyShiftsToday(String token) async {
     throw Exception('Failed to fetch shifts');
   }
 }
+
+// Get my shifts for current week
+Future<List<dynamic>> getMyShiftsThisWeek(String token) async {
+  // Get Monday of current week
+  final today = DateTime.now();
+  final day = today.weekday;
+  final monday = today.subtract(Duration(days: day - 1));
+  final weekStart = monday.toIso8601String().split('T')[0];
+  
+  final response = await http.get(
+    Uri.parse('https://your-domain.com/api/shifts?view=my&week=$weekStart'),
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+  );
+  
+  if (response.statusCode == 200) {
+    return json.decode(response.body);
+  } else {
+    throw Exception('Failed to fetch shifts');
+  }
+}
+
+// Get single shift details (must be assigned to user)
+Future<Map<String, dynamic>> getMyShiftDetails(String token, int shiftId) async {
+  final response = await http.get(
+    Uri.parse('https://your-domain.com/api/shifts/$shiftId'),
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+  );
+  
+  if (response.statusCode == 200) {
+    return json.decode(response.body);
+  } else if (response.statusCode == 404) {
+    throw Exception('Shift not found or not assigned to you');
+  } else {
+    throw Exception('Failed to fetch shift');
+  }
+}
+
+// Clock in for a shift
+Future<Map<String, dynamic>> clockIn(
+  String token,
+  int shiftAssignmentId,
+  double latitude,
+  double longitude,
+) async {
+  final response = await http.post(
+    Uri.parse('https://your-domain.com/api/clock-in-out/clock-in'),
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+    body: json.encode({
+      'shiftAssignmentId': shiftAssignmentId,
+      'latitude': latitude,
+      'longitude': longitude,
+    }),
+  );
+  
+  return json.decode(response.body);
+}
+
+// Clock out for a shift
+Future<Map<String, dynamic>> clockOut(
+  String token,
+  int clockInOutId,
+  double latitude,
+  double longitude,
+) async {
+  final response = await http.post(
+    Uri.parse('https://your-domain.com/api/clock-in-out/clock-out'),
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+    body: json.encode({
+      'clockInOutId': clockInOutId,
+      'latitude': latitude,
+      'longitude': longitude,
+    }),
+  );
+  
+  return json.decode(response.body);
+}
 ```
 
 ---
 
 ## Notes
 
-1. **Time Format**: All times are in 24-hour format (HH:mm), e.g., "09:00", "17:30"
-2. **Date Format**: All dates are in ISO 8601 format (YYYY-MM-DD)
-3. **Timezone**: All dates and times are stored in UTC. Convert to local time in your mobile app
-4. **Clock In/Out**: Use the Clock In/Out API endpoints (`/api/clock-in-out/clock-in` and `/api/clock-in-out/clock-out`) to record attendance for shifts
-5. **Assignment Status**: When viewing `view=my`, the `assignmentStatus` field indicates the status of your assignment (ASSIGNED, COMPLETED, CANCELLED, etc.)
-6. **Recurring Shifts**: When creating a recurring shift, the system automatically generates shift assignments for all occurrences. Use `untilDate` to limit the recurrence period
+1. **Mobile App Access**: Mobile app users can ONLY view their own assigned shifts using `view=my` parameter. They cannot view all shifts, create, update, or delete shifts.
+
+2. **Time Format**: All times are in 24-hour format (HH:mm), e.g., "09:00", "17:30"
+
+3. **Date Format**: All dates are in ISO 8601 format (YYYY-MM-DD)
+
+4. **Timezone**: All dates and times are stored in UTC. Convert to local time in your mobile app
+
+5. **Clock In/Out**: Use the Clock In/Out API endpoints (`/api/clock-in-out/clock-in` and `/api/clock-in-out/clock-out`) to record attendance for shifts. You'll need the `shiftAssignmentId` from the shift response.
+
+6. **Assignment Status**: The `assignmentStatus` field indicates the status of your assignment:
+   - `ASSIGNED`: Shift is assigned to you
+   - `COMPLETED`: Shift has been completed
+   - `CANCELLED`: Shift assignment has been cancelled
+   - `PENDING`: Shift assignment is pending confirmation
+
+7. **Clock In/Out Status**: The response includes `clockedIn`, `clockInTime`, `clockOutTime`, `isLate`, and `isEarly` fields to help you track your attendance status for each shift.
+
+8. **Recurring Shifts**: If a shift is recurring, you'll see multiple shift assignments in the response, one for each occurrence that's assigned to you.
+
+9. **Required Parameter**: Always include `view=my` when fetching shifts from the mobile app. Without this parameter, you may receive an error or empty results.
 
 ---
 

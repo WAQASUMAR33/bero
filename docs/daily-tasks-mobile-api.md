@@ -115,11 +115,12 @@ Most tasks include these common fields that can be updated:
   - `completed` - Completion status
   - `emotion` - Emotion indicator
   - Task-specific fields (e.g., `bathingType`, `oralCare`, `temperatureInC`, etc.)
+  - `time` - Task completion time (for most task types)
 - Care workers **CANNOT** update:
-  - `serviceSeekerId` - Service user assignment (set by admin)
-  - `date` - Task date (set by admin)
-  - `time` - Task time (set by admin)
-- Care workers **CANNOT** create or delete tasks
+  - `serviceSeekerId` - Service user assignment (set by admin) - **BLOCKED**
+  - `date` - Task date (set by admin) - **BLOCKED**
+  - Admin-controlled fields (e.g., `incidentTypeId`, `locationId`, `supportListId`, `triggerId`, etc.) - **BLOCKED**
+- Care workers **CANNOT** create or delete tasks - **POST and DELETE endpoints return 403 Forbidden**
 
 ---
 
@@ -129,7 +130,7 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/bathing-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String) - Time in HH:mm format
 - `bathingType` (Enum) - `BATH`, `BEDWASH`, `FULL_BODY_WASH`, `LOWER_BODY_WASH`, `SHOWER`, `STRIP_WASH`
 - `compliance` (Enum) - `COMPLETED`, `DECLINED`
@@ -139,6 +140,10 @@ Most tasks include these common fields that can be updated:
 - `catheterChecked` (Boolean)
 - `completed` (Enum) - `YES`, `NO`, `ATTEMPTED`, `NOT_REQUIRED`
 - `emotion` (Enum) - `SAD`, `NEUTRAL`, `HAPPY`
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 **Example PUT Request:**
 ```json
@@ -161,16 +166,21 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/behaviour-tasks`
 
-**Updateable Fields:**
-- `time` (String)
+**Care Worker Updateable Fields:**
 - `type` (Enum) - `AGGRESSION_HITTING_BITING`, `CRYING`, `HAPPY_APPRECIATING`, `ISOLATION`, `SELF_INJURIOUS_BEHAVIOUR`, `SEXUALIZED_BEHAVIOUR_IN_PUBLIC`, `SHOUTING_SWEARING`, `SOILING_SMEARING`, `STARVATION`, `THROWING_BREAKING_ITEMS`
 - `triggerId` (Int, optional) - ID of the behaviour trigger
+- `othersInvolved` (Boolean)
+- `othersInvolvedDetails` (String, optional)
 - `antecedents` (String, optional)
 - `behaviour` (String, optional)
 - `consequences` (String, optional)
 - `careIntervention` (String, optional)
-- `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
 
 ---
 
@@ -178,13 +188,17 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/blood-pressure-tasks`
 
-**Updateable Fields:**
-- `time` (String)
+**Care Worker Updateable Fields:**
 - `systolicPressure` (Int)
 - `diastolicPressure` (Int)
 - `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+- `time` (String)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 **Example PUT Request:**
 ```json
@@ -204,9 +218,7 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/blood-test-tasks`
 
-**Updateable Fields:**
-- `time` (String)
-- `when` (Enum) - `BEFORE_BREAKFAST`, `AFTER_BREAKFAST`, `BEFORE_LUNCH`, `AFTER_LUNCH`, `BEFORE_DINNER`, `AFTER_DINNER`, `BEDTIME`, `OTHER`
+**Care Worker Updateable Fields:**
 - `bloodGlucose` (Float, optional)
 - `insulinGiven` (String, optional)
 - `sideAdministered` (Enum, optional) - `LEFT_UPPER`, `RIGHT_UPPER`, `LEFT_LOWER`, `RIGHT_LOWER`
@@ -214,22 +226,37 @@ Most tasks include these common fields that can be updated:
 - `completed` (Enum)
 - `emotion` (Enum)
 
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
+- `when`
+
 ---
 
 ### 5. Comfort Check Tasks
 
 **Endpoint Base:** `/api/comfort-check-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
 - `allNeedsMet` (Boolean)
 - `catheterCheck` (Boolean)
 - `incontinencePadCheck` (Boolean)
 - `repositioned` (Boolean)
 - `toileted` (Boolean)
+- `stoolPassed` (Boolean)
+- `urinePassed` (Boolean)
+- `sleep` (Boolean)
+- `stomaCheck` (Boolean)
+- `personalHygiene` (Boolean)
 - `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -237,11 +264,14 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/communication-notes-tasks`
 
-**Updateable Fields:**
-- `time` (String, optional)
+**Care Worker Updateable Fields:**
 - `notes` (String)
-- `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
 
 ---
 
@@ -249,12 +279,16 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/encouragement-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String, optional)
 - `encouragement` (String)
 - `note` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -262,13 +296,16 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/family-photo-message-tasks`
 
-**Updateable Fields:**
-- `time` (String, optional)
+**Care Worker Updateable Fields:**
 - `description` (String, optional)
 - `messageFromResidence` (String, optional)
 - `photoUrl` (String, optional)
-- `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
 
 ---
 
@@ -276,15 +313,18 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/follow-up-tasks`
 
-**Updateable Fields:**
-- `time` (String, optional)
+**Care Worker Updateable Fields:**
 - `followUpDate` (DateTime)
 - `followUpTime` (String, optional)
 - `name` (String)
 - `description` (String, optional)
 - `status` (Enum) - Check schema for available values
-- `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
 
 ---
 
@@ -292,7 +332,7 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/food-drink-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
 - `foodDrinkOffer` (String, optional)
 - `main` (String, optional)
@@ -303,6 +343,10 @@ Most tasks include these common fields that can be updated:
 - `pictureUrl` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 **Example PUT Request:**
 ```json
@@ -324,12 +368,15 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/general-support-tasks`
 
-**Updateable Fields:**
-- `time` (String, optional)
+**Care Worker Updateable Fields:**
 - `notes` (String, optional)
-- `supportListId` (Int, optional)
-- `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
+- `supportListId`
 
 ---
 
@@ -337,13 +384,17 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/house-keeping-tasks`
 
-**Updateable Fields:**
-- `time` (String, optional)
+**Care Worker Updateable Fields:**
 - `task` (String, optional)
 - `notes` (String, optional)
 - `photoUrl` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
 
 ---
 
@@ -351,16 +402,34 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/incident-fall-tasks`
 
-**Updateable Fields:**
-- `time` (String)
-- `incidentTypeId` (Int, optional)
-- `locationId` (Int, optional)
-- `serviceUserInjured` (Boolean)
-- `witnessedBy` (Int, optional) - Staff ID
+**Care Worker Updateable Fields:**
+- `incidentLasted` (String, optional)
+- `othersInvolved` (Boolean)
+- `othersInvolvedDetails` (String, optional)
 - `injuryDetail` (String, optional)
+- `serviceUserInjured` (Boolean)
+- `witnessedBy` (Enum, optional)
+- `witnessedByStaffId` (Int, optional)
+- `witnessDetail` (String, optional)
+- `photoConsent` (Boolean)
+- `photoUrl` (String, optional)
+- `residentInfoProvided` (Boolean)
+- `whatResidentDoing` (String, optional)
+- `howIncidentHappened` (String, optional)
+- `dateReportedToSeniorStaff` (DateTime, optional)
+- `equipmentInvolved` (Boolean)
+- `relativesInformed` (Boolean)
+- `contactsCalled` (String, optional)
 - `notes` (String, optional)
-- `completed` (Enum)
 - `emotion` (Enum)
+- `signatureUrl` (String, optional)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
+- `incidentTypeId`
+- `locationId`
 
 ---
 
@@ -370,15 +439,21 @@ Most tasks include these common fields that can be updated:
 
 **Note:** This task type uses `applyDate` instead of `date` for filtering.
 
-**Updateable Fields:**
-- `applyDate` (DateTime)
-- `applyTime` (String)
-- `medicineName` (String)
-- `medicineType` (String, optional)
+**Care Worker Updateable Fields:**
 - `administrated` (Boolean)
+- `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
-- `notes` (String, optional)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `applyDate`
+- `applyTime`
+- `prn`
+- `medicineName`
+- `medicineType`
+- `requestSignoffBy`
+- `signoffByStaffId`
 
 ---
 
@@ -386,12 +461,16 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/muac-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
 - `muacInCm` (Float)
 - `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -399,11 +478,14 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/observation-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String, optional)
 - `notes` (String)
-- `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -411,12 +493,15 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/one-to-one-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String, optional)
 - `duration` (String, optional)
 - `notes` (String, optional)
-- `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -424,7 +509,7 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/oral-care-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String, optional)
 - `oralCare` (Enum) - Check schema for available values
 - `assisted` (Enum) - Check schema for available values
@@ -433,18 +518,26 @@ Most tasks include these common fields that can be updated:
 - `completed` (Enum)
 - `emotion` (Enum)
 
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+
 ---
 
 ### 19. Oxygen Tasks
 
 **Endpoint Base:** `/api/oxygen-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
 - `quantity` (String)
 - `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -452,7 +545,7 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/person-centred-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String, optional)
 - `nameId` (Int, optional) - Person centred task name ID
 - `notes` (String, optional)
@@ -460,18 +553,50 @@ Most tasks include these common fields that can be updated:
 - `completed` (Enum)
 - `emotion` (Enum)
 
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+
 ---
 
 ### 21. Physical Intervention Tasks
 
 **Endpoint Base:** `/api/physical-intervention-tasks`
 
-**Updateable Fields:**
-- `time` (String, optional)
-- Multiple yes/no fields (check schema for complete list)
-- `notes` (String, optional)
-- `completed` (Enum)
+**Care Worker Updateable Fields:**
+- `location` (String)
+- `wereOtherStaffInvolved` (Boolean)
+- `otherStaffNames` (String, optional)
+- `wereOtherResidenceInvolved` (Boolean)
+- `otherResidenceNamesExplanation` (String, optional)
+- `wereAnyInjuriesSustained` (Boolean)
+- `injuriesExplanation` (String, optional)
+- `didResidenceStaffRequireMedication` (Boolean)
+- `medicationExplanation` (String, optional)
+- `hasAccidentBeenFilled` (Boolean)
+- `accidentFilledExplanation` (String, optional)
+- `accidentBookDateTime` (DateTime, optional)
+- `accidentBookNumber` (String, optional)
+- `detailOfPhysicalIntervention` (String)
+- `techniquesUsed` (String)
+- `positionOfStaffMembers` (String)
+- `durationOfPhysicalIntervention` (String)
+- `wereRestraintsUsed` (Boolean)
+- `durationOfWholeIncident` (String)
+- `wasReportedToManager` (Boolean)
+- `reportedToManagerExplanation` (String, optional)
+- `managerReportTime` (DateTime, optional)
 - `emotion` (Enum)
+- `cqcNotified` (Boolean)
+- `safeguardingNotified` (Boolean)
+- `familyMemberNotified` (Boolean)
+- `externalProfessional` (String, optional)
+- `signatureUrl` (String, optional)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
 
 ---
 
@@ -479,12 +604,16 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/pulse-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
 - `pulseRate` (Int)
 - `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -492,14 +621,18 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/reposition-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String, optional)
 - `position` (String, optional)
 - `intactOrEpuapGrade` (String, optional)
 - `photoUrl` (String, optional)
+- `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
-- `notes` (String, optional)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -507,15 +640,18 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/spending-money-tasks`
 
-**Updateable Fields:**
-- `time` (String, optional)
+**Care Worker Updateable Fields:**
 - `type` (Enum, optional) - Check schema for available values
 - `amount` (Float, optional)
 - `paidUsing` (String, optional)
 - `receiptUrl` (String, optional)
-- `completed` (Enum)
-- `emotion` (Enum)
 - `notes` (String, optional)
+- `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+- `time`
 
 ---
 
@@ -523,13 +659,18 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/stool-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
 - `type` (Enum, optional) - Check schema for available values
-- `urinePassed` (Boolean)
+- `consistency` (Enum, optional)
+- `amount` (Enum, optional)
 - `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 ---
 
@@ -537,12 +678,16 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/temperature-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
 - `temperatureInC` (Float)
 - `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 **Example PUT Request:**
 ```json
@@ -561,7 +706,7 @@ Most tasks include these common fields that can be updated:
 
 **Endpoint Base:** `/api/visit-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
 - `visitType` (Enum) - Check schema for available values
 - `announced` (Enum) - Check schema for available values
@@ -572,18 +717,26 @@ Most tasks include these common fields that can be updated:
 - `summary` (String, optional)
 - `completed` (Enum) - Uses VisitCompletion enum (check schema)
 
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
+
 ---
 
 ### 28. Weight Tasks
 
 **Endpoint Base:** `/api/weight-tasks`
 
-**Updateable Fields:**
+**Care Worker Updateable Fields:**
 - `time` (String)
-- `weight` (Float)
+- `weightInKg` (Float)
 - `notes` (String, optional)
 - `completed` (Enum)
 - `emotion` (Enum)
+
+**Admin/Manager Only Fields (Cannot be updated by Care Worker):**
+- `serviceSeekerId`
+- `date`
 
 **Example PUT Request:**
 ```json
@@ -691,6 +844,25 @@ All successful responses return the updated task object with related data:
 }
 ```
 
+### Forbidden (403) - Care Worker Restrictions
+```json
+{
+  "error": "Care workers and support workers cannot create tasks. Tasks are created automatically from schedules."
+}
+```
+
+```json
+{
+  "error": "Care workers and support workers cannot delete tasks."
+}
+```
+
+```json
+{
+  "error": "You do not have permission to update this task. You are not assigned to this service user."
+}
+```
+
 ### Validation Error (400/500)
 ```json
 {
@@ -709,16 +881,25 @@ All successful responses return the updated task object with related data:
    - `updatedById` - Set to the current user's ID
    - `updatedAt` - Set to the current timestamp
 
-3. **Read-only Fields**: The following fields cannot be changed:
+3. **Read-only Fields for Care Workers**: Care workers and support workers **CANNOT** update:
    - `id`
-   - `serviceSeekerId` (usually)
-   - `date` (usually)
-   - `createdById`
-   - `createdAt`
+   - `serviceSeekerId` - **BLOCKED** (set by admin)
+   - `date` / `applyDate` - **BLOCKED** (set by admin)
+   - `time` / `applyTime` - **BLOCKED** for some task types (check individual task documentation)
+   - Admin-controlled fields (e.g., `incidentTypeId`, `locationId`, `supportListId`, `triggerId`, `medicineName`, `prn`, etc.)
 
-4. **Date Format**: Use ISO 8601 format for dates: `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ss.sssZ`
+4. **Role-Based Restrictions**:
+   - **Care Workers/Support Workers**: Cannot create (POST) or delete (DELETE) tasks - returns 403 Forbidden
+   - **Care Workers/Support Workers**: Can only view tasks for service users they have shift assignments for
+   - **Care Workers/Support Workers**: Can only update task-specific data fields (completion status, notes, task measurements, emotion)
 
-5. **Time Format**: Use 24-hour format: `HH:mm` (e.g., "14:30" for 2:30 PM)
+5. **Date Format**: Use ISO 8601 format for dates: `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ss.sssZ`
 
-6. **Enum Values**: Make sure to use exact enum values as specified in the schema. The API will return validation errors for invalid enum values.
+6. **Time Format**: Use 24-hour format: `HH:mm` (e.g., "14:30" for 2:30 PM)
+
+7. **Enum Values**: Make sure to use exact enum values as specified in the schema. The API will return validation errors for invalid enum values.
+
+8. **Error Responses for Care Workers**:
+   - Attempting to update `serviceSeekerId`, `date`, or other blocked fields will result in a 403 Forbidden error
+   - Attempting to create or delete tasks will result in a 403 Forbidden error with message: "Care workers and support workers cannot create/delete tasks"
 

@@ -26,12 +26,19 @@ Authorization: Bearer <token>
 
 Get all tasks for service users assigned to the logged-in caretaker in a single request.
 
+**Important:** For care workers and support workers, this endpoint **ONLY** returns tasks for service users they have shift assignments for on the specified date. This ensures care workers only see tasks for service users they are actually working with.
+
 ### Get All Tasks
 
 **Endpoint:** `GET /api/caretaker/tasks`
 
 **Query Parameters:**
 - `date` (optional) - Date in `YYYY-MM-DD` format (defaults to today)
+- `serviceSeekerId` (optional) - For admins/managers only: Filter by specific service user ID
+
+**Behavior:**
+- **Care Workers/Support Workers**: Automatically filters by shift assignments. The `serviceSeekerId` parameter is ignored.
+- **Admins/Managers**: Can optionally filter by `serviceSeekerId`. If not provided, returns all tasks for the date.
 
 **Response:**
 ```json
@@ -77,10 +84,16 @@ Get all tasks for service users assigned to the logged-in caretaker in a single 
         "photoUrl": "https://..."
       }
     ],
-    "date": "2025-01-14"
+    "date": "2025-01-14",
+    "message": "No shift assignments found for this date. You will only see tasks for service users you are assigned to." // Only present if no assignments found
   }
 }
 ```
+
+**Note for Care Workers:**
+- If you have no shift assignments for the specified date, the response will return empty tasks and serviceUsers arrays with a helpful message.
+- You will **ONLY** see tasks for service users you have active shift assignments for on that date.
+- This ensures you don't see tasks for service users you're not assigned to work with.
 
 ---
 

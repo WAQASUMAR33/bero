@@ -134,31 +134,31 @@ enum PPStockTransactionAction {
 model RoleDefinition {
   id          Int      @id @default(autoincrement())
   name        String   @unique // e.g., "ADMIN", "CAREWORKER"
-  displayName String   // e.g., "Administrator", "Care Worker"
+  displayName String // e.g., "Administrator", "Care Worker"
   description String?
-  permissions Json     // Array of permission strings
+  permissions Json // Array of permission strings
   isSystem    Boolean  @default(false) // System roles cannot be deleted
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  users       User[]
+  users User[]
 }
 
 model User {
-  id               Int          @id @default(autoincrement())
+  id               Int        @id @default(autoincrement())
   firstName        String
   lastName         String
-  username         String       @unique
+  username         String     @unique
   phoneNo          String
-  email            String       @unique
+  email            String     @unique
   roleId           Int
   password         String
-  isEmailVerified  Boolean      @default(false)
+  isEmailVerified  Boolean    @default(false)
   lastLoggedIn     DateTime?
   profilePic       String?
-  employeeNumber   String?      @unique
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  employeeNumber   String?    @unique
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
   startDate        DateTime?
   leaveDate        DateTime?
   regionId         Int?
@@ -170,115 +170,115 @@ model User {
   niNumber         String?
 
   // Relations
-  role             RoleDefinition @relation(fields: [roleId], references: [id])
-  region           Region?      @relation(fields: [regionId], references: [id])
-  documents        Document[]   @relation("UserDocuments")
-  uploadedDocs     Document[]   @relation("UploadedByUser")
-  standByShifts    StandByShift[]
+  role          RoleDefinition @relation(fields: [roleId], references: [id])
+  region        Region?        @relation(fields: [regionId], references: [id])
+  documents     Document[]     @relation("UserDocuments")
+  uploadedDocs  Document[]     @relation("UploadedByUser")
+  standByShifts StandByShift[]
 
-  permissions      UserPermission[]
+  permissions UserPermission[]
 
   // Audit relations
-  createdServiceSeekers     ServiceSeeker[]       @relation("ServiceSeekerCreatedBy")
-  updatedServiceSeekers     ServiceSeeker[]       @relation("ServiceSeekerUpdatedBy")
-  createdBathingTasks       BathingTask[]         @relation("BathingTaskCreatedBy")
-  updatedBathingTasks       BathingTask[]         @relation("BathingTaskUpdatedBy")
-  createdBehaviourTasks     BehaviourTask[]       @relation("BehaviourTaskCreatedBy")
-  updatedBehaviourTasks     BehaviourTask[]       @relation("BehaviourTaskUpdatedBy")
-  createdBloodTestTasks     BloodTestTask[]       @relation("BloodTestTaskCreatedBy")
-  updatedBloodTestTasks     BloodTestTask[]       @relation("BloodTestTaskUpdatedBy")
-  createdBloodPressureTasks     BloodPressureTask[]       @relation("BloodPressureTaskCreatedBy")
-  updatedBloodPressureTasks     BloodPressureTask[]       @relation("BloodPressureTaskUpdatedBy")
-  createdComfortCheckTasks      ComfortCheckTask[]        @relation("ComfortCheckTaskCreatedBy")
-  updatedComfortCheckTasks      ComfortCheckTask[]        @relation("ComfortCheckTaskUpdatedBy")
-  createdCommunicationNotesTasks CommunicationNotesTask[] @relation("CommunicationNotesTaskCreatedBy")
-  updatedCommunicationNotesTasks CommunicationNotesTask[] @relation("CommunicationNotesTaskUpdatedBy")
-  createdFamilyPhotoMessageTasks FamilyPhotoMessageTask[] @relation("FamilyPhotoMessageTaskCreatedBy")
-  updatedFamilyPhotoMessageTasks FamilyPhotoMessageTask[] @relation("FamilyPhotoMessageTaskUpdatedBy")
-  createdFoodDrinkTasks          FoodDrinkTask[]          @relation("FoodDrinkTaskCreatedBy")
-  updatedFoodDrinkTasks          FoodDrinkTask[]          @relation("FoodDrinkTaskUpdatedBy")
-  createdGeneralSupportTasks     GeneralSupportTask[]     @relation("GeneralSupportTaskCreatedBy")
-  updatedGeneralSupportTasks     GeneralSupportTask[]     @relation("GeneralSupportTaskUpdatedBy")
-  createdHouseKeepingTasks       HouseKeepingTask[]       @relation("HouseKeepingTaskCreatedBy")
-  updatedHouseKeepingTasks       HouseKeepingTask[]       @relation("HouseKeepingTaskUpdatedBy")
-  witnessedIncidentFallTasks     IncidentFallTask[]       @relation("IncidentFallTaskWitnessedBy")
-  createdIncidentFallTasks       IncidentFallTask[]       @relation("IncidentFallTaskCreatedBy")
-  updatedIncidentFallTasks       IncidentFallTask[]       @relation("IncidentFallTaskUpdatedBy")
-  signoffMedicinePrnTasks        MedicinePrnTask[]        @relation("MedicinePrnTaskSignoffBy")
-  createdMedicinePrnTasks        MedicinePrnTask[]        @relation("MedicinePrnTaskCreatedBy")
-  updatedMedicinePrnTasks        MedicinePrnTask[]        @relation("MedicinePrnTaskUpdatedBy")
-  createdMuacTasks               MuacTask[]               @relation("MuacTaskCreatedBy")
-  updatedMuacTasks               MuacTask[]               @relation("MuacTaskUpdatedBy")
-  createdObservationTasks        ObservationTask[]        @relation("ObservationTaskCreatedBy")
-  updatedObservationTasks        ObservationTask[]        @relation("ObservationTaskUpdatedBy")
-  createdOneToOneTasks           OneToOneTask[]           @relation("OneToOneTaskCreatedBy")
-  updatedOneToOneTasks           OneToOneTask[]           @relation("OneToOneTaskUpdatedBy")
-  createdOralCareTasks           OralCareTask[]           @relation("OralCareTaskCreatedBy")
-  updatedOralCareTasks           OralCareTask[]           @relation("OralCareTaskUpdatedBy")
-  createdOxygenTasks             OxygenTask[]             @relation("OxygenTaskCreatedBy")
-  updatedOxygenTasks             OxygenTask[]             @relation("OxygenTaskUpdatedBy")
-  createdPersonCentredTasks      PersonCentredTask[]      @relation("PersonCentredTaskCreatedBy")
-  updatedPersonCentredTasks      PersonCentredTask[]      @relation("PersonCentredTaskUpdatedBy")
+  createdServiceSeekers            ServiceSeeker[]            @relation("ServiceSeekerCreatedBy")
+  updatedServiceSeekers            ServiceSeeker[]            @relation("ServiceSeekerUpdatedBy")
+  createdBathingTasks              BathingTask[]              @relation("BathingTaskCreatedBy")
+  updatedBathingTasks              BathingTask[]              @relation("BathingTaskUpdatedBy")
+  createdBehaviourTasks            BehaviourTask[]            @relation("BehaviourTaskCreatedBy")
+  updatedBehaviourTasks            BehaviourTask[]            @relation("BehaviourTaskUpdatedBy")
+  createdBloodTestTasks            BloodTestTask[]            @relation("BloodTestTaskCreatedBy")
+  updatedBloodTestTasks            BloodTestTask[]            @relation("BloodTestTaskUpdatedBy")
+  createdBloodPressureTasks        BloodPressureTask[]        @relation("BloodPressureTaskCreatedBy")
+  updatedBloodPressureTasks        BloodPressureTask[]        @relation("BloodPressureTaskUpdatedBy")
+  createdComfortCheckTasks         ComfortCheckTask[]         @relation("ComfortCheckTaskCreatedBy")
+  updatedComfortCheckTasks         ComfortCheckTask[]         @relation("ComfortCheckTaskUpdatedBy")
+  createdCommunicationNotesTasks   CommunicationNotesTask[]   @relation("CommunicationNotesTaskCreatedBy")
+  updatedCommunicationNotesTasks   CommunicationNotesTask[]   @relation("CommunicationNotesTaskUpdatedBy")
+  createdFamilyPhotoMessageTasks   FamilyPhotoMessageTask[]   @relation("FamilyPhotoMessageTaskCreatedBy")
+  updatedFamilyPhotoMessageTasks   FamilyPhotoMessageTask[]   @relation("FamilyPhotoMessageTaskUpdatedBy")
+  createdFoodDrinkTasks            FoodDrinkTask[]            @relation("FoodDrinkTaskCreatedBy")
+  updatedFoodDrinkTasks            FoodDrinkTask[]            @relation("FoodDrinkTaskUpdatedBy")
+  createdGeneralSupportTasks       GeneralSupportTask[]       @relation("GeneralSupportTaskCreatedBy")
+  updatedGeneralSupportTasks       GeneralSupportTask[]       @relation("GeneralSupportTaskUpdatedBy")
+  createdHouseKeepingTasks         HouseKeepingTask[]         @relation("HouseKeepingTaskCreatedBy")
+  updatedHouseKeepingTasks         HouseKeepingTask[]         @relation("HouseKeepingTaskUpdatedBy")
+  witnessedIncidentFallTasks       IncidentFallTask[]         @relation("IncidentFallTaskWitnessedBy")
+  createdIncidentFallTasks         IncidentFallTask[]         @relation("IncidentFallTaskCreatedBy")
+  updatedIncidentFallTasks         IncidentFallTask[]         @relation("IncidentFallTaskUpdatedBy")
+  signoffMedicinePrnTasks          MedicinePrnTask[]          @relation("MedicinePrnTaskSignoffBy")
+  createdMedicinePrnTasks          MedicinePrnTask[]          @relation("MedicinePrnTaskCreatedBy")
+  updatedMedicinePrnTasks          MedicinePrnTask[]          @relation("MedicinePrnTaskUpdatedBy")
+  createdMuacTasks                 MuacTask[]                 @relation("MuacTaskCreatedBy")
+  updatedMuacTasks                 MuacTask[]                 @relation("MuacTaskUpdatedBy")
+  createdObservationTasks          ObservationTask[]          @relation("ObservationTaskCreatedBy")
+  updatedObservationTasks          ObservationTask[]          @relation("ObservationTaskUpdatedBy")
+  createdOneToOneTasks             OneToOneTask[]             @relation("OneToOneTaskCreatedBy")
+  updatedOneToOneTasks             OneToOneTask[]             @relation("OneToOneTaskUpdatedBy")
+  createdOralCareTasks             OralCareTask[]             @relation("OralCareTaskCreatedBy")
+  updatedOralCareTasks             OralCareTask[]             @relation("OralCareTaskUpdatedBy")
+  createdOxygenTasks               OxygenTask[]               @relation("OxygenTaskCreatedBy")
+  updatedOxygenTasks               OxygenTask[]               @relation("OxygenTaskUpdatedBy")
+  createdPersonCentredTasks        PersonCentredTask[]        @relation("PersonCentredTaskCreatedBy")
+  updatedPersonCentredTasks        PersonCentredTask[]        @relation("PersonCentredTaskUpdatedBy")
   createdPhysicalInterventionTasks PhysicalInterventionTask[] @relation("PhysicalInterventionTaskCreatedBy")
   updatedPhysicalInterventionTasks PhysicalInterventionTask[] @relation("PhysicalInterventionTaskUpdatedBy")
-  createdPulseTasks              PulseTask[]              @relation("PulseTaskCreatedBy")
-  updatedPulseTasks              PulseTask[]              @relation("PulseTaskUpdatedBy")
-  createdRepositionTasks         RepositionTask[]         @relation("RepositionTaskCreatedBy")
-  updatedRepositionTasks         RepositionTask[]         @relation("RepositionTaskUpdatedBy")
-  createdSpendingMoneyTasks      SpendingMoneyTask[]      @relation("SpendingMoneyTaskCreatedBy")
-  updatedSpendingMoneyTasks      SpendingMoneyTask[]      @relation("SpendingMoneyTaskUpdatedBy")
-  createdStoolTasks              StoolTask[]              @relation("StoolTaskCreatedBy")
-  updatedStoolTasks              StoolTask[]              @relation("StoolTaskUpdatedBy")
-  createdTemperatureTasks        TemperatureTask[]        @relation("TemperatureTaskCreatedBy")
-  updatedTemperatureTasks        TemperatureTask[]        @relation("TemperatureTaskUpdatedBy")
-  createdVisitTasks              VisitTask[]              @relation("VisitTaskCreatedBy")
-  updatedVisitTasks              VisitTask[]              @relation("VisitTaskUpdatedBy")
-  createdWeightTasks             WeightTask[]             @relation("WeightTaskCreatedBy")
-  updatedWeightTasks             WeightTask[]             @relation("WeightTaskUpdatedBy")
-  createdEncouragementTasks      EncouragementTask[]      @relation("EncouragementTaskCreatedBy")
-  updatedEncouragementTasks      EncouragementTask[]      @relation("EncouragementTaskUpdatedBy")
-  createdFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskCreatedBy")
-  updatedFollowUpTasks           FollowUpTask[]           @relation("FollowUpTaskUpdatedBy")
-  
+  createdPulseTasks                PulseTask[]                @relation("PulseTaskCreatedBy")
+  updatedPulseTasks                PulseTask[]                @relation("PulseTaskUpdatedBy")
+  createdRepositionTasks           RepositionTask[]           @relation("RepositionTaskCreatedBy")
+  updatedRepositionTasks           RepositionTask[]           @relation("RepositionTaskUpdatedBy")
+  createdSpendingMoneyTasks        SpendingMoneyTask[]        @relation("SpendingMoneyTaskCreatedBy")
+  updatedSpendingMoneyTasks        SpendingMoneyTask[]        @relation("SpendingMoneyTaskUpdatedBy")
+  createdStoolTasks                StoolTask[]                @relation("StoolTaskCreatedBy")
+  updatedStoolTasks                StoolTask[]                @relation("StoolTaskUpdatedBy")
+  createdTemperatureTasks          TemperatureTask[]          @relation("TemperatureTaskCreatedBy")
+  updatedTemperatureTasks          TemperatureTask[]          @relation("TemperatureTaskUpdatedBy")
+  createdVisitTasks                VisitTask[]                @relation("VisitTaskCreatedBy")
+  updatedVisitTasks                VisitTask[]                @relation("VisitTaskUpdatedBy")
+  createdWeightTasks               WeightTask[]               @relation("WeightTaskCreatedBy")
+  updatedWeightTasks               WeightTask[]               @relation("WeightTaskUpdatedBy")
+  createdEncouragementTasks        EncouragementTask[]        @relation("EncouragementTaskCreatedBy")
+  updatedEncouragementTasks        EncouragementTask[]        @relation("EncouragementTaskUpdatedBy")
+  createdFollowUpTasks             FollowUpTask[]             @relation("FollowUpTaskCreatedBy")
+  updatedFollowUpTasks             FollowUpTask[]             @relation("FollowUpTaskUpdatedBy")
+
   // Rota relations
-  createdShiftRuns               ShiftRun[]               @relation("ShiftRunCreatedBy")
-  updatedShiftRuns               ShiftRun[]               @relation("ShiftRunUpdatedBy")
-  createdShifts                  Shift[]                  @relation("ShiftCreatedBy")
-  updatedShifts                  Shift[]                  @relation("ShiftUpdatedBy")
-  shiftAssignments               ShiftAssignment[]        @relation("ShiftAssignments")
-  clockInOuts                    ClockInOut[]            @relation("ClockInOuts")
-  externalInboxAccesses          ServiceSeekerExternalInboxAccess[]
+  createdShiftRuns      ShiftRun[]                         @relation("ShiftRunCreatedBy")
+  updatedShiftRuns      ShiftRun[]                         @relation("ShiftRunUpdatedBy")
+  createdShifts         Shift[]                            @relation("ShiftCreatedBy")
+  updatedShifts         Shift[]                            @relation("ShiftUpdatedBy")
+  shiftAssignments      ShiftAssignment[]                  @relation("ShiftAssignments")
+  clockInOuts           ClockInOut[]                       @relation("ClockInOuts")
+  externalInboxAccesses ServiceSeekerExternalInboxAccess[]
 
   // Team
-  teamId          Int?
-  team            Team?         @relation(fields: [teamId], references: [id])
+  teamId Int?
+  team   Team? @relation(fields: [teamId], references: [id])
 
   // Chat/Messaging relations
-  conversations   ConversationParticipant[]
-  sentMessages    Message[]
+  conversations ConversationParticipant[]
+  sentMessages  Message[]
 
   // Holiday relations
-  holidays        Holiday[]            @relation("UserHolidays")
-  approvedHolidays Holiday[]           @relation("ApprovedHolidays")
-  
+  holidays         Holiday[] @relation("UserHolidays")
+  approvedHolidays Holiday[] @relation("ApprovedHolidays")
+
   // Calendar entry relations
-  eventCareWorkerEntries ServiceSeekerCalendarEntry[] @relation("EventCareWorker")
-  createdCalendarEntries ServiceSeekerCalendarEntry[] @relation("CalendarEntryCreatedBy")
-  updatedCalendarEntries ServiceSeekerCalendarEntry[] @relation("CalendarEntryUpdatedBy")
-  createdHolidays Holiday[]           @relation("HolidayCreatedBy")
-  updatedHolidays Holiday[]           @relation("HolidayUpdatedBy")
-  createdQualityAssurances QualityAssurance[] @relation("QualityAssuranceCreatedBy")
-  updatedQualityAssurances QualityAssurance[] @relation("QualityAssuranceUpdatedBy")
-  createdMaintenanceIssues MaintenanceIssue[] @relation("MaintenanceIssueCreatedBy")
-  updatedMaintenanceIssues MaintenanceIssue[] @relation("MaintenanceIssueUpdatedBy")
-  createdPolicies Policy[]            @relation("PolicyCreatedBy")
-  updatedPolicies Policy[]            @relation("PolicyUpdatedBy")
-  policyReviews PolicyReview[]        @relation("PolicyReviewCreatedBy")
-  policySignatures PolicySignature[]  @relation("PolicySignatureUser")
-  ppStockTransactions PPStockTransaction[] @relation("PPStockTransactionUser")
-  createdHandovers Handover[]         @relation("HandoverCreatedBy")
-  triggeredEmergencies EmergencyAlert[] @relation("EmergencyTriggeredBy")
-  acknowledgedEmergencies EmergencyAlert[] @relation("EmergencyAcknowledgedBy")
+  eventCareWorkerEntries   ServiceSeekerCalendarEntry[] @relation("EventCareWorker")
+  createdCalendarEntries   ServiceSeekerCalendarEntry[] @relation("CalendarEntryCreatedBy")
+  updatedCalendarEntries   ServiceSeekerCalendarEntry[] @relation("CalendarEntryUpdatedBy")
+  createdHolidays          Holiday[]                    @relation("HolidayCreatedBy")
+  updatedHolidays          Holiday[]                    @relation("HolidayUpdatedBy")
+  createdQualityAssurances QualityAssurance[]           @relation("QualityAssuranceCreatedBy")
+  updatedQualityAssurances QualityAssurance[]           @relation("QualityAssuranceUpdatedBy")
+  createdMaintenanceIssues MaintenanceIssue[]           @relation("MaintenanceIssueCreatedBy")
+  updatedMaintenanceIssues MaintenanceIssue[]           @relation("MaintenanceIssueUpdatedBy")
+  createdPolicies          Policy[]                     @relation("PolicyCreatedBy")
+  updatedPolicies          Policy[]                     @relation("PolicyUpdatedBy")
+  policyReviews            PolicyReview[]               @relation("PolicyReviewCreatedBy")
+  policySignatures         PolicySignature[]            @relation("PolicySignatureUser")
+  ppStockTransactions      PPStockTransaction[]         @relation("PPStockTransactionUser")
+  createdHandovers         Handover[]                   @relation("HandoverCreatedBy")
+  triggeredEmergencies     EmergencyAlert[]             @relation("EmergencyTriggeredBy")
+  acknowledgedEmergencies  EmergencyAlert[]             @relation("EmergencyAcknowledgedBy")
 }
 
 model Team {
@@ -288,32 +288,32 @@ model Team {
   updatedAt DateTime @updatedAt
 
   // Relations
-  members   User[]
+  members         User[]
   emergencyAlerts EmergencyAlert[]
 }
 
 model UserPermission {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  key       String   // flexible permission key (admin defines)
+  id     Int    @id @default(autoincrement())
+  userId Int
+  key    String // flexible permission key (admin defines)
 
-  user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@unique([userId, key]) // prevent duplicate permissions for same user
 }
 
 model Document {
-  id         Int      @id @default(autoincrement())
-  userId     Int      // document belongs to this user
-  uploadedBy Int      // uploaded by which user
+  id         Int @id @default(autoincrement())
+  userId     Int // document belongs to this user
+  uploadedBy Int // uploaded by which user
 
-  fileUrl    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  fileUrl   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user       User     @relation("UserDocuments", fields: [userId], references: [id])
-  uploader   User     @relation("UploadedByUser", fields: [uploadedBy], references: [id])
+  user     User @relation("UserDocuments", fields: [userId], references: [id])
+  uploader User @relation("UploadedByUser", fields: [uploadedBy], references: [id])
 }
 
 model Region {
@@ -323,7 +323,7 @@ model Region {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users     User[]
+  users User[]
 }
 
 model DailyTask {
@@ -335,101 +335,102 @@ model DailyTask {
 }
 
 model ServiceSeeker {
-  id             Int                 @id @default(autoincrement())
-  firstName      String
-  lastName       String
-  postalCode     String?
-  address        String?
-  latitude       Float?
-  longitude      Float?
-  photoUrl       String?
-  title          String?
-  preferredName  String?
-  dateOfBirth    DateTime?
-  gender         String?
-  genderAtBirth  String?
-  pronouns       String?
-  dnar           Boolean?
-  sexuality      String?
-  status         ServiceSeekerStatus
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  createdById    Int?
-  updatedById    Int?
+  id            Int                 @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  postalCode    String?
+  address       String?
+  latitude      Float?
+  longitude     Float?
+  photoUrl      String?
+  title         String?
+  preferredName String?
+  dateOfBirth   DateTime?
+  gender        String?
+  genderAtBirth String?
+  pronouns      String?
+  dnar          Boolean?
+  sexuality     String?
+  status        ServiceSeekerStatus
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdById   Int?
+  updatedById   Int?
 
-  shifts                  Shift[]
-  clockInOuts             ClockInOut[]
-  bathingTasks            BathingTask[]
-  behaviourTasks          BehaviourTask[]
-  bloodTestTasks          BloodTestTask[]
-  bloodPressureTasks      BloodPressureTask[]
-  comfortCheckTasks       ComfortCheckTask[]
-  communicationNotesTasks CommunicationNotesTask[]
-  familyPhotoMessageTasks FamilyPhotoMessageTask[]
-  foodDrinkTasks          FoodDrinkTask[]
-  generalSupportTasks     GeneralSupportTask[]
-  houseKeepingTasks       HouseKeepingTask[]
-  incidentFallTasks       IncidentFallTask[]
-  medicinePrnTasks        MedicinePrnTask[]
-  muacTasks               MuacTask[]
-  observationTasks        ObservationTask[]
-  oneToOneTasks           OneToOneTask[]
-  oralCareTasks           OralCareTask[]
-  oxygenTasks             OxygenTask[]
-  personCentredTasks      PersonCentredTask[]
+  shifts                    Shift[]
+  clockInOuts               ClockInOut[]
+  bathingTasks              BathingTask[]
+  behaviourTasks            BehaviourTask[]
+  bloodTestTasks            BloodTestTask[]
+  bloodPressureTasks        BloodPressureTask[]
+  comfortCheckTasks         ComfortCheckTask[]
+  communicationNotesTasks   CommunicationNotesTask[]
+  familyPhotoMessageTasks   FamilyPhotoMessageTask[]
+  foodDrinkTasks            FoodDrinkTask[]
+  generalSupportTasks       GeneralSupportTask[]
+  houseKeepingTasks         HouseKeepingTask[]
+  incidentFallTasks         IncidentFallTask[]
+  medicinePrnTasks          MedicinePrnTask[]
+  muacTasks                 MuacTask[]
+  observationTasks          ObservationTask[]
+  oneToOneTasks             OneToOneTask[]
+  oralCareTasks             OralCareTask[]
+  oxygenTasks               OxygenTask[]
+  personCentredTasks        PersonCentredTask[]
   physicalInterventionTasks PhysicalInterventionTask[]
-  pulseTasks              PulseTask[]
-  repositionTasks         RepositionTask[]
-  spendingMoneyTasks      SpendingMoneyTask[]
-  stoolTasks              StoolTask[]
-  temperatureTasks        TemperatureTask[]
-  visitTasks              VisitTask[]
-  weightTasks             WeightTask[]
-  encouragementTasks      EncouragementTask[]
-  followUpTasks           FollowUpTask[]
-  residentMeetings        ServiceSeekerResidentMeeting[]
-  calendarEntries         ServiceSeekerCalendarEntry[]  @relation("CalendarEntries")
-  outcomes                ServiceSeekerOutcome[]
-  riskAssessments         ServiceSeekerRiskAssessment[]
-  safeguardingIncidents   ServiceSeekerSafeguarding[]
-  feedbackForms           ServiceSeekerFeedback[]
-  marReviews              ServiceSeekerMarReview[]
-  alertThresholds         ServiceSeekerAlertThreshold[]
-  mustAssessments         ServiceSeekerMustAssessment[]
-  waterlowAssessments     ServiceSeekerWaterlowAssessment[]
-  personalProperties      ServiceSeekerPersonalProperty[]
-  externalLogins          ServiceSeekerExternalLogin[]
-  externalInboxAccesses   ServiceSeekerExternalInboxAccess[]
-  allowanceSettings        ServiceSeekerAllowanceSettings?
-  allowanceTransactions    ServiceSeekerAllowanceTransaction[]
-  handovers                Handover[]
-  foodDrinksSchedules      ServiceSeekerFoodDrinksSchedule[]
-  foodDrinksSettings       ServiceSeekerFoodDrinksSettings?
-  houseKeepingSchedules    ServiceSeekerHouseKeepingSchedule[]
-  socialVisitInstructions  ServiceSeekerSocialVisitInstructions?
-  medicineAccessCodes      ServiceSeekerMedicineAccessCodes?
-  medicineSchedule         ServiceSeekerMedicineSchedule[]
-  medicinePrnPlans         ServiceSeekerMedicinePrnPlan[]
-  oralCareSchedule         ServiceSeekerOralCareSchedule[]
-  oralCareDefaultTimes     ServiceSeekerOralCareDefaultTime[]
-  positioningHandling      ServiceSeekerPositioningHandling[]
-  bathingSchedule          ServiceSeekerBathingSchedule?
-  bathingDefaultTimes      ServiceSeekerBathingDefaultTime[]
+  pulseTasks                PulseTask[]
+  repositionTasks           RepositionTask[]
+  spendingMoneyTasks        SpendingMoneyTask[]
+  stoolTasks                StoolTask[]
+  temperatureTasks          TemperatureTask[]
+  visitTasks                VisitTask[]
+  weightTasks               WeightTask[]
+  encouragementTasks        EncouragementTask[]
+  followUpTasks             FollowUpTask[]
+  residentMeetings          ServiceSeekerResidentMeeting[]
+  calendarEntries           ServiceSeekerCalendarEntry[]          @relation("CalendarEntries")
+  outcomes                  ServiceSeekerOutcome[]
+  riskAssessments           ServiceSeekerRiskAssessment[]
+  safeguardingIncidents     ServiceSeekerSafeguarding[]
+  feedbackForms             ServiceSeekerFeedback[]
+  marReviews                ServiceSeekerMarReview[]
+  alertThresholds           ServiceSeekerAlertThreshold[]
+  mustAssessments           ServiceSeekerMustAssessment[]
+  waterlowAssessments       ServiceSeekerWaterlowAssessment[]
+  personalProperties        ServiceSeekerPersonalProperty[]
+  externalLogins            ServiceSeekerExternalLogin[]
+  externalInboxAccesses     ServiceSeekerExternalInboxAccess[]
+  allowanceSettings         ServiceSeekerAllowanceSettings?
+  allowanceTransactions     ServiceSeekerAllowanceTransaction[]
+  handovers                 Handover[]
+  foodDrinksSchedules       ServiceSeekerFoodDrinksSchedule[]
+  foodDrinksSettings        ServiceSeekerFoodDrinksSettings?
+  houseKeepingSchedules     ServiceSeekerHouseKeepingSchedule[]
+  socialVisitInstructions   ServiceSeekerSocialVisitInstructions?
+  medicineAccessCodes       ServiceSeekerMedicineAccessCodes?
+  medicineSchedule          ServiceSeekerMedicineSchedule[]
+  medicinePrnPlans          ServiceSeekerMedicinePrnPlan[]
+  oralCareSchedule          ServiceSeekerOralCareSchedule[]
+  oralCareDefaultTimes      ServiceSeekerOralCareDefaultTime[]
+  positioningHandling       ServiceSeekerPositioningHandling[]
+  bathingSchedule           ServiceSeekerBathingSchedule?
+  bathingDefaultTimes       ServiceSeekerBathingDefaultTime[]
+  encouragementSchedules    ServiceSeekerEncouragementSchedule[]
 
   // Relations
-  createdBy               User?    @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
-  updatedBy               User?    @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
-  admission               ServiceSeekerAdmission?
-  otherIds                 ServiceSeekerOtherId[]
-  otherTelephones          ServiceSeekerOtherTelephone[]
-  otherAddresses            ServiceSeekerOtherAddress[]
-  healthTags                ServiceSeekerHealthTag[]
-  mentalCapacities          ServiceSeekerMentalCapacity[]
-  mcaAssessments            ServiceSeekerMcaAssessment[]
-  contacts                  ServiceSeekerContact[]
-  documents                 ServiceSeekerDocument[]
-  confidentialNotes         ServiceSeekerConfidentialNote[]
-  fundings                  ServiceSeekerFunding[]
+  createdBy         User?                           @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
+  updatedBy         User?                           @relation("ServiceSeekerUpdatedBy", fields: [updatedById], references: [id])
+  admission         ServiceSeekerAdmission?
+  otherIds          ServiceSeekerOtherId[]
+  otherTelephones   ServiceSeekerOtherTelephone[]
+  otherAddresses    ServiceSeekerOtherAddress[]
+  healthTags        ServiceSeekerHealthTag[]
+  mentalCapacities  ServiceSeekerMentalCapacity[]
+  mcaAssessments    ServiceSeekerMcaAssessment[]
+  contacts          ServiceSeekerContact[]
+  documents         ServiceSeekerDocument[]
+  confidentialNotes ServiceSeekerConfidentialNote[]
+  fundings          ServiceSeekerFunding[]
 }
 
 enum FuneralArrangement {
@@ -439,100 +440,100 @@ enum FuneralArrangement {
 }
 
 model ServiceSeekerAdmission {
-  id                   Int                 @id @default(autoincrement())
-  serviceSeekerId      Int                 @unique
-  advancedCarePlanUrl  String?
-  startDate            DateTime?
-  banding              String?
-  authorityCategory    String?
-  funeralArrangement   FuneralArrangement?
-  funeralDirector      String?
-  teamId               Int?
-  defaultShiftRunId    Int?
+  id                      Int                 @id @default(autoincrement())
+  serviceSeekerId         Int                 @unique
+  advancedCarePlanUrl     String?
+  startDate               DateTime?
+  banding                 String?
+  authorityCategory       String?
+  funeralArrangement      FuneralArrangement?
+  funeralDirector         String?
+  teamId                  Int?
+  defaultShiftRunId       Int?
   // Identification fields
-  nhsHscNo             String?
-  chiNumber            String?
-  niNumber             String?
-  personId             String?
+  nhsHscNo                String?
+  chiNumber               String?
+  niNumber                String?
+  personId                String?
   // Council fields
-  councilServiceUserId String?
-  councilCareProviderId String?
-  serviceType          String?
-  serviceLevel         String?
+  councilServiceUserId    String?
+  councilCareProviderId   String?
+  serviceType             String?
+  serviceLevel            String?
   // Background fields
-  maritalStatus        String?
-  religion             String?
-  ethnicity            String?
+  maritalStatus           String?
+  religion                String?
+  ethnicity               String?
   communicationPreference String?
-  emergencyRating      String?
-  addressLine1         String?
-  addressLine2         String?
-  addressLine3         String?
-  addressLine4         String?
-  addressLine5         String?
-  postcode             String?
-  addressLatitude      String?
-  addressLongitude     String?
-  region               String?
-  keySafeCode          String?
-  accessDetails        String?
-  telephone            String?
-  mobile               String?
-  email                String?
-  preferredContactMethod String?
+  emergencyRating         String?
+  addressLine1            String?
+  addressLine2            String?
+  addressLine3            String?
+  addressLine4            String?
+  addressLine5            String?
+  postcode                String?
+  addressLatitude         String?
+  addressLongitude        String?
+  region                  String?
+  keySafeCode             String?
+  accessDetails           String?
+  telephone               String?
+  mobile                  String?
+  email                   String?
+  preferredContactMethod  String?
   // Health fields
-  height               Float?
-  weight               Float?
-  bmi                  Float?
-  medicalHistory       String?
-  medicineAllergies    String?
-  oxygen               String?
-  onCatheter           String?
-  teamInvolvement      Json?              // Array of selected team involvement options
+  height                  Float?
+  weight                  Float?
+  bmi                     Float?
+  medicalHistory          String?
+  medicineAllergies       String?
+  oxygen                  String?
+  onCatheter              String?
+  teamInvolvement         Json? // Array of selected team involvement options
   // Diet fields
-  foodAllergies        String?
-  nilByMouth           String?
-  mainDiet             String?
-  specialDiet          String?
-  dietInstructions     String?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-
-  // Relations
-  serviceSeeker        ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  defaultShiftRun      ShiftRun?           @relation(fields: [defaultShiftRunId], references: [id])
-}
-
-model ServiceSeekerOtherId {
-  id              Int       @id @default(autoincrement())
-  serviceSeekerId Int
-  idName          String
-  idNumber        String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  foodAllergies           String?
+  nilByMouth              String?
+  mainDiet                String?
+  specialDiet             String?
+  dietInstructions        String?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
 
   // Relations
   serviceSeeker   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  defaultShiftRun ShiftRun?     @relation(fields: [defaultShiftRunId], references: [id])
+}
+
+model ServiceSeekerOtherId {
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  idName          String
+  idNumber        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerOtherTelephone {
-  id              Int       @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   serviceSeekerId Int
   telephoneType   String
   number          String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerOtherAddress {
-  id              Int       @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   serviceSeekerId Int
   addressType     String
   addressLine1    String?
@@ -540,241 +541,241 @@ model ServiceSeekerOtherAddress {
   addressLine3    String?
   addressLine4    String?
   addressLine5    String?
-  postcode         String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  postcode        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerHealthTag {
-  id              Int       @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   serviceSeekerId Int
   tagName         String
-  isCustom        Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  isCustom        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model Diet {
-  id              Int       @id @default(autoincrement())
-  name            String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ServiceSeekerMentalCapacity {
-  id                  Int       @id @default(autoincrement())
-  serviceSeekerId      Int
-  mca                  DateTime?
-  capacity             String?
-  bestInterests        String?
-  score                String?
-  dols                 String?
-  appliedForDate       DateTime?
-  dolsStartDate        DateTime?
-  dolsEndDate          DateTime?
-  dolsNotes            String?
-  cqcInformed          Boolean? @default(false)
-  dolsAppliedForDate   DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                 Int       @id @default(autoincrement())
+  serviceSeekerId    Int
+  mca                DateTime?
+  capacity           String?
+  bestInterests      String?
+  score              String?
+  dols               String?
+  appliedForDate     DateTime?
+  dolsStartDate      DateTime?
+  dolsEndDate        DateTime?
+  dolsNotes          String?
+  cqcInformed        Boolean?  @default(false)
+  dolsAppliedForDate DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   // Relations
-  serviceSeeker        ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerMcaAssessment {
-  id                              Int       @id @default(autoincrement())
-  serviceSeekerId                  Int
-  risk                            String?
-  lastAssessed                    DateTime?
-  triggeredBy                     String?
-  hasImpairment                   String?
-  clinicalDiagnosis               String?   @db.Text
-  decisionToMake                  String?   @db.Text
-  isImpairment                    String?
-  fluctuatingCapacity             String?
-  fluctuatingCapacityReason       String?   @db.Text
-  generalUnderstanding            String?
-  generalUnderstandingDetails     String?   @db.Text
-  canRetainInformation            String?
-  canRetainInformationDetails     String?   @db.Text
-  canUseWeighInformation          String?
-  canUseWeighInformationDetails  String?   @db.Text
-  canCommunicate                  String?
-  healthWelfareLpa                String?
-  advancedDecision                String?
-  deputyAppointed                 String?
-  imcaRequired                    String?
-  imcaName                        String?
-  imcaTelephone                   String?
-  option1                         String?   @db.Text
-  option2                         String?   @db.Text
-  option3                         String?   @db.Text
-  pastPresentWishes               String?
-  pastPresentWishesDetails        String?   @db.Text
-  consultedInterestedParties      String?
-  consultedInterestedPartiesDetails String? @db.Text
-  consultedProfessionals          String?
-  consultedProfessionalsDetails   String?   @db.Text
-  bestInterestDecision            String?   @db.Text
-  decisionMade                    String?   @db.Text
-  leastRestrictivePrinciple       String?   @db.Text
-  disagreement                    String?
-  disagreementDetails             String?   @db.Text
-  everyOptionExplored            String?
-  patientRecordsUpdated           String?
-  useOfRestraint                  String?
-  misinformation                  String?
-  anyoneObjected                  String?
-  restraintForTreatment           String?
-  relativesRequestedDischarge     String?
-  restrictedAccessToFamily        String?
-  leastRestrictiveOptions         String?
-  restrictedAccessToCommunity     String?
-  continuousSupervision           String?
-  riskLevel                       String?
-  totalScore                      String?
-  staffTeam                       String?
-  office                          String?
-  sendSignoffs                    String?
-  conductedBy                     String?
-  createdAt                       DateTime  @default(now())
-  updatedAt                       DateTime  @updatedAt
+  id                                Int       @id @default(autoincrement())
+  serviceSeekerId                   Int
+  risk                              String?
+  lastAssessed                      DateTime?
+  triggeredBy                       String?
+  hasImpairment                     String?
+  clinicalDiagnosis                 String?   @db.Text
+  decisionToMake                    String?   @db.Text
+  isImpairment                      String?
+  fluctuatingCapacity               String?
+  fluctuatingCapacityReason         String?   @db.Text
+  generalUnderstanding              String?
+  generalUnderstandingDetails       String?   @db.Text
+  canRetainInformation              String?
+  canRetainInformationDetails       String?   @db.Text
+  canUseWeighInformation            String?
+  canUseWeighInformationDetails     String?   @db.Text
+  canCommunicate                    String?
+  healthWelfareLpa                  String?
+  advancedDecision                  String?
+  deputyAppointed                   String?
+  imcaRequired                      String?
+  imcaName                          String?
+  imcaTelephone                     String?
+  option1                           String?   @db.Text
+  option2                           String?   @db.Text
+  option3                           String?   @db.Text
+  pastPresentWishes                 String?
+  pastPresentWishesDetails          String?   @db.Text
+  consultedInterestedParties        String?
+  consultedInterestedPartiesDetails String?   @db.Text
+  consultedProfessionals            String?
+  consultedProfessionalsDetails     String?   @db.Text
+  bestInterestDecision              String?   @db.Text
+  decisionMade                      String?   @db.Text
+  leastRestrictivePrinciple         String?   @db.Text
+  disagreement                      String?
+  disagreementDetails               String?   @db.Text
+  everyOptionExplored               String?
+  patientRecordsUpdated             String?
+  useOfRestraint                    String?
+  misinformation                    String?
+  anyoneObjected                    String?
+  restraintForTreatment             String?
+  relativesRequestedDischarge       String?
+  restrictedAccessToFamily          String?
+  leastRestrictiveOptions           String?
+  restrictedAccessToCommunity       String?
+  continuousSupervision             String?
+  riskLevel                         String?
+  totalScore                        String?
+  staffTeam                         String?
+  office                            String?
+  sendSignoffs                      String?
+  conductedBy                       String?
+  createdAt                         DateTime  @default(now())
+  updatedAt                         DateTime  @updatedAt
 
   // Relations
-  serviceSeeker                   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerContact {
-  id                Int       @id @default(autoincrement())
-  serviceSeekerId   Int
-  contactType       String    // FAMILY or PROFESSIONAL
-  name              String
-  role              String?
-  otherRole         String?
-  mobile            String?
-  work              String?
-  home              String?
-  email             String?
-  address           String?   @db.Text
-  practiceCode      String?
-  emergencyContact  Boolean?  @default(false)
-  pictureUrl        String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               Int      @id @default(autoincrement())
+  serviceSeekerId  Int
+  contactType      String // FAMILY or PROFESSIONAL
+  name             String
+  role             String?
+  otherRole        String?
+  mobile           String?
+  work             String?
+  home             String?
+  email            String?
+  address          String?  @db.Text
+  practiceCode     String?
+  emergencyContact Boolean? @default(false)
+  pictureUrl       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // Relations
-  serviceSeeker     ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerDocument {
-  id               Int       @id @default(autoincrement())
-  serviceSeekerId  Int
-  docType          String
-  name             String
-  fileUrl          String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  docType         String
+  name            String
+  fileUrl         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerConfidentialNote {
-  id               Int       @id @default(autoincrement())
-  serviceSeekerId  Int
-  noteDate         DateTime
-  staffName        String?
-  notes            String?   @db.Text
-  pictureUrl       String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  noteDate        DateTime
+  staffName       String?
+  notes           String?  @db.Text
+  pictureUrl      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model Funder {
-  id              Int      @id @default(autoincrement())
-  fundingSource   String
-  contractNumber  String
-  serviceType     String
-  costNotes       String?
-  paymentType     FunderPaymentType
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             Int               @id @default(autoincrement())
+  fundingSource  String
+  contractNumber String
+  serviceType    String
+  costNotes      String?
+  paymentType    FunderPaymentType
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
-  shifts          Shift[]
+  shifts Shift[]
 }
 
 model FundingSource {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
   organisation String?
-  contact     String?
-  email       String?
-  address     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  contact      String?
+  email        String?
+  address      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   serviceSeekerFundings ServiceSeekerFunding[]
 }
 
 model ServiceSeekerFunding {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int
-  fundingSourceId  Int
-  percentageSplit  Float?
-  contractNumber   String?
-  typeOfService    String?
-  costNotes        String?
-  paymentType      FunderPaymentType
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int               @id @default(autoincrement())
+  serviceSeekerId Int
+  fundingSourceId Int
+  percentageSplit Float?
+  contractNumber  String?
+  typeOfService   String?
+  costNotes       String?
+  paymentType     FunderPaymentType
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
-  fundingSource    FundingSource @relation(fields: [fundingSourceId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  fundingSource FundingSource @relation(fields: [fundingSourceId], references: [id])
 
   @@index([serviceSeekerId])
   @@index([fundingSourceId])
 }
 
 model StandByShift {
-  id                   Int      @id @default(autoincrement())
-  caretakerId          Int
-  date                 DateTime
-  startTime            DateTime
-  endTime              DateTime
-  workDetail           String
-  stay                 Boolean
-  caretakerPayRegular  Float
+  id                      Int        @id @default(autoincrement())
+  caretakerId             Int
+  date                    DateTime
+  startTime               DateTime
+  endTime                 DateTime
+  workDetail              String
+  stay                    Boolean
+  caretakerPayRegular     Float
   caretakerPayBankHoliday Float
-  carerPayBy           ChargeType
+  carerPayBy              ChargeType
 
   // Relations
-  caretaker            User     @relation(fields: [caretakerId], references: [id])
+  caretaker User @relation(fields: [caretakerId], references: [id])
 }
 
 enum BathingType {
@@ -805,27 +806,27 @@ enum EmotionType {
 }
 
 model BathingTask {
-  id                Int              @id @default(autoincrement())
-  serviceSeekerId   Int
-  date              DateTime
-  time              String
-  bathingType       BathingType
-  compliance        ComplianceStatus
-  stoolPassed       Boolean
-  urinePassed       Boolean
-  bathNotes         String?
-  catheterChecked   Boolean
-  completed         TaskCompletion
-  emotion           EmotionType
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  createdById       Int
-  updatedById       Int
+  id              Int              @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  bathingType     BathingType
+  compliance      ComplianceStatus
+  stoolPassed     Boolean
+  urinePassed     Boolean
+  bathNotes       String?
+  catheterChecked Boolean
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  createdBy         User             @relation("BathingTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy         User             @relation("BathingTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("BathingTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("BathingTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 enum BehaviourType {
@@ -842,17 +843,17 @@ enum BehaviourType {
 }
 
 model BehaviourTrigger {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  define      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  define    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   behaviourTasks BehaviourTask[]
 }
 
 model BehaviourTask {
-  id                    Int              @id @default(autoincrement())
+  id                    Int           @id @default(autoincrement())
   serviceSeekerId       Int
   date                  DateTime
   time                  String
@@ -865,16 +866,16 @@ model BehaviourTask {
   consequences          String?
   careIntervention      String?
   emotion               EmotionType
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
   createdById           Int
   updatedById           Int
 
   // Relations
-  serviceSeeker         ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  trigger               BehaviourTrigger @relation(fields: [triggerId], references: [id])
-  createdBy             User             @relation("BehaviourTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy             User             @relation("BehaviourTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  trigger       BehaviourTrigger @relation(fields: [triggerId], references: [id])
+  createdBy     User             @relation("BehaviourTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User             @relation("BehaviourTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 enum BloodTestWhen {
@@ -898,113 +899,113 @@ enum SideAdministered {
 }
 
 model BloodTestTask {
-  id                  Int              @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  when                BloodTestWhen
-  bloodGlucose        Float?
-  insulinGiven        String?
-  sideAdministered    SideAdministered?
-  note                String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  createdById         Int
-  updatedById         Int
+  id               Int               @id @default(autoincrement())
+  serviceSeekerId  Int
+  date             DateTime
+  time             String
+  when             BloodTestWhen
+  bloodGlucose     Float?
+  insulinGiven     String?
+  sideAdministered SideAdministered?
+  note             String?
+  completed        TaskCompletion
+  emotion          EmotionType
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  createdById      Int
+  updatedById      Int
 
   // Relations
-  serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User             @relation("BloodTestTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User             @relation("BloodTestTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("BloodTestTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("BloodTestTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model BloodPressureTask {
-  id                  Int              @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  systolicPressure    Int
-  diastolicPressure   Int
-  notes               String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  createdById         Int
-  updatedById         Int
-
-  // Relations
-  serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User             @relation("BloodPressureTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User             @relation("BloodPressureTaskUpdatedBy", fields: [updatedById], references: [id])
-}
-
-model ComfortCheckTask {
-  id                      Int              @id @default(autoincrement())
-  serviceSeekerId         Int
-  date                    DateTime
-  time                    String
-  allNeedsMet             Boolean
-  catheterCheck           Boolean
-  incontinencePadCheck    Boolean
-  personalHygiene         Boolean
-  repositioned            Boolean
-  sleep                   Boolean
-  stomaCheck              Boolean
-  toileted                Boolean
-  stoolPassed             Boolean
-  urinePassed             Boolean
-  notes                   String?
-  completed               TaskCompletion
-  emotion                 EmotionType
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-  createdById             Int
-  updatedById             Int
-
-  // Relations
-  serviceSeeker           ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  createdBy               User             @relation("ComfortCheckTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy               User             @relation("ComfortCheckTaskUpdatedBy", fields: [updatedById], references: [id])
-}
-
-model CommunicationNotesTask {
-  id                Int              @id @default(autoincrement())
+  id                Int            @id @default(autoincrement())
   serviceSeekerId   Int
   date              DateTime
-  notes             String
+  time              String
+  systolicPressure  Int
+  diastolicPressure Int
+  notes             String?
+  completed         TaskCompletion
   emotion           EmotionType
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
   createdById       Int
   updatedById       Int
 
   // Relations
-  serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  createdBy         User             @relation("CommunicationNotesTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy         User             @relation("CommunicationNotesTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("BloodPressureTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("BloodPressureTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model ComfortCheckTask {
+  id                   Int            @id @default(autoincrement())
+  serviceSeekerId      Int
+  date                 DateTime
+  time                 String
+  allNeedsMet          Boolean
+  catheterCheck        Boolean
+  incontinencePadCheck Boolean
+  personalHygiene      Boolean
+  repositioned         Boolean
+  sleep                Boolean
+  stomaCheck           Boolean
+  toileted             Boolean
+  stoolPassed          Boolean
+  urinePassed          Boolean
+  notes                String?
+  completed            TaskCompletion
+  emotion              EmotionType
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  createdById          Int
+  updatedById          Int
+
+  // Relations
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("ComfortCheckTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("ComfortCheckTaskUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model CommunicationNotesTask {
+  id              Int         @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  notes           String
+  emotion         EmotionType
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  createdById     Int
+  updatedById     Int
+
+  // Relations
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("CommunicationNotesTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("CommunicationNotesTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FamilyPhotoMessageTask {
-  id                  Int              @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  description         String?
+  id                   Int         @id @default(autoincrement())
+  serviceSeekerId      Int
+  date                 DateTime
+  time                 String
+  description          String?
   messageFromResidence String?
-  photoUrl            String?
-  emotion             EmotionType
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  createdById         Int
-  updatedById         Int
+  photoUrl             String?
+  emotion              EmotionType
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  createdById          Int
+  updatedById          Int
 
   // Relations
-  serviceSeeker       ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User             @relation("FamilyPhotoMessageTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User             @relation("FamilyPhotoMessageTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("FamilyPhotoMessageTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("FamilyPhotoMessageTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 enum FollowUpStatus {
@@ -1045,97 +1046,97 @@ enum FoodDrinkOffered {
 }
 
 model FoodDrinkTask {
-  id                  Int               @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                MealTime
-  foodDrinkOffer      String?
-  main                MealPortion
-  fluidIntake         Int               // in ml
-  comments            String?
-  assistance          AssistanceType
-  foodDrinkOffered    FoodDrinkOffered
-  pictureUrl          String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  createdById         Int
-  updatedById         Int
+  id               Int              @id @default(autoincrement())
+  serviceSeekerId  Int
+  date             DateTime
+  time             MealTime
+  foodDrinkOffer   String?
+  main             MealPortion
+  fluidIntake      Int // in ml
+  comments         String?
+  assistance       AssistanceType
+  foodDrinkOffered FoodDrinkOffered
+  pictureUrl       String?
+  completed        TaskCompletion
+  emotion          EmotionType
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdById      Int
+  updatedById      Int
 
   // Relations
-  serviceSeeker       ServiceSeeker     @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User              @relation("FoodDrinkTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User              @relation("FoodDrinkTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("FoodDrinkTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("FoodDrinkTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model SupportList {
-  id                Int                 @id @default(autoincrement())
-  name              String              @unique
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   generalSupportTasks GeneralSupportTask[]
 }
 
 model GeneralSupportTask {
-  id                Int              @id @default(autoincrement())
-  serviceSeekerId   Int
-  date              DateTime
-  time              String
-  notes             String?
-  supportListId     Int
-  emotion           EmotionType
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  createdById       Int
-  updatedById       Int
+  id              Int         @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  notes           String?
+  supportListId   Int
+  emotion         EmotionType
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  supportList       SupportList      @relation(fields: [supportListId], references: [id])
-  createdBy         User             @relation("GeneralSupportTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy         User             @relation("GeneralSupportTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  supportList   SupportList   @relation(fields: [supportListId], references: [id])
+  createdBy     User          @relation("GeneralSupportTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("GeneralSupportTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model HouseKeepingTask {
-  id                Int              @id @default(autoincrement())
-  serviceSeekerId   Int
-  date              DateTime
-  time              String
-  task              String
-  notes             String?
-  photoUrl          String?
-  completed         TaskCompletion
-  emotion           EmotionType
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  createdById       Int
-  updatedById       Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  task            String
+  notes           String?
+  photoUrl        String?
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  createdBy         User             @relation("HouseKeepingTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy         User             @relation("HouseKeepingTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("HouseKeepingTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("HouseKeepingTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model IncidentType {
-  id                Int                 @id @default(autoincrement())
-  type              String              @unique
-  canEdit           Boolean             @default(true)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  id        Int      @id @default(autoincrement())
+  type      String   @unique
+  canEdit   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   incidentFallTasks IncidentFallTask[]
 }
 
 model IncidentLocation {
-  id                Int                 @id @default(autoincrement())
-  name              String              @unique
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   incidentFallTasks IncidentFallTask[]
@@ -1198,44 +1199,44 @@ enum ContactsCalled {
 }
 
 model IncidentFallTask {
-  id                          Int                     @id @default(autoincrement())
-  serviceSeekerId             Int
-  date                        DateTime
-  time                        String
-  incidentTypeId              Int
-  incidentLasted              String                  // time duration
-  locationId                  Int
-  othersInvolved              Boolean
-  othersInvolvedDetails       String?
-  injuryDetail                String?
-  serviceUserInjured          ServiceUserInjured
-  witnessedBy                 WitnessedBy
-  witnessedByStaffId          Int?
-  witnessDetail               String?
-  photoConsent                PhotoConsent
-  photoUrl                    String?
-  residentInfoProvided        ResidentInfoProvided
-  whatResidentDoing           String?
-  howIncidentHappened         String?
-  dateReportedToSeniorStaff   DateTime?
-  equipmentInvolved           YesNoOption
-  relativesInformed           YesNoNotYetOption
-  contactsCalled              ContactsCalled
-  notes                       String?
-  emotion                     EmotionType
-  signatureUrl                String?
-  createdAt                   DateTime                @default(now())
-  updatedAt                   DateTime                @updatedAt
-  createdById                 Int
-  updatedById                 Int
+  id                        Int                  @id @default(autoincrement())
+  serviceSeekerId           Int
+  date                      DateTime
+  time                      String
+  incidentTypeId            Int
+  incidentLasted            String // time duration
+  locationId                Int
+  othersInvolved            Boolean
+  othersInvolvedDetails     String?
+  injuryDetail              String?
+  serviceUserInjured        ServiceUserInjured
+  witnessedBy               WitnessedBy
+  witnessedByStaffId        Int?
+  witnessDetail             String?
+  photoConsent              PhotoConsent
+  photoUrl                  String?
+  residentInfoProvided      ResidentInfoProvided
+  whatResidentDoing         String?
+  howIncidentHappened       String?
+  dateReportedToSeniorStaff DateTime?
+  equipmentInvolved         YesNoOption
+  relativesInformed         YesNoNotYetOption
+  contactsCalled            ContactsCalled
+  notes                     String?
+  emotion                   EmotionType
+  signatureUrl              String?
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
+  createdById               Int
+  updatedById               Int
 
   // Relations
-  serviceSeeker               ServiceSeeker           @relation(fields: [serviceSeekerId], references: [id])
-  incidentType                IncidentType            @relation(fields: [incidentTypeId], references: [id])
-  location                    IncidentLocation        @relation(fields: [locationId], references: [id])
-  witnessedByStaff            User?                   @relation("IncidentFallTaskWitnessedBy", fields: [witnessedByStaffId], references: [id])
-  createdBy                   User                    @relation("IncidentFallTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy                   User                    @relation("IncidentFallTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker    ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  incidentType     IncidentType     @relation(fields: [incidentTypeId], references: [id])
+  location         IncidentLocation @relation(fields: [locationId], references: [id])
+  witnessedByStaff User?            @relation("IncidentFallTaskWitnessedBy", fields: [witnessedByStaffId], references: [id])
+  createdBy        User             @relation("IncidentFallTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy        User             @relation("IncidentFallTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 enum MedicineType {
@@ -1370,388 +1371,388 @@ enum VisitCompletion {
 }
 
 model MedicinePrnTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  applyDate           DateTime
-  applyTime           String
-  prn                 String
-  medicineName        String
-  medicineType        MedicineType
-  administrated       Boolean
-  notes               String?
-  requestSignoffBy    SignoffRequired
-  signoffByStaffId    Int?
-  completed           MedicineCompleted
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id               Int               @id @default(autoincrement())
+  serviceSeekerId  Int
+  applyDate        DateTime
+  applyTime        String
+  prn              String
+  medicineName     String
+  medicineType     MedicineType
+  administrated    Boolean
+  notes            String?
+  requestSignoffBy SignoffRequired
+  signoffByStaffId Int?
+  completed        MedicineCompleted
+  emotion          EmotionType
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  createdById      Int
+  updatedById      Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  signoffByStaff      User?               @relation("MedicinePrnTaskSignoffBy", fields: [signoffByStaffId], references: [id])
-  createdBy           User                @relation("MedicinePrnTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("MedicinePrnTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker  ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  signoffByStaff User?         @relation("MedicinePrnTaskSignoffBy", fields: [signoffByStaffId], references: [id])
+  createdBy      User          @relation("MedicinePrnTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy      User          @relation("MedicinePrnTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model MuacTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  muacInCm            Float
-  notes               String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  muacInCm        Float
+  notes           String?
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("MuacTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("MuacTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("MuacTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("MuacTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model ObservationTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  notes               String
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int         @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  notes           String
+  emotion         EmotionType
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("ObservationTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("ObservationTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("ObservationTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("ObservationTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model OneToOneTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  duration            String
-  notes               String
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int         @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  duration        String
+  notes           String
+  emotion         EmotionType
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("OneToOneTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("OneToOneTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("OneToOneTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("OneToOneTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model OralCareTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String?
-  oralCare            OralCareType
-  assisted            AssistedType
-  notes               String?
-  compliance          ComplianceStatus
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int              @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String?
+  oralCare        OralCareType
+  assisted        AssistedType
+  notes           String?
+  compliance      ComplianceStatus
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("OralCareTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("OralCareTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("OralCareTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("OralCareTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model OxygenTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  quantity            String
-  notes               String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  quantity        String
+  notes           String?
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("OxygenTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("OxygenTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("OxygenTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("OxygenTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model PersonCentredTaskName {
-  id                  Int                   @id @default(autoincrement())
-  name                String                @unique
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  tasks               PersonCentredTask[]
+  tasks PersonCentredTask[]
 }
 
 model PersonCentredTask {
-  id                  Int                   @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  nameId              Int
-  notes               String?
-  photoUrl            String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  nameId          Int
+  notes           String?
+  photoUrl        String?
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker         @relation(fields: [serviceSeekerId], references: [id])
-  taskName            PersonCentredTaskName @relation(fields: [nameId], references: [id])
-  createdBy           User                  @relation("PersonCentredTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                  @relation("PersonCentredTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker         @relation(fields: [serviceSeekerId], references: [id])
+  taskName      PersonCentredTaskName @relation(fields: [nameId], references: [id])
+  createdBy     User                  @relation("PersonCentredTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User                  @relation("PersonCentredTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model PhysicalInterventionTask {
-  id                              Int           @id @default(autoincrement())
-  serviceSeekerId                 Int
-  date                            DateTime
-  time                            String
-  location                        String
-  wereOtherStaffInvolved          YesNoOption
-  otherStaffNames                 String?
-  wereOtherResidenceInvolved      YesNoOption
-  otherResidenceNamesExplanation  String?
-  wereAnyInjuriesSustained        YesNoOption
-  injuriesExplanation             String?
+  id                                 Int         @id @default(autoincrement())
+  serviceSeekerId                    Int
+  date                               DateTime
+  time                               String
+  location                           String
+  wereOtherStaffInvolved             YesNoOption
+  otherStaffNames                    String?
+  wereOtherResidenceInvolved         YesNoOption
+  otherResidenceNamesExplanation     String?
+  wereAnyInjuriesSustained           YesNoOption
+  injuriesExplanation                String?
   didResidenceStaffRequireMedication YesNoOption
-  medicationExplanation           String?
-  hasAccidentBeenFilled           YesNoOption
-  accidentFilledExplanation       String?
-  accidentBookDateTime            String?
-  accidentBookNumber              String?
-  detailOfPhysicalIntervention    String
-  techniquesUsed                  String
-  positionOfStaffMembers          String
-  durationOfPhysicalIntervention  String
-  wereRestraintsUsed              YesNoOption
-  durationOfWholeIncident         String
-  wasReportedToManager            YesNoOption
-  reportedToManagerExplanation    String?
-  managerReportTime               String?
-  emotion                         EmotionType
-  cqcNotified                     YesNoOption
-  safeguardingNotified            YesNoOption
-  familyMemberNotified            YesNoOption
-  externalProfessional            YesNoOption
-  signatureUrl                    String?
-  createdAt                       DateTime      @default(now())
-  updatedAt                       DateTime      @updatedAt
-  createdById                     Int
-  updatedById                     Int
+  medicationExplanation              String?
+  hasAccidentBeenFilled              YesNoOption
+  accidentFilledExplanation          String?
+  accidentBookDateTime               String?
+  accidentBookNumber                 String?
+  detailOfPhysicalIntervention       String
+  techniquesUsed                     String
+  positionOfStaffMembers             String
+  durationOfPhysicalIntervention     String
+  wereRestraintsUsed                 YesNoOption
+  durationOfWholeIncident            String
+  wasReportedToManager               YesNoOption
+  reportedToManagerExplanation       String?
+  managerReportTime                  String?
+  emotion                            EmotionType
+  cqcNotified                        YesNoOption
+  safeguardingNotified               YesNoOption
+  familyMemberNotified               YesNoOption
+  externalProfessional               YesNoOption
+  signatureUrl                       String?
+  createdAt                          DateTime    @default(now())
+  updatedAt                          DateTime    @updatedAt
+  createdById                        Int
+  updatedById                        Int
 
   // Relations
-  serviceSeeker                   ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
-  createdBy                       User          @relation("PhysicalInterventionTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy                       User          @relation("PhysicalInterventionTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("PhysicalInterventionTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("PhysicalInterventionTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model PulseTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  pulseRate           Int
-  notes               String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  pulseRate       Int
+  notes           String?
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("PulseTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("PulseTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("PulseTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("PulseTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model RepositionTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  position            RepositionType
-  intactOrEpuapGrade  IntactOrEpuapGrade
-  notes               String?
-  photoUrl            String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id                 Int                @id @default(autoincrement())
+  serviceSeekerId    Int
+  date               DateTime
+  time               String
+  position           RepositionType
+  intactOrEpuapGrade IntactOrEpuapGrade
+  notes              String?
+  photoUrl           String?
+  completed          TaskCompletion
+  emotion            EmotionType
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  createdById        Int
+  updatedById        Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("RepositionTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("RepositionTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("RepositionTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("RepositionTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model SpendingMoneyTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  type                SpendingType
-  amount              Float
-  paidUsing           PaymentMethod
-  receiptUrl          String?
-  notes               String?
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int           @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  type            SpendingType
+  amount          Float
+  paidUsing       PaymentMethod
+  receiptUrl      String?
+  notes           String?
+  emotion         EmotionType
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("SpendingMoneyTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("SpendingMoneyTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("SpendingMoneyTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("SpendingMoneyTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model StoolTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  type                StoolType
-  urinePassed         UrinePassed
-  notes               String?
-  completed           StoolCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int             @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  type            StoolType
+  urinePassed     UrinePassed
+  notes           String?
+  completed       StoolCompletion
+  emotion         EmotionType
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("StoolTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("StoolTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("StoolTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("StoolTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model TemperatureTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  temperatureInC      Float
-  notes               String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  temperatureInC  Float
+  notes           String?
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("TemperatureTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("TemperatureTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("TemperatureTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("TemperatureTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model VisitTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  visitType           VisitType
-  announced           VisitAnnounced
-  name                String
-  relationship        String?             // For family visits
-  role                ProfessionalRole?   // For professional visits
-  purpose             String
-  summary             String?
-  completed           VisitCompletion
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int               @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  visitType       VisitType
+  announced       VisitAnnounced
+  name            String
+  relationship    String? // For family visits
+  role            ProfessionalRole? // For professional visits
+  purpose         String
+  summary         String?
+  completed       VisitCompletion
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("VisitTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("VisitTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("VisitTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("VisitTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model ServiceSeekerResidentMeeting {
-  id               Int       @id @default(autoincrement())
-  serviceSeekerId  Int
-  meetingDate      DateTime
-  chairedBy        String?
-  about            String?
-  notes            String?
-  actions          String?
-  concerns         String?
-  invites          Json?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  meetingDate     DateTime
+  chairedBy       String?
+  about           String?
+  notes           String?
+  actions         String?
+  concerns        String?
+  invites         Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerCalendarEntry {
-  id               Int                 @id @default(autoincrement())
+  id               Int               @id @default(autoincrement())
   serviceSeekerId  Int?
   entryType        CalendarEntryType
   date             DateTime
-  time             String?             // HH:mm format
+  time             String? // HH:mm format
   // Meeting fields (Management, Staff, Resident)
   chairedBy        String?
   about            String?
-  notes            String?              @db.Text
-  actions          String?              @db.Text
-  concerns         String?              @db.Text
-  invites          Json?                // Array of user IDs with signedOn status
+  notes            String?           @db.Text
+  actions          String?           @db.Text
+  concerns         String?           @db.Text
+  invites          Json? // Array of user IDs with signedOn status
   // Visit fields (Family, Professional)
   announced        VisitAnnounced?
   name             String?
-  relationship     String?              // For family visits
-  role             ProfessionalRole?    // For professional visits
-  purpose          String?              @db.Text
-  summary          String?              @db.Text
+  relationship     String? // For family visits
+  role             ProfessionalRole? // For professional visits
+  purpose          String?           @db.Text
+  summary          String?           @db.Text
   completed        VisitCompletion?
   // Event fields
   careWorkerId     Int?
-  eventDescription String?              @db.Text
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  eventDescription String?           @db.Text
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   createdById      Int
   updatedById      Int
 
   // Relations
-  serviceSeeker    ServiceSeeker?       @relation("CalendarEntries", fields: [serviceSeekerId], references: [id])
-  careWorker       User?                @relation("EventCareWorker", fields: [careWorkerId], references: [id])
-  createdBy        User                 @relation("CalendarEntryCreatedBy", fields: [createdById], references: [id])
-  updatedBy        User                 @relation("CalendarEntryUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker? @relation("CalendarEntries", fields: [serviceSeekerId], references: [id])
+  careWorker    User?          @relation("EventCareWorker", fields: [careWorkerId], references: [id])
+  createdBy     User           @relation("CalendarEntryCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User           @relation("CalendarEntryUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([serviceSeekerId])
   @@index([date])
@@ -1760,195 +1761,195 @@ model ServiceSeekerCalendarEntry {
 }
 
 model ServiceSeekerOutcome {
-  id               Int              @id @default(autoincrement())
-  serviceSeekerId  Int
-  category         OutcomeCategory
-  data             Json
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id              Int             @id @default(autoincrement())
+  serviceSeekerId Int
+  category        OutcomeCategory
+  data            Json
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
   @@index([category])
 }
 
 model ServiceSeekerRiskAssessment {
-  id                        Int       @id @default(autoincrement())
-  serviceSeekerId          Int
-  riskType                 String
-  lastAssessed             DateTime?
-  reviewFrequency          String?
-  whatIsRisk               String?   @db.Text
-  riskBeforeIntervention   String?
-  whoIsAtRisk              String?
-  isHistorical             String?
-  whatCouldHappen          String?   @db.Text
-  actionToTake             String?   @db.Text
-  riskAfterControls        String?
-  summary                  String?   @db.Text
-  riskLevel                String?
-  totalScore               String?
-  staffTeam                Json?
-  conductedBy              String?
-  office                   String?
-  sendSignoffs             Boolean?  @default(false)
-  extra                    Json?
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
+  id                     Int       @id @default(autoincrement())
+  serviceSeekerId        Int
+  riskType               String
+  lastAssessed           DateTime?
+  reviewFrequency        String?
+  whatIsRisk             String?   @db.Text
+  riskBeforeIntervention String?
+  whoIsAtRisk            String?
+  isHistorical           String?
+  whatCouldHappen        String?   @db.Text
+  actionToTake           String?   @db.Text
+  riskAfterControls      String?
+  summary                String?   @db.Text
+  riskLevel              String?
+  totalScore             String?
+  staffTeam              Json?
+  conductedBy            String?
+  office                 String?
+  sendSignoffs           Boolean?  @default(false)
+  extra                  Json?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   // Relations
-  serviceSeeker            ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
   @@index([riskType])
 }
 
 model ServiceSeekerSafeguarding {
-  id                         Int       @id @default(autoincrement())
-  serviceSeekerId           Int
-  investigatorName          String?
-  serviceUserLocation       String?
-  incidentDate              DateTime?
-  incidentHour              Int?
-  incidentMinute            Int?
-  preciseLocation           String?
-  incidentOverview          String?
-  incidentDetails           String?   @db.Text
-  witnesses                 String?
-  medicalAttentionRequired  String?
-  injuriesDetails           String?
-  decisionReached           String?   @db.Text
-  immediateAction           String?   @db.Text
-  lessonsLearned            String?   @db.Text
-  outsideAgenciesContacted  String?
-  managerRecommendations    String?   @db.Text
-  summary                   String?   @db.Text
-  preventionActions         String?   @db.Text
-  conductedBy               String?
-  meetingReportedDate       DateTime?
-  reportedToManagementBy    String?
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  id                       Int       @id @default(autoincrement())
+  serviceSeekerId          Int
+  investigatorName         String?
+  serviceUserLocation      String?
+  incidentDate             DateTime?
+  incidentHour             Int?
+  incidentMinute           Int?
+  preciseLocation          String?
+  incidentOverview         String?
+  incidentDetails          String?   @db.Text
+  witnesses                String?
+  medicalAttentionRequired String?
+  injuriesDetails          String?
+  decisionReached          String?   @db.Text
+  immediateAction          String?   @db.Text
+  lessonsLearned           String?   @db.Text
+  outsideAgenciesContacted String?
+  managerRecommendations   String?   @db.Text
+  summary                  String?   @db.Text
+  preventionActions        String?   @db.Text
+  conductedBy              String?
+  meetingReportedDate      DateTime?
+  reportedToManagementBy   String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   // Relations
-  serviceSeeker             ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerFeedback {
-  id               Int       @id @default(autoincrement())
-  serviceSeekerId  Int
-  name             String
-  lastAssessed     DateTime?
-  score            String?
-  conductedBy      String?
-  data             Json
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id              Int       @id @default(autoincrement())
+  serviceSeekerId Int
+  name            String
+  lastAssessed    DateTime?
+  score           String?
+  conductedBy     String?
+  data            Json
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
   @@index([name])
 }
 
 model ServiceSeekerMarReview {
-  id               Int       @id @default(autoincrement())
-  serviceSeekerId  Int
-  reviewDate       DateTime?
-  reviewer         String?
-  review           String?   @db.Text
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id              Int       @id @default(autoincrement())
+  serviceSeekerId Int
+  reviewDate      DateTime?
+  reviewer        String?
+  review          String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerAlertThreshold {
-  id                 Int       @id @default(autoincrement())
-  serviceSeekerId    Int
-  maxBloodGlucose    String?
-  minBloodGlucose    String?
-  maxInsulin         String?
-  minInsulin         String?
-  maxFood            String?
-  minFood            String?
-  maxUrine           String?
-  minUrine           String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  maxBloodGlucose String?
+  minBloodGlucose String?
+  maxInsulin      String?
+  minInsulin      String?
+  maxFood         String?
+  minFood         String?
+  maxUrine        String?
+  minUrine        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker      ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerMustAssessment {
-  id                 Int       @id @default(autoincrement())
-  serviceSeekerId    Int
-  assessedOn         DateTime?
-  currentWeightKg    Float?
-  heightM            Float?
-  previousWeightKg   Float?
-  score              Int?
-  riskLevel          String?
-  conductedBy        String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id               Int       @id @default(autoincrement())
+  serviceSeekerId  Int
+  assessedOn       DateTime?
+  currentWeightKg  Float?
+  heightM          Float?
+  previousWeightKg Float?
+  score            Int?
+  riskLevel        String?
+  conductedBy      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   // Relations
-  serviceSeeker      ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerWaterlowAssessment {
-  id                      Int       @id @default(autoincrement())
-  serviceSeekerId        Int
-  assessedOn             DateTime?
-  currentWeightKg        Float?
-  heightM                Float?
-  previousWeightKg       Float?
-  continence             String?
-  skinType               String?
-  mobility               String?
-  specialSurgeryTrauma   String?
-  specialTissue          Json?
-  specialNeuro           Json?
-  specialMedication      Json?
-  photos                 Json?
-  score                  Int?
-  riskLevel              String?
-  conductedBy            String?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  id                   Int       @id @default(autoincrement())
+  serviceSeekerId      Int
+  assessedOn           DateTime?
+  currentWeightKg      Float?
+  heightM              Float?
+  previousWeightKg     Float?
+  continence           String?
+  skinType             String?
+  mobility             String?
+  specialSurgeryTrauma String?
+  specialTissue        Json?
+  specialNeuro         Json?
+  specialMedication    Json?
+  photos               Json?
+  score                Int?
+  riskLevel            String?
+  conductedBy          String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   // Relations
-  serviceSeeker          ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerPersonalProperty {
-  id               Int       @id @default(autoincrement())
-  serviceSeekerId  Int
-  item             String
-  pictureUrl       String?
-  enteredBy        String?
-  archived         Boolean   @default(false)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  item            String
+  pictureUrl      String?
+  enteredBy       String?
+  archived        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
@@ -1969,200 +1970,200 @@ model ExternalLoginProfile {
 }
 
 model ServiceSeekerExternalLogin {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int
-  profileId        Int
-  showRota         Boolean  @default(true)
-  showAllowance    Boolean  @default(true)
-  showCarePlan     Boolean  @default(true)
-  showDailyNotes   Boolean  @default(false)
-  showMarChart     Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  profileId       Int
+  showRota        Boolean  @default(true)
+  showAllowance   Boolean  @default(true)
+  showCarePlan    Boolean  @default(true)
+  showDailyNotes  Boolean  @default(false)
+  showMarChart    Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  profile          ExternalLoginProfile @relation(fields: [profileId], references: [id])
+  serviceSeeker ServiceSeeker        @relation(fields: [serviceSeekerId], references: [id])
+  profile       ExternalLoginProfile @relation(fields: [profileId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerExternalInboxAccess {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int
-  userId           Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  userId          Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
-  user             User          @relation(fields: [userId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
 
   @@unique([serviceSeekerId, userId])
 }
 
 model WeightTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  weight              Float
-  notes               String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  weight          Float
+  notes           String?
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("WeightTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("WeightTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("WeightTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("WeightTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model EncouragementTask {
-  id                  Int                 @id @default(autoincrement())
-  serviceSeekerId     Int
-  date                DateTime
-  time                String
-  encouragement       String
-  note                String?
-  completed           TaskCompletion
-  emotion             EmotionType
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  createdById         Int
-  updatedById         Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  encouragement   String
+  note            String?
+  completed       TaskCompletion
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker       ServiceSeeker       @relation(fields: [serviceSeekerId], references: [id])
-  createdBy           User                @relation("EncouragementTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User                @relation("EncouragementTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("EncouragementTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("EncouragementTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model FollowUpTask {
-  id                Int              @id @default(autoincrement())
-  serviceSeekerId   Int
-  date              DateTime
-  time              String
-  followUpDate      DateTime
-  followUpTime      String
-  name              String
-  description       String?
-  status            FollowUpStatus
-  emotion           EmotionType
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  createdById       Int
-  updatedById       Int
+  id              Int            @id @default(autoincrement())
+  serviceSeekerId Int
+  date            DateTime
+  time            String
+  followUpDate    DateTime
+  followUpTime    String
+  name            String
+  description     String?
+  status          FollowUpStatus
+  emotion         EmotionType
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     Int
+  updatedById     Int
 
   // Relations
-  serviceSeeker     ServiceSeeker    @relation(fields: [serviceSeekerId], references: [id])
-  createdBy         User             @relation("FollowUpTaskCreatedBy", fields: [createdById], references: [id])
-  updatedBy         User             @relation("FollowUpTaskUpdatedBy", fields: [updatedById], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  createdBy     User          @relation("FollowUpTaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User          @relation("FollowUpTaskUpdatedBy", fields: [updatedById], references: [id])
 }
 
 // Rota Models
 model ShiftType {
-  id                  Int               @id @default(autoincrement())
-  name                String            @unique
-  careerPayRegular    Float
+  id                   Int            @id @default(autoincrement())
+  name                 String         @unique
+  careerPayRegular     Float
   careerPayBankHoliday Float
-  payCalculation      PayCalculation    @default(PER_HOUR)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  payCalculation       PayCalculation @default(PER_HOUR)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
 
   // Relations
-  shifts              Shift[]
+  shifts Shift[]
 }
 
 model ShiftRun {
-  id                  Int               @id @default(autoincrement())
-  name                String
-  description         String?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  createdById         Int?
-  updatedById         Int?
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById Int?
+  updatedById Int?
 
   // Relations
-  createdBy           User?             @relation("ShiftRunCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User?             @relation("ShiftRunUpdatedBy", fields: [updatedById], references: [id])
-  shifts              Shift[]
-  admissions          ServiceSeekerAdmission[]
+  createdBy  User?                    @relation("ShiftRunCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User?                    @relation("ShiftRunUpdatedBy", fields: [updatedById], references: [id])
+  shifts     Shift[]
+  admissions ServiceSeekerAdmission[]
 }
 
 model Shift {
-  id                  Int               @id @default(autoincrement())
-  serviceSeekerId     Int
-  fromDate            DateTime
-  untilDate           DateTime?
-  recurrence          ShiftRecurrence
-  startTime           String
-  endTime             String
-  shiftTypeId         Int
-  totalStaffRequired  Int               @default(1)
-  funderId            Int?
-  timeCritical        Boolean           @default(false)
-  shiftRunId          Int?
-  notesForCarers      String?
-  notesForManager     String?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  createdById         Int
-  updatedById         Int
+  id                 Int             @id @default(autoincrement())
+  serviceSeekerId    Int
+  fromDate           DateTime
+  untilDate          DateTime?
+  recurrence         ShiftRecurrence
+  startTime          String
+  endTime            String
+  shiftTypeId        Int
+  totalStaffRequired Int             @default(1)
+  funderId           Int?
+  timeCritical       Boolean         @default(false)
+  shiftRunId         Int?
+  notesForCarers     String?
+  notesForManager    String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  createdById        Int
+  updatedById        Int
 
   // Relations
-  serviceSeeker       ServiceSeeker     @relation(fields: [serviceSeekerId], references: [id])
-  shiftType           ShiftType         @relation(fields: [shiftTypeId], references: [id])
-  funder              Funder?           @relation(fields: [funderId], references: [id])
-  shiftRun            ShiftRun?         @relation(fields: [shiftRunId], references: [id])
-  createdBy           User              @relation("ShiftCreatedBy", fields: [createdById], references: [id])
-  updatedBy           User              @relation("ShiftUpdatedBy", fields: [updatedById], references: [id])
-  assignments         ShiftAssignment[]
+  serviceSeeker ServiceSeeker     @relation(fields: [serviceSeekerId], references: [id])
+  shiftType     ShiftType         @relation(fields: [shiftTypeId], references: [id])
+  funder        Funder?           @relation(fields: [funderId], references: [id])
+  shiftRun      ShiftRun?         @relation(fields: [shiftRunId], references: [id])
+  createdBy     User              @relation("ShiftCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User              @relation("ShiftUpdatedBy", fields: [updatedById], references: [id])
+  assignments   ShiftAssignment[]
 }
 
 model ShiftAssignment {
-  id                  Int               @id @default(autoincrement())
-  shiftId             Int
-  userId              Int
-  date                DateTime
-  status              String            @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  id        Int      @id @default(autoincrement())
+  shiftId   Int
+  userId    Int
+  date      DateTime
+  status    String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  shift               Shift             @relation(fields: [shiftId], references: [id])
-  user                User              @relation("ShiftAssignments", fields: [userId], references: [id])
-  clockInOuts         ClockInOut[]
-  handoversFrom       Handover[]        @relation("HandoverFromShift")
-  handoversTo         Handover[]        @relation("HandoverToShift")
+  shift         Shift        @relation(fields: [shiftId], references: [id])
+  user          User         @relation("ShiftAssignments", fields: [userId], references: [id])
+  clockInOuts   ClockInOut[]
+  handoversFrom Handover[]   @relation("HandoverFromShift")
+  handoversTo   Handover[]   @relation("HandoverToShift")
 
   @@unique([shiftId, userId, date])
 }
 
 model ClockInOut {
-  id                  Int               @id @default(autoincrement())
-  userId              Int
-  shiftAssignmentId   Int?
-  serviceSeekerId      Int?
-  date                DateTime          // The date of the shift
-  clockInTime         DateTime?         // When they clocked in
-  clockOutTime        DateTime?         // When they clocked out
-  workType            String            @default("REGULAR") // REGULAR, STANDBY
-  isLate              Boolean           @default(false)     // Clocked in late
-  isEarly             Boolean           @default(false)     // Clocked out early
-  clockInLocation     String?           // GPS coordinates or address for clock in
-  clockOutLocation    String?           // GPS coordinates or address for clock out
-  notes               String?           @db.Text
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  shiftAssignmentId Int?
+  serviceSeekerId   Int?
+  date              DateTime // The date of the shift
+  clockInTime       DateTime? // When they clocked in
+  clockOutTime      DateTime? // When they clocked out
+  workType          String    @default("REGULAR") // REGULAR, STANDBY
+  isLate            Boolean   @default(false) // Clocked in late
+  isEarly           Boolean   @default(false) // Clocked out early
+  clockInLocation   String? // GPS coordinates or address for clock in
+  clockOutLocation  String? // GPS coordinates or address for clock out
+  notes             String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Relations
-  user                User              @relation("ClockInOuts", fields: [userId], references: [id])
-  shiftAssignment     ShiftAssignment?  @relation(fields: [shiftAssignmentId], references: [id])
-  serviceSeeker       ServiceSeeker?   @relation(fields: [serviceSeekerId], references: [id])
+  user            User             @relation("ClockInOuts", fields: [userId], references: [id])
+  shiftAssignment ShiftAssignment? @relation(fields: [shiftAssignmentId], references: [id])
+  serviceSeeker   ServiceSeeker?   @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([userId])
   @@index([date])
@@ -2171,64 +2172,64 @@ model ClockInOut {
 }
 
 model ServiceSeekerAllowanceSettings {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int      @unique
-  receivesAllowance Boolean @default(false)
-  allowanceAmount   Float?   @default(0)
+  id                 Int      @id @default(autoincrement())
+  serviceSeekerId    Int      @unique
+  receivesAllowance  Boolean  @default(false)
+  allowanceAmount    Float?   @default(0)
   allowanceFrequency String? // 'week', 'month', 'year'
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerAllowanceTransaction {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int
-  transaction      String   // 'Credit', 'Debit'
-  amount           Float
-  balance          Float    @default(0)
-  isAllowance      Boolean  @default(false)
-  item             String?
-  signature        String?  @db.Text // Base64 signature image
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  transaction     String // 'Credit', 'Debit'
+  amount          Float
+  balance         Float    @default(0)
+  isAllowance     Boolean  @default(false)
+  item            String?
+  signature       String?  @db.Text // Base64 signature image
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerFoodDrinksSchedule {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int
-  meal             String   // e.g., "Breakfast", "Lunch", "Dinner", "Snack"
-  times            Json     // Array of {hour: string, minute: string}
-  directions       String?  @db.Text
-  frequency        String   // e.g., "Daily", "Weekly", "Monthly"
-  team             String   // e.g., "All", "Team 1", etc.
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  meal            String // e.g., "Breakfast", "Lunch", "Dinner", "Snack"
+  times           Json // Array of {hour: string, minute: string}
+  directions      String?  @db.Text
+  frequency       String // e.g., "Daily", "Weekly", "Monthly"
+  team            String // e.g., "All", "Team 1", etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerFoodDrinksSettings {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int      @unique
-  pegMonitoring    Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int      @unique
+  pegMonitoring   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
@@ -2237,163 +2238,163 @@ model ServiceSeekerHouseKeepingSchedule {
   id               Int      @id @default(autoincrement())
   serviceSeekerId  Int
   task             String   @db.Text
-  temperatureCheck String?  // e.g., "Yes", "No", or null
-  times            Json     // Array of {hour: string, minute: string}
-  frequency        String   // e.g., "Daily", "Weekly", "Monthly", etc.
-  team             String   // e.g., "All", "Team 1", etc.
+  temperatureCheck String? // e.g., "Yes", "No", or null
+  times            Json // Array of {hour: string, minute: string}
+  frequency        String // e.g., "Daily", "Weekly", "Monthly", etc.
+  team             String // e.g., "All", "Team 1", etc.
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerSocialVisitInstructions {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int      @unique
-  instructions     String?  @db.Text
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int      @unique
+  instructions    String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerMedicineAccessCodes {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int      @unique
-  accessCodes      String?  @db.Text
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int      @unique
+  accessCodes     String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerPositioningHandling {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int
-  position         String?  @db.Text
+  id                Int      @id @default(autoincrement())
+  serviceSeekerId   Int
+  position          String?  @db.Text
   skinIntactOrGrade String?
-  times            Json     // Array of {hour: string, minute: string}
-  frequency        String   // e.g., "Daily", "Weekly", etc.
-  team             String   // e.g., "All", "Team 1", etc.
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  times             Json // Array of {hour: string, minute: string}
+  frequency         String // e.g., "Daily", "Weekly", etc.
+  team              String // e.g., "All", "Team 1", etc.
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerBathingSchedule {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int      @unique
-  showerGelSoapShampoo String? @db.Text
-  directions       String?  @db.Text
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                   Int      @id @default(autoincrement())
+  serviceSeekerId      Int      @unique
+  showerGelSoapShampoo String?  @db.Text
+  directions           String?  @db.Text
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
-  scheduleItems    ServiceSeekerBathingScheduleItem[]
+  serviceSeeker ServiceSeeker                      @relation(fields: [serviceSeekerId], references: [id])
+  scheduleItems ServiceSeekerBathingScheduleItem[]
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerBathingScheduleItem {
-  id               Int      @id @default(autoincrement())
-  scheduleId       Int
-  bathingType      String   // e.g., "Bath", "Bed bath", "Shower", etc.
-  frequency        String   // e.g., "Daily", "Weekly", etc.
-  times            Json     // Array of {day: string, hour: string, minute: string}
-  team             String   // e.g., "All", "Team 1", etc.
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  scheduleId  Int
+  bathingType String // e.g., "Bath", "Bed bath", "Shower", etc.
+  frequency   String // e.g., "Daily", "Weekly", etc.
+  times       Json // Array of {day: string, hour: string, minute: string}
+  team        String // e.g., "All", "Team 1", etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  schedule         ServiceSeekerBathingSchedule @relation(fields: [scheduleId], references: [id])
+  schedule ServiceSeekerBathingSchedule @relation(fields: [scheduleId], references: [id])
 
   @@index([scheduleId])
 }
 
 model ServiceSeekerBathingDefaultTime {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int
-  day              String   // e.g., "Monday", "Tuesday", etc.
-  hour             String
-  minute           String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  day             String // e.g., "Monday", "Tuesday", etc.
+  hour            String
+  minute          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@unique([serviceSeekerId, day, hour, minute])
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerMedicineSchedule {
-  id               Int      @id @default(autoincrement())
+  id               Int       @id @default(autoincrement())
   serviceSeekerId  Int
   medicineName     String
-  medicineType     String   // e.g., "CAPSULE", "LIQUID", etc.
-  prn              String?  // PRN reason
+  medicineType     String // e.g., "CAPSULE", "LIQUID", etc.
+  prn              String? // PRN reason
   dosage           String?
   givenBy          String?
-  directions       String?  @db.Text
-  applicationGuide String?  @default("NONE")
-  showBodyMap      Boolean  @default(false)
-  medicineWarning  String?  @db.Text
+  directions       String?   @db.Text
+  applicationGuide String?   @default("NONE")
+  showBodyMap      Boolean   @default(false)
+  medicineWarning  String?   @db.Text
   startDate        DateTime?
   endDate          DateTime?
-  status           String?  @default("ACTIVE")
+  status           String?   @default("ACTIVE")
   days             Json?
-  times            Json     // Array of {hour: string, minute: string}
-  frequency        String   // e.g., "Daily", "Weekly", "Monthly", etc.
-  team             String   // e.g., "All", "Team 1", etc.
-  requestSignoffBy String?  // Signoff requirement
-  notes            String?  @db.Text
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  times            Json // Array of {hour: string, minute: string}
+  frequency        String // e.g., "Daily", "Weekly", "Monthly", etc.
+  team             String // e.g., "All", "Team 1", etc.
+  requestSignoffBy String? // Signoff requirement
+  notes            String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerMedicinePrnPlan {
-  id                         Int      @id @default(autoincrement())
-  serviceSeekerId            Int
-  medicineName               String
-  medicineType               String
-  team                       String?
-  directions                 String?   @db.Text
-  applicationGuide           String?   @default("NONE")
-  showBodyMap                Boolean   @default(false)
-  medicineWarning            String?   @db.Text
-  startDate                  DateTime?
-  endDate                    DateTime?
-  givenBy                    String?
-  howToTake                  String?   @db.Text
-  communication              String?   @db.Text
-  medicineDetails            String?   @db.Text
-  maxDose24h                 String?
-  reasonForMedication        String?   @db.Text
-  expectedOutcome            String?   @db.Text
-  expectedOutcomeTimeframe   String?
-  actionIfNoOutcome          String?   @db.Text
-  whenToReferGp              String?   @db.Text
-  createdAt                  DateTime  @default(now())
-  updatedAt                  DateTime  @updatedAt
+  id                       Int       @id @default(autoincrement())
+  serviceSeekerId          Int
+  medicineName             String
+  medicineType             String
+  team                     String?
+  directions               String?   @db.Text
+  applicationGuide         String?   @default("NONE")
+  showBodyMap              Boolean   @default(false)
+  medicineWarning          String?   @db.Text
+  startDate                DateTime?
+  endDate                  DateTime?
+  givenBy                  String?
+  howToTake                String?   @db.Text
+  communication            String?   @db.Text
+  medicineDetails          String?   @db.Text
+  maxDose24h               String?
+  reasonForMedication      String?   @db.Text
+  expectedOutcome          String?   @db.Text
+  expectedOutcomeTimeframe String?
+  actionIfNoOutcome        String?   @db.Text
+  whenToReferGp            String?   @db.Text
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
@@ -2401,41 +2402,58 @@ model ServiceSeekerMedicinePrnPlan {
 }
 
 model ServiceSeekerOralCareSchedule {
-  id                    Int      @id @default(autoincrement())
-  serviceSeekerId       Int
+  id                       Int      @id @default(autoincrement())
+  serviceSeekerId          Int
   toothpasteMouthwashBrand String?  @db.Text
-  directions            String?  @db.Text
-  times                 Json     // Array of {hour: string, minute: string}
-  frequency             String   // e.g., "Daily", "Weekly", "Monthly", etc.
-  team                  String   // e.g., "All", "Team 1", etc.
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  directions               String?  @db.Text
+  times                    Json // Array of {hour: string, minute: string}
+  frequency                String // e.g., "Daily", "Weekly", "Monthly", etc.
+  team                     String // e.g., "All", "Team 1", etc.
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   // Relations
-  serviceSeeker         ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
 }
 
 model ServiceSeekerOralCareDefaultTime {
-  id               Int      @id @default(autoincrement())
-  serviceSeekerId  Int
-  hour             String
-  minute           String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  hour            String
+  minute          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  serviceSeeker    ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@unique([serviceSeekerId, hour, minute])
   @@index([serviceSeekerId])
 }
 
+model ServiceSeekerEncouragementSchedule {
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  encouragement   String?  @db.Text
+  pictureUrl      String?
+  times           Json // Array of {hour: string, minute: string}
+  frequency       String // e.g., "Daily", "Weekly", "Monthly", etc.
+  team            String // e.g., "All", "Team 1", etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
 model Conversation {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   participants ConversationParticipant[]
@@ -2445,15 +2463,15 @@ model Conversation {
 }
 
 model ConversationParticipant {
-  id             Int          @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   conversationId Int
   userId         Int
-  joinedAt       DateTime     @default(now())
+  joinedAt       DateTime  @default(now())
   lastReadAt     DateTime?
 
   // Relations
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@index([conversationId])
@@ -2461,17 +2479,17 @@ model ConversationParticipant {
 }
 
 model Message {
-  id             Int          @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   conversationId Int
   senderId       Int
-  content        String       @db.Text
-  isRead         Boolean      @default(false)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  content        String   @db.Text
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
   @@index([senderId])
@@ -2480,46 +2498,46 @@ model Message {
 
 // Holiday Models
 model HolidayType {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   description String?
-  isPaid      Boolean   @default(true)
-  color       String?   // Hex color for calendar display
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isPaid      Boolean  @default(true)
+  color       String? // Hex color for calendar display
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  holidays    Holiday[]
+  holidays Holiday[]
 
   @@index([name])
 }
 
 model Holiday {
-  id              Int          @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   userId          Int
   holidayTypeId   Int
   startDate       DateTime
   endDate         DateTime
-  startTime       String?      // Optional time (HH:mm format)
-  endTime         String?      // Optional time (HH:mm format)
-  includeWeekends Boolean      @default(false)
-  description     String?      @db.Text
-  holidayHours   Float?        // Total hours for the holiday
-  status          String       @default("PENDING") // PENDING, APPROVED, REJECTED
+  startTime       String? // Optional time (HH:mm format)
+  endTime         String? // Optional time (HH:mm format)
+  includeWeekends Boolean   @default(false)
+  description     String?   @db.Text
+  holidayHours    Float? // Total hours for the holiday
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
   approvedById    Int?
   approvedAt      DateTime?
-  rejectionReason String?      @db.Text
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  rejectionReason String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdById     Int
   updatedById     Int
 
   // Relations
-  user            User         @relation("UserHolidays", fields: [userId], references: [id])
-  holidayType     HolidayType  @relation(fields: [holidayTypeId], references: [id])
-  approvedBy      User?        @relation("ApprovedHolidays", fields: [approvedById], references: [id])
-  createdBy       User         @relation("HolidayCreatedBy", fields: [createdById], references: [id])
-  updatedBy       User         @relation("HolidayUpdatedBy", fields: [updatedById], references: [id])
+  user        User        @relation("UserHolidays", fields: [userId], references: [id])
+  holidayType HolidayType @relation(fields: [holidayTypeId], references: [id])
+  approvedBy  User?       @relation("ApprovedHolidays", fields: [approvedById], references: [id])
+  createdBy   User        @relation("HolidayCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User        @relation("HolidayUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([userId])
   @@index([startDate])
@@ -2529,22 +2547,22 @@ model Holiday {
 }
 
 model QualityAssurance {
-  id            Int                      @id @default(autoincrement())
+  id            Int                    @id @default(autoincrement())
   date          DateTime
   type          QualityAssuranceType
-  from          String                   // Who it's from (service user name, external person, etc.)
-  youSaid       String?                  @db.Text // What they said
-  weDid         String?                  @db.Text // What we did
-  lessonsLearnt String?                  @db.Text // Lessons learnt
-  status        QualityAssuranceStatus   @default(OPEN)
-  createdAt     DateTime                 @default(now())
-  updatedAt     DateTime                 @updatedAt
+  from          String // Who it's from (service user name, external person, etc.)
+  youSaid       String?                @db.Text // What they said
+  weDid         String?                @db.Text // What we did
+  lessonsLearnt String?                @db.Text // Lessons learnt
+  status        QualityAssuranceStatus @default(OPEN)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
   createdById   Int
   updatedById   Int
 
   // Relations
-  createdBy     User                     @relation("QualityAssuranceCreatedBy", fields: [createdById], references: [id])
-  updatedBy     User                     @relation("QualityAssuranceUpdatedBy", fields: [updatedById], references: [id])
+  createdBy User @relation("QualityAssuranceCreatedBy", fields: [createdById], references: [id])
+  updatedBy User @relation("QualityAssuranceUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([date])
   @@index([type])
@@ -2554,51 +2572,51 @@ model QualityAssurance {
 
 // Policy and Procedures Models
 model Policy {
-  id               Int               @id @default(autoincrement())
-  name             String
-  fileName         String            // Name of the uploaded file
-  fileUrl          String?           // URL to the PDF file (pending upload system)
-  reviewIn         Int?              // Days until next review (e.g., 30, 90, 365)
-  lastReviewed     DateTime?         // When the policy was last reviewed
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  createdById      Int
-  updatedById      Int
+  id           Int       @id @default(autoincrement())
+  name         String
+  fileName     String // Name of the uploaded file
+  fileUrl      String? // URL to the PDF file (pending upload system)
+  reviewIn     Int? // Days until next review (e.g., 30, 90, 365)
+  lastReviewed DateTime? // When the policy was last reviewed
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdById  Int
+  updatedById  Int
 
   // Relations
-  createdBy        User              @relation("PolicyCreatedBy", fields: [createdById], references: [id])
-  updatedBy        User              @relation("PolicyUpdatedBy", fields: [updatedById], references: [id])
-  reviews          PolicyReview[]
-  signatures       PolicySignature[]
+  createdBy  User              @relation("PolicyCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User              @relation("PolicyUpdatedBy", fields: [updatedById], references: [id])
+  reviews    PolicyReview[]
+  signatures PolicySignature[]
 
   @@index([createdById])
   @@index([updatedById])
 }
 
 model PolicyReview {
-  id               Int               @id @default(autoincrement())
-  policyId         Int
-  reviewText       String            @db.Text
-  createdAt        DateTime          @default(now())
-  createdById      Int
+  id          Int      @id @default(autoincrement())
+  policyId    Int
+  reviewText  String   @db.Text
+  createdAt   DateTime @default(now())
+  createdById Int
 
   // Relations
-  policy           Policy            @relation(fields: [policyId], references: [id], onDelete: Cascade)
-  createdBy        User              @relation("PolicyReviewCreatedBy", fields: [createdById], references: [id])
+  policy    Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  createdBy User   @relation("PolicyReviewCreatedBy", fields: [createdById], references: [id])
 
   @@index([policyId])
   @@index([createdById])
 }
 
 model PolicySignature {
-  id               Int               @id @default(autoincrement())
-  policyId         Int
-  userId           Int
-  signedAt         DateTime          @default(now())
+  id       Int      @id @default(autoincrement())
+  policyId Int
+  userId   Int
+  signedAt DateTime @default(now())
 
   // Relations
-  policy           Policy            @relation(fields: [policyId], references: [id], onDelete: Cascade)
-  user             User              @relation("PolicySignatureUser", fields: [userId], references: [id])
+  policy Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  user   User   @relation("PolicySignatureUser", fields: [userId], references: [id])
 
   @@unique([policyId, userId])
   @@index([policyId])
@@ -2609,7 +2627,7 @@ model PolicySignature {
 model MaintenanceIssue {
   id          Int                    @id @default(autoincrement())
   issueType   MaintenanceIssueType
-  for         String?                // For field (optional)
+  for         String? // For field (optional)
   issue       String                 @db.Text // Issue description
   repeats     MaintenanceIssueRepeat @default(NO)
   issueDate   DateTime
@@ -2621,8 +2639,8 @@ model MaintenanceIssue {
   updatedById Int
 
   // Relations
-  createdBy   User                   @relation("MaintenanceIssueCreatedBy", fields: [createdById], references: [id])
-  updatedBy   User                   @relation("MaintenanceIssueUpdatedBy", fields: [updatedById], references: [id])
+  createdBy User @relation("MaintenanceIssueCreatedBy", fields: [createdById], references: [id])
+  updatedBy User @relation("MaintenanceIssueUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([issueType])
   @@index([completed])
@@ -2631,30 +2649,30 @@ model MaintenanceIssue {
 }
 
 model PPProduct {
-  id              Int       @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   name            String
-  threshold       Int       @default(0) // Minimum quantity before alerting
-  currentQuantity Int       @default(0)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  threshold       Int      @default(0) // Minimum quantity before alerting
+  currentQuantity Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  transactions    PPStockTransaction[]
+  transactions PPStockTransaction[]
 
   @@index([name])
 }
 
 model PPStockTransaction {
-  id        Int                    @id @default(autoincrement())
+  id        Int                      @id @default(autoincrement())
   productId Int
   action    PPStockTransactionAction
   quantity  Int
   userId    Int
-  createdAt DateTime               @default(now())
+  createdAt DateTime                 @default(now())
 
   // Relations
-  product   PPProduct              @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user      User                   @relation("PPStockTransactionUser", fields: [userId], references: [id])
+  product PPProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User      @relation("PPStockTransactionUser", fields: [userId], references: [id])
 
   @@index([productId])
   @@index([userId])
@@ -2662,23 +2680,23 @@ model PPStockTransaction {
 }
 
 model Handover {
-  id                  Int       @id @default(autoincrement())
-  fromShiftAssignmentId Int     // Shift assignment being handed over FROM
-  toShiftAssignmentId   Int     // Shift assignment receiving handover TO
-  serviceSeekerId       Int     // Must match between both shifts (validation)
-  handoverNotes         String? @db.Text // General handover notes
-  remainingTasks        Json?   // Array of task references (taskType, taskId)
-  visits                Json?   // Array of visit references (visitTask IDs)
-  issues                String? @db.Text // Service user issues/concerns
+  id                    Int      @id @default(autoincrement())
+  fromShiftAssignmentId Int // Shift assignment being handed over FROM
+  toShiftAssignmentId   Int // Shift assignment receiving handover TO
+  serviceSeekerId       Int // Must match between both shifts (validation)
+  handoverNotes         String?  @db.Text // General handover notes
+  remainingTasks        Json? // Array of task references (taskType, taskId)
+  visits                Json? // Array of visit references (visitTask IDs)
+  issues                String?  @db.Text // Service user issues/concerns
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
-  createdById           Int     // User creating the handover
+  createdById           Int // User creating the handover
 
   // Relations
-  fromShiftAssignment   ShiftAssignment @relation("HandoverFromShift", fields: [fromShiftAssignmentId], references: [id])
-  toShiftAssignment     ShiftAssignment @relation("HandoverToShift", fields: [toShiftAssignmentId], references: [id])
-  serviceSeeker         ServiceSeeker   @relation(fields: [serviceSeekerId], references: [id])
-  createdBy             User            @relation("HandoverCreatedBy", fields: [createdById], references: [id])
+  fromShiftAssignment ShiftAssignment @relation("HandoverFromShift", fields: [fromShiftAssignmentId], references: [id])
+  toShiftAssignment   ShiftAssignment @relation("HandoverToShift", fields: [toShiftAssignmentId], references: [id])
+  serviceSeeker       ServiceSeeker   @relation(fields: [serviceSeekerId], references: [id])
+  createdBy           User            @relation("HandoverCreatedBy", fields: [createdById], references: [id])
 
   @@index([fromShiftAssignmentId])
   @@index([toShiftAssignmentId])
@@ -2693,22 +2711,22 @@ enum EmergencyAlertStatus {
 }
 
 model EmergencyAlert {
-  id          Int                   @id @default(autoincrement())
-  triggeredBy Int                   // User who triggered the emergency
-  teamId      Int?                  // Team of the user who triggered
-  status      EmergencyAlertStatus  @default(ACTIVE)
-  location    String?               // GPS location if available
-  message     String?               // Optional message from care worker
-  acknowledgedBy Int?               // User who acknowledged
+  id             Int                  @id @default(autoincrement())
+  triggeredBy    Int // User who triggered the emergency
+  teamId         Int? // Team of the user who triggered
+  status         EmergencyAlertStatus @default(ACTIVE)
+  location       String? // GPS location if available
+  message        String? // Optional message from care worker
+  acknowledgedBy Int? // User who acknowledged
   acknowledgedAt DateTime?
   resolvedAt     DateTime?
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 
   // Relations
-  triggeredByUser User               @relation("EmergencyTriggeredBy", fields: [triggeredBy], references: [id])
-  acknowledgedByUser User?           @relation("EmergencyAcknowledgedBy", fields: [acknowledgedBy], references: [id])
-  team            Team?              @relation(fields: [teamId], references: [id])
+  triggeredByUser    User  @relation("EmergencyTriggeredBy", fields: [triggeredBy], references: [id])
+  acknowledgedByUser User? @relation("EmergencyAcknowledgedBy", fields: [acknowledgedBy], references: [id])
+  team               Team? @relation(fields: [teamId], references: [id])
 
   @@index([status])
   @@index([teamId])

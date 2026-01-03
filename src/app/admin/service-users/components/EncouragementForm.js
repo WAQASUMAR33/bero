@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 export default function EncouragementForm({ serviceSeekerId, onNotification }) {
-  const [tasks, setTasks] = useState([]);
+  const [scheduleItems, setScheduleItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -44,12 +44,12 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/encouragement-tasks?serviceSeekerId=${serviceSeekerId}`, {
+      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/encouragement-schedule-items`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
-        setTasks(Array.isArray(data) ? data : []);
+        setScheduleItems(Array.isArray(data) ? data : []);
       }
     } catch (e) {
       console.error(e);
@@ -195,11 +195,12 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ...formData,
+          encouragement: formData.encouragement,
           times: validTimes,
-          id: editingId,
+          frequency: formData.frequency,
+          team: formData.team,
           pictureUrl: formData.pictureUrl,
-          createTasks: !editingId, // Create tasks only for new items
+          id: editingId,
         }),
       });
       if (res.ok) {
@@ -208,7 +209,7 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
         if (onNotification)
           onNotification({
             show: true,
-            message: editingId ? 'Item updated.' : 'Item saved and tasks created.',
+            message: editingId ? 'Schedule item updated.' : 'Schedule item created successfully.',
             type: 'success',
           });
       } else {
@@ -251,20 +252,12 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
     }
   };
 
-  // Display tasks grouped by encouragement text
-  const displayRows = tasks.slice(0, 20).map((task) => {
-    const taskDate = task.date ? new Date(task.date) : new Date();
-    return {
-      id: task.id,
-      encouragement: task.encouragement || '',
-      frequency: formatDate(task.date),
-      times: [{ day: '', hour: task.time ? task.time.split(':')[0] : String(taskDate.getHours()).padStart(2, '0'), minute: task.time ? task.time.split(':')[1] : String(taskDate.getMinutes()).padStart(2, '0') }],
-      team: 'All',
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
-      isSchedule: false,
-    };
-  });
+  // Display schedule items
+  const displayRows = scheduleItems.map((item) => ({
+    ...item,
+    isSchedule: true,
+    times: Array.isArray(item.times) ? item.times : [],
+  }));
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-orange-500">
@@ -296,8 +289,8 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
                 <tbody>
                   {displayRows.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="py-8 text-center text-gray-500">
-                        No encouragement tasks yet. Click the + button to add one.
+                      <td colSpan="7" className="py-8 text-center text-gray-500">
+                        No encouragement schedules yet. Click the + button to add one.
                       </td>
                     </tr>
                   ) : (
@@ -312,6 +305,24 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
                         <td className="py-4 px-5 text-sm text-gray-900">{r.frequency || '-'}</td>
                         <td className="py-4 px-5 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
                         <td className="py-4 px-5 text-sm text-gray-600">{formatDate(r.updatedAt)}</td>
+                        <td className="py-4 px-5 text-sm">
+                          <div className="flex items-center space-x-3">
+                            <button
+                              type="button"
+                              onClick={() => openEdit(r)}
+                              className="text-[#224fa6] hover:text-[#1a3d85] font-medium transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteScheduleItem(r.id)}
+                              className="text-red-600 hover:text-red-700 font-medium transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))
                   )}

@@ -12,9 +12,12 @@ export async function GET(request, { params }) {
     const serviceSeekerId = parseInt(resolvedParams.id, 10);
     if (Number.isNaN(serviceSeekerId)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
 
-    // For now, return empty array since we don't have a schedule model
-    // This can be enhanced later with a proper schedule system
-    return NextResponse.json([]);
+    const scheduleItems = await prisma.serviceSeekerEncouragementSchedule.findMany({
+      where: { serviceSeekerId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json(scheduleItems);
   } catch (e) {
     console.error('GET encouragement-schedule-items error:', e);
     return NextResponse.json({ error: 'Failed to fetch items' }, { status: 500 });
@@ -33,80 +36,25 @@ export async function POST(request, { params }) {
 
     const b = await request.json();
 
-    let tasksCreated = 0;
-    let tasksSkipped = 0;
-
-    // Create corresponding encouragement tasks if needed
-    if (b.createTasks && Array.isArray(b.times) && b.times.length > 0 && b.frequency) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // Determine how many days/weeks to create tasks for based on frequency
-      let daysToCreate = 7; // Default: 1 week
-      if (b.frequency === 'Daily') {
-        daysToCreate = 30; // 1 month for daily
-      } else if (b.frequency === 'Weekly') {
-        daysToCreate = 56; // 8 weeks for weekly
-      } else if (b.frequency === 'Fortnightly') {
-        daysToCreate = 84; // 12 weeks for fortnightly
-      } else if (b.frequency === 'Every 3 weeks') {
-        daysToCreate = 84; // 12 weeks
-      } else if (b.frequency === 'Monthly') {
-        daysToCreate = 90; // 3 months
-      } else if (b.frequency === 'Quarterly') {
-        daysToCreate = 365; // 1 year
-      } else if (b.frequency === 'Yearly') {
-        daysToCreate = 365; // 1 year
-      }
-
-      // For encouragement tasks, create tasks for all days based on frequency
-      // Daily creates tasks every day, other frequencies also create tasks every day
-      // (The frequency is more about how often the task should be performed, not when to create them)
-      
-      for (let i = 0; i < daysToCreate; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() + i);
-
-        for (const timeSlot of b.times) {
-          try {
-            await prisma.encouragementTask.create({
-              data: {
-                serviceSeekerId,
-                date: date,
-                time: `${timeSlot.hour || '00'}:${timeSlot.minute || '00'}`,
-                encouragement: b.encouragement || '',
-                note: b.pictureUrl ? JSON.stringify({ pictureUrl: b.pictureUrl }) : null,
-                completed: 'NO',
-                emotion: 'NEUTRAL',
-                createdById: decoded.userId || 1,
-                updatedById: decoded.userId || 1,
-              },
-            });
-            tasksCreated++;
-          } catch (taskError) {
-            // Skip if task already exists (duplicate date/time)
-            if (taskError.code === 'P2002') {
-              tasksSkipped++;
-            } else {
-              console.error('Error creating encouragement task:', taskError);
-              throw taskError; // Re-throw if it's not a duplicate error
-            }
-          }
-        }
-      }
-    } else {
+    if (!b.frequency || !Array.isArray(b.times) || b.times.length === 0) {
       return NextResponse.json({ 
-        error: 'Missing required fields: createTasks, times, or frequency' 
+        error: 'Missing required fields: times and frequency are required' 
       }, { status: 400 });
     }
 
-    // Return a success response
-    return NextResponse.json({ 
-      success: true, 
-      message: `Tasks created successfully (${tasksCreated} created, ${tasksSkipped} skipped)`,
-      tasksCreated,
-      tasksSkipped
-    }, { status: 201 });
+    // Create schedule item (not tasks - tasks will be generated on-demand)
+    const created = await prisma.serviceSeekerEncouragementSchedule.create({
+      data: {
+        serviceSeekerId,
+        encouragement: b.encouragement || null,
+        pictureUrl: b.pictureUrl || null,
+        times: b.times,
+        frequency: b.frequency,
+        team: b.team || 'All',
+      },
+    });
+
+    return NextResponse.json(created, { status: 201 });
   } catch (e) {
     console.error('POST encouragement-schedule-items error:', e);
     return NextResponse.json({ error: 'Failed to create items' }, { status: 500 });
@@ -123,8 +71,22 @@ export async function PUT(request, { params }) {
     const serviceSeekerId = parseInt(resolvedParams.id, 10);
     if (Number.isNaN(serviceSeekerId)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
 
-    // For now, return error since we don't have a schedule model
-    return NextResponse.json({ error: 'Update not yet supported' }, { status: 501 });
+    const b = await request.json();
+    const id = parseInt(b.id, 10);
+    if (Number.isNaN(id)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+
+    const updated = await prisma.serviceSeekerEncouragementSchedule.update({
+      where: { id },
+      data: {
+        encouragement: b.encouragement || null,
+        pictureUrl: b.pictureUrl || null,
+        times: b.times,
+        frequency: b.frequency,
+        team: b.team || 'All',
+      },
+    });
+
+    return NextResponse.json(updated, { status: 200 });
   } catch (e) {
     console.error('PUT encouragement-schedule-items error:', e);
     return NextResponse.json({ error: 'Failed to update item' }, { status: 500 });
@@ -141,8 +103,12 @@ export async function DELETE(request, { params }) {
     const serviceSeekerId = parseInt(resolvedParams.id, 10);
     if (Number.isNaN(serviceSeekerId)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
 
-    // For now, return error since we don't have a schedule model
-    return NextResponse.json({ error: 'Delete not yet supported' }, { status: 501 });
+    const { searchParams } = new URL(request.url);
+    const id = parseInt(searchParams.get('id'), 10);
+    if (Number.isNaN(id)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+
+    await prisma.serviceSeekerEncouragementSchedule.delete({ where: { id } });
+    return NextResponse.json({ message: 'Deleted' }, { status: 200 });
   } catch (e) {
     console.error('DELETE encouragement-schedule-items error:', e);
     return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });

@@ -55,39 +55,34 @@ export async function POST(request, { params }) {
         daysToCreate = 365; // 1 year
       }
 
-      // Get unique days from time slots
-      const selectedDays = b.times.map(t => t.day).filter(Boolean);
-      const isDaily = b.frequency === 'Daily' || selectedDays.length === 0;
+      // For encouragement tasks, create tasks for all days based on frequency
+      const isDaily = b.frequency === 'Daily';
 
       for (let i = 0; i < daysToCreate; i++) {
         const date = new Date(today);
         date.setDate(date.getDate() + i);
-        const dayName = date.toLocaleDateString('en-GB', { weekday: 'long' });
 
-        // Check if this day should have tasks
-        if (isDaily || selectedDays.includes(dayName)) {
+        // Check if this day should have tasks (for non-daily frequencies, create tasks on all days)
+        if (isDaily || b.frequency !== 'Daily') {
           for (const timeSlot of b.times) {
-            // For daily, use all times. For specific days, match the day
-            if (isDaily || timeSlot.day === dayName || !timeSlot.day) {
-              try {
-                await prisma.encouragementTask.create({
-                  data: {
-                    serviceSeekerId,
-                    date: date,
-                    time: `${timeSlot.hour || '00'}:${timeSlot.minute || '00'}`,
-                    encouragement: b.encouragement,
-                    note: null,
-                    completed: 'NO',
-                    emotion: 'NEUTRAL',
-                    createdById: decoded.userId || 1,
-                    updatedById: decoded.userId || 1,
-                  },
-                });
-              } catch (taskError) {
-                // Skip if task already exists (duplicate date/time)
-                if (taskError.code !== 'P2002') {
-                  console.error('Error creating encouragement task:', taskError);
-                }
+            try {
+              await prisma.encouragementTask.create({
+                data: {
+                  serviceSeekerId,
+                  date: date,
+                  time: `${timeSlot.hour || '00'}:${timeSlot.minute || '00'}`,
+                  encouragement: b.encouragement || '',
+                  note: b.pictureUrl ? JSON.stringify({ pictureUrl: b.pictureUrl }) : null,
+                  completed: 'NO',
+                  emotion: 'NEUTRAL',
+                  createdById: decoded.userId || 1,
+                  updatedById: decoded.userId || 1,
+                },
+              });
+            } catch (taskError) {
+              // Skip if task already exists (duplicate date/time)
+              if (taskError.code !== 'P2002') {
+                console.error('Error creating encouragement task:', taskError);
               }
             }
           }

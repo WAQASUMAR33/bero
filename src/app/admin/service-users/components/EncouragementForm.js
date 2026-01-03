@@ -13,12 +13,14 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
     frequency: '',
     team: 'All',
     times: [],
+    pictureUrl: null,
   });
-  const [timeInputs, setTimeInputs] = useState([{ day: '', hour: '', minute: '' }]);
+  const [timeInputs, setTimeInputs] = useState([{ hour: '', minute: '' }]);
   const [teams, setTeams] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const frequencyOptions = ['Daily', 'Rota Days', 'Weekly', 'Fortnightly', 'Every 3 weeks', 'Monthly', 'Quarterly', 'Yearly'];
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   useEffect(() => {
     fetchAll();
@@ -73,15 +75,16 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
   const formatTime = (times) => {
     if (!Array.isArray(times) || times.length === 0) return '-';
     return times
-      .map((t) => `${t.day || ''} ${String(t.hour || '').padStart(2, '0')}:${String(t.minute || '').padStart(2, '0')}`)
+      .map((t) => `${String(t.hour || '').padStart(2, '0')}:${String(t.minute || '').padStart(2, '0')}`)
       .filter((t) => t.trim() !== ':')
       .join(', ') || '-';
   };
 
   const openAdd = () => {
     setEditingId(null);
-    setFormData({ encouragement: '', frequency: '', team: 'All', times: [] });
-    setTimeInputs([{ day: '', hour: '', minute: '' }]);
+    setFormData({ encouragement: '', frequency: '', team: 'All', times: [], pictureUrl: null });
+    setTimeInputs([{ hour: '', minute: '' }]);
+    setSelectedFile(null);
     setShowModal(true);
   };
 
@@ -92,17 +95,19 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
       frequency: item.frequency || '',
       team: item.team || 'All',
       times: item.times || [],
+      pictureUrl: item.pictureUrl || null,
     });
     if (Array.isArray(item.times) && item.times.length > 0) {
       setTimeInputs(item.times);
     } else {
-      setTimeInputs([{ day: '', hour: '', minute: '' }]);
+      setTimeInputs([{ hour: '', minute: '' }]);
     }
+    setSelectedFile(null);
     setShowModal(true);
   };
 
   const addTimeInput = () => {
-    setTimeInputs([...timeInputs, { day: '', hour: '', minute: '' }]);
+    setTimeInputs([...timeInputs, { hour: '', minute: '' }]);
   };
 
   const removeTimeInput = (index) => {
@@ -115,14 +120,66 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
     setTimeInputs(updated);
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    setUploadingImage(true);
+    try {
+      const token = localStorage.getItem('token');
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64DataUri = reader.result;
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ file: base64DataUri }),
+          });
+
+          const uploadData = await uploadRes.json();
+          if (uploadRes.ok && uploadData.success) {
+            setFormData({ ...formData, pictureUrl: uploadData.fileUrl });
+          } else {
+            if (onNotification) {
+              onNotification({
+                show: true,
+                message: uploadData.error || 'Failed to upload image',
+                type: 'error',
+              });
+            }
+            setSelectedFile(null);
+          }
+        } catch (error) {
+          console.error('Upload error:', error);
+          if (onNotification) {
+            onNotification({ show: true, message: 'Failed to upload image', type: 'error' });
+          }
+          setSelectedFile(null);
+        } finally {
+          setUploadingImage(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('File read error:', error);
+      setUploadingImage(false);
+      setSelectedFile(null);
+    }
+  };
+
   const saveScheduleItem = async () => {
     const validTimes = timeInputs
       .filter((t) => t.hour && t.minute)
-      .map((t) => ({ day: t.day || '', hour: t.hour, minute: t.minute }));
+      .map((t) => ({ hour: t.hour, minute: t.minute }));
 
-    if (!formData.encouragement || !formData.frequency || validTimes.length === 0) {
+    if (!formData.frequency || validTimes.length === 0) {
       if (onNotification)
-        onNotification({ show: true, message: 'Please fill required fields.', type: 'error' });
+        onNotification({ show: true, message: 'Please fill required fields (Frequency and Time).', type: 'error' });
       return;
     }
 
@@ -141,6 +198,7 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
           ...formData,
           times: validTimes,
           id: editingId,
+          pictureUrl: formData.pictureUrl,
           createTasks: !editingId, // Create tasks only for new items
         }),
       });
@@ -317,10 +375,16 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
                 <input
                   type="file"
                   accept="image/*"
+                  onChange={handleFileChange}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900"
-                  disabled
+                  disabled={uploadingImage}
                 />
-                <p className="text-xs text-gray-500 mt-1">Picture upload will be implemented later</p>
+                {selectedFile && (
+                  <p className="text-xs text-gray-600 mt-1">{selectedFile.name}</p>
+                )}
+                {uploadingImage && (
+                  <p className="text-xs text-gray-500 mt-1">Uploading...</p>
+                )}
               </div>
               <div className="flex items-center space-x-2">
                 <label className="block text-sm font-medium text-gray-700 w-32">Frequency:</label>
@@ -338,21 +402,9 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time:</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Time:</label>
                 {timeInputs.map((time, idx) => (
                   <div key={idx} className="flex items-center space-x-2 mb-2">
-                    <select
-                      value={time.day}
-                      onChange={(e) => updateTimeInput(idx, 'day', e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
-                    >
-                      <option value="">Day</option>
-                      {days.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
                     <select
                       value={time.hour}
                       onChange={(e) => updateTimeInput(idx, 'hour', e.target.value)}
@@ -386,15 +438,17 @@ export default function EncouragementForm({ serviceSeekerId, onNotification }) {
                         Remove
                       </button>
                     )}
+                    {idx === timeInputs.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={addTimeInput}
+                        className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded flex items-center justify-center hover:from-orange-600 hover:to-orange-700 text-xl transition-all"
+                      >
+                        +
+                      </button>
+                    )}
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={addTimeInput}
-                  className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded flex items-center justify-center hover:from-orange-600 hover:to-orange-700 text-xl transition-all"
-                >
-                  +
-                </button>
               </div>
               <div className="flex items-center space-x-2">
                 <label className="block text-sm font-medium text-gray-700 w-32">Team:</label>

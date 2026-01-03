@@ -2,11 +2,16 @@
 
 ## Overview
 
-This document provides the API endpoints for the mobile app to interact with daily tasks. Mobile app users can:
-- ✅ **View/List** tasks (GET)
+This document provides the API endpoints for the mobile app to interact with daily tasks. Mobile app users (care workers and support workers) can:
+- ✅ **View/List** tasks (GET) - **Only for service users they are assigned to via shifts**
 - ✅ **Update/Fill** task fields (PUT)
-- ❌ **Cannot Create** new tasks (POST not available)
-- ❌ **Cannot Delete** tasks (DELETE not available)
+- ❌ **Cannot Create** new tasks (POST blocked for care workers/support workers)
+- ❌ **Cannot Delete** tasks (DELETE blocked for care workers/support workers)
+
+**Important Security Notes:**
+- Care workers and support workers can only view tasks for service users they have shift assignments for
+- Tasks are automatically created from schedules by administrators/managers
+- Care workers can only update task completion status and fill in task details, not create or delete tasks
 
 **Base URL:** `/api`
 
@@ -88,8 +93,10 @@ Each task type follows the same pattern:
 3. **Update Task** - `PUT /api/{task-type}-tasks/{id}`
 
 ### Common Query Parameters (for List endpoints)
-- `serviceSeekerId` (optional) - Filter by service user ID
+- `serviceSeekerId` (optional) - Filter by service user ID (only works for admins/managers, not care workers)
 - `date` (optional) - Filter by date in `YYYY-MM-DD` format
+
+**Note for Care Workers:** When care workers or support workers call GET endpoints, they automatically only see tasks for service users they have shift assignments for on the specified date (or today if no date provided). The `serviceSeekerId` parameter is ignored for care workers - they can only see tasks for their assigned service users.
 
 ### Common Task Fields
 
@@ -100,6 +107,19 @@ Most tasks include these common fields that can be updated:
 - `notes` (optional) - Additional notes or comments
 
 **Note:** When updating a task, you only need to send the fields you want to update (partial updates are supported). The `updatedById` and `updatedAt` fields are automatically set.
+
+**Important Field Restrictions for Care Workers:**
+- Care workers **CAN** update:
+  - Task-specific data (e.g., `systolicPressure`, `diastolicPressure` for blood pressure tasks)
+  - `notes` - Additional notes or reasons
+  - `completed` - Completion status
+  - `emotion` - Emotion indicator
+  - Task-specific fields (e.g., `bathingType`, `oralCare`, `temperatureInC`, etc.)
+- Care workers **CANNOT** update:
+  - `serviceSeekerId` - Service user assignment (set by admin)
+  - `date` - Task date (set by admin)
+  - `time` - Task time (set by admin)
+- Care workers **CANNOT** create or delete tasks
 
 ---
 

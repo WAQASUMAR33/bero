@@ -10,7 +10,21 @@ export async function GET(request, { params }) {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    
+    // Get user role to check if care worker
+    const currentUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userRoleName = currentUser.role?.name;
+    const isCareWorker = userRoleName === 'CAREWORKER' || userRoleName === 'SUPPORT_WORKER';
+    
     const { id } = await params;
     const taskId = parseInt(id);
     
@@ -28,6 +42,30 @@ export async function GET(request, { params }) {
     });
     
     if (!task) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    
+    // For care workers, verify they have a shift assignment for this service user
+    if (isCareWorker) {
+      const taskDate = new Date(task.date);
+      taskDate.setHours(0, 0, 0, 0);
+      
+      const assignment = await prisma.shiftAssignment.findFirst({
+        where: {
+          userId: decoded.userId,
+          date: taskDate,
+          status: 'SCHEDULED',
+          shift: {
+            serviceSeekerId: task.serviceSeekerId
+          }
+        }
+      });
+      
+      if (!assignment) {
+        return NextResponse.json({ 
+          error: 'You do not have permission to view this task. You are not assigned to this service user.' 
+        }, { status: 403 });
+      }
+    }
+    
     return NextResponse.json(task, { status: 200 });
   } catch (error) {
     console.error('GET /blood-pressure-tasks/[id] error:', error);
@@ -43,19 +81,96 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    
+    // Get user role to check if care worker
+    const currentUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userRoleName = currentUser.role?.name;
+    const isCareWorker = userRoleName === 'CAREWORKER' || userRoleName === 'SUPPORT_WORKER';
+    
     const { id } = await params;
     const taskId = parseInt(id);
+    
+    // Get existing task to verify permissions
+    const existingTask = await prisma.bloodPressureTask.findUnique({
+      where: { id: taskId },
+      include: {
+        serviceSeeker: true
+      }
+    });
+
+    if (!existingTask) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    // For care workers, verify they have a shift assignment for this service user
+    if (isCareWorker) {
+      const taskDate = new Date(existingTask.date);
+      taskDate.setHours(0, 0, 0, 0);
+      
+      const assignment = await prisma.shiftAssignment.findFirst({
+        where: {
+          userId: decoded.userId,
+          date: taskDate,
+          status: 'SCHEDULED',
+          shift: {
+            serviceSeekerId: existingTask.serviceSeekerId
+          }
+        }
+      });
+      
+      if (!assignment) {
+        return NextResponse.json({ 
+          error: 'You do not have permission to update this task. You are not assigned to this service user.' 
+        }, { status: 403 });
+      }
+    }
+
     const body = await request.json();
 
-    const updated = await prisma.bloodPressureTask.update({
-      where: { id: taskId },
-      data: {
+    // For care workers, only allow updating specific fields (not serviceSeekerId, date, time)
+    let updateData = {};
+    
+    if (isCareWorker) {
+      // Care workers can only update: task data, notes, completed, emotion
+      if (body.systolicPressure !== undefined) {
+        updateData.systolicPressure = parseInt(body.systolicPressure);
+      }
+      if (body.diastolicPressure !== undefined) {
+        updateData.diastolicPressure = parseInt(body.diastolicPressure);
+      }
+      if (body.notes !== undefined) {
+        updateData.notes = body.notes || null;
+      }
+      if (body.completed !== undefined) {
+        updateData.completed = body.completed;
+      }
+      if (body.emotion !== undefined) {
+        updateData.emotion = body.emotion;
+      }
+      // Explicitly prevent updating serviceSeekerId, date, time
+    } else {
+      // Admins/managers can update all fields
+      updateData = {
         ...body,
         date: body.date ? new Date(body.date) : undefined,
         systolicPressure: body.systolicPressure ? parseInt(body.systolicPressure) : undefined,
         diastolicPressure: body.diastolicPressure ? parseInt(body.diastolicPressure) : undefined,
-        updatedById: decoded.userId,
-      },
+      };
+    }
+
+    updateData.updatedById = decoded.userId;
+
+    const updated = await prisma.bloodPressureTask.update({
+      where: { id: taskId },
+      data: updateData,
       include: {
         serviceSeeker: true,
         createdBy: {
@@ -81,7 +196,25 @@ export async function DELETE(request, { params }) {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    
+    // Check if user is care worker or support worker - they cannot delete tasks
+    const currentUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userRoleName = currentUser.role?.name;
+    if (userRoleName === 'CAREWORKER' || userRoleName === 'SUPPORT_WORKER') {
+      return NextResponse.json({ 
+        error: 'Care workers and support workers cannot delete tasks.' 
+      }, { status: 403 });
+    }
+    
     const { id } = await params;
     const taskId = parseInt(id);
 

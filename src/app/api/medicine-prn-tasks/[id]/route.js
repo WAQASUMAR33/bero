@@ -10,7 +10,20 @@ export async function GET(request, { params }) {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+
+    // Get user role to check if care worker
+    const currentUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userRoleName = currentUser.role?.name;
+    const isCareWorker = userRoleName === 'CAREWORKER' || userRoleName === 'SUPPORT_WORKER';
 
     const { id } = await params;
     const taskId = parseInt(id);
@@ -38,6 +51,29 @@ export async function GET(request, { params }) {
       );
     }
 
+    // For care workers, verify they have a shift assignment for this service user
+    if (isCareWorker) {
+      const taskDate = new Date(task.applyDate);
+      taskDate.setHours(0, 0, 0, 0);
+      
+      const assignment = await prisma.shiftAssignment.findFirst({
+        where: {
+          userId: decoded.userId,
+          date: taskDate,
+          status: 'SCHEDULED',
+          shift: {
+            serviceSeekerId: task.serviceSeekerId
+          }
+        }
+      });
+      
+      if (!assignment) {
+        return NextResponse.json({ 
+          error: 'You do not have permission to view this task. You are not assigned to this service user.' 
+        }, { status: 403 });
+      }
+    }
+
     return NextResponse.json(task);
   } catch (error) {
     console.error('GET /medicine-prn-tasks/[id] error:', error);
@@ -56,42 +92,95 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    
+    // Get user role to check if care worker
+    const currentUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userRoleName = currentUser.role?.name;
+    const isCareWorker = userRoleName === 'CAREWORKER' || userRoleName === 'SUPPORT_WORKER';
 
     const { id } = await params;
     const taskId = parseInt(id);
+    
+    // Get existing task to verify permissions
+    const existingTask = await prisma.medicinePrnTask.findUnique({
+      where: { id: taskId },
+      include: {
+        serviceSeeker: true
+      }
+    });
+
+    if (!existingTask) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    // For care workers, verify they have a shift assignment for this service user
+    if (isCareWorker) {
+      const taskDate = new Date(existingTask.applyDate);
+      taskDate.setHours(0, 0, 0, 0);
+      
+      const assignment = await prisma.shiftAssignment.findFirst({
+        where: {
+          userId: decoded.userId,
+          date: taskDate,
+          status: 'SCHEDULED',
+          shift: {
+            serviceSeekerId: existingTask.serviceSeekerId
+          }
+        }
+      });
+      
+      if (!assignment) {
+        return NextResponse.json({ 
+          error: 'You do not have permission to update this task. You are not assigned to this service user.' 
+        }, { status: 403 });
+      }
+    }
+
     const body = await request.json();
-    const {
-      serviceSeekerId,
-      applyDate,
-      applyTime,
-      prn,
-      medicineName,
-      medicineType,
-      administrated,
-      notes,
-      requestSignoffBy,
-      signoffByStaffId,
-      completed,
-      emotion
-    } = body;
+
+    // For care workers, only allow updating specific fields (not serviceSeekerId, applyDate, applyTime)
+    let updateData = {};
+    
+    if (isCareWorker) {
+      // Care workers can only update: task data, notes, completed, emotion
+      if (body.administrated !== undefined) updateData.administrated = body.administrated;
+      if (body.notes !== undefined) updateData.notes = body.notes || null;
+      if (body.completed !== undefined) updateData.completed = body.completed;
+      if (body.emotion !== undefined) updateData.emotion = body.emotion;
+      // Explicitly prevent updating serviceSeekerId, applyDate, applyTime, prn, medicineName, medicineType, requestSignoffBy, signoffByStaffId
+    } else {
+      // Admins/managers can update all fields
+      updateData = {
+        serviceSeekerId: body.serviceSeekerId ? parseInt(body.serviceSeekerId) : undefined,
+        applyDate: body.applyDate ? new Date(body.applyDate) : undefined,
+        applyTime: body.applyTime,
+        prn: body.prn,
+        medicineName: body.medicineName,
+        medicineType: body.medicineType,
+        administrated: body.administrated,
+        notes: body.notes !== undefined ? (body.notes || null) : undefined,
+        requestSignoffBy: body.requestSignoffBy,
+        signoffByStaffId: body.requestSignoffBy === 'REQUIRED' ? (body.signoffByStaffId ? parseInt(body.signoffByStaffId) : null) : undefined,
+        completed: body.completed,
+        emotion: body.emotion,
+      };
+      // Remove undefined values
+      Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
+    }
+
+    updateData.updatedById = decoded.userId;
 
     const task = await prisma.medicinePrnTask.update({
       where: { id: taskId },
-      data: {
-        serviceSeekerId: parseInt(serviceSeekerId),
-        applyDate: new Date(applyDate),
-        applyTime,
-        prn,
-        medicineName,
-        medicineType,
-        administrated,
-        notes: notes || null,
-        requestSignoffBy,
-        signoffByStaffId: requestSignoffBy === 'REQUIRED' ? parseInt(signoffByStaffId) : null,
-        completed,
-        emotion,
-        updatedById: decoded.userId
-      },
+      data: updateData,
       include: {
         serviceSeeker: true,
         signoffByStaff: {
@@ -123,7 +212,24 @@ export async function DELETE(request, { params }) {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    
+    // Check if user is care worker or support worker - they cannot delete tasks
+    const currentUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userRoleName = currentUser.role?.name;
+    if (userRoleName === 'CAREWORKER' || userRoleName === 'SUPPORT_WORKER') {
+      return NextResponse.json({ 
+        error: 'Care workers and support workers cannot delete tasks.' 
+      }, { status: 403 });
+    }
 
     const { id } = await params;
     const taskId = parseInt(id);

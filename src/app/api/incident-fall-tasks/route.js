@@ -17,19 +17,65 @@ function getUserIdFromToken(request) {
 
 export async function GET(request) {
   try {
-    const userId = getUserIdFromToken(request);
-    if (!userId) {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Get user role to check if care worker
+    const currentUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userRoleName = currentUser.role?.name;
+    const isCareWorker = userRoleName === 'CAREWORKER' || userRoleName === 'SUPPORT_WORKER';
 
     const { searchParams } = new URL(request.url);
     const serviceSeekerId = searchParams.get('serviceSeekerId');
     const dateParam = searchParams.get('date');
     
     const where = {};
-    if (serviceSeekerId) {
+    
+    // For care workers, filter by shift assignments
+    if (isCareWorker) {
+      const date = dateParam ? new Date(dateParam) : new Date();
+      date.setHours(0, 0, 0, 0);
+      
+      // Get shift assignments for this user on this date
+      const assignments = await prisma.shiftAssignment.findMany({
+        where: {
+          userId: decoded.userId,
+          date: date,
+          status: 'SCHEDULED'
+        },
+        include: {
+          shift: {
+            select: {
+              serviceSeekerId: true
+            }
+          }
+        }
+      });
+
+      // Extract unique service seeker IDs from assignments
+      const assignedServiceSeekerIds = [...new Set(assignments.map(a => a.shift.serviceSeekerId))];
+      
+      if (assignedServiceSeekerIds.length === 0) {
+        return NextResponse.json([], { status: 200 });
+      }
+      
+      where.serviceSeekerId = { in: assignedServiceSeekerIds };
+    } else if (serviceSeekerId) {
+      // For non-care workers, allow filtering by serviceSeekerId if provided
       where.serviceSeekerId = parseInt(serviceSeekerId);
     }
+    
     if (dateParam) {
       const date = new Date(dateParam);
       date.setHours(0, 0, 0, 0);
@@ -63,9 +109,27 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const userId = getUserIdFromToken(request);
-    if (!userId) {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Check if user is care worker or support worker - they cannot create tasks
+    const currentUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userRoleName = currentUser.role?.name;
+    if (userRoleName === 'CAREWORKER' || userRoleName === 'SUPPORT_WORKER') {
+      return NextResponse.json({ 
+        error: 'Care workers and support workers cannot create tasks. Tasks are created automatically from schedules.' 
+      }, { status: 403 });
     }
 
     const body = await request.json();
@@ -124,8 +188,8 @@ export async function POST(request) {
         notes: notes || null,
         emotion,
         signatureUrl: signatureUrl || null,
-        createdById: userId,
-        updatedById: userId,
+        createdById: decoded.userId,
+        updatedById: decoded.userId,
       },
       include: {
         serviceSeeker: true,

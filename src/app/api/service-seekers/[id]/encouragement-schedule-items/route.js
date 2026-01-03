@@ -33,9 +33,13 @@ export async function POST(request, { params }) {
 
     const b = await request.json();
 
+    let tasksCreated = 0;
+    let tasksSkipped = 0;
+
     // Create corresponding encouragement tasks if needed
-    if (b.createTasks && Array.isArray(b.times) && b.times.length > 0 && b.encouragement && b.frequency) {
+    if (b.createTasks && Array.isArray(b.times) && b.times.length > 0 && b.frequency) {
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
       // Determine how many days/weeks to create tasks for based on frequency
       let daysToCreate = 7; // Default: 1 week
@@ -56,42 +60,53 @@ export async function POST(request, { params }) {
       }
 
       // For encouragement tasks, create tasks for all days based on frequency
-      const isDaily = b.frequency === 'Daily';
-
+      // Daily creates tasks every day, other frequencies also create tasks every day
+      // (The frequency is more about how often the task should be performed, not when to create them)
+      
       for (let i = 0; i < daysToCreate; i++) {
         const date = new Date(today);
         date.setDate(date.getDate() + i);
 
-        // Check if this day should have tasks (for non-daily frequencies, create tasks on all days)
-        if (isDaily || b.frequency !== 'Daily') {
-          for (const timeSlot of b.times) {
-            try {
-              await prisma.encouragementTask.create({
-                data: {
-                  serviceSeekerId,
-                  date: date,
-                  time: `${timeSlot.hour || '00'}:${timeSlot.minute || '00'}`,
-                  encouragement: b.encouragement || '',
-                  note: b.pictureUrl ? JSON.stringify({ pictureUrl: b.pictureUrl }) : null,
-                  completed: 'NO',
-                  emotion: 'NEUTRAL',
-                  createdById: decoded.userId || 1,
-                  updatedById: decoded.userId || 1,
-                },
-              });
-            } catch (taskError) {
-              // Skip if task already exists (duplicate date/time)
-              if (taskError.code !== 'P2002') {
-                console.error('Error creating encouragement task:', taskError);
-              }
+        for (const timeSlot of b.times) {
+          try {
+            await prisma.encouragementTask.create({
+              data: {
+                serviceSeekerId,
+                date: date,
+                time: `${timeSlot.hour || '00'}:${timeSlot.minute || '00'}`,
+                encouragement: b.encouragement || '',
+                note: b.pictureUrl ? JSON.stringify({ pictureUrl: b.pictureUrl }) : null,
+                completed: 'NO',
+                emotion: 'NEUTRAL',
+                createdById: decoded.userId || 1,
+                updatedById: decoded.userId || 1,
+              },
+            });
+            tasksCreated++;
+          } catch (taskError) {
+            // Skip if task already exists (duplicate date/time)
+            if (taskError.code === 'P2002') {
+              tasksSkipped++;
+            } else {
+              console.error('Error creating encouragement task:', taskError);
+              throw taskError; // Re-throw if it's not a duplicate error
             }
           }
         }
       }
+    } else {
+      return NextResponse.json({ 
+        error: 'Missing required fields: createTasks, times, or frequency' 
+      }, { status: 400 });
     }
 
     // Return a success response
-    return NextResponse.json({ success: true, message: 'Tasks created successfully' }, { status: 201 });
+    return NextResponse.json({ 
+      success: true, 
+      message: `Tasks created successfully (${tasksCreated} created, ${tasksSkipped} skipped)`,
+      tasksCreated,
+      tasksSkipped
+    }, { status: 201 });
   } catch (e) {
     console.error('POST encouragement-schedule-items error:', e);
     return NextResponse.json({ error: 'Failed to create items' }, { status: 500 });

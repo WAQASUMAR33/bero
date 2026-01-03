@@ -393,35 +393,38 @@ GET /api/holiday-types
 
 ### Response (200 OK)
 ```json
-[
-  {
-    "id": 1,
-    "name": "Annual Leave",
-    "description": "Paid annual leave",
-    "isPaid": true,
-    "color": "#3B82F6",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  },
-  {
-    "id": 2,
-    "name": "Sick Leave",
-    "description": "Medical leave",
-    "isPaid": true,
-    "color": "#EF4444",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  },
-  {
-    "id": 3,
-    "name": "Unpaid Leave",
-    "description": "Unpaid time off",
-    "isPaid": false,
-    "color": "#F59E0B",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  }
-]
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "Annual Leave",
+      "description": "Paid annual leave",
+      "isPaid": true,
+      "color": "#3B82F6",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Sick Leave",
+      "description": "Medical leave",
+      "isPaid": true,
+      "color": "#EF4444",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Unpaid Leave",
+      "description": "Unpaid time off",
+      "isPaid": false,
+      "color": "#F59E0B",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
 ```
 
 ---
@@ -582,7 +585,8 @@ const getHolidayTypes = async (token) => {
   );
   
   if (response.ok) {
-    return await response.json();
+    const result = await response.json();
+    return result.data;
   } else {
     throw new Error('Failed to fetch holiday types');
   }
@@ -699,7 +703,8 @@ Future<List<dynamic>> getHolidayTypes(String token) async {
   );
   
   if (response.statusCode == 200) {
-    return json.decode(response.body);
+    final result = json.decode(response.body);
+    return result['data'];
   } else {
     throw Exception('Failed to fetch holiday types');
   }

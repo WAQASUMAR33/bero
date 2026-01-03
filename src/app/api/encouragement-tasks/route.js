@@ -38,6 +38,14 @@ export async function GET(request) {
     const where = {};
     let serviceSeekerIds = [];
     
+    // Set up date filter (always filter by date, default to today if not provided)
+    const nextDay = new Date(targetDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    where.date = {
+      gte: targetDate,
+      lt: nextDay
+    };
+    
     // For care workers, filter by shift assignments
     if (isCareWorker) {
       // Get shift assignments for this user on this date
@@ -78,20 +86,9 @@ export async function GET(request) {
       });
       serviceSeekerIds = allSchedules.map(s => s.serviceSeekerId);
     }
-    
-    if (dateParam) {
-      const date = new Date(dateParam);
-      date.setHours(0, 0, 0, 0);
-      const nextDay = new Date(date);
-      nextDay.setDate(nextDay.getDate() + 1);
-      where.date = {
-        gte: date,
-        lt: nextDay
-      };
-    }
 
-    // Generate tasks from schedules for the target date (if date is specified)
-    if (dateParam && serviceSeekerIds.length > 0) {
+    // Generate tasks from schedules for the target date (always generate if we have service seeker IDs)
+    if (serviceSeekerIds.length > 0) {
       await generateEncouragementTasksFromSchedules(serviceSeekerIds, targetDate, decoded.userId);
     }
 

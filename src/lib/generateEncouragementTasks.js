@@ -8,40 +8,41 @@ function shouldCreateTaskForDate(schedule, targetDate) {
   const scheduleDate = new Date(schedule.createdAt);
   scheduleDate.setHours(0, 0, 0, 0);
   
-  targetDate.setHours(0, 0, 0, 0);
+  const targetDateCopy = new Date(targetDate);
+  targetDateCopy.setHours(0, 0, 0, 0);
   
   // If schedule was created after target date, don't create task
-  if (scheduleDate > targetDate) {
+  if (scheduleDate > targetDateCopy) {
     return false;
   }
   
   switch (frequency) {
     case 'Daily':
-      return true; // Create task every day
+      return true; // Create task every day (starting from the day it was created)
     
     case 'Weekly': {
       // Create task on the same day of week as when schedule was created
       const scheduleDayOfWeek = scheduleDate.getDay();
-      const targetDayOfWeek = targetDate.getDay();
+      const targetDayOfWeek = targetDateCopy.getDay();
       return scheduleDayOfWeek === targetDayOfWeek;
     }
     
     case 'Fortnightly': {
       // Create task every 2 weeks on the same day
-      const daysDiff = Math.floor((targetDate - scheduleDate) / (1000 * 60 * 60 * 24));
+      const daysDiff = Math.floor((targetDateCopy - scheduleDate) / (1000 * 60 * 60 * 24));
       return daysDiff >= 0 && daysDiff % 14 === 0;
     }
     
     case 'Every 3 weeks': {
       // Create task every 3 weeks on the same day
-      const daysDiff = Math.floor((targetDate - scheduleDate) / (1000 * 60 * 60 * 24));
+      const daysDiff = Math.floor((targetDateCopy - scheduleDate) / (1000 * 60 * 60 * 24));
       return daysDiff >= 0 && daysDiff % 21 === 0;
     }
     
     case 'Monthly': {
       // Create task on the same day of month (e.g., if created on 15th, create on 15th of each month)
       const scheduleDay = scheduleDate.getDate();
-      const targetDay = targetDate.getDate();
+      const targetDay = targetDateCopy.getDate();
       return scheduleDay === targetDay;
     }
     
@@ -49,12 +50,12 @@ function shouldCreateTaskForDate(schedule, targetDate) {
       // Create task every 3 months on the same day
       const scheduleMonth = scheduleDate.getMonth();
       const scheduleDay = scheduleDate.getDate();
-      const targetMonth = targetDate.getMonth();
-      const targetDay = targetDate.getDate();
+      const targetMonth = targetDateCopy.getMonth();
+      const targetDay = targetDateCopy.getDate();
       
       if (targetDay !== scheduleDay) return false;
       
-      const monthsDiff = (targetDate.getFullYear() - scheduleDate.getFullYear()) * 12 + (targetMonth - scheduleMonth);
+      const monthsDiff = (targetDateCopy.getFullYear() - scheduleDate.getFullYear()) * 12 + (targetMonth - scheduleMonth);
       return monthsDiff >= 0 && monthsDiff % 3 === 0;
     }
     
@@ -62,8 +63,8 @@ function shouldCreateTaskForDate(schedule, targetDate) {
       // Create task on the same date each year
       const scheduleMonth = scheduleDate.getMonth();
       const scheduleDay = scheduleDate.getDate();
-      const targetMonth = targetDate.getMonth();
-      const targetDay = targetDate.getDate();
+      const targetMonth = targetDateCopy.getMonth();
+      const targetDay = targetDateCopy.getDate();
       return scheduleMonth === targetMonth && scheduleDay === targetDay;
     }
     
@@ -103,8 +104,11 @@ export async function generateEncouragementTasksFromSchedules(serviceSeekerIds, 
     });
     
     if (schedules.length === 0) {
+      console.log(`[generateEncouragementTasks] No schedules found for service seeker(s): ${Array.isArray(serviceSeekerIds) ? serviceSeekerIds.join(', ') : serviceSeekerIds}`);
       return 0;
     }
+    
+    console.log(`[generateEncouragementTasks] Found ${schedules.length} schedule(s) for date ${targetDateStart.toISOString().split('T')[0]}`);
     
     // Check which tasks already exist for this date
     const existingTasks = await prisma.encouragementTask.findMany({
@@ -171,6 +175,7 @@ export async function generateEncouragementTasksFromSchedules(serviceSeekerIds, 
           
           tasksCreated++;
           existingTaskKeys.add(taskKey); // Add to set to prevent duplicates in same batch
+          console.log(`[generateEncouragementTasks] Created task for service seeker ${schedule.serviceSeekerId} at ${timeString}`);
         } catch (error) {
           // Skip if task already exists (race condition)
           if (error.code !== 'P2002') {
@@ -180,6 +185,7 @@ export async function generateEncouragementTasksFromSchedules(serviceSeekerIds, 
       }
     }
     
+    console.log(`[generateEncouragementTasks] Created ${tasksCreated} task(s) for date ${targetDateStart.toISOString().split('T')[0]}`);
     return tasksCreated;
   } catch (error) {
     console.error('Error generating encouragement tasks from schedules:', error);

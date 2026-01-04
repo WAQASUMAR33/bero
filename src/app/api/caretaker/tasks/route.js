@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 import { generateEncouragementTasksFromSchedules } from '@/lib/generateEncouragementTasks';
+import { generateStoolTasksFromSchedules } from '@/lib/generateStoolTasks';
 
 // GET /api/caretaker/tasks
 // Get all tasks for service users assigned to the logged-in caretaker
@@ -106,7 +107,10 @@ export async function GET(request) {
 
     // Generate encouragement tasks from schedules for this date (if we have service seeker IDs)
     if (serviceSeekerIds.length > 0) {
-      await generateEncouragementTasksFromSchedules(serviceSeekerIds, date, decoded.userId);
+      await Promise.all([
+        generateEncouragementTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
+        generateStoolTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
+      ]);
     }
 
     // Fetch all tasks for these service users on this date

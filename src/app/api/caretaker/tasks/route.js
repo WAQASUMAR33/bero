@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 import { generateEncouragementTasksFromSchedules } from '@/lib/generateEncouragementTasks';
 import { generateStoolTasksFromSchedules } from '@/lib/generateStoolTasks';
+import { generateWeightTasksFromSchedules } from '@/lib/generateWeightTasks';
 
 // GET /api/caretaker/tasks
 // Get all tasks for service users assigned to the logged-in caretaker
@@ -105,11 +106,12 @@ export async function GET(request) {
       medicinePrnWhereClause.serviceSeekerId = { in: serviceSeekerIds };
     }
 
-    // Generate encouragement tasks from schedules for this date (if we have service seeker IDs)
+    // Generate tasks from schedules for this date (if we have service seeker IDs)
     if (serviceSeekerIds.length > 0) {
       await Promise.all([
         generateEncouragementTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
         generateStoolTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
+        generateWeightTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
       ]);
     }
 

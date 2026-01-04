@@ -418,6 +418,7 @@ model ServiceSeeker {
   encouragementSchedules    ServiceSeekerEncouragementSchedule[]
   stoolSchedules            ServiceSeekerStoolSchedule[]
   weightSchedules           ServiceSeekerWeightSchedule[]
+  muacSchedules             ServiceSeekerMuacSchedule[]
 
   // Relations
   createdBy         User?                           @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
@@ -2468,6 +2469,21 @@ model ServiceSeekerStoolSchedule {
 }
 
 model ServiceSeekerWeightSchedule {
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  times           Json // Array of {hour: string, minute: string}
+  frequency       String // e.g., "Daily", "Weekly", "Monthly", etc.
+  team            String // e.g., "All", "Team 1", etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceSeekerMuacSchedule {
   id              Int      @id @default(autoincrement())
   serviceSeekerId Int
   times           Json // Array of {hour: string, minute: string}

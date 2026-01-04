@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { generateEncouragementTasksFromSchedules } from '@/lib/generateEncouragementTasks';
 import { generateStoolTasksFromSchedules } from '@/lib/generateStoolTasks';
 import { generateWeightTasksFromSchedules } from '@/lib/generateWeightTasks';
+import { generateMuacTasksFromSchedules } from '@/lib/generateMuacTasks';
 
 // GET /api/caretaker/tasks
 // Get all tasks for service users assigned to the logged-in caretaker
@@ -112,6 +113,7 @@ export async function GET(request) {
         generateEncouragementTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
         generateStoolTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
         generateWeightTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
+        generateMuacTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
       ]);
     }
 

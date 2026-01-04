@@ -158,8 +158,8 @@ export async function generateStoolTasksFromSchedules(serviceSeekerIds, targetDa
               serviceSeekerId: schedule.serviceSeekerId,
               date: targetDateStart,
               time: timeString,
-              type: 'SAUSAGE_SHAPED_BUT_LUMPY', // Default stool type
-              urinePassed: 'YES', // Default
+              type: 'UNKNOWN', // Empty/unfilled - care worker will fill this
+              urinePassed: 'NA', // Empty/unfilled - care worker will fill this
               completed: 'NO',
               emotion: 'NEUTRAL',
               createdById: userId,

@@ -7,6 +7,7 @@ import { generateEncouragementTasksFromSchedules } from '@/lib/generateEncourage
 import { generateStoolTasksFromSchedules } from '@/lib/generateStoolTasks';
 import { generateWeightTasksFromSchedules } from '@/lib/generateWeightTasks';
 import { generateMuacTasksFromSchedules } from '@/lib/generateMuacTasks';
+import { generatePersonCentredTasksFromSchedules } from '@/lib/generatePersonCentredTasks';
 
 // GET /api/caretaker/tasks
 // Get all tasks for service users assigned to the logged-in caretaker
@@ -114,6 +115,7 @@ export async function GET(request) {
         generateStoolTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
         generateWeightTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
         generateMuacTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
+        generatePersonCentredTasksFromSchedules(serviceSeekerIds, date, decoded.userId),
       ]);
     }
 

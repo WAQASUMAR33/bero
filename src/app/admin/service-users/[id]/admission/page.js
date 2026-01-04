@@ -44,6 +44,7 @@ import EncouragementForm from '../../components/EncouragementForm';
 import StoolCheckForm from '../../components/StoolCheckForm';
 import WeightForm from '../../components/WeightForm';
 import MuacForm from '../../components/MuacForm';
+import PersonCentredForm from '../../components/PersonCentredForm';
 
 function SummaryRow({ label, value }){
   return (
@@ -1186,6 +1187,11 @@ export default function AdmissionPage(){
           />
 
           <MuacForm
+            serviceSeekerId={serviceSeekerId}
+            onNotification={setNotification}
+          />
+
+          <PersonCentredForm
             serviceSeekerId={serviceSeekerId}
             onNotification={setNotification}
           />

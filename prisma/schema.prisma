@@ -419,6 +419,7 @@ model ServiceSeeker {
   stoolSchedules            ServiceSeekerStoolSchedule[]
   weightSchedules           ServiceSeekerWeightSchedule[]
   muacSchedules             ServiceSeekerMuacSchedule[]
+  personCentredSchedules    ServiceSeekerPersonCentredSchedule[]
 
   // Relations
   createdBy         User?                           @relation("ServiceSeekerCreatedBy", fields: [createdById], references: [id])
@@ -1505,7 +1506,8 @@ model PersonCentredTaskName {
   updatedAt DateTime @updatedAt
 
   // Relations
-  tasks PersonCentredTask[]
+  tasks        PersonCentredTask[]
+  schedules    ServiceSeekerPersonCentredSchedule[]
 }
 
 model PersonCentredTask {
@@ -2496,6 +2498,26 @@ model ServiceSeekerMuacSchedule {
   serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
+}
+
+model ServiceSeekerPersonCentredSchedule {
+  id              Int      @id @default(autoincrement())
+  serviceSeekerId Int
+  nameId          Int // References PersonCentredTaskName
+  directions      String? // Notes/directions
+  photoUrl        String? // Picture URL
+  times           Json // Array of {hour: string, minute: string}
+  frequency       String // e.g., "Daily", "Weekly", "Monthly", etc.
+  team            String // e.g., "All", "Team 1", etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  serviceSeeker ServiceSeeker          @relation(fields: [serviceSeekerId], references: [id])
+  taskName      PersonCentredTaskName  @relation(fields: [nameId], references: [id])
+
+  @@index([serviceSeekerId])
+  @@index([nameId])
 }
 
 model Conversation {

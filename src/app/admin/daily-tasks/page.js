@@ -183,6 +183,9 @@ export default function DailyTasksPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showManageTriggersModal, setShowManageTriggersModal] = useState(false);
   const [deletingTriggerId, setDeletingTriggerId] = useState(null);
+  const [showTaskReportModal, setShowTaskReportModal] = useState(false);
+  const [allTasksForReport, setAllTasksForReport] = useState([]);
+  const [isLoadingReport, setIsLoadingReport] = useState(false);
   
   const [bathingForm, setBathingForm] = useState({
     serviceSeekerId: '',
@@ -552,10 +555,11 @@ export default function DailyTasksPage() {
     setIsLoading(false);
   }, []);
 
-  const fetchBathingTasks = async () => {
+  const fetchBathingTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/bathing-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/bathing-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setBathingTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -564,10 +568,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchBehaviourTasks = async () => {
+  const fetchBehaviourTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/behaviour-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/behaviour-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setBehaviourTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -610,10 +615,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchBloodTestTasks = async () => {
+  const fetchBloodTestTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/blood-test-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/blood-test-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setBloodTestTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -622,10 +628,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchBloodPressureTasks = async () => {
+  const fetchBloodPressureTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/blood-pressure-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/blood-pressure-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setBloodPressureTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -634,10 +641,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchComfortCheckTasks = async () => {
+  const fetchComfortCheckTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/comfort-check-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/comfort-check-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setComfortCheckTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -646,10 +654,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchCommunicationNotesTasks = async () => {
+  const fetchCommunicationNotesTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/communication-notes-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/communication-notes-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setCommunicationNotesTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -658,10 +667,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchFamilyPhotoMessageTasks = async () => {
+  const fetchFamilyPhotoMessageTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/family-photo-message-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/family-photo-message-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setFamilyPhotoMessageTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -670,10 +680,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchFoodDrinkTasks = async () => {
+  const fetchFoodDrinkTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/food-drink-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/food-drink-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setFoodDrinkTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -682,10 +693,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchGeneralSupportTasks = async () => {
+  const fetchGeneralSupportTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/general-support-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/general-support-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setGeneralSupportTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -694,10 +706,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchHouseKeepingTasks = async () => {
+  const fetchHouseKeepingTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/house-keeping-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/house-keeping-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setHouseKeepingTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -726,10 +739,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchFollowUpTasks = async () => {
+  const fetchFollowUpTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/follow-up-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/follow-up-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setFollowUpTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -738,10 +752,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchMedicinePrnTasks = async () => {
+  const fetchMedicinePrnTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/medicine-prn-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/medicine-prn-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setMedicinePrnTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -750,10 +765,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchMuacTasks = async () => {
+  const fetchMuacTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/muac-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/muac-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setMuacTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -762,10 +778,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchObservationTasks = async () => {
+  const fetchObservationTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/observation-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/observation-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setObservationTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -774,10 +791,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchOneToOneTasks = async () => {
+  const fetchOneToOneTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/one-to-one-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/one-to-one-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setOneToOneTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -786,10 +804,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchOralCareTasks = async () => {
+  const fetchOralCareTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/oral-care-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/oral-care-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setOralCareTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -798,10 +817,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchOxygenTasks = async () => {
+  const fetchOxygenTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/oxygen-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/oxygen-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setOxygenTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -810,10 +830,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchPersonCentredTasks = async () => {
+  const fetchPersonCentredTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/person-centred-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/person-centred-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setPersonCentredTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -834,10 +855,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchPhysicalInterventionTasks = async () => {
+  const fetchPhysicalInterventionTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/physical-intervention-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/physical-intervention-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setPhysicalInterventionTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -846,10 +868,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchPulseTasks = async () => {
+  const fetchPulseTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/pulse-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/pulse-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setPulseTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -858,10 +881,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchRepositionTasks = async () => {
+  const fetchRepositionTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/reposition-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/reposition-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setRepositionTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -870,10 +894,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchSpendingMoneyTasks = async () => {
+  const fetchSpendingMoneyTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/spending-money-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/spending-money-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setSpendingMoneyTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -882,10 +907,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchStoolTasks = async () => {
+  const fetchStoolTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/stool-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/stool-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setStoolTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -894,10 +920,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchTemperatureTasks = async () => {
+  const fetchTemperatureTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/temperature-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/temperature-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setTemperatureTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -906,10 +933,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchVisitTasks = async () => {
+  const fetchVisitTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/visit-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/visit-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setVisitTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -918,10 +946,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchWeightTasks = async () => {
+  const fetchWeightTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/weight-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/weight-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setWeightTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -930,10 +959,11 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchEncouragementTasks = async () => {
+  const fetchEncouragementTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/encouragement-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/encouragement-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setEncouragementTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -1006,16 +1036,133 @@ export default function DailyTasksPage() {
     }
   };
 
-  const fetchIncidentFallTasks = async () => {
+  const fetchIncidentFallTasks = async (date = null) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/incident-fall-tasks', { headers: { Authorization: `Bearer ${token}` } });
+      const today = date || new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/incident-fall-tasks?date=${today}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setIncidentFallTasks(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
       setIncidentFallTasks([]);
     }
+  };
+
+  // Fetch all tasks for report (no date filter)
+  const fetchAllTasksForReport = async () => {
+    setIsLoadingReport(true);
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Fetch all tasks without date filter
+      const [
+        bathing, behaviour, bloodTest, bloodPressure, comfortCheck, communicationNotes,
+        familyPhotoMessage, foodDrink, generalSupport, houseKeeping, incidentFall,
+        followUp, medicinePrn, muac, observation, oneToOne, oralCare, oxygen,
+        personCentred, physicalIntervention, pulse, reposition, spendingMoney,
+        stool, temperature, visit, weight, encouragement
+      ] = await Promise.all([
+        fetch('/api/bathing-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/behaviour-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/blood-test-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/blood-pressure-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/comfort-check-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/communication-notes-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/family-photo-message-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/food-drink-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/general-support-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/house-keeping-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/incident-fall-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/follow-up-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/medicine-prn-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/muac-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/observation-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/one-to-one-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/oral-care-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/oxygen-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/person-centred-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/physical-intervention-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/pulse-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/reposition-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/spending-money-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/stool-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/temperature-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/visit-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/weight-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/encouragement-tasks', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      ]);
+
+      // Get today's date for filtering (local timezone, not UTC)
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
+      
+      // Helper function to normalize date to YYYY-MM-DD format
+      const normalizeDate = (dateValue) => {
+        if (!dateValue) return null;
+        if (typeof dateValue === 'string') {
+          return dateValue.split('T')[0];
+        }
+        const d = new Date(dateValue);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
+      // Combine all tasks with their types and filter out today's tasks (only show past tasks)
+      const allTasksReport = [
+        ...(Array.isArray(bathing) ? bathing : []).map(t => ({ ...t, taskType: 'bathing' })),
+        ...(Array.isArray(behaviour) ? behaviour : []).map(t => ({ ...t, taskType: 'behaviour' })),
+        ...(Array.isArray(bloodTest) ? bloodTest : []).map(t => ({ ...t, taskType: 'bloodtest' })),
+        ...(Array.isArray(bloodPressure) ? bloodPressure : []).map(t => ({ ...t, taskType: 'blood_pressure' })),
+        ...(Array.isArray(comfortCheck) ? comfortCheck : []).map(t => ({ ...t, taskType: 'comfort_check' })),
+        ...(Array.isArray(communicationNotes) ? communicationNotes : []).map(t => ({ ...t, taskType: 'communication_notes' })),
+        ...(Array.isArray(encouragement) ? encouragement : []).map(t => ({ ...t, taskType: 'encouragement' })),
+        ...(Array.isArray(familyPhotoMessage) ? familyPhotoMessage : []).map(t => ({ ...t, taskType: 'family_photo_message' })),
+        ...(Array.isArray(foodDrink) ? foodDrink : []).map(t => ({ ...t, taskType: 'food_drink' })),
+        ...(Array.isArray(generalSupport) ? generalSupport : []).map(t => ({ ...t, taskType: 'general_support' })),
+        ...(Array.isArray(houseKeeping) ? houseKeeping : []).map(t => ({ ...t, taskType: 'house_keeping' })),
+        ...(Array.isArray(incidentFall) ? incidentFall : []).map(t => ({ ...t, taskType: 'incident_fall' })),
+        ...(Array.isArray(medicinePrn) ? medicinePrn : []).map(t => ({ ...t, taskType: 'medicine_prn' })),
+        ...(Array.isArray(muac) ? muac : []).map(t => ({ ...t, taskType: 'muac' })),
+        ...(Array.isArray(observation) ? observation : []).map(t => ({ ...t, taskType: 'observation' })),
+        ...(Array.isArray(oneToOne) ? oneToOne : []).map(t => ({ ...t, taskType: 'one_to_one' })),
+        ...(Array.isArray(oralCare) ? oralCare : []).map(t => ({ ...t, taskType: 'oral_care' })),
+        ...(Array.isArray(oxygen) ? oxygen : []).map(t => ({ ...t, taskType: 'oxygen' })),
+        ...(Array.isArray(personCentred) ? personCentred : []).map(t => ({ ...t, taskType: 'person_centred_task' })),
+        ...(Array.isArray(physicalIntervention) ? physicalIntervention : []).map(t => ({ ...t, taskType: 'physical_intervention' })),
+        ...(Array.isArray(pulse) ? pulse : []).map(t => ({ ...t, taskType: 'pulse' })),
+        ...(Array.isArray(reposition) ? reposition : []).map(t => ({ ...t, taskType: 're_position' })),
+        ...(Array.isArray(spendingMoney) ? spendingMoney : []).map(t => ({ ...t, taskType: 'spending_money' })),
+        ...(Array.isArray(stool) ? stool : []).map(t => ({ ...t, taskType: 'stool' })),
+        ...(Array.isArray(temperature) ? temperature : []).map(t => ({ ...t, taskType: 'temperature' })),
+        ...(Array.isArray(visit) ? visit : []).map(t => ({ ...t, taskType: 'visit' })),
+        ...(Array.isArray(weight) ? weight : []).map(t => ({ ...t, taskType: 'weight' })),
+        ...(Array.isArray(followUp) ? followUp : []).map(t => ({ ...t, taskType: 'follow_up' })),
+      ]
+      .filter((t) => {
+        // Filter out today's tasks - only show past tasks
+        if (!t.date) return false;
+        const taskDate = normalizeDate(t.date);
+        if (!taskDate) return false;
+        // Only include tasks from dates before today
+        return taskDate < today;
+      })
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setAllTasksForReport(allTasksReport);
+    } catch (e) {
+      console.error('Error fetching tasks for report:', e);
+      setAllTasksForReport([]);
+    } finally {
+      setIsLoadingReport(false);
+    }
+  };
+
+  const handleOpenTaskReport = async () => {
+    setShowTaskReportModal(true);
+    await fetchAllTasksForReport();
   };
 
   useEffect(() => { 
@@ -2851,7 +2998,37 @@ export default function DailyTasksPage() {
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
+  // Get current date in YYYY-MM-DD format (local timezone, not UTC)
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
+  
+  // Helper function to normalize date to YYYY-MM-DD format
+  const normalizeDate = (dateValue) => {
+    if (!dateValue) return null;
+    if (typeof dateValue === 'string') {
+      // Handle ISO string or date string
+      return dateValue.split('T')[0];
+    }
+    // Handle Date object - use local date, not UTC
+    const d = new Date(dateValue);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
   const filteredTasks = allTasks.filter((t) => {
+    // Filter by current date
+    if (!t.date) {
+      // If task has no date, exclude it from today's view
+      return false;
+    }
+    
+    const taskDate = normalizeDate(t.date);
+    if (!taskDate || taskDate !== today) {
+      return false;
+    }
+    
     if (filterTaskType !== 'ALL' && filterTaskType !== t.taskType) return false;
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
@@ -2891,9 +3068,17 @@ export default function DailyTasksPage() {
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Daily Tasks</h1>
                 <p className="text-gray-600">Record and manage daily care tasks</p>
               </div>
-              <button onClick={openAddTask} className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200">
-                Add Task
-              </button>
+              <div className="flex gap-3">
+                <button onClick={handleOpenTaskReport} className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Task Report
+                </button>
+                <button onClick={openAddTask} className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200">
+                  Add Task
+                </button>
+              </div>
             </div>
           </div>
 
@@ -4377,6 +4562,152 @@ export default function DailyTasksPage() {
                 </div>
                 <div className="flex justify-end mt-6 pt-4 border-t">
                   <button onClick={()=>setShowIncidentLocationsModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Task Report Modal */}
+          {showTaskReportModal && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] flex flex-col">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Task Report</h2>
+                    <p className="text-sm text-gray-600 mt-1">All past tasks (excluding today)</p>
+                  </div>
+                  <button onClick={() => setShowTaskReportModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">
+                    ✕
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-auto p-6">
+                  {isLoadingReport ? (
+                    <div className="flex items-center justify-center py-12">
+                      <svg className="animate-spin h-8 w-8 text-[#224fa6]" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="ml-3 text-gray-600">Loading tasks...</span>
+                    </div>
+                  ) : allTasksForReport.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">No tasks found.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-[1]">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Task Type</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service User</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {allTasksForReport.map((task, idx) => {
+                            const taskInfo = getTaskTypeInfo(task.taskType);
+                            const emotionEmoji = task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐';
+                            let subInfo = '';
+                            if (task.taskType === 'bathing') subInfo = task.bathingType;
+                            else if (task.taskType === 'behaviour') subInfo = task.type;
+                            else if (task.taskType === 'bloodtest') subInfo = task.when;
+                            else if (task.taskType === 'blood_pressure') subInfo = `${task.systolicPressure}/${task.diastolicPressure} mmHg`;
+                            else if (task.taskType === 'comfort_check') subInfo = 'Comfort Check';
+                            else if (task.taskType === 'communication_notes') subInfo = 'Communication';
+                            else if (task.taskType === 'encouragement') subInfo = task.encouragement?.substring(0, 40) + '...';
+                            else if (task.taskType === 'family_photo_message') subInfo = task.description?.substring(0, 40) + '...';
+                            else if (task.taskType === 'food_drink') subInfo = task.time;
+                            else if (task.taskType === 'general_support') subInfo = 'General Support';
+                            else if (task.taskType === 'house_keeping') subInfo = 'House Keeping';
+                            else if (task.taskType === 'incident_fall') subInfo = task.type;
+                            else if (task.taskType === 'medicine_prn') subInfo = task.medicineName || 'Medicine PRN';
+                            else if (task.taskType === 'muac') subInfo = task.muacInCm ? `${task.muacInCm} cm` : 'MUAC';
+                            else if (task.taskType === 'observation') subInfo = 'Observation';
+                            else if (task.taskType === 'one_to_one') subInfo = 'One to One';
+                            else if (task.taskType === 'oral_care') subInfo = 'Oral Care';
+                            else if (task.taskType === 'oxygen') subInfo = task.oxygenLevel ? `${task.oxygenLevel}%` : 'Oxygen';
+                            else if (task.taskType === 'person_centred_task') subInfo = task.taskName?.name || 'Person Centred';
+                            else if (task.taskType === 'physical_intervention') subInfo = 'Physical Intervention';
+                            else if (task.taskType === 'pulse') subInfo = task.pulseRate ? `${task.pulseRate} bpm` : 'Pulse';
+                            else if (task.taskType === 're_position') subInfo = 'Re-position';
+                            else if (task.taskType === 'spending_money') subInfo = task.amount ? `£${task.amount}` : 'Spending/Money';
+                            else if (task.taskType === 'stool') subInfo = task.type || 'Stool';
+                            else if (task.taskType === 'temperature') subInfo = task.temperatureInC ? `${task.temperatureInC}°C` : 'Temperature';
+                            else if (task.taskType === 'visit') subInfo = task.visitType || 'Visit';
+                            else if (task.taskType === 'weight') subInfo = task.weight ? `${task.weight} kg` : 'Weight';
+                            else if (task.taskType === 'follow_up') subInfo = 'Follow Up';
+
+                            const taskDate = task.date ? new Date(task.date).toLocaleDateString() : 'N/A';
+                            const taskTime = task.time || 'N/A';
+                            const completedStatus = task.completed === 'YES' || task.completed === true ? 'Completed' : 'Pending';
+
+                            return (
+                              <tr key={`${task.taskType}-${task.id}-${idx}`} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className={`w-10 h-10 rounded-lg ${getTaskColor(task.taskType)} flex items-center justify-center text-white text-lg mr-3`}>
+                                      {getTaskIcon(task.taskType)}
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900">{taskInfo.name}</div>
+                                      {subInfo && <div className="text-xs text-gray-500">{subInfo}</div>}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">
+                                    {task.serviceSeeker ? `${task.serviceSeeker.firstName} ${task.serviceSeeker.lastName}` : 'N/A'}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">{taskDate}</div>
+                                  <div className="text-xs text-gray-500">{taskTime}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                    completedStatus === 'Completed' 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {completedStatus}
+                                  </span>
+                                  {task.emotion && (
+                                    <div className="mt-1 text-lg">{emotionEmoji}</div>
+                                  )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <button
+                                    onClick={() => {
+                                      setViewData(task);
+                                      setShowViewModal(true);
+                                    }}
+                                    className="text-[#224fa6] hover:text-[#3270e9] mr-4"
+                                  >
+                                    View
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-6 border-t border-gray-200 flex justify-between items-center">
+                  <div className="text-sm text-gray-600">
+                    Total Tasks: <span className="font-semibold text-gray-900">{allTasksForReport.length}</span>
+                  </div>
+                  <button
+                    onClick={() => setShowTaskReportModal(false)}
+                    className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all"
+                  >
                     Close
                   </button>
                 </div>

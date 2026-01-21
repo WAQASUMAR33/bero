@@ -88,7 +88,7 @@ export default function ClockInOutPage() {
       setIsLoading(true);
       const token = localStorage.getItem('token');
       let url = '/api/clock-in-out?view=all';
-      
+
       if (filterDate) {
         url += `&date=${filterDate}`;
       }
@@ -109,7 +109,7 @@ export default function ClockInOutPage() {
         signal
       });
       const result = await response.json();
-      
+
       if (!signal?.aborted) {
         if (result.success) {
           setClockInOuts(result.data);
@@ -131,13 +131,13 @@ export default function ClockInOutPage() {
   };
 
   const filteredRecords = clockInOuts.filter(record => {
-    const matchesSearch = 
+    const matchesSearch =
       record.user?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.user?.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.serviceSeeker?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.serviceSeeker?.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.serviceSeeker?.preferredName?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesSearch;
   });
 
@@ -147,9 +147,9 @@ export default function ClockInOutPage() {
 
   const formatTime = (dateTime) => {
     if (!dateTime) return '-';
-    return new Date(dateTime).toLocaleTimeString('en-GB', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(dateTime).toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -164,8 +164,8 @@ export default function ClockInOutPage() {
 
   const getServiceUserDisplay = (record) => {
     if (record.serviceSeeker) {
-      return record.serviceSeeker.preferredName || 
-             `${record.serviceSeeker.firstName} ${record.serviceSeeker.lastName}`;
+      return record.serviceSeeker.preferredName ||
+        `${record.serviceSeeker.firstName} ${record.serviceSeeker.lastName}`;
     }
     if (record.shiftAssignment?.shift?.serviceSeeker) {
       const ss = record.shiftAssignment.shift.serviceSeeker;
@@ -345,13 +345,34 @@ export default function ClockInOutPage() {
                     </div>
                   </div>
                   <div>
-                    <input
-                      type="date"
-                      value={filterDate}
-                      onChange={(e) => setFilterDate(e.target.value)}
+                    <select
+                      value={filterDate === new Date().toISOString().split('T')[0] ? 'today' : filterDate ? 'custom' : 'all'}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === 'today') {
+                          setFilterDate(new Date().toISOString().split('T')[0]);
+                        } else if (val === 'all') {
+                          setFilterDate('');
+                        }
+                        // 'custom' does nothing, waits for date input
+                      }}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
-                    />
+                    >
+                      <option value="all">All Dates</option>
+                      <option value="today">Today</option>
+                      <option value="custom">Custom Date</option>
+                    </select>
                   </div>
+                  {filterDate !== '' && (
+                    <div>
+                      <input
+                        type="date"
+                        value={filterDate}
+                        onChange={(e) => setFilterDate(e.target.value)}
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                      />
+                    </div>
+                  )}
                   <div>
                     <select
                       value={filterWorkType}
@@ -363,6 +384,8 @@ export default function ClockInOutPage() {
                       <option value="STANDBY">Standby</option>
                     </select>
                   </div>
+                </div>
+                <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <select
                       value={filterStatus}
@@ -375,20 +398,20 @@ export default function ClockInOutPage() {
                       <option value="on-time">On Time</option>
                     </select>
                   </div>
-                </div>
-                <div className="mt-3 sm:mt-4">
-                  <select
-                    value={filterUserId}
-                    onChange={(e) => setFilterUserId(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
-                  >
-                    <option value="">All Staff</option>
-                    {users.map(u => (
-                      <option key={u.id} value={u.id}>
-                        {u.firstName} {u.lastName}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <select
+                      value={filterUserId}
+                      onChange={(e) => setFilterUserId(e.target.value)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                    >
+                      <option value="">All Staff</option>
+                      {users.map(u => (
+                        <option key={u.id} value={u.id}>
+                          {u.firstName} {u.lastName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -398,144 +421,143 @@ export default function ClockInOutPage() {
                 <div className="hidden lg:block w-full max-w-full">
                   <div className="overflow-x-auto w-full">
                     <table className="w-full divide-y divide-gray-200">
-                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                      <tr>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Day</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Staff</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">In</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Out</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Duration</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service User</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Work Type</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
-                        <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-100">
-                      {filteredRecords.length === 0 ? (
+                      <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
-                          <td colSpan="10" className="px-6 py-12 text-center text-gray-500">
-                            No clock in/out records found
-                          </td>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Day</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Staff</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">In</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Out</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Duration</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service User</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Work Type</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+                          <th className="px-4 xl:px-6 py-3 xl:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         </tr>
-                      ) : (
-                        filteredRecords.map((record) => (
-                          <tr key={record.id} className="hover:bg-gray-50 transition-colors duration-200">
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <div className="text-sm font-semibold text-gray-900">
-                                {getDayName(record.date)}
-                              </div>
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <div className="flex items-center">
-                                <div className="flex-shrink-0 h-8 w-8 xl:h-10 xl:w-10">
-                                  <div className="h-8 w-8 xl:h-10 xl:w-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                                    <span className="text-white font-semibold text-xs">
-                                      {record.user?.firstName?.[0]}{record.user?.lastName?.[0]}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="ml-2 xl:ml-3 min-w-0">
-                                  <div className="text-sm font-medium text-gray-900 truncate">
-                                    {record.user?.firstName} {record.user?.lastName}
-                                  </div>
-                                  <div className="text-xs xl:text-sm text-gray-500 truncate">{record.user?.email}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <div className="flex items-center flex-wrap gap-1">
-                                <div className={`text-sm font-medium ${record.isLate ? 'text-red-600' : 'text-gray-900'}`}>
-                                  {formatTime(record.clockInTime)}
-                                </div>
-                                {record.isLate && (
-                                  <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                    Late
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <div className="flex items-center flex-wrap gap-1">
-                                <div className={`text-sm font-medium ${record.isEarly ? 'text-orange-600' : 'text-gray-900'}`}>
-                                  {formatTime(record.clockOutTime)}
-                                </div>
-                                {record.isEarly && (
-                                  <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
-                                    Early
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <div className="text-sm text-gray-900">
-                                {calculateDuration(record.clockInTime, record.clockOutTime)}
-                              </div>
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <div className="text-sm text-gray-900 truncate max-w-[120px] xl:max-w-none">
-                                {getServiceUserDisplay(record)}
-                              </div>
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <div className="text-sm text-gray-900">
-                                {formatDate(record.date)}
-                              </div>
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                record.workType === 'STANDBY' 
-                                  ? 'bg-purple-100 text-purple-800' 
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}>
-                                {record.workType}
-                              </span>
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              {formatLocationDisplay(record) !== '-' ? (
-                                <button
-                                  onClick={() => handleLocationClick(record)}
-                                  className="text-xs xl:text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer flex items-center gap-1"
-                                >
-                                  <svg className="w-3 h-3 xl:w-4 xl:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  </svg>
-                                  <span className="truncate max-w-[80px] xl:max-w-none">{formatLocationDisplay(record)}</span>
-                                </button>
-                              ) : (
-                                <span className="text-sm text-gray-400">-</span>
-                              )}
-                            </td>
-                            <td className="px-4 xl:px-6 py-4 xl:py-5">
-                              <div className="flex flex-col gap-1">
-                                {record.isLate && (
-                                  <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                    Late In
-                                  </span>
-                                )}
-                                {record.isEarly && (
-                                  <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
-                                    Early Out
-                                  </span>
-                                )}
-                                {!record.isLate && !record.isEarly && record.clockInTime && record.clockOutTime && (
-                                  <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                    On Time
-                                  </span>
-                                )}
-                                {!record.clockOutTime && (
-                                  <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    Active
-                                  </span>
-                                )}
-                              </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-100">
+                        {filteredRecords.length === 0 ? (
+                          <tr>
+                            <td colSpan="10" className="px-6 py-12 text-center text-gray-500">
+                              No clock in/out records found
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
+                        ) : (
+                          filteredRecords.map((record) => (
+                            <tr key={record.id} className="hover:bg-gray-50 transition-colors duration-200">
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <div className="text-sm font-semibold text-gray-900">
+                                  {getDayName(record.date)}
+                                </div>
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <div className="flex items-center">
+                                  <div className="flex-shrink-0 h-8 w-8 xl:h-10 xl:w-10">
+                                    <div className="h-8 w-8 xl:h-10 xl:w-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                                      <span className="text-white font-semibold text-xs">
+                                        {record.user?.firstName?.[0]}{record.user?.lastName?.[0]}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="ml-2 xl:ml-3 min-w-0">
+                                    <div className="text-sm font-medium text-gray-900 truncate">
+                                      {record.user?.firstName} {record.user?.lastName}
+                                    </div>
+                                    <div className="text-xs xl:text-sm text-gray-500 truncate">{record.user?.email}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <div className="flex items-center flex-wrap gap-1">
+                                  <div className={`text-sm font-medium ${record.isLate ? 'text-red-600' : 'text-gray-900'}`}>
+                                    {formatTime(record.clockInTime)}
+                                  </div>
+                                  {record.isLate && (
+                                    <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                      Late
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <div className="flex items-center flex-wrap gap-1">
+                                  <div className={`text-sm font-medium ${record.isEarly ? 'text-orange-600' : 'text-gray-900'}`}>
+                                    {formatTime(record.clockOutTime)}
+                                  </div>
+                                  {record.isEarly && (
+                                    <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                                      Early
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <div className="text-sm text-gray-900">
+                                  {calculateDuration(record.clockInTime, record.clockOutTime)}
+                                </div>
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <div className="text-sm text-gray-900 truncate max-w-[120px] xl:max-w-none">
+                                  {getServiceUserDisplay(record)}
+                                </div>
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <div className="text-sm text-gray-900">
+                                  {formatDate(record.date)}
+                                </div>
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${record.workType === 'STANDBY'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-blue-100 text-blue-800'
+                                  }`}>
+                                  {record.workType}
+                                </span>
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                {formatLocationDisplay(record) !== '-' ? (
+                                  <button
+                                    onClick={() => handleLocationClick(record)}
+                                    className="text-xs xl:text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer flex items-center gap-1"
+                                  >
+                                    <svg className="w-3 h-3 xl:w-4 xl:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span className="truncate max-w-[80px] xl:max-w-none">{formatLocationDisplay(record)}</span>
+                                  </button>
+                                ) : (
+                                  <span className="text-sm text-gray-400">-</span>
+                                )}
+                              </td>
+                              <td className="px-4 xl:px-6 py-4 xl:py-5">
+                                <div className="flex flex-col gap-1">
+                                  {record.isLate && (
+                                    <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                      Late In
+                                    </span>
+                                  )}
+                                  {record.isEarly && (
+                                    <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                                      Early Out
+                                    </span>
+                                  )}
+                                  {!record.isLate && !record.isEarly && record.clockInTime && record.clockOutTime && (
+                                    <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                      On Time
+                                    </span>
+                                  )}
+                                  {!record.clockOutTime && (
+                                    <span className="inline-flex items-center px-1.5 xl:px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                      Active
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
                     </table>
                   </div>
                 </div>
@@ -567,17 +589,16 @@ export default function ClockInOutPage() {
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-1 ml-2">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                record.workType === 'STANDBY' 
-                                  ? 'bg-purple-100 text-purple-800' 
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}>
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${record.workType === 'STANDBY'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-blue-100 text-blue-800'
+                                }`}>
                                 {record.workType}
                               </span>
                               <div className="text-xs font-medium text-gray-600">{getDayName(record.date)}</div>
                             </div>
                           </div>
-                          
+
                           <div className="grid grid-cols-2 gap-3 mb-3">
                             <div>
                               <div className="text-xs text-gray-500 mb-1">Clock In</div>

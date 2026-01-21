@@ -10,12 +10,15 @@ export default function Header({ user }) {
   const [showInbox, setShowInbox] = useState(false);
   const [showEmergencyAlert, setShowEmergencyAlert] = useState(false);
   const [emergencyCount, setEmergencyCount] = useState(0);
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const dropdownRef = useRef(null);
   const pollingIntervalRef = useRef(null);
 
   // Check if user can view emergencies (ADMIN, DIRECTOR, HR, REGISTER_MANAGER)
-  const canViewEmergencies = user?.role?.name && 
+  const canViewEmergencies = user?.role?.name &&
     ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'].includes(user.role.name);
 
   // Poll for emergency alerts
@@ -54,6 +57,31 @@ export default function Header({ user }) {
       }
     };
   }, [canViewEmergencies]);
+
+  // Fetch notifications
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const res = await fetch('/api/notifications?limit=5', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setNotifications(data.data);
+          setUnreadCount(data.unreadCount);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="sticky top-0 bg-white shadow-sm border-b border-gray-200 px-6 py-4 z-30">
@@ -100,22 +128,74 @@ export default function Header({ user }) {
             )}
 
             {/* Notifications */}
-            <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors relative">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              {/* Notification dot */}
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <div
+              className="relative"
+              onMouseEnter={() => setShowNotificationsDropdown(true)}
+              onMouseLeave={() => setShowNotificationsDropdown(false)}
+            >
+              <button
+                onClick={() => router.push('/admin/notifications')}
+                className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group rounded-lg hover:bg-gray-50"
+              >
+                <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {/* Notification dot */}
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse ring-2 ring-white"></span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown */}
+              <div className={`absolute right-0 mt-2 w-80 bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-xl shadow-2xl z-50 transition-all duration-300 ease-out ${showNotificationsDropdown
+                ? 'opacity-100 visible translate-y-0'
+                : 'opacity-0 invisible -translate-y-2'
+                }`}>
+                <div className="py-2">
+                  <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+                    <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                    {unreadCount > 0 && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">{unreadCount} New</span>}
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                        No notifications
+                      </div>
+                    ) : (
+                      notifications.map(n => (
+                        <div key={n.id} className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!n.isRead ? 'bg-blue-50/30' : ''}`}>
+                          <p className="text-sm text-gray-800 font-medium truncate">{n.title}</p>
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{n.message}</p>
+                          <p className="text-[10px] text-gray-400 mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="px-2 py-2 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        router.push('/admin/notifications');
+                        setShowNotificationsDropdown(false);
+                      }}
+                      className="w-full py-2 text-sm text-center text-[#224fa6] font-medium hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      See all notifications
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Settings with Dropdown */}
-            <div 
-              className="relative" 
+            <div
+              className="relative"
               ref={dropdownRef}
               onMouseEnter={() => setShowSettingsDropdown(true)}
               onMouseLeave={() => setShowSettingsDropdown(false)}
             >
-              <button 
+              <button
                 className="p-2 text-gray-400 hover:text-[#224fa6] transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 rounded-lg group relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#224fa6]/5 to-[#3270e9]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
@@ -126,18 +206,17 @@ export default function Header({ user }) {
               </button>
 
               {/* Settings Dropdown - Simplified (only Settings link) */}
-              <div className={`absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-xl shadow-2xl z-50 transition-all duration-300 ease-out ${
-                showSettingsDropdown 
-                  ? 'opacity-100 visible translate-y-0' 
-                  : 'opacity-0 invisible -translate-y-2'
-              }`}>
+              <div className={`absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-xl shadow-2xl z-50 transition-all duration-300 ease-out ${showSettingsDropdown
+                ? 'opacity-100 visible translate-y-0'
+                : 'opacity-0 invisible -translate-y-2'
+                }`}>
                 <div className="py-3">
                   {/* Header */}
                   <div className="px-4 py-2 border-b border-gray-100">
                     <h3 className="text-sm font-semibold text-gray-900">Settings</h3>
                     <p className="text-xs text-gray-500">Quick access</p>
                   </div>
-                  
+
                   {/* Settings Link */}
                   <div className="px-2 py-1 pt-2">
                     <button
@@ -167,7 +246,7 @@ export default function Header({ user }) {
             </div>
 
             {/* Messages */}
-            <button 
+            <button
               onClick={() => setShowInbox(true)}
               className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group"
             >
@@ -182,9 +261,9 @@ export default function Header({ user }) {
       </div>
 
       {/* Inbox Component */}
-      <Inbox 
-        isOpen={showInbox} 
-        onClose={() => setShowInbox(false)} 
+      <Inbox
+        isOpen={showInbox}
+        onClose={() => setShowInbox(false)}
         currentUser={user}
       />
 

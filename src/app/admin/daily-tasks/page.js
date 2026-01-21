@@ -186,7 +186,7 @@ export default function DailyTasksPage() {
   const [showTaskReportModal, setShowTaskReportModal] = useState(false);
   const [allTasksForReport, setAllTasksForReport] = useState([]);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
-  
+
   const [bathingForm, setBathingForm] = useState({
     serviceSeekerId: '',
     date: new Date().toISOString().split('T')[0],
@@ -588,7 +588,7 @@ export default function DailyTasksPage() {
       const data = await res.json();
       const triggers = Array.isArray(data) ? data : [];
       setBehaviourTriggers(triggers);
-      
+
       if (triggers.length === 0) {
         await seedBehaviourTriggers();
       }
@@ -1054,7 +1054,7 @@ export default function DailyTasksPage() {
     setIsLoadingReport(true);
     try {
       const token = localStorage.getItem('token');
-      
+
       // Fetch all tasks without date filter
       const [
         bathing, behaviour, bloodTest, bloodPressure, comfortCheck, communicationNotes,
@@ -1096,7 +1096,7 @@ export default function DailyTasksPage() {
       // Get today's date for filtering (local timezone, not UTC)
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
-      
+
       // Helper function to normalize date to YYYY-MM-DD format
       const normalizeDate = (dateValue) => {
         if (!dateValue) return null;
@@ -1109,7 +1109,7 @@ export default function DailyTasksPage() {
         const day = String(d.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       };
-      
+
       // Combine all tasks with their types and filter out today's tasks (only show past tasks)
       const allTasksReport = [
         ...(Array.isArray(bathing) ? bathing : []).map(t => ({ ...t, taskType: 'bathing' })),
@@ -1141,15 +1141,15 @@ export default function DailyTasksPage() {
         ...(Array.isArray(weight) ? weight : []).map(t => ({ ...t, taskType: 'weight' })),
         ...(Array.isArray(followUp) ? followUp : []).map(t => ({ ...t, taskType: 'follow_up' })),
       ]
-      .filter((t) => {
-        // Filter out today's tasks - only show past tasks
-        if (!t.date) return false;
-        const taskDate = normalizeDate(t.date);
-        if (!taskDate) return false;
-        // Only include tasks from dates before today
-        return taskDate < today;
-      })
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        .filter((t) => {
+          // Filter out today's tasks - only show past tasks
+          if (!t.date) return false;
+          const taskDate = normalizeDate(t.date);
+          if (!taskDate) return false;
+          // Only include tasks from dates before today
+          return taskDate < today;
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       setAllTasksForReport(allTasksReport);
     } catch (e) {
@@ -1165,7 +1165,7 @@ export default function DailyTasksPage() {
     await fetchAllTasksForReport();
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     if (user) {
       fetchBathingTasks();
       fetchBehaviourTasks();
@@ -1251,7 +1251,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/bathing-tasks/${editing.id}` : '/api/bathing-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1261,10 +1261,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchBathingTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Bathing task updated successfully.' : 'Bathing task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Bathing task updated successfully.' : 'Bathing task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1285,7 +1285,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/behaviour-tasks/${editing.id}` : '/api/behaviour-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1295,10 +1295,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchBehaviourTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Behaviour task updated successfully.' : 'Behaviour task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Behaviour task updated successfully.' : 'Behaviour task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1319,7 +1319,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/blood-test-tasks/${editing.id}` : '/api/blood-test-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1329,10 +1329,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchBloodTestTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Blood test updated successfully.' : 'Blood test added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Blood test updated successfully.' : 'Blood test added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1353,7 +1353,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/blood-pressure-tasks/${editing.id}` : '/api/blood-pressure-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1363,10 +1363,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchBloodPressureTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Blood pressure updated successfully.' : 'Blood pressure added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Blood pressure updated successfully.' : 'Blood pressure added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1387,7 +1387,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/comfort-check-tasks/${editing.id}` : '/api/comfort-check-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1397,10 +1397,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchComfortCheckTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Comfort check updated successfully.' : 'Comfort check added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Comfort check updated successfully.' : 'Comfort check added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1421,7 +1421,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/communication-notes-tasks/${editing.id}` : '/api/communication-notes-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1431,10 +1431,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchCommunicationNotesTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Communication notes updated successfully.' : 'Communication notes added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Communication notes updated successfully.' : 'Communication notes added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1455,7 +1455,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/family-photo-message-tasks/${editing.id}` : '/api/family-photo-message-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1465,10 +1465,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchFamilyPhotoMessageTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Family photo/message updated successfully.' : 'Family photo/message added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Family photo/message updated successfully.' : 'Family photo/message added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1489,7 +1489,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/food-drink-tasks/${editing.id}` : '/api/food-drink-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1499,10 +1499,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchFoodDrinkTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Food/drink task updated successfully.' : 'Food/drink task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Food/drink task updated successfully.' : 'Food/drink task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1523,7 +1523,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/general-support-tasks/${editing.id}` : '/api/general-support-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1533,10 +1533,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchGeneralSupportTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'General support task updated successfully.' : 'General support task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'General support task updated successfully.' : 'General support task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1557,7 +1557,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/house-keeping-tasks/${editing.id}` : '/api/house-keeping-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1567,10 +1567,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchHouseKeepingTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'House keeping task updated successfully.' : 'House keeping task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'House keeping task updated successfully.' : 'House keeping task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1591,7 +1591,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/incident-fall-tasks/${editing.id}` : '/api/incident-fall-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1601,10 +1601,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchIncidentFallTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Incident/fall task updated successfully.' : 'Incident/fall task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Incident/fall task updated successfully.' : 'Incident/fall task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1793,7 +1793,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/follow-up-tasks/${editing.id}` : '/api/follow-up-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1803,10 +1803,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchFollowUpTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Follow up updated successfully.' : 'Follow up added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Follow up updated successfully.' : 'Follow up added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1827,7 +1827,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/medicine-prn-tasks/${editing.id}` : '/api/medicine-prn-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1837,10 +1837,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchMedicinePrnTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Medicine task updated successfully.' : 'Medicine task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Medicine task updated successfully.' : 'Medicine task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1861,7 +1861,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/muac-tasks/${editing.id}` : '/api/muac-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1871,10 +1871,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchMuacTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'MUAC task updated successfully.' : 'MUAC task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'MUAC task updated successfully.' : 'MUAC task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1895,7 +1895,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/observation-tasks/${editing.id}` : '/api/observation-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1905,10 +1905,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchObservationTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Observation task updated successfully.' : 'Observation task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Observation task updated successfully.' : 'Observation task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1929,7 +1929,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/one-to-one-tasks/${editing.id}` : '/api/one-to-one-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1939,10 +1939,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchOneToOneTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'One to One task updated successfully.' : 'One to One task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'One to One task updated successfully.' : 'One to One task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1963,7 +1963,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/oral-care-tasks/${editing.id}` : '/api/oral-care-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -1973,10 +1973,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchOralCareTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Oral Care task updated successfully.' : 'Oral Care task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Oral Care task updated successfully.' : 'Oral Care task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -1997,7 +1997,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/oxygen-tasks/${editing.id}` : '/api/oxygen-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2007,10 +2007,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchOxygenTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Oxygen task updated successfully.' : 'Oxygen task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Oxygen task updated successfully.' : 'Oxygen task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2031,7 +2031,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/person-centred-tasks/${editing.id}` : '/api/person-centred-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2041,10 +2041,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchPersonCentredTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Person Centred task updated successfully.' : 'Person Centred task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Person Centred task updated successfully.' : 'Person Centred task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2093,7 +2093,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/physical-intervention-tasks/${editing.id}` : '/api/physical-intervention-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2103,10 +2103,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchPhysicalInterventionTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Physical Intervention task updated successfully.' : 'Physical Intervention task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Physical Intervention task updated successfully.' : 'Physical Intervention task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2127,7 +2127,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/pulse-tasks/${editing.id}` : '/api/pulse-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2137,10 +2137,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchPulseTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Pulse task updated successfully.' : 'Pulse task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Pulse task updated successfully.' : 'Pulse task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2161,7 +2161,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/reposition-tasks/${editing.id}` : '/api/reposition-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2171,10 +2171,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchRepositionTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Reposition task updated successfully.' : 'Reposition task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Reposition task updated successfully.' : 'Reposition task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2195,7 +2195,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/spending-money-tasks/${editing.id}` : '/api/spending-money-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2205,10 +2205,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchSpendingMoneyTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Spending/Money task updated successfully.' : 'Spending/Money task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Spending/Money task updated successfully.' : 'Spending/Money task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2229,7 +2229,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/stool-tasks/${editing.id}` : '/api/stool-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2239,10 +2239,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchStoolTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Stool task updated successfully.' : 'Stool task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Stool task updated successfully.' : 'Stool task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2263,7 +2263,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/temperature-tasks/${editing.id}` : '/api/temperature-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2273,10 +2273,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchTemperatureTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Temperature task updated successfully.' : 'Temperature task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Temperature task updated successfully.' : 'Temperature task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2297,7 +2297,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/visit-tasks/${editing.id}` : '/api/visit-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2307,10 +2307,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchVisitTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Visit task updated successfully.' : 'Visit task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Visit task updated successfully.' : 'Visit task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2331,7 +2331,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/weight-tasks/${editing.id}` : '/api/weight-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2341,10 +2341,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchWeightTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Weight task updated successfully.' : 'Weight task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Weight task updated successfully.' : 'Weight task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2365,7 +2365,7 @@ export default function DailyTasksPage() {
       const token = localStorage.getItem('token');
       const method = editing ? 'PUT' : 'POST';
       const url = editing ? `/api/encouragement-tasks/${editing.id}` : '/api/encouragement-tasks';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -2375,10 +2375,10 @@ export default function DailyTasksPage() {
       if (response.ok) {
         setShowModal(false);
         await fetchEncouragementTasks();
-        setNotification({ 
-          show: true, 
-          message: editing ? 'Encouragement task updated successfully.' : 'Encouragement task added successfully.', 
-          type: 'success' 
+        setNotification({
+          show: true,
+          message: editing ? 'Encouragement task updated successfully.' : 'Encouragement task added successfully.',
+          type: 'success'
         });
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed' }));
@@ -2849,9 +2849,9 @@ export default function DailyTasksPage() {
         'follow_up': 'follow-up-tasks'
       };
       const endpoint = endpointMap[taskToDelete.taskType];
-      const res = await fetch(`/api/${endpoint}/${taskToDelete.id}`, { 
-        method: 'DELETE', 
-        headers: { Authorization: `Bearer ${token}` } 
+      const res = await fetch(`/api/${endpoint}/${taskToDelete.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         // Refresh the appropriate task list
@@ -2968,7 +2968,7 @@ export default function DailyTasksPage() {
   const encouragementTasksWithType = (Array.isArray(encouragementTasks) ? encouragementTasks : []).map(t => ({ ...t, taskType: 'encouragement' }));
 
   const allTasks = [
-    ...bathingTasksWithType, 
+    ...bathingTasksWithType,
     ...behaviourTasksWithType,
     ...bloodTestTasksWithType,
     ...bloodPressureTasksWithType,
@@ -2997,38 +2997,25 @@ export default function DailyTasksPage() {
     ...weightTasksWithType,
     ...followUpTasksWithType
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
+
   // Get current date in YYYY-MM-DD format (local timezone, not UTC)
+  // Get current date string for comparison (local timezone)
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
-  
-  // Helper function to normalize date to YYYY-MM-DD format
-  const normalizeDate = (dateValue) => {
-    if (!dateValue) return null;
-    if (typeof dateValue === 'string') {
-      // Handle ISO string or date string
-      return dateValue.split('T')[0];
-    }
-    // Handle Date object - use local date, not UTC
-    const d = new Date(dateValue);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  
+  const todayStr = now.toDateString();
+
   const filteredTasks = allTasks.filter((t) => {
     // Filter by current date
     if (!t.date) {
       // If task has no date, exclude it from today's view
       return false;
     }
-    
-    const taskDate = normalizeDate(t.date);
-    if (!taskDate || taskDate !== today) {
+
+    // Use toDateString() to compare dates in local time, consistent with the stats count
+    const taskDateStr = new Date(t.date).toDateString();
+    if (taskDateStr !== todayStr) {
       return false;
     }
-    
+
     if (filterTaskType !== 'ALL' && filterTaskType !== t.taskType) return false;
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
@@ -3087,7 +3074,7 @@ export default function DailyTasksPage() {
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
                 <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Total Tasks</p>
@@ -3098,7 +3085,7 @@ export default function DailyTasksPage() {
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
                 <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Today</p>
@@ -3109,7 +3096,7 @@ export default function DailyTasksPage() {
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
                 <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">This Week</p>
@@ -3120,7 +3107,7 @@ export default function DailyTasksPage() {
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
                 <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Task Types</p>
@@ -3135,12 +3122,12 @@ export default function DailyTasksPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                  <input value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Search by service user or task type" className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900" />
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search by service user or task type" className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900" />
                 </div>
               </div>
               <div>
-                <select value={filterTaskType} onChange={(e)=>setFilterTaskType(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
+                <select value={filterTaskType} onChange={(e) => setFilterTaskType(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
                   <option value="ALL">All Task Types</option>
                   {TASK_TYPES.filter(t => ENABLED_TASKS.includes(t.id)).map(type => (
                     <option key={type.id} value={type.id}>{type.name}</option>
@@ -3244,12 +3231,11 @@ export default function DailyTasksPage() {
                                   {task.trigger?.name || 'Recorded'}
                                 </span>
                               ) : task.completed ? (
-                                <span className={`px-2 py-1 text-xs rounded-full ${
-                                  task.completed === 'YES' ? 'bg-green-100 text-green-700' : 
-                                  task.completed === 'NO' ? 'bg-red-100 text-red-700' : 
-                                  task.completed === 'ATTEMPTED' ? 'bg-yellow-100 text-yellow-700' : 
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className={`px-2 py-1 text-xs rounded-full ${task.completed === 'YES' ? 'bg-green-100 text-green-700' :
+                                    task.completed === 'NO' ? 'bg-red-100 text-red-700' :
+                                      task.completed === 'ATTEMPTED' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-gray-100 text-gray-700'
+                                  }`}>
                                   {task.completed?.replace(/_/g, ' ')}
                                 </span>
                               ) : (
@@ -3263,13 +3249,13 @@ export default function DailyTasksPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center justify-end space-x-2">
                               <button title="View" onClick={() => handleView(task)} className="p-2 rounded-lg text-gray-700 hover:bg-gray-50">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                               </button>
                               <button title="Edit" onClick={() => handleEdit(task)} className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                               </button>
                               <button title="Delete" onClick={() => handleDeleteClick(task)} className="p-2 rounded-lg text-red-600 hover:bg-red-50">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                               </button>
                             </div>
                           </td>
@@ -3288,12 +3274,12 @@ export default function DailyTasksPage() {
                 <span className="font-medium text-gray-900"> {filteredTasks.length}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <select value={pageSize} onChange={(e)=>{ setPageSize(parseInt(e.target.value)||10); setCurrentPage(1); }} className="px-2 py-1 border rounded">
-                  {[10,20,50].map(n => (<option key={n} value={n}>{n} / page</option>))}
+                <select value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value) || 10); setCurrentPage(1); }} className="px-2 py-1 border rounded">
+                  {[10, 20, 50].map(n => (<option key={n} value={n}>{n} / page</option>))}
                 </select>
-                <button onClick={()=> setCurrentPage(p => Math.max(1, p-1))} disabled={pageSafe===1} className={`px-3 py-1 rounded border ${pageSafe===1? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Prev</button>
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={pageSafe === 1} className={`px-3 py-1 rounded border ${pageSafe === 1 ? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Prev</button>
                 <span className="text-sm text-gray-700">Page {pageSafe} / {totalPages}</span>
-                <button onClick={()=> setCurrentPage(p => Math.min(totalPages, p+1))} disabled={pageSafe===totalPages} className={`px-3 py-1 rounded border ${pageSafe===totalPages? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Next</button>
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={pageSafe === totalPages} className={`px-3 py-1 rounded border ${pageSafe === totalPages ? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Next</button>
               </div>
             </div>
           </div>
@@ -3304,10 +3290,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 max-h-[85vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900">Select Task Type</h2>
-                  <button onClick={()=>setShowTaskTypeModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowTaskTypeModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <p className="text-gray-600 mb-6">Choose the type of daily task you want to record</p>
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {TASK_TYPES.map(taskType => {
                     const isEnabled = ENABLED_TASKS.includes(taskType.id);
@@ -3316,11 +3302,10 @@ export default function DailyTasksPage() {
                         key={taskType.id}
                         onClick={() => selectTaskType(taskType.id)}
                         disabled={!isEnabled}
-                        className={`group relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-white hover:to-gray-50 rounded-xl border-2 transition-all duration-200 ${
-                          isEnabled
-                            ? 'border-gray-200 hover:border-[#224fa6] hover:shadow-lg cursor-pointer' 
+                        className={`group relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-white hover:to-gray-50 rounded-xl border-2 transition-all duration-200 ${isEnabled
+                            ? 'border-gray-200 hover:border-[#224fa6] hover:shadow-lg cursor-pointer'
                             : 'border-gray-100 opacity-50 cursor-not-allowed'
-                        }`}
+                          }`}
                       >
                         <div className={`w-16 h-16 ${COLOR_CLASSES[taskType.color]} rounded-xl flex items-center justify-center text-3xl mx-auto mb-3 ${isEnabled ? 'group-hover:scale-110' : ''} transition-transform`}>
                           {taskType.icon}
@@ -3348,7 +3333,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Bathing Task</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <BathingTaskForm
                   formData={bathingForm}
@@ -3356,7 +3341,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleBathingSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3374,7 +3359,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Behaviour Task</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <BehaviourTaskForm
                   formData={behaviourForm}
@@ -3383,9 +3368,9 @@ export default function DailyTasksPage() {
                   behaviourTriggers={behaviourTriggers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleBehaviourSubmit}
-                  onCancel={()=>setShowModal(false)}
-                  onAddTrigger={()=>setShowTriggerModal(true)}
-                  onManageTriggers={()=>setShowManageTriggersModal(true)}
+                  onCancel={() => setShowModal(false)}
+                  onAddTrigger={() => setShowTriggerModal(true)}
+                  onManageTriggers={() => setShowManageTriggersModal(true)}
                   editing={editing}
                 />
               </div>
@@ -3403,7 +3388,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Blood Test</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <BloodTestTaskForm
                   formData={bloodTestForm}
@@ -3411,7 +3396,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleBloodTestSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3429,7 +3414,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Blood Pressure</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <BloodPressureTaskForm
                   formData={bloodPressureForm}
@@ -3437,7 +3422,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleBloodPressureSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3455,7 +3440,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Comfort Check</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <ComfortCheckTaskForm
                   formData={comfortCheckForm}
@@ -3463,7 +3448,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleComfortCheckSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3481,7 +3466,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Communication Notes</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <CommunicationNotesTaskForm
                   formData={communicationNotesForm}
@@ -3489,7 +3474,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleCommunicationNotesSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3506,7 +3491,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Encouragement</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <EncouragementTaskForm
                   formData={encouragementForm}
@@ -3528,36 +3513,36 @@ export default function DailyTasksPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Trigger Name *</label>
-                    <input 
+                    <input
                       type="text"
                       required
-                      value={newTrigger.name} 
-                      onChange={(e)=>setNewTrigger({...newTrigger, name:e.target.value})}
+                      value={newTrigger.name}
+                      onChange={(e) => setNewTrigger({ ...newTrigger, name: e.target.value })}
                       placeholder="e.g., Loud noises"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Definition</label>
-                    <textarea 
+                    <textarea
                       rows={3}
-                      value={newTrigger.define} 
-                      onChange={(e)=>setNewTrigger({...newTrigger, define:e.target.value})}
+                      value={newTrigger.define}
+                      onChange={(e) => setNewTrigger({ ...newTrigger, define: e.target.value })}
                       placeholder="Define this trigger..."
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
                     />
                   </div>
                   <div className="flex justify-end space-x-3 pt-2">
-                    <button 
-                      type="button" 
-                      onClick={()=>{setShowTriggerModal(false); setNewTrigger({name:'', define:''});}}
+                    <button
+                      type="button"
+                      onClick={() => { setShowTriggerModal(false); setNewTrigger({ name: '', define: '' }); }}
                       disabled={isAddingTrigger}
                       className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                     >
                       Cancel
                     </button>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={handleAddTrigger}
                       disabled={isAddingTrigger}
                       className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 flex items-center justify-center min-w-[120px]"
@@ -3588,7 +3573,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Family Photo/Message</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <FamilyPhotoMessageTaskForm
                   formData={familyPhotoMessageForm}
@@ -3596,7 +3581,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleFamilyPhotoMessageSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3613,7 +3598,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Food/Drink</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <FoodDrinkTaskForm
                   formData={foodDrinkForm}
@@ -3621,7 +3606,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleFoodDrinkSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3638,7 +3623,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">General Support</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <GeneralSupportTaskForm
                   formData={generalSupportForm}
@@ -3647,8 +3632,8 @@ export default function DailyTasksPage() {
                   supportLists={supportLists}
                   isSubmitting={isSubmitting}
                   onSubmit={handleGeneralSupportSubmit}
-                  onCancel={()=>setShowModal(false)}
-                  onManageSupportLists={()=>setShowSupportListModal(true)}
+                  onCancel={() => setShowModal(false)}
+                  onManageSupportLists={() => setShowSupportListModal(true)}
                   editing={editing}
                 />
               </div>
@@ -3665,7 +3650,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">House Keeping</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <HouseKeepingTaskForm
                   formData={houseKeepingForm}
@@ -3673,7 +3658,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleHouseKeepingSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3690,7 +3675,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Incident/Fall</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <IncidentFallTaskForm
                   formData={incidentFallForm}
@@ -3701,9 +3686,9 @@ export default function DailyTasksPage() {
                   staffUsers={staffUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleIncidentFallSubmit}
-                  onCancel={()=>setShowModal(false)}
-                  onManageIncidentTypes={()=>setShowIncidentTypesModal(true)}
-                  onManageLocations={()=>setShowIncidentLocationsModal(true)}
+                  onCancel={() => setShowModal(false)}
+                  onManageIncidentTypes={() => setShowIncidentTypesModal(true)}
+                  onManageLocations={() => setShowIncidentLocationsModal(true)}
                   editing={editing}
                 />
               </div>
@@ -3720,7 +3705,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Follow Up</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <FollowUpTaskForm
                   formData={followUpForm}
@@ -3728,7 +3713,7 @@ export default function DailyTasksPage() {
                   serviceUsers={serviceUsers}
                   isSubmitting={isSubmitting}
                   onSubmit={handleFollowUpSubmit}
-                  onCancel={()=>setShowModal(false)}
+                  onCancel={() => setShowModal(false)}
                   editing={editing}
                 />
               </div>
@@ -3745,7 +3730,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Medicine PRN</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <MedicinePrnTaskForm
                   formData={medicinePrnForm}
@@ -3769,7 +3754,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">MUAC</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <MuacTaskForm
                   formData={muacForm}
@@ -3792,7 +3777,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Observation</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <ObservationTaskForm
                   formData={observationForm}
@@ -3815,7 +3800,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">One to One</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <OneToOneTaskForm
                   formData={oneToOneForm}
@@ -3838,7 +3823,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Oral Care</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <OralCareTaskForm
                   formData={oralCareForm}
@@ -3861,7 +3846,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Oxygen</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <OxygenTaskForm
                   formData={oxygenForm}
@@ -3884,7 +3869,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Person Centred Task</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <PersonCentredTaskForm
                   formData={personCentredForm}
@@ -3911,7 +3896,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Physical Intervention</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <PhysicalInterventionTaskForm
                   formData={physicalInterventionForm}
@@ -3935,7 +3920,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Pulse</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <PulseTaskForm
                   formData={pulseForm}
@@ -3959,7 +3944,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Re-position</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <RepositionTaskForm
                   formData={repositionForm}
@@ -3983,7 +3968,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Spending/Money</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <SpendingMoneyTaskForm
                   formData={spendingMoneyForm}
@@ -4007,7 +3992,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Stool</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <StoolTaskForm
                   formData={stoolForm}
@@ -4031,7 +4016,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Temperature</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <TemperatureTaskForm
                   formData={temperatureForm}
@@ -4055,7 +4040,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Visit</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <VisitTaskForm
                   formData={visitForm}
@@ -4079,7 +4064,7 @@ export default function DailyTasksPage() {
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">Weight</h2>
                   </div>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <WeightTaskForm
                   formData={weightForm}
@@ -4099,127 +4084,126 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className={`w-12 h-12 ${
-                      viewData.taskType === 'bathing' ? 'bg-blue-500' : 
-                      viewData.taskType === 'behaviour' ? 'bg-purple-500' :
-                      viewData.taskType === 'bloodtest' ? 'bg-red-500' :
-                      viewData.taskType === 'blood_pressure' ? 'bg-red-500' :
-                      viewData.taskType === 'comfort_check' ? 'bg-green-500' :
-                      viewData.taskType === 'communication_notes' ? 'bg-blue-500' :
-                      viewData.taskType === 'encouragement' ? 'bg-yellow-500' :
-                      viewData.taskType === 'family_photo_message' ? 'bg-pink-500' :
-                      viewData.taskType === 'food_drink' ? 'bg-orange-500' :
-                      viewData.taskType === 'general_support' ? 'bg-teal-500' :
-                      viewData.taskType === 'house_keeping' ? 'bg-gray-500' :
-                      viewData.taskType === 'incident_fall' ? 'bg-red-500' :
-                      viewData.taskType === 'medicine_prn' ? 'bg-red-500' :
-                      viewData.taskType === 'muac' ? 'bg-blue-500' :
-                      viewData.taskType === 'observation' ? 'bg-purple-500' :
-                      viewData.taskType === 'one_to_one' ? 'bg-green-500' :
-                      viewData.taskType === 'oral_care' ? 'bg-cyan-500' :
-                      viewData.taskType === 'oxygen' ? 'bg-blue-500' :
-                      viewData.taskType === 'person_centred_task' ? 'bg-pink-500' :
-                      viewData.taskType === 'physical_intervention' ? 'bg-red-500' :
-                      viewData.taskType === 'pulse' ? 'bg-red-500' :
-                      viewData.taskType === 're_position' ? 'bg-indigo-500' :
-                      viewData.taskType === 'spending_money' ? 'bg-green-500' :
-                      viewData.taskType === 'stool' ? 'bg-amber-700' :
-                      viewData.taskType === 'temperature' ? 'bg-red-500' :
-                      viewData.taskType === 'visit' ? 'bg-purple-500' :
-                      viewData.taskType === 'weight' ? 'bg-green-500' :
-                      viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
-                      'bg-gray-500'
-                    } rounded-xl flex items-center justify-center text-2xl mr-3`}>
-                      {viewData.taskType === 'bathing' ? '🛁' : 
-                       viewData.taskType === 'behaviour' ? '👤' :
-                       viewData.taskType === 'bloodtest' ? '💉' :
-                       viewData.taskType === 'blood_pressure' ? '🩺' :
-                       viewData.taskType === 'comfort_check' ? '🛏️' :
-                       viewData.taskType === 'communication_notes' ? '📝' :
-                       viewData.taskType === 'encouragement' ? '💪' :
-                       viewData.taskType === 'family_photo_message' ? '📷' :
-                       viewData.taskType === 'food_drink' ? '🍽️' :
-                       viewData.taskType === 'general_support' ? '🤝' :
-                       viewData.taskType === 'house_keeping' ? '🧹' :
-                       viewData.taskType === 'incident_fall' ? '⚠️' :
-                       viewData.taskType === 'medicine_prn' ? '💊' :
-                       viewData.taskType === 'muac' ? '📏' :
-                       viewData.taskType === 'observation' ? '👁️' :
-                       viewData.taskType === 'one_to_one' ? '👥' :
-                       viewData.taskType === 'oral_care' ? '🦷' :
-                       viewData.taskType === 'oxygen' ? '💨' :
-                       viewData.taskType === 'person_centred_task' ? '❤️' :
-                       viewData.taskType === 'physical_intervention' ? '🚨' :
-                       viewData.taskType === 'pulse' ? '❤️‍🩹' :
-                       viewData.taskType === 're_position' ? '🔄' :
-                       viewData.taskType === 'spending_money' ? '💰' :
-                       viewData.taskType === 'stool' ? '🚽' :
-                       viewData.taskType === 'temperature' ? '🌡️' :
-                       viewData.taskType === 'visit' ? '👥' :
-                       viewData.taskType === 'weight' ? '⚖️' :
-                       viewData.taskType === 'follow_up' ? '🔄' :
-                       '❓'}
+                    <div className={`w-12 h-12 ${viewData.taskType === 'bathing' ? 'bg-blue-500' :
+                        viewData.taskType === 'behaviour' ? 'bg-purple-500' :
+                          viewData.taskType === 'bloodtest' ? 'bg-red-500' :
+                            viewData.taskType === 'blood_pressure' ? 'bg-red-500' :
+                              viewData.taskType === 'comfort_check' ? 'bg-green-500' :
+                                viewData.taskType === 'communication_notes' ? 'bg-blue-500' :
+                                  viewData.taskType === 'encouragement' ? 'bg-yellow-500' :
+                                    viewData.taskType === 'family_photo_message' ? 'bg-pink-500' :
+                                      viewData.taskType === 'food_drink' ? 'bg-orange-500' :
+                                        viewData.taskType === 'general_support' ? 'bg-teal-500' :
+                                          viewData.taskType === 'house_keeping' ? 'bg-gray-500' :
+                                            viewData.taskType === 'incident_fall' ? 'bg-red-500' :
+                                              viewData.taskType === 'medicine_prn' ? 'bg-red-500' :
+                                                viewData.taskType === 'muac' ? 'bg-blue-500' :
+                                                  viewData.taskType === 'observation' ? 'bg-purple-500' :
+                                                    viewData.taskType === 'one_to_one' ? 'bg-green-500' :
+                                                      viewData.taskType === 'oral_care' ? 'bg-cyan-500' :
+                                                        viewData.taskType === 'oxygen' ? 'bg-blue-500' :
+                                                          viewData.taskType === 'person_centred_task' ? 'bg-pink-500' :
+                                                            viewData.taskType === 'physical_intervention' ? 'bg-red-500' :
+                                                              viewData.taskType === 'pulse' ? 'bg-red-500' :
+                                                                viewData.taskType === 're_position' ? 'bg-indigo-500' :
+                                                                  viewData.taskType === 'spending_money' ? 'bg-green-500' :
+                                                                    viewData.taskType === 'stool' ? 'bg-amber-700' :
+                                                                      viewData.taskType === 'temperature' ? 'bg-red-500' :
+                                                                        viewData.taskType === 'visit' ? 'bg-purple-500' :
+                                                                          viewData.taskType === 'weight' ? 'bg-green-500' :
+                                                                            viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
+                                                                              'bg-gray-500'
+                      } rounded-xl flex items-center justify-center text-2xl mr-3`}>
+                      {viewData.taskType === 'bathing' ? '🛁' :
+                        viewData.taskType === 'behaviour' ? '👤' :
+                          viewData.taskType === 'bloodtest' ? '💉' :
+                            viewData.taskType === 'blood_pressure' ? '🩺' :
+                              viewData.taskType === 'comfort_check' ? '🛏️' :
+                                viewData.taskType === 'communication_notes' ? '📝' :
+                                  viewData.taskType === 'encouragement' ? '💪' :
+                                    viewData.taskType === 'family_photo_message' ? '📷' :
+                                      viewData.taskType === 'food_drink' ? '🍽️' :
+                                        viewData.taskType === 'general_support' ? '🤝' :
+                                          viewData.taskType === 'house_keeping' ? '🧹' :
+                                            viewData.taskType === 'incident_fall' ? '⚠️' :
+                                              viewData.taskType === 'medicine_prn' ? '💊' :
+                                                viewData.taskType === 'muac' ? '📏' :
+                                                  viewData.taskType === 'observation' ? '👁️' :
+                                                    viewData.taskType === 'one_to_one' ? '👥' :
+                                                      viewData.taskType === 'oral_care' ? '🦷' :
+                                                        viewData.taskType === 'oxygen' ? '💨' :
+                                                          viewData.taskType === 'person_centred_task' ? '❤️' :
+                                                            viewData.taskType === 'physical_intervention' ? '🚨' :
+                                                              viewData.taskType === 'pulse' ? '❤️‍🩹' :
+                                                                viewData.taskType === 're_position' ? '🔄' :
+                                                                  viewData.taskType === 'spending_money' ? '💰' :
+                                                                    viewData.taskType === 'stool' ? '🚽' :
+                                                                      viewData.taskType === 'temperature' ? '🌡️' :
+                                                                        viewData.taskType === 'visit' ? '👥' :
+                                                                          viewData.taskType === 'weight' ? '⚖️' :
+                                                                            viewData.taskType === 'follow_up' ? '🔄' :
+                                                                              '❓'}
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">
-                      {viewData.taskType === 'bathing' ? 'Bathing' : 
-                       viewData.taskType === 'behaviour' ? 'Behaviour' :
-                       viewData.taskType === 'bloodtest' ? 'Blood Test' :
-                       viewData.taskType === 'blood_pressure' ? 'Blood Pressure' :
-                       viewData.taskType === 'comfort_check' ? 'Comfort Check' :
-                       viewData.taskType === 'communication_notes' ? 'Communication Notes' :
-                       viewData.taskType === 'encouragement' ? 'Encouragement' :
-                       viewData.taskType === 'family_photo_message' ? 'Family Photo/Message' :
-                       viewData.taskType === 'food_drink' ? 'Food/Drink' :
-                       viewData.taskType === 'general_support' ? 'General Support' :
-                       viewData.taskType === 'house_keeping' ? 'House Keeping' :
-                       viewData.taskType === 'incident_fall' ? 'Incident/Fall' :
-                       viewData.taskType === 'medicine_prn' ? 'Medicine PRN' :
-                       viewData.taskType === 'muac' ? 'MUAC' :
-                       viewData.taskType === 'observation' ? 'Observation' :
-                       viewData.taskType === 'one_to_one' ? 'One to One' :
-                       viewData.taskType === 'oral_care' ? 'Oral Care' :
-                       viewData.taskType === 'oxygen' ? 'Oxygen' :
-                       viewData.taskType === 'person_centred_task' ? 'Person Centred Task' :
-                       viewData.taskType === 'physical_intervention' ? 'Physical Intervention' :
-                       viewData.taskType === 'pulse' ? 'Pulse' :
-                       viewData.taskType === 're_position' ? 'Re-position' :
-                       viewData.taskType === 'spending_money' ? 'Spending/Money' :
-                       viewData.taskType === 'stool' ? 'Stool' :
-                       viewData.taskType === 'temperature' ? 'Temperature' :
-                       viewData.taskType === 'visit' ? 'Visit' :
-                       viewData.taskType === 'weight' ? 'Weight' :
-                       viewData.taskType === 'follow_up' ? 'Follow Up' :
-                       'Task'} Task Details
+                      {viewData.taskType === 'bathing' ? 'Bathing' :
+                        viewData.taskType === 'behaviour' ? 'Behaviour' :
+                          viewData.taskType === 'bloodtest' ? 'Blood Test' :
+                            viewData.taskType === 'blood_pressure' ? 'Blood Pressure' :
+                              viewData.taskType === 'comfort_check' ? 'Comfort Check' :
+                                viewData.taskType === 'communication_notes' ? 'Communication Notes' :
+                                  viewData.taskType === 'encouragement' ? 'Encouragement' :
+                                    viewData.taskType === 'family_photo_message' ? 'Family Photo/Message' :
+                                      viewData.taskType === 'food_drink' ? 'Food/Drink' :
+                                        viewData.taskType === 'general_support' ? 'General Support' :
+                                          viewData.taskType === 'house_keeping' ? 'House Keeping' :
+                                            viewData.taskType === 'incident_fall' ? 'Incident/Fall' :
+                                              viewData.taskType === 'medicine_prn' ? 'Medicine PRN' :
+                                                viewData.taskType === 'muac' ? 'MUAC' :
+                                                  viewData.taskType === 'observation' ? 'Observation' :
+                                                    viewData.taskType === 'one_to_one' ? 'One to One' :
+                                                      viewData.taskType === 'oral_care' ? 'Oral Care' :
+                                                        viewData.taskType === 'oxygen' ? 'Oxygen' :
+                                                          viewData.taskType === 'person_centred_task' ? 'Person Centred Task' :
+                                                            viewData.taskType === 'physical_intervention' ? 'Physical Intervention' :
+                                                              viewData.taskType === 'pulse' ? 'Pulse' :
+                                                                viewData.taskType === 're_position' ? 'Re-position' :
+                                                                  viewData.taskType === 'spending_money' ? 'Spending/Money' :
+                                                                    viewData.taskType === 'stool' ? 'Stool' :
+                                                                      viewData.taskType === 'temperature' ? 'Temperature' :
+                                                                        viewData.taskType === 'visit' ? 'Visit' :
+                                                                          viewData.taskType === 'weight' ? 'Weight' :
+                                                                            viewData.taskType === 'follow_up' ? 'Follow Up' :
+                                                                              'Task'} Task Details
                     </h2>
                   </div>
-                  <button onClick={()=>setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 {viewData.taskType === 'bathing' ? (
-                  <BathingTaskView data={viewData} onClose={()=>setShowViewModal(false)} />
+                  <BathingTaskView data={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'behaviour' ? (
-                  <BehaviourTaskView data={viewData} onClose={()=>setShowViewModal(false)} />
+                  <BehaviourTaskView data={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'bloodtest' ? (
-                  <BloodTestTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <BloodTestTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'blood_pressure' ? (
-                  <BloodPressureTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <BloodPressureTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'comfort_check' ? (
-                  <ComfortCheckTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <ComfortCheckTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'communication_notes' ? (
-                  <CommunicationNotesTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <CommunicationNotesTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'encouragement' ? (
                   <EncouragementTaskView task={viewData} />
                 ) : viewData.taskType === 'family_photo_message' ? (
-                  <FamilyPhotoMessageTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <FamilyPhotoMessageTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'food_drink' ? (
-                  <FoodDrinkTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <FoodDrinkTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'general_support' ? (
-                  <GeneralSupportTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <GeneralSupportTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'house_keeping' ? (
-                  <HouseKeepingTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <HouseKeepingTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'incident_fall' ? (
-                  <IncidentFallTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <IncidentFallTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'follow_up' ? (
-                  <FollowUpTaskView task={viewData} onClose={()=>setShowViewModal(false)} />
+                  <FollowUpTaskView task={viewData} onClose={() => setShowViewModal(false)} />
                 ) : viewData.taskType === 'medicine_prn' ? (
                   <MedicinePrnTaskView task={viewData} />
                 ) : viewData.taskType === 'muac' ? (
@@ -4261,7 +4245,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
                 <div className="p-6">
                   <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Delete Task</h3>
                   <p className="text-sm text-gray-600 text-center mb-6">
@@ -4292,7 +4276,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Manage Behaviour Triggers</h3>
-                  <button onClick={()=>setShowManageTriggersModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowManageTriggersModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
                 <div className="space-y-3">
                   {Array.isArray(behaviourTriggers) && behaviourTriggers.map(trigger => (
@@ -4315,7 +4299,7 @@ export default function DailyTasksPage() {
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
                         ) : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         )}
                       </button>
                     </div>
@@ -4325,7 +4309,7 @@ export default function DailyTasksPage() {
                   )}
                 </div>
                 <div className="flex justify-end mt-6 pt-4 border-t">
-                  <button onClick={()=>setShowManageTriggersModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                  <button onClick={() => setShowManageTriggersModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
                     Close
                   </button>
                 </div>
@@ -4339,7 +4323,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Manage Support Types</h3>
-                  <button onClick={()=>setShowSupportListModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowSupportListModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
 
                 {/* Add New Support Type */}
@@ -4392,7 +4376,7 @@ export default function DailyTasksPage() {
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
                         ) : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         )}
                       </button>
                     </div>
@@ -4402,7 +4386,7 @@ export default function DailyTasksPage() {
                   )}
                 </div>
                 <div className="flex justify-end mt-6 pt-4 border-t">
-                  <button onClick={()=>setShowSupportListModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                  <button onClick={() => setShowSupportListModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
                     Close
                   </button>
                 </div>
@@ -4416,7 +4400,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Manage Incident Types</h3>
-                  <button onClick={()=>setShowIncidentTypesModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowIncidentTypesModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
 
                 {/* Add New Incident Type */}
@@ -4473,7 +4457,7 @@ export default function DailyTasksPage() {
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                           ) : (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                           )}
                         </button>
                       )}
@@ -4484,7 +4468,7 @@ export default function DailyTasksPage() {
                   )}
                 </div>
                 <div className="flex justify-end mt-6 pt-4 border-t">
-                  <button onClick={()=>setShowIncidentTypesModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                  <button onClick={() => setShowIncidentTypesModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
                     Close
                   </button>
                 </div>
@@ -4498,7 +4482,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Manage Incident Locations</h3>
-                  <button onClick={()=>setShowIncidentLocationsModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowIncidentLocationsModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
                 </div>
 
                 {/* Add New Location */}
@@ -4551,7 +4535,7 @@ export default function DailyTasksPage() {
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
                         ) : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         )}
                       </button>
                     </div>
@@ -4561,7 +4545,7 @@ export default function DailyTasksPage() {
                   )}
                 </div>
                 <div className="flex justify-end mt-6 pt-4 border-t">
-                  <button onClick={()=>setShowIncidentLocationsModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
+                  <button onClick={() => setShowIncidentLocationsModal(false)} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all">
                     Close
                   </button>
                 </div>
@@ -4582,7 +4566,7 @@ export default function DailyTasksPage() {
                     ✕
                   </button>
                 </div>
-                
+
                 <div className="flex-1 overflow-auto p-6">
                   {isLoadingReport ? (
                     <div className="flex items-center justify-center py-12">
@@ -4669,11 +4653,10 @@ export default function DailyTasksPage() {
                                   <div className="text-xs text-gray-500">{taskTime}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                    completedStatus === 'Completed' 
-                                      ? 'bg-green-100 text-green-800' 
+                                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${completedStatus === 'Completed'
+                                      ? 'bg-green-100 text-green-800'
                                       : 'bg-yellow-100 text-yellow-800'
-                                  }`}>
+                                    }`}>
                                     {completedStatus}
                                   </span>
                                   {task.emotion && (
@@ -4699,7 +4682,7 @@ export default function DailyTasksPage() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="p-6 border-t border-gray-200 flex justify-between items-center">
                   <div className="text-sm text-gray-600">
                     Total Tasks: <span className="font-semibold text-gray-900">{allTasksForReport.length}</span>

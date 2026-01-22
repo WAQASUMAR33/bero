@@ -28,7 +28,17 @@ const nextConfig = {
   // Empty config allows webpack to be used when needed
   turbopack: {},
   // Explicitly set the base path to current directory
-  basePath: ''
+  basePath: '',
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'rizwancars.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

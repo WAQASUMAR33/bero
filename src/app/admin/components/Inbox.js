@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import Chat from './Chat';
 
 export default function Inbox({ isOpen, onClose, currentUser }) {
@@ -30,8 +31,8 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (inboxRef.current && !inboxRef.current.contains(event.target) && 
-          backdropRef.current && backdropRef.current.contains(event.target)) {
+      if (inboxRef.current && !inboxRef.current.contains(event.target) &&
+        backdropRef.current && backdropRef.current.contains(event.target)) {
         handleClose();
       }
     };
@@ -76,7 +77,7 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
       setIsLoading(true);
       const token = localStorage.getItem('token');
       if (!token) return;
-      
+
       const response = await fetch('/api/conversations', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -98,7 +99,7 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      
+
       const response = await fetch('/api/users', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -118,19 +119,19 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
 
   const handleStartConversation = async (userId) => {
     if (isStartingConversation) return; // Prevent multiple clicks
-    
+
     try {
       setError(null);
       setIsStartingConversation(true);
       setSelectedUserId(userId);
-      
+
       const token = localStorage.getItem('token');
       if (!token) {
         setError('Authentication required. Please log in again.');
         setIsStartingConversation(false);
         return;
       }
-      
+
       const response = await fetch('/api/conversations', {
         method: 'POST',
         headers: {
@@ -152,12 +153,12 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
       } else {
         // Handle API errors
         let errorMessage = data.error || 'Failed to start conversation. Please try again.';
-        
+
         // Provide helpful message for Prisma errors
         if (data.code === 'PRISMA_NOT_GENERATED') {
           errorMessage = 'Database setup required. Please contact your administrator to run database migrations.';
         }
-        
+
         setError(errorMessage);
         console.error('Error starting conversation:', errorMessage);
       }
@@ -199,18 +200,16 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
       {/* Backdrop with smooth fade */}
       <div
         ref={backdropRef}
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity ease-out ${
-          isAnimating ? 'opacity-100 duration-300' : 'opacity-0 duration-300'
-        }`}
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity ease-out ${isAnimating ? 'opacity-100 duration-300' : 'opacity-0 duration-300'
+          }`}
         onClick={handleClose}
       />
 
       {/* Inbox Panel with smooth slide */}
       <div
         ref={inboxRef}
-        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col transform transition-all ease-out ${
-          isAnimating ? 'translate-x-0 opacity-100 duration-300' : 'translate-x-full opacity-0 duration-300'
-        }`}
+        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col transform transition-all ease-out ${isAnimating ? 'translate-x-0 opacity-100 duration-300' : 'translate-x-full opacity-0 duration-300'
+          }`}
         style={{
           transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
         }}
@@ -307,10 +306,20 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
                         <div className="flex items-center space-x-3">
                           {/* Avatar */}
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white font-semibold">
-                              {otherParticipant?.user?.firstName?.[0] || 'U'}
-                              {otherParticipant?.user?.lastName?.[0] || ''}
-                            </div>
+                            {otherParticipant?.user?.profilePic ? (
+                              <Image
+                                src={otherParticipant.user.profilePic}
+                                alt="Profile"
+                                width={48}
+                                height={48}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white font-semibold">
+                                {otherParticipant?.user?.firstName?.[0] || 'U'}
+                                {otherParticipant?.user?.lastName?.[0] || ''}
+                              </div>
+                            )}
                           </div>
 
                           {/* Content */}
@@ -399,30 +408,40 @@ export default function Inbox({ isOpen, onClose, currentUser }) {
                         {filteredUsers.map((user) => {
                           const isSelected = selectedUserId === user.id;
                           const isProcessing = isStartingConversation && isSelected;
-                          
+
                           return (
                             <button
                               key={user.id}
                               onClick={() => handleStartConversation(user.id)}
                               disabled={isStartingConversation}
-                              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all text-left ${
-                                isProcessing
+                              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all text-left ${isProcessing
                                   ? 'bg-blue-50 cursor-wait'
                                   : isSelected
-                                  ? 'bg-blue-100'
-                                  : 'hover:bg-gray-50'
-                              } ${isStartingConversation && !isSelected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    ? 'bg-blue-100'
+                                    : 'hover:bg-gray-50'
+                                } ${isStartingConversation && !isSelected ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              <div className={`w-10 h-10 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white font-semibold flex-shrink-0 ${
-                                isProcessing ? 'animate-pulse' : ''
-                              }`}>
-                                {isProcessing ? (
-                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                              <div className={`w-10 h-10 rounded-full flex-shrink-0 overflow-hidden ${isProcessing ? 'animate-pulse' : ''
+                                }`}>
+                                {user.profilePic ? (
+                                  <Image
+                                    src={user.profilePic}
+                                    alt="Profile"
+                                    width={40}
+                                    height={40}
+                                    className="w-full h-full object-cover"
+                                  />
                                 ) : (
-                                  <>
-                                    {user.firstName?.[0] || 'U'}
-                                    {user.lastName?.[0] || ''}
-                                  </>
+                                  <div className="w-full h-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white font-semibold">
+                                    {isProcessing ? (
+                                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                    ) : (
+                                      <>
+                                        {user.firstName?.[0] || 'U'}
+                                        {user.lastName?.[0] || ''}
+                                      </>
+                                    )}
+                                  </div>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">

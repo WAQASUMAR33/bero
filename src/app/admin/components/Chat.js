@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 export default function Chat({ conversation, currentUser, onBack }) {
   const [messages, setMessages] = useState([]);
@@ -50,7 +51,7 @@ export default function Chat({ conversation, currentUser, onBack }) {
     try {
       const token = localStorage.getItem('token');
       if (!token || signal?.aborted) return;
-      
+
       const response = await fetch(`/api/conversations/${conversation.id}/messages`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -80,7 +81,7 @@ export default function Chat({ conversation, currentUser, onBack }) {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      
+
       const response = await fetch(`/api/conversations/${conversation.id}/messages`, {
         method: 'POST',
         headers: {
@@ -155,9 +156,21 @@ export default function Chat({ conversation, currentUser, onBack }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-semibold">
-            {otherParticipant?.user?.firstName?.[0] || 'U'}
-            {otherParticipant?.user?.lastName?.[0] || ''}
+          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+            {otherParticipant?.user?.profilePic ? (
+              <Image
+                src={otherParticipant.user.profilePic}
+                alt="User"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-white/20 flex items-center justify-center text-white font-semibold">
+                {otherParticipant?.user?.firstName?.[0] || 'U'}
+                {otherParticipant?.user?.lastName?.[0] || ''}
+              </div>
+            )}
           </div>
           <div>
             <h3 className="font-semibold">
@@ -219,18 +232,29 @@ export default function Chat({ conversation, currentUser, onBack }) {
                       <div className={`flex items-end space-x-2 max-w-[75%] ${isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''}`}>
                         {/* Avatar (only for received messages) */}
                         {!isOwnMessage && (
-                          <div className={`w-8 h-8 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 ${showAvatar ? 'opacity-100' : 'opacity-0'}`}>
-                            {otherParticipant?.user?.firstName?.[0] || 'U'}
-                            {otherParticipant?.user?.lastName?.[0] || ''}
+                          <div className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden ${showAvatar ? 'opacity-100' : 'opacity-0'}`}>
+                            {otherParticipant?.user?.profilePic ? (
+                              <Image
+                                src={otherParticipant.user.profilePic}
+                                alt="User"
+                                width={32}
+                                height={32}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white text-xs font-semibold">
+                                {otherParticipant?.user?.firstName?.[0] || 'U'}
+                                {otherParticipant?.user?.lastName?.[0] || ''}
+                              </div>
+                            )}
                           </div>
                         )}
 
                         {/* Message Bubble */}
-                        <div className={`rounded-2xl px-4 py-2 shadow-sm ${
-                          isOwnMessage
+                        <div className={`rounded-2xl px-4 py-2 shadow-sm ${isOwnMessage
                             ? 'bg-[#224fa6] text-white rounded-tr-sm'
                             : 'bg-white text-gray-900 rounded-tl-sm border border-gray-200'
-                        }`}>
+                          }`}>
                           <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                           <p className={`text-xs mt-1 ${isOwnMessage ? 'text-white/70' : 'text-gray-500'}`}>
                             {formatTime(message.createdAt)}

@@ -13,6 +13,7 @@ export default function Header({ user }) {
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const router = useRouter();
   const dropdownRef = useRef(null);
   const pollingIntervalRef = useRef(null);
@@ -69,6 +70,7 @@ export default function Header({ user }) {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
+        console.log('Fetched notifications:', data);
         if (data.success) {
           setNotifications(data.data);
           setUnreadCount(data.unreadCount);
@@ -80,6 +82,31 @@ export default function Header({ user }) {
 
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch unread message count
+  const fetchUnreadMessages = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const res = await fetch('/api/conversations', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.conversations) {
+        const totalUnread = data.conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+        setTotalUnreadMessages(totalUnread);
+      }
+    } catch (error) {
+      console.error('Error fetching unread messages:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadMessages();
+    const interval = setInterval(fetchUnreadMessages, 30000); // Poll every 30s
     return () => clearInterval(interval);
   }, []);
 
@@ -248,13 +275,17 @@ export default function Header({ user }) {
             {/* Messages */}
             <button
               onClick={() => setShowInbox(true)}
-              className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group"
+              className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group rounded-lg hover:bg-gray-50"
             >
               <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              {/* Message count - can be updated based on unread messages */}
-              {/* <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">2</span> */}
+              {/* Message count badge */}
+              {totalUnreadMessages > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold px-1.5 animate-pulse ring-2 ring-white">
+                  {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -263,7 +294,11 @@ export default function Header({ user }) {
       {/* Inbox Component */}
       <Inbox
         isOpen={showInbox}
-        onClose={() => setShowInbox(false)}
+        onClose={() => {
+          setShowInbox(false);
+          // Refresh unread count when inbox closes
+          fetchUnreadMessages();
+        }}
         currentUser={user}
       />
 

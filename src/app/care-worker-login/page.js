@@ -31,32 +31,9 @@ export default function CareWorkerLoginPage() {
             if (response.ok && data.success) {
                 const userRoleName = data.user?.role?.name;
                 // Allowed roles for this separate dashboard
-                // Assuming typical names based on "Care Worker"
-                const allowedRoles = ['CAREWORKER', 'SUPPORT_WORKER', 'SENIOR_CAREWORKER'];
-
-                // If the user effectively HAS access to the app, they can use this dashboard now.
-                // If it's an admin, maybe we should let them in or redirect them to main admin?
-                // User asked for "separate login page", implying strict separation perhaps.
-                // Let's allow Care Workers specifically.
-
-                // Note: I need to verify actual role names from DB or schema if possible, 
-                // but 'CAREWORKER' appeared in schema comments: `name String @unique // e.g., "ADMIN", "CAREWORKER"`
-
-                // Let's broaden the check to exclude Admin/Office roles if we want strict separation, 
-                // or just allow non-admin. 
-                // For now, I'll allow everyone but if it's an Admin role, I'll redirect to /admin? 
-                // No, user said "separate dashboard ... care worker". 
-
                 if (['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'].includes(userRoleName)) {
-                    // Optional: Redirect admins to their own portal if they try to login here?
-                    // Or just let them view as well? 
-                    // Usually admins want to see what care workers see.
-                    // But for now let's focus on Care Workers.
+                    // Admin roles can access, but main dashboard is /admin
                 }
-
-                // We accept the login if it's successful and redirect to /care-worker
-                // We might want to block strict office roles if the user insists on separation.
-                // For safety, let's just log them in. 
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
@@ -78,9 +55,9 @@ export default function CareWorkerLoginPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-            {/* Background Decorations */}
-            <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-teal-400/20 to-emerald-400/20 rounded-b-[3rem] -z-10" />
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-teal-100 rounded-full blur-3xl opacity-50 -translate-y-12 translate-x-12 -z-10" />
+            {/* Background Decorations - Matching Admin Theme Blue */}
+            <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-[#224fa6]/20 to-[#3270e9]/20 rounded-b-[3rem] -z-10" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-100 rounded-full blur-3xl opacity-50 -translate-y-12 translate-x-12 -z-10" />
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center">
@@ -127,7 +104,7 @@ export default function CareWorkerLoginPage() {
                                     required
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm bg-slate-50/50 transition-all"
+                                    className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-[#224fa6] focus:border-[#224fa6] sm:text-sm bg-slate-50/50 transition-all"
                                     placeholder="name@company.com"
                                 />
                             </div>
@@ -146,7 +123,7 @@ export default function CareWorkerLoginPage() {
                                     required
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm bg-slate-50/50 transition-all pr-12"
+                                    className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-[#224fa6] focus:border-[#224fa6] sm:text-sm bg-slate-50/50 transition-all pr-12"
                                     placeholder="••••••••"
                                 />
                                 <button
@@ -174,7 +151,7 @@ export default function CareWorkerLoginPage() {
                                     id="remember-me"
                                     name="remember-me"
                                     type="checkbox"
-                                    className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-[#224fa6] focus:ring-[#224fa6] border-gray-300 rounded"
                                 />
                                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                                     Remember me
@@ -182,7 +159,7 @@ export default function CareWorkerLoginPage() {
                             </div>
 
                             <div className="text-sm">
-                                <a href="#" className="font-medium text-teal-600 hover:text-teal-500">
+                                <a href="#" className="font-medium text-[#224fa6] hover:text-[#1e438f]">
                                     Forgot password?
                                 </a>
                             </div>
@@ -192,7 +169,7 @@ export default function CareWorkerLoginPage() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                                className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-[#224fa6] hover:bg-[#1e438f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#224fa6] disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
                             >
                                 {isLoading ? (
                                     <div className="flex items-center gap-2">

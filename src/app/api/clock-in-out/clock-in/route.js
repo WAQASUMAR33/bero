@@ -67,7 +67,7 @@ export async function POST(request) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const body = await request.json();
-    
+
     const {
       shiftAssignmentId,
       shiftId, // Allow shiftId as alternative to shiftAssignmentId
@@ -89,7 +89,7 @@ export async function POST(request) {
 
     // If shiftId is provided instead of shiftAssignmentId, try to find or create assignment
     if (shiftId && !shiftAssignmentId) {
-      
+
       // First try to find existing assignment
       assignment = await prisma.shiftAssignment.findFirst({
         where: {
@@ -106,7 +106,7 @@ export async function POST(request) {
           }
         }
       });
-      
+
       // If no assignment exists, try to create one
       if (!assignment) {
         const shift = await prisma.shift.findUnique({
@@ -115,7 +115,7 @@ export async function POST(request) {
             serviceSeeker: true
           }
         });
-        
+
         if (shift) {
           // Verify the shift is valid for this date (including recurrence pattern)
           if (doesDateMatchRecurrence(shift, clockInDate)) {
@@ -144,7 +144,7 @@ export async function POST(request) {
           }
         }
       }
-      
+
       if (assignment) {
         finalShiftAssignmentId = assignment.id;
         if (!finalServiceSeekerId && assignment.shift) {
@@ -167,7 +167,7 @@ export async function POST(request) {
       if (!assignment) {
         // Shift assignment not found - try to find or create assignment
         console.warn(`Shift assignment ${shiftAssignmentId} not found, attempting to find or create assignment`);
-        
+
         // First, if shiftId is provided, try to find or create assignment for that shift
         if (shiftId) {
           const shift = await prisma.shift.findUnique({
@@ -176,7 +176,7 @@ export async function POST(request) {
               serviceSeeker: true
             }
           });
-          
+
           if (shift) {
             // Check if assignment exists
             assignment = await prisma.shiftAssignment.findFirst({
@@ -194,7 +194,7 @@ export async function POST(request) {
                 }
               }
             });
-            
+
             // If no assignment exists, create one
             if (!assignment) {
               // Verify the shift is valid for this date (including recurrence pattern)
@@ -223,7 +223,7 @@ export async function POST(request) {
             }
           }
         }
-        
+
         // If still no assignment, try to find any assignment for this user on this date
         if (!assignment) {
           assignment = await prisma.shiftAssignment.findFirst({
@@ -244,7 +244,7 @@ export async function POST(request) {
             }
           });
         }
-        
+
         if (assignment) {
           finalShiftAssignmentId = assignment.id;
           if (!finalServiceSeekerId && assignment.shift) {
@@ -294,21 +294,21 @@ export async function POST(request) {
                 }
               } catch (createError) {
                 console.error('Failed to create shift assignment:', createError);
-                return NextResponse.json({ 
-                  success: false, 
-                  error: 'Shift assignment not found. Please ensure you are assigned to this shift.' 
+                return NextResponse.json({
+                  success: false,
+                  error: 'Shift assignment not found. Please ensure you are assigned to this shift.'
                 }, { status: 404 });
               }
             } else {
-              return NextResponse.json({ 
-                success: false, 
-                error: 'Shift assignment not found. Please ensure you are assigned to this shift.' 
+              return NextResponse.json({
+                success: false,
+                error: 'Shift assignment not found. Please ensure you are assigned to this shift.'
               }, { status: 404 });
             }
           } else {
-            return NextResponse.json({ 
-              success: false, 
-              error: 'Shift assignment not found. Please ensure you are assigned to this shift.' 
+            return NextResponse.json({
+              success: false,
+              error: 'Shift assignment not found. Please ensure you are assigned to this shift.'
             }, { status: 404 });
           }
         }
@@ -325,12 +325,12 @@ export async function POST(request) {
             assignmentUserIdType: typeof assignment.userId,
             decodedUserIdType: typeof decoded.userId
           });
-          return NextResponse.json({ 
-            success: false, 
-            error: 'This shift assignment does not belong to you' 
+          return NextResponse.json({
+            success: false,
+            error: 'This shift assignment does not belong to you'
           }, { status: 403 });
         }
-        
+
         finalShiftAssignmentId = assignment.id;
         if (!finalServiceSeekerId && assignment.shift) {
           finalServiceSeekerId = assignment.shift.serviceSeekerId;
@@ -366,9 +366,9 @@ export async function POST(request) {
 
     // Validate that we have an assignment before proceeding
     if (!assignment || !finalShiftAssignmentId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'No valid shift assignment found. Please ensure you are assigned to a shift for this date.' 
+      return NextResponse.json({
+        success: false,
+        error: 'No valid shift assignment found. Please ensure you are assigned to a shift for this date.'
       }, { status: 404 });
     }
 
@@ -385,15 +385,15 @@ export async function POST(request) {
     if (existingRecord) {
       if (existingRecord.clockOutTime === null) {
         // Active clock in exists
-        return NextResponse.json({ 
-          success: false, 
-          error: 'You have already clocked in for this shift. Please clock out first before clocking in again.' 
+        return NextResponse.json({
+          success: false,
+          error: 'You have already clocked in for this shift. Please clock out first before clocking in again.'
         }, { status: 400 });
       } else {
         // Already clocked in and out for this shift
-        return NextResponse.json({ 
-          success: false, 
-          error: 'You have already completed this shift. You cannot clock in again to the same shift assignment.' 
+        return NextResponse.json({
+          success: false,
+          error: 'You have already completed this shift. You cannot clock in again to the same shift assignment.'
         }, { status: 400 });
       }
     }
@@ -406,7 +406,7 @@ export async function POST(request) {
       const [startHour, startMin] = assignment.shift.startTime.split(':').map(Number);
       const expectedClockIn = new Date(shiftDate);
       expectedClockIn.setHours(startHour, startMin, 0, 0);
-      
+
       const clockInTime = new Date();
       // Allow 15 minutes grace period
       const gracePeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -445,6 +445,45 @@ export async function POST(request) {
       }
     });
 
+    // Notify admins if Late
+    if (isLate) {
+      try {
+        if (prisma.notification) {
+          // Find admins and super admins
+          const admins = await prisma.user.findMany({
+            where: {
+              role: {
+                name: {
+                  in: ['ADMIN', 'DIRECTOR', 'REGISTER_MANAGER', 'HR'] // Check suitable roles
+                }
+              },
+              status: 'CURRENT'
+            },
+            select: { id: true }
+          });
+
+          if (admins.length > 0) {
+            const empName = `${clockInOut.user.firstName} ${clockInOut.user.lastName}`;
+
+            await prisma.notification.createMany({
+              data: admins.map(admin => ({
+                userId: admin.id,
+                title: 'Late Clock In Alert',
+                message: `${empName} clocked in late.`,
+                type: 'WARNING',
+                link: '/admin/clock-in-out',
+                isRead: false
+              }))
+            });
+            console.log(`Created late clock-in notifications for ${admins.length} admins`);
+          }
+        }
+      } catch (notifError) {
+        console.error('Failed to create late clock-in notification:', notifError);
+        // Don't fail the request
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: clockInOut,
@@ -453,18 +492,18 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('POST /clock-in-out/clock-in error:', error);
-    
+
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Invalid or expired token' 
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid or expired token'
       }, { status: 401 });
     }
 
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to clock in', 
-      details: error.message 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to clock in',
+      details: error.message
     }, { status: 500 });
   }
 }

@@ -99,8 +99,17 @@ export default function CareWorkerLayout({ children }) {
                             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                             className="w-full flex items-center hover:bg-gray-50 rounded-lg p-2 transition-colors text-left"
                         >
-                            <div className="w-10 h-10 bg-[#224fa6] rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                                {user.firstName?.[0]}{user.lastName?.[0]}
+                            <div className="w-10 h-10 bg-[#224fa6] rounded-full flex items-center justify-center text-white font-bold text-sm mr-3 overflow-hidden relative">
+                                {user.profilePic ? (
+                                    <Image
+                                        src={user.profilePic}
+                                        alt="Profile"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <span>{user.firstName?.[0]}{user.lastName?.[0]}</span>
+                                )}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 truncate">{user.firstName} {user.lastName}</p>
@@ -125,8 +134,17 @@ export default function CareWorkerLayout({ children }) {
                 {/* HEADER - Visible on Desktop & Mobile */}
                 <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30 px-4 lg:px-6 py-3 lg:py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3 lg:hidden">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#224fa6] font-bold text-xs ring-2 ring-white shadow-sm">
-                            {user.firstName?.[0]}{user.lastName?.[0]}
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#224fa6] font-bold text-xs ring-2 ring-white shadow-sm overflow-hidden relative">
+                            {user.profilePic ? (
+                                <Image
+                                    src={user.profilePic}
+                                    alt="Profile"
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <span>{user.firstName?.[0]}{user.lastName?.[0]}</span>
+                            )}
                         </div>
                         <div>
                             <h1 className="text-sm font-bold text-gray-900 leading-tight">Hi, {user.firstName}</h1>

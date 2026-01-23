@@ -61,12 +61,12 @@ export default function CareWorkerLoginPage() {
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center">
-                    <div className="rounded-2xl shadow-lg bg-white p-3 mb-6">
+                    <div className="mb-6">
                         <Image
                             src="/assets/logo2.png"
                             alt="Logo"
-                            width={120}
-                            height={120}
+                            width={240}
+                            height={240}
                             className="object-contain"
                         />
                     </div>
@@ -195,13 +195,7 @@ export default function CareWorkerLoginPage() {
                                 </span>
                             </div>
                         </div>
-                        <div className="mt-6 flex justify-center space-x-6 text-gray-400">
-                            {/* Secure icons or logos */}
-                            <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path fillRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" clipRule="evenodd" />
-                            </svg>
-                            {/* <span className="text-xs self-center">New Beeru Care Systems</span> */}
-                        </div>
+
                     </div>
                 </div>
             </div>

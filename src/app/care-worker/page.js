@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import Link from 'next/link';
 
 export default function CareWorkerDashboard() {
     const [user, setUser] = useState(null);
@@ -17,6 +17,10 @@ export default function CareWorkerDashboard() {
     // Modal State
     const [showClockInModal, setShowClockInModal] = useState(false);
     const [selectedShiftForClockIn, setSelectedShiftForClockIn] = useState(null);
+
+    // Clock Out Modal State
+    const [showClockOutModal, setShowClockOutModal] = useState(false);
+    const [isEarlyExit, setIsEarlyExit] = useState(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -70,7 +74,6 @@ export default function CareWorkerDashboard() {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            // Get last 30 days or just recent 5
             const response = await fetch(`/api/clock-in-out?view=my`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -78,7 +81,6 @@ export default function CareWorkerDashboard() {
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {
-                    // Sort by date desc and take top 5
                     const history = (data.data || [])
                         .sort((a, b) => new Date(b.clockInTime) - new Date(a.clockInTime))
                         .slice(0, 5);
@@ -148,19 +150,36 @@ export default function CareWorkerDashboard() {
                 setShowClockInModal(false);
                 setSelectedShiftForClockIn(null);
                 await fetchShifts();
-                await fetchAttendanceHistory(); // Refresh history slightly
+                await fetchAttendanceHistory();
             } else {
                 setError(data.error || 'Failed to clock in');
-                // Keep modal open to show error? Or close? Let's keep open but show error in modal if possible, 
-                // but for now we put error in main dashboard state. 
-                // Better UX: Close modal on success only.
-                if (!data.success) setShowClockInModal(false); // Close on fail to show global error
+                if (!data.success) setShowClockInModal(false);
             }
         } catch (err) {
             setError('Network error during clock in');
             setShowClockInModal(false);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const initiateClockOut = (shift) => {
+        if (!shift) return;
+
+        // Check for early exit
+        const now = new Date();
+        const expectedEnd = new Date(shift.expectedEnd);
+
+        // We consider it early if current time is strictly before expected end time
+        // You might want a buffer (e.g., 5 mins), but user said "if user try to clock out early"
+        const isEarly = now < expectedEnd;
+
+        if (isEarly) {
+            setIsEarlyExit(true);
+            setShowClockOutModal(true);
+        } else {
+            // Not early, straightforward clock out
+            handleClockOut(shift.clockInOutId);
         }
     };
 
@@ -193,11 +212,15 @@ export default function CareWorkerDashboard() {
             if (response.ok && data.success) {
                 await fetchShifts();
                 await fetchAttendanceHistory();
+                setShowClockOutModal(false); // Make sure to close modal if it was open
+                setIsEarlyExit(false);
             } else {
                 setError(data.error || 'Failed to clock out');
+                setShowClockOutModal(false);
             }
         } catch (err) {
             setError('Network error during clock out');
+            setShowClockOutModal(false);
         } finally {
             setLoading(false);
         }
@@ -236,7 +259,7 @@ export default function CareWorkerDashboard() {
             color: activeShift ? 'bg-red-50 text-red-600' : 'bg-indigo-50 text-indigo-600',
             action: () => {
                 if (activeShift) {
-                    handleClockOut(activeShift.clockInOutId);
+                    initiateClockOut(activeShift);
                 } else if (nextUpcomingShift) {
                     initiateClockIn(nextUpcomingShift);
                 } else {
@@ -325,7 +348,7 @@ export default function CareWorkerDashboard() {
                         <div className="mt-8">
                             {activeShift ? (
                                 <button
-                                    onClick={() => handleClockOut(activeShift.clockInOutId)}
+                                    onClick={() => initiateClockOut(activeShift)}
                                     disabled={loading}
                                     className="w-full bg-white text-red-600 font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:bg-red-50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 group/btn disabled:opacity-70"
                                 >
@@ -379,7 +402,7 @@ export default function CareWorkerDashboard() {
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-gray-900">Recent Attendance</h3>
                     {attendanceHistory.length > 5 && (
-                        <button className="text-[#224fa6] text-sm font-semibold hover:text-blue-700">View All</button>
+                        <Link href="/care-worker/attendance" className="text-[#224fa6] text-sm font-semibold hover:text-blue-700">View All</Link>
                     )}
                 </div>
                 {loadingHistory ? (
@@ -457,7 +480,7 @@ export default function CareWorkerDashboard() {
                                     {formatTimeRange(selectedShiftForClockIn.expectedStart, selectedShiftForClockIn.expectedEnd)}
                                 </span>
                             </div>
-                            {selectedShiftForClockIn.notes && ( // Assuming notes might exist or fallback
+                            {selectedShiftForClockIn.notes && (
                                 <div className="pt-2 border-t border-slate-200 mt-2">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Notes</span>
                                     <p className="text-sm text-slate-600 bg-white p-2 rounded border border-slate-100">
@@ -486,6 +509,54 @@ export default function CareWorkerDashboard() {
                                         Clock In
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Clock Out / Early Exit Modal */}
+            {showClockOutModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+                    <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 scale-in-95 animate-in zoom-in-95 border-t-4 border-red-500">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-800">
+                                {isEarlyExit ? 'Leaving Early?' : 'Clock Out?'}
+                            </h3>
+                            <p className="text-slate-500 text-sm mt-1 max-w-[260px] mx-auto">
+                                {isEarlyExit
+                                    ? 'It looks like your shift hasn\'t finished yet. Are you sure you want to clock out early?'
+                                    : 'Confirm you want to end your shift now.'}
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={() => setShowClockOutModal(false)}
+                                className="py-3 px-4 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => handleClockOut(activeShift?.clockInOutId)}
+                                disabled={loading}
+                                className="py-3 px-4 rounded-xl bg-red-600 font-bold text-white hover:bg-red-700 shadow-lg shadow-red-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                            >
+                                {loading ? (
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        {isEarlyExit ? 'Yes, Clock Out' : 'Clock Out'}
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                         </svg>
                                     </>
                                 )}

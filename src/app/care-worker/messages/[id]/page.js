@@ -26,7 +26,7 @@ export default function ChatPage() {
 
         const interval = setInterval(() => {
             if (document.visibilityState === 'visible') fetchMessages(true);
-        }, 3000);
+        }, 15000);
 
         return () => clearInterval(interval);
     }, [conversationId]);

@@ -20,6 +20,11 @@ export default function CareWorkerDashboard() {
     const [showClockInModal, setShowClockInModal] = useState(false);
     const [selectedShiftForClockIn, setSelectedShiftForClockIn] = useState(null);
 
+    // Clock In Location State
+    const [currentLocation, setCurrentLocation] = useState(null);
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+    const [locationError, setLocationError] = useState(null);
+
     // Clock Out Modal State
     const [showClockOutModal, setShowClockOutModal] = useState(false);
     const [isEarlyExit, setIsEarlyExit] = useState(false);
@@ -113,10 +118,25 @@ export default function CareWorkerDashboard() {
         });
     };
 
-    const initiateClockIn = (shift) => {
+    const initiateClockIn = async (shift) => {
         if (!shift) return;
         setSelectedShiftForClockIn(shift);
         setShowClockInModal(true);
+
+        // Reset location state
+        setCurrentLocation(null);
+        setLocationError(null);
+        setIsFetchingLocation(true);
+
+        try {
+            const loc = await getCurrentLocation();
+            setCurrentLocation(loc);
+        } catch (err) {
+            console.error("Location fetch failed", err);
+            setLocationError("Could not fetch location. Please ensure GPS is enabled.");
+        } finally {
+            setIsFetchingLocation(false);
+        }
     };
 
     const confirmClockIn = async () => {
@@ -124,15 +144,21 @@ export default function CareWorkerDashboard() {
         setLoading(true);
         setError(null);
 
-        try {
-            const token = localStorage.getItem('token');
-            let location = "Unknown";
+        // Use location if already fetched, or try fetching again if failed/missing
+        let location = currentLocation;
+
+        if (!location) {
             try {
                 location = await getCurrentLocation();
             } catch (locErr) {
-                console.warn("Location fetch failed", locErr);
+                // proceed with "Unknown" or handle error? User said "show details ... location that it fetch auto"
+                // We will proceed but logged
             }
+        }
+        if (!location) location = "Unknown";
 
+        try {
+            const token = localStorage.getItem('token');
             const response = await fetch('/api/clock-in-out/clock-in', {
                 method: 'POST',
                 headers: {
@@ -173,7 +199,6 @@ export default function CareWorkerDashboard() {
         const expectedEnd = new Date(shift.expectedEnd);
 
         // We consider it early if current time is strictly before expected end time
-        // You might want a buffer (e.g., 5 mins), but user said "if user try to clock out early"
         const isEarly = now < expectedEnd;
 
         if (isEarly) {
@@ -239,21 +264,36 @@ export default function CareWorkerDashboard() {
     };
 
     const formatTimeRange = (start, end) => {
-        if (!start || !end) return "--:--";
-        const s = new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const e = new Date(end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        return `${s} - ${e}`;
+        if (start && end) {
+            const s = new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const e = new Date(end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return `${s} - ${e}`;
+        }
+        // Fallback for missing timestamps
+        return "--:--";
+    };
+
+    // Robust fallback for schedule display
+    const getShiftSchedule = (shift) => {
+        if (!shift) return "--:--";
+        // Attempt 1: expectedStart/End
+        if (shift.expectedStart && shift.expectedEnd) {
+            return formatTimeRange(shift.expectedStart, shift.expectedEnd);
+        }
+        // Attempt 2: startTime/endTime
+        if (shift.startTime && shift.endTime) {
+            // These might be HH:MM strings, not timestamps
+            return `${shift.startTime.slice(0, 5)} - ${shift.endTime.slice(0, 5)}`;
+        }
+        return "Not Specified";
     };
 
     const clientName = mainCardData.serviceSeeker
         ? `${mainCardData.serviceSeeker.firstName} ${mainCardData.serviceSeeker.lastName}`
         : mainCardData.client;
 
-    const shiftTime = mainCardData.expectedStart
-        ? formatTimeRange(mainCardData.expectedStart, mainCardData.expectedEnd)
-        : mainCardData.time;
+    const shiftTime = getShiftSchedule(mainCardData);
 
-    // Quick Actions
     const quickActions = [
         {
             title: activeShift ? 'Clock Out' : 'Clock In',
@@ -480,8 +520,32 @@ export default function CareWorkerDashboard() {
                             <div className="flex justify-between text-sm">
                                 <span className="text-slate-500">Schedule</span>
                                 <span className="font-bold text-slate-700">
-                                    {formatTimeRange(selectedShiftForClockIn.expectedStart, selectedShiftForClockIn.expectedEnd)}
+                                    {getShiftSchedule(selectedShiftForClockIn)}
                                 </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-500">Location</span>
+                                <div className="text-right">
+                                    {isFetchingLocation ? (
+                                        <div className="flex items-center gap-1 text-slate-400">
+                                            <span className="w-3 h-3 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin"></span>
+                                            <span className="text-xs">Fetching...</span>
+                                        </div>
+                                    ) : locationError ? (
+                                        <span className="text-red-500 text-xs text-right max-w-[150px] block leading-tight">{locationError}</span>
+                                    ) : (
+                                        <span className="font-bold text-slate-700 flex items-center gap-1">
+                                            <svg className="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            Captured
+                                        </span>
+                                    )}
+                                    {currentLocation && (
+                                        <p className="text-[10px] text-slate-400 font-mono mt-0.5 max-w-[140px] truncate">{currentLocation}</p>
+                                    )}
+                                </div>
                             </div>
                             {selectedShiftForClockIn.notes && (
                                 <div className="pt-2 border-t border-slate-200 mt-2">
@@ -502,8 +566,8 @@ export default function CareWorkerDashboard() {
                             </button>
                             <button
                                 onClick={confirmClockIn}
-                                disabled={loading}
-                                className="py-3 px-4 rounded-xl bg-[#224fa6] font-bold text-white hover:bg-[#1e438f] shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                disabled={loading || isFetchingLocation && !currentLocation} // Wait for location if preferred, or allow submit if desired (current logic allows, but better to wait or just show loading)
+                                className="py-3 px-4 rounded-xl bg-[#224fa6] font-bold text-white hover:bg-[#1e438f] shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                             >
                                 {loading ? (
                                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

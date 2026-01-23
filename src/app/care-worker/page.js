@@ -324,9 +324,19 @@ export default function CareWorkerDashboard() {
     return (
         <div className="space-y-6 max-w-5xl mx-auto">
             {/* Header Section */}
-            <div className="flex flex-col gap-1 lg:hidden">
-                <h2 className="text-xl font-bold text-gray-900">Overview</h2>
-                <p className="text-gray-500 text-sm font-medium">{date.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            {/* Header Section */}
+            <div className="flex justify-between items-center lg:hidden">
+                <div className="flex flex-col gap-1">
+                    <h2 className="text-xl font-bold text-gray-900">Overview</h2>
+                    <p className="text-gray-500 text-sm font-medium">{date.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+                <button
+                    onClick={() => router.push('/care-worker/emergency')}
+                    className="p-2 bg-red-50 text-red-600 rounded-lg border border-red-100 shadow-sm active:scale-95 transition-all"
+                    aria-label="Emergency"
+                >
+                    <span className="text-xl animate-pulse">🚨</span>
+                </button>
             </div>
 
             {/* Error Message */}

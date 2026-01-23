@@ -90,35 +90,31 @@ export default function CareWorkerCarePlanPage() {
         try {
             const headers = { 'Authorization': `Bearer ${token}` };
 
-            const [
-                seekerRes,
-                admissionRes,
-                healthTagsRes,
-                contactsRes,
-                riskRes,
-                medsRes,
-                docsRes
-            ] = await Promise.all([
-                fetch(`/api/service-seekers/${seekerId}`, { headers }),
-                fetch(`/api/service-seekers/${seekerId}/admission`, { headers }),
-                fetch(`/api/service-seekers/${seekerId}/health-tags`, { headers }),
-                fetch(`/api/service-seekers/${seekerId}/contacts`, { headers }),
-                fetch(`/api/service-seekers/${seekerId}/risk-assessments`, { headers }),
-                fetch(`/api/service-seekers/${seekerId}/medicine-schedule-items`, { headers }),
-                fetch(`/api/service-seekers/${seekerId}/documents`, { headers }),
-            ]);
+            // Optimized: Fetch all care plan data in a single request to reduce connection overhead
+            const response = await fetch(`/api/service-seekers/${seekerId}/care-plan-summary`, { headers });
 
-            if (seekerRes.ok) setSeeker(await seekerRes.json());
-            if (admissionRes.ok) setAdmission(await admissionRes.json());
-            if (healthTagsRes.ok) setHealthTags(await healthTagsRes.json() || []);
-            if (contactsRes.ok) setContacts(await contactsRes.json() || []);
-            if (riskRes.ok) setRiskAssessments(await riskRes.json() || []);
-            if (medsRes.ok) setMedicineSchedule(await medsRes.json() || []);
-            if (docsRes.ok) setDocuments(await docsRes.json() || []);
+            if (response.ok) {
+                const json = await response.json();
+                if (json.success && json.data) {
+                    const { seeker, admission, healthTags, contacts, riskAssessments, medicineSchedule, documents } = json.data;
+
+                    setSeeker(seeker);
+                    setAdmission(admission);
+                    setHealthTags(healthTags || []);
+                    setContacts(contacts || []);
+                    setRiskAssessments(riskAssessments || []);
+                    setMedicineSchedule(medicineSchedule || []);
+                    setDocuments(documents || []);
+                } else {
+                    setError("Failed to load care plan details.");
+                }
+            } else {
+                setError("Failed to fetch care plan data.");
+            }
 
         } catch (e) {
             console.error("Error fetching specific care plan details", e);
-            // We continue showing what we have
+            setError("Network error while loading care plan.");
         } finally {
             setLoading(false);
         }

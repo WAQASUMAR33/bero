@@ -315,6 +315,7 @@ export default function CareWorkerDashboard() {
         { title: 'PPE Stock', icon: '📦', color: 'bg-orange-50 text-orange-600', action: () => router.push('/care-worker/ppe-stock') },
         { title: 'Clients', icon: '👥', color: 'bg-sky-50 text-sky-600', href: '#' },
         { title: 'Report', icon: '⚠️', color: 'bg-amber-50 text-amber-600', href: '#' },
+        { title: 'Emergency', icon: '🚨', color: 'bg-red-50 text-red-600', action: () => router.push('/care-worker/emergency') },
     ];
 
     if (!user) return null;

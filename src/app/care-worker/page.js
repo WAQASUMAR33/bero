@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CareWorkerDashboard() {
     const [user, setUser] = useState(null);
@@ -9,8 +9,14 @@ export default function CareWorkerDashboard() {
     const [shifts, setShifts] = useState([]);
     const [activeShift, setActiveShift] = useState(null);
     const [nextUpcomingShift, setNextUpcomingShift] = useState(null);
+    const [attendanceHistory, setAttendanceHistory] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [loadingHistory, setLoadingHistory] = useState(true);
     const [error, setError] = useState(null);
+
+    // Modal State
+    const [showClockInModal, setShowClockInModal] = useState(false);
+    const [selectedShiftForClockIn, setSelectedShiftForClockIn] = useState(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -20,6 +26,7 @@ export default function CareWorkerDashboard() {
 
         // Initial fetch
         fetchShifts();
+        fetchAttendanceHistory();
 
         return () => clearInterval(timer);
     }, []);
@@ -42,14 +49,11 @@ export default function CareWorkerDashboard() {
                     const fetchedShifts = data.data || [];
                     setShifts(fetchedShifts);
 
-                    // Find active shift (clocked in but not out)
                     const active = fetchedShifts.find(s => s.clockedIn && !s.clockOutTime);
                     setActiveShift(active);
 
-                    // Find next upcoming shift (not started, or started but not clocked in)
-                    // We sort by startTime
                     const upcoming = fetchedShifts
-                        .filter(s => !s.clockedIn && !s.clockOutTime) // Not processed yet
+                        .filter(s => !s.clockedIn && !s.clockOutTime)
                         .sort((a, b) => new Date(a.expectedStart) - new Date(b.expectedStart))[0];
 
                     setNextUpcomingShift(upcoming);
@@ -57,6 +61,34 @@ export default function CareWorkerDashboard() {
             }
         } catch (err) {
             console.error('Failed to fetch shifts', err);
+        }
+    };
+
+    const fetchAttendanceHistory = async () => {
+        try {
+            setLoadingHistory(true);
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            // Get last 30 days or just recent 5
+            const response = await fetch(`/api/clock-in-out?view=my`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Sort by date desc and take top 5
+                    const history = (data.data || [])
+                        .sort((a, b) => new Date(b.clockInTime) - new Date(a.clockInTime))
+                        .slice(0, 5);
+                    setAttendanceHistory(history);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch history', err);
+        } finally {
+            setLoadingHistory(false);
         }
     };
 
@@ -77,8 +109,14 @@ export default function CareWorkerDashboard() {
         });
     };
 
-    const handleClockIn = async (shiftAssignmentId) => {
-        if (loading) return;
+    const initiateClockIn = (shift) => {
+        if (!shift) return;
+        setSelectedShiftForClockIn(shift);
+        setShowClockInModal(true);
+    };
+
+    const confirmClockIn = async () => {
+        if (!selectedShiftForClockIn || loading) return;
         setLoading(true);
         setError(null);
 
@@ -88,10 +126,7 @@ export default function CareWorkerDashboard() {
             try {
                 location = await getCurrentLocation();
             } catch (locErr) {
-                console.warn("Location fetch failed, proceeding with fallback", locErr);
-                // We proceed even if location fails, API might accept it or we send a placeholder if required
-                // API docs say location is optional but "captured for attendance tracking".
-                // We'll send what we have or empty string.
+                console.warn("Location fetch failed", locErr);
             }
 
             const response = await fetch('/api/clock-in-out/clock-in', {
@@ -101,7 +136,7 @@ export default function CareWorkerDashboard() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    shiftAssignmentId,
+                    shiftAssignmentId: selectedShiftForClockIn.shiftAssignmentId,
                     location,
                     workType: 'REGULAR',
                     notes: 'Clocked in via Web Dashboard'
@@ -110,13 +145,20 @@ export default function CareWorkerDashboard() {
 
             const data = await response.json();
             if (response.ok && data.success) {
-                // Refresh state
+                setShowClockInModal(false);
+                setSelectedShiftForClockIn(null);
                 await fetchShifts();
+                await fetchAttendanceHistory(); // Refresh history slightly
             } else {
                 setError(data.error || 'Failed to clock in');
+                // Keep modal open to show error? Or close? Let's keep open but show error in modal if possible, 
+                // but for now we put error in main dashboard state. 
+                // Better UX: Close modal on success only.
+                if (!data.success) setShowClockInModal(false); // Close on fail to show global error
             }
         } catch (err) {
             setError('Network error during clock in');
+            setShowClockInModal(false);
         } finally {
             setLoading(false);
         }
@@ -150,6 +192,7 @@ export default function CareWorkerDashboard() {
             const data = await response.json();
             if (response.ok && data.success) {
                 await fetchShifts();
+                await fetchAttendanceHistory();
             } else {
                 setError(data.error || 'Failed to clock out');
             }
@@ -162,7 +205,6 @@ export default function CareWorkerDashboard() {
 
     // Determine what to show in the main card
     const mainCardData = activeShift || nextUpcomingShift || {
-        // Fallback demo data if no shifts from API (or show empty state)
         client: "No upcoming shifts",
         time: "--:--",
         date: "Today",
@@ -180,13 +222,13 @@ export default function CareWorkerDashboard() {
 
     const clientName = mainCardData.serviceSeeker
         ? `${mainCardData.serviceSeeker.firstName} ${mainCardData.serviceSeeker.lastName}`
-        : mainCardData.client; // fallback
+        : mainCardData.client;
 
     const shiftTime = mainCardData.expectedStart
         ? formatTimeRange(mainCardData.expectedStart, mainCardData.expectedEnd)
-        : mainCardData.time; // fallback
+        : mainCardData.time;
 
-    // Quick Actions - Dynamic Clock In/Out button
+    // Quick Actions
     const quickActions = [
         {
             title: activeShift ? 'Clock Out' : 'Clock In',
@@ -196,9 +238,8 @@ export default function CareWorkerDashboard() {
                 if (activeShift) {
                     handleClockOut(activeShift.clockInOutId);
                 } else if (nextUpcomingShift) {
-                    handleClockIn(nextUpcomingShift.shiftAssignmentId);
+                    initiateClockIn(nextUpcomingShift);
                 } else {
-                    // No shift to clock in to
                     alert("No scheduled shift found to clock in.");
                 }
             }
@@ -297,7 +338,7 @@ export default function CareWorkerDashboard() {
                                 </button>
                             ) : (
                                 <button
-                                    onClick={() => handleClockIn(nextUpcomingShift.shiftAssignmentId)}
+                                    onClick={() => initiateClockIn(nextUpcomingShift)}
                                     disabled={loading}
                                     className="w-full bg-white text-[#224fa6] font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 group/btn disabled:opacity-70"
                                 >
@@ -333,27 +374,126 @@ export default function CareWorkerDashboard() {
                 </div>
             </div>
 
-            {/* Recent notifications (Static for now) */}
+            {/* Recent Attendance History */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold text-gray-900">Recent Updates</h3>
-                    <button className="text-[#224fa6] text-sm font-semibold hover:text-blue-700">View All</button>
+                    <h3 className="text-lg font-bold text-gray-900">Recent Attendance</h3>
+                    {attendanceHistory.length > 5 && (
+                        <button className="text-[#224fa6] text-sm font-semibold hover:text-blue-700">View All</button>
+                    )}
                 </div>
-                <div className="space-y-6">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex gap-4 border-b border-gray-50 last:border-0 pb-4 last:pb-0 relative group">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-500 mt-2 shrink-0 ring-4 ring-red-50" />
-                            <div className="flex-1">
-                                <div className="flex justify-between items-start">
-                                    <p className="text-sm font-bold text-gray-800 group-hover:text-[#224fa6] transition-colors">Care Plan Updated</p>
-                                    <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">2h ago</span>
+                {loadingHistory ? (
+                    <div className="flex justify-center p-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-200" />
+                    </div>
+                ) : attendanceHistory.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                        <p>No recent attendance records found.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {attendanceHistory.map((record) => (
+                            <div key={record.id} className="flex gap-4 border-b border-gray-50 last:border-0 pb-4 last:pb-0 items-center">
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold ${record.clockOutTime ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                                    }`}>
+                                    {new Date(record.clockInTime).getDate()}
+                                    <span className="text-[10px] font-normal ml-0.5">
+                                        {new Date(record.clockInTime).toLocaleDateString([], { month: 'short' })}
+                                    </span>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">New medication instructions added for Sarah Jenkins. Please review before next visit.</p>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start">
+                                        <p className="font-bold text-slate-800 truncate">
+                                            {record.serviceSeeker?.firstName} {record.serviceSeeker?.lastName}
+                                        </p>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${record.clockOutTime ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
+                                            }`}>
+                                            {record.clockOutTime ? 'Completed' : 'Active'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                                        <span className="flex items-center gap-1">
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {new Date(record.clockInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {record.clockOutTime && ` - ${new Date(record.clockOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                                        </span>
+                                        {record.isLate && (
+                                            <span className="text-red-500 font-medium bg-red-50 px-1 rounded">• Late</span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {/* Clock In Confirmation Modal */}
+            {showClockInModal && selectedShiftForClockIn && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+                    <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 scale-in-95 animate-in zoom-in-95">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#224fa6]">
+                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-800">Start Shift?</h3>
+                            <p className="text-slate-500 text-sm mt-1">Please confirm shift details below</p>
+                        </div>
+
+                        <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-3">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-500">Service User</span>
+                                <span className="font-bold text-slate-700">
+                                    {selectedShiftForClockIn.serviceSeeker?.firstName} {selectedShiftForClockIn.serviceSeeker?.lastName}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-500">Schedule</span>
+                                <span className="font-bold text-slate-700">
+                                    {formatTimeRange(selectedShiftForClockIn.expectedStart, selectedShiftForClockIn.expectedEnd)}
+                                </span>
+                            </div>
+                            {selectedShiftForClockIn.notes && ( // Assuming notes might exist or fallback
+                                <div className="pt-2 border-t border-slate-200 mt-2">
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Notes</span>
+                                    <p className="text-sm text-slate-600 bg-white p-2 rounded border border-slate-100">
+                                        {selectedShiftForClockIn.notes || "No special notes for this shift."}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={() => setShowClockInModal(false)}
+                                className="py-3 px-4 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmClockIn}
+                                disabled={loading}
+                                className="py-3 px-4 rounded-xl bg-[#224fa6] font-bold text-white hover:bg-[#1e438f] shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                            >
+                                {loading ? (
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        Clock In
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

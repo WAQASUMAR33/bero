@@ -14,16 +14,20 @@
   "dependencies": {
     "@prisma/client": "^6.17.1",
     "bcryptjs": "^3.0.2",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.29.0",
     "i": "^0.3.7",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
     "leaflet": "^1.9.4",
+    "lucide-react": "^0.563.0",
     "next": "^16.1.1",
     "prisma": "^6.17.1",
     "qrcode": "^1.5.4",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

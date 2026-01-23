@@ -313,7 +313,7 @@ export default function CareWorkerDashboard() {
         { title: 'My Rota', icon: '📅', color: 'bg-indigo-50 text-indigo-600', action: () => router.push('/care-worker/rota') },
         { title: 'Holidays', icon: '✈️', color: 'bg-emerald-50 text-emerald-600', action: () => router.push('/care-worker/holidays') },
         { title: 'PPE Stock', icon: '📦', color: 'bg-orange-50 text-orange-600', action: () => router.push('/care-worker/ppe-stock') },
-        { title: 'Clients', icon: '👥', color: 'bg-sky-50 text-sky-600', href: '#' },
+        { title: 'Care Plan', icon: '📄', color: 'bg-sky-50 text-sky-600', action: () => router.push('/care-worker/care-plan') },
         { title: 'Handover', icon: '🤝', color: 'bg-teal-50 text-teal-600', action: () => router.push('/care-worker/handover') },
         { title: 'Report', icon: '⚠️', color: 'bg-amber-50 text-amber-600', href: '#' },
         { title: 'Emergency', icon: '🚨', color: 'bg-red-50 text-red-600', action: () => router.push('/care-worker/emergency') },

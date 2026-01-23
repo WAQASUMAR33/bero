@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function CareWorkerDashboard() {
+    const router = useRouter();
     const [user, setUser] = useState(null);
     const [date, setDate] = useState(new Date());
     const [shifts, setShifts] = useState([]);
@@ -268,6 +270,7 @@ export default function CareWorkerDashboard() {
             }
         },
         { title: 'My Tasks', icon: '📋', color: 'bg-blue-50 text-blue-600', href: '#' },
+        { title: 'Holidays', icon: '✈️', color: 'bg-emerald-50 text-emerald-600', action: () => router.push('/care-worker/holidays') },
         { title: 'Clients', icon: '👥', color: 'bg-sky-50 text-sky-600', href: '#' },
         { title: 'Report', icon: '⚠️', color: 'bg-amber-50 text-amber-600', href: '#' },
     ];
@@ -294,8 +297,8 @@ export default function CareWorkerDashboard() {
 
             {/* Next/Active Shift Card */}
             <div className={`rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group transition-all duration-500 ${activeShift
-                    ? 'bg-gradient-to-br from-green-600 to-emerald-600 shadow-green-900/20'
-                    : 'bg-gradient-to-br from-[#224fa6] to-[#3270e9] shadow-blue-900/10'
+                ? 'bg-gradient-to-br from-green-600 to-emerald-600 shadow-green-900/20'
+                : 'bg-gradient-to-br from-[#224fa6] to-[#3270e9] shadow-blue-900/10'
                 }`}>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-20 translate-x-20 group-hover:opacity-10 transition-opacity duration-500" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full blur-2xl translate-y-10 -translate-x-10 group-hover:opacity-20 transition-opacity duration-500" />

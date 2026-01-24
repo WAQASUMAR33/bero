@@ -19,8 +19,7 @@ export default function Navbar() {
         <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
             <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
                 <Link href="/" className="flex items-center gap-2">
-                    <Image src="/assets/logo2.png" alt="BEERU" width={40} height={40} className="w-10 h-10 object-contain" />
-                    <span className="text-2xl font-bold text-slate-900 tracking-tight">BEERU</span>
+                    <Image src="/assets/logo2.png" alt="BEERU" width={140} height={60} className="h-14 w-auto object-contain" />
                 </Link>
 
                 <div className="hidden md:flex items-center gap-8">

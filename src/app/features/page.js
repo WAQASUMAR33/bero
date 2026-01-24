@@ -61,11 +61,11 @@ export default function FeaturesPage() {
             <Navbar />
 
             {/* Hero */}
-            <section className="pt-32 pb-20 px-6 bg-[#224fa6] text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <section className="pt-32 pb-20 px-6 bg-slate-50 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#224fa6] opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                 <div className="max-w-7xl mx-auto relative z-10 text-center">
-                    <h1 className="text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight">Capabilities that Empower</h1>
-                    <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+                    <h1 className="text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight text-slate-900">Capabilities that Empower</h1>
+                    <p className="text-xl text-slate-600 max-w-2xl mx-auto">
                         Explore the diverse toolset that makes BEERU the preferred choice for forward-thinking care agencies.
                     </p>
                 </div>

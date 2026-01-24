@@ -25,13 +25,39 @@ export async function POST(request, { params }) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const userId = decoded.userId || decoded.id;
 
     const resolvedParams = await params;
     const serviceSeekerId = parseInt(resolvedParams.id, 10);
     if (Number.isNaN(serviceSeekerId)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
 
     const body = await request.json();
+
+    const roleMap = {
+      '111 Visit': 'ONE_ONE_ONE_VISIT',
+      'Adult Transitions Team for Young People with Disabilities (18-25 year olds)': 'ATTYPD_18_25',
+      'Chiropodist': 'CHIROPODIST',
+      'Clinical Navigation': 'CLINICAL_NAVIGATION',
+      'Clinical Psychologist': 'CLINICAL_PSYCHOLOGIST',
+      'District Nurse': 'DISTRICT_NURSE',
+      'Dols': 'DOLS',
+      'Enrich Team': 'ENRICH_TEAM',
+      'FCPA': 'FCPA',
+      'GP': 'GP',
+      'Manager': 'MANAGER',
+      'Paramedic': 'PARAMEDIC',
+      'Probation Practitioner': 'PROBATIC_PRACTITIONER',
+      'Salt': 'SALT',
+      'Social Worker': 'SOCIAL_WORKER',
+      'Team Manager': 'TEAM_MANAGER'
+    };
+
+    let mappedRole = null;
+    if (body.role) {
+      mappedRole = roleMap[body.role] || 'OTHER';
+    }
+
     const created = await prisma.visitTask.create({
       data: {
         serviceSeekerId,
@@ -41,10 +67,12 @@ export async function POST(request, { params }) {
         announced: body.announced === 'Yes' ? 'YES' : 'NO',
         name: body.name?.trim() || '',
         relationship: body.relationship || null,
-        role: body.role || null,
+        role: mappedRole,
         purpose: body.purpose?.trim() || '',
         summary: body.summary?.trim() || null,
         completed: body.completed === 'Yes' ? 'YES' : 'NO',
+        createdById: userId,
+        updatedById: userId,
       },
     });
     return NextResponse.json(created, { status: 201 });

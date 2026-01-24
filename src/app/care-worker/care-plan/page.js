@@ -244,9 +244,9 @@ export default function CareWorkerCarePlanPage() {
                                 <div key={risk.id} className="bg-amber-50 p-3 rounded-lg border border-amber-100/50">
                                     <div className="flex justify-between items-start mb-1">
                                         <span className="font-bold text-amber-900 text-sm">{risk.riskType}</span>
-                                        <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">{formatDate(risk.assessmentDate)}</span>
+                                        <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">{formatDate(risk.lastAssessed)}</span>
                                     </div>
-                                    <p className="text-sm text-amber-800 leading-relaxed">{risk.description}</p>
+                                    <p className="text-sm text-amber-800 leading-relaxed">{risk.summary || risk.whatIsRisk}</p>
                                 </div>
                             ))}
                         </div>

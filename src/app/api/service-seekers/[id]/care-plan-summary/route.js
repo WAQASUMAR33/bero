@@ -52,17 +52,15 @@ export async function GET(request, { params }) {
             }),
 
             // 5. Active Risk Assessments
-            prisma.riskAssessment.findMany({
+            prisma.serviceSeekerRiskAssessment.findMany({
                 where: { serviceSeekerId: seekerId },
-                orderBy: { assessmentDate: 'desc' }
+                orderBy: { lastAssessed: 'desc' }
             }),
 
             // 6. Medicine Schedule (Simple view for summary)
-            prisma.medicineScheduleItem.findMany({
-                where: { serviceSeekerId: seekerId },
-                include: {
-                    medicine: true
-                }
+            prisma.serviceSeekerMedicineSchedule.findMany({
+                where: { serviceSeekerId: seekerId, status: 'ACTIVE' },
+                orderBy: { medicineName: 'asc' }
             }),
 
             // 7. Documents (Recent ones)

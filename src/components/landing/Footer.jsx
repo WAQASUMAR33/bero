@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 
 export default function Footer() {
@@ -10,9 +11,7 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-2">
-                            {/* Simplified Logo Fallback */}
-                            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-xl">B</div>
-                            <span className="text-2xl font-bold text-white tracking-tight">BEERU</span>
+                            <Image src="/assets/logo2.png" alt="BEERU" width={140} height={60} className="h-14 w-auto object-contain bg-white/10 rounded-lg p-1" />
                         </div>
                         <p className="leading-relaxed text-slate-400">
                             Business, Employee & Enterprise Resource Unification. The all-in-one platform for modern care agencies.

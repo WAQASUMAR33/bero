@@ -66,15 +66,19 @@ export default function CareWorkerCarePlanPage() {
             const activeClockIn = activeData.data;
 
             if (!activeClockIn) {
-                setError("You are not currently clocked in. Access to care plans is restricted to active shifts.");
+                console.log("No active clock-in returned from API");
+                const debugId = activeData.searchedUserId ? ` (User ID: ${activeData.searchedUserId})` : '';
+                setError(`You are not currently clocked in${debugId}. Access to care plans is restricted to active shifts. Check the API logs for more details.`);
                 setLoading(false);
                 return;
             }
 
             const seekerId = activeClockIn.serviceSeekerId;
+            console.log("Active ClockIn Data:", activeClockIn);
 
             if (!seekerId) {
-                setError("Active shift is not associated with a specific Service User.");
+                console.error("Active shift found but no Service User ID linked", activeClockIn);
+                setError(`Active shift (ID: ${activeClockIn.id}) is not associated with a specific Service User. Please contact support.`);
                 setLoading(false);
                 return;
             }

@@ -297,7 +297,13 @@ export default function CareWorkerCarePlanPage() {
                                         </svg>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-slate-700 truncate">{doc.name}</p>
+                                        {doc.fileUrl ? (
+                                            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-[#224fa6] hover:underline truncate block" title="Open Document">
+                                                {doc.name}
+                                            </a>
+                                        ) : (
+                                            <p className="text-sm font-semibold text-slate-700 truncate">{doc.name}</p>
+                                        )}
                                         <p className="text-[10px] text-slate-400">{formatDate(doc.createdAt)}</p>
                                     </div>
                                 </div>

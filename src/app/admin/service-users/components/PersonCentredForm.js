@@ -203,19 +203,19 @@ export default function PersonCentredForm({ serviceSeekerId, onNotification }) {
           }
 
           const token = localStorage.getItem('token');
-          const res = await fetch('/api/upload-image', {
+          const res = await fetch('/api/upload', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ imageData: base64Data }),
+            body: JSON.stringify({ file: base64Data }),
           });
 
           if (res.ok) {
             const uploadData = await res.json();
-            if (uploadData.url) {
-              setPhotoUrl(uploadData.url);
+            if (uploadData.success && uploadData.fileUrl) {
+              setPhotoUrl(uploadData.fileUrl);
               if (onNotification) {
                 onNotification({
                   show: true,
@@ -551,7 +551,11 @@ export default function PersonCentredForm({ serviceSeekerId, onNotification }) {
                   <p className="text-xs text-gray-500 mt-1">Uploading...</p>
                 )}
                 {photoUrl && !selectedFile && (
-                  <p className="text-xs text-green-600 mt-1">Image uploaded</p>
+                  <p className="text-xs mt-1">
+                    <a href={photoUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
+                      Image uploaded
+                    </a>
+                  </p>
                 )}
               </div>
               <div className="flex items-center space-x-2">

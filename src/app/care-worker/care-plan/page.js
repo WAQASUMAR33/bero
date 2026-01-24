@@ -55,24 +55,30 @@ export default function CareWorkerCarePlanPage() {
                 return;
             }
 
-            // 1. Find Active Shift
-            const today = new Date().toISOString().split('T')[0];
-            const shiftsResponse = await fetch(`/api/clock-in-out/my-shifts?date=${today}`, {
+            // 1. Find Active Shift (Robust Check)
+            const activeStatusRes = await fetch('/api/clock-in-out/active', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!shiftsResponse.ok) throw new Error("Failed to fetch shifts");
+            if (!activeStatusRes.ok) throw new Error("Failed to verify status");
 
-            const shiftData = await shiftsResponse.json();
-            const activeShift = (shiftData.data || []).find(s => s.clockedIn && !s.clockOutTime);
+            const activeData = await activeStatusRes.json();
+            const activeClockIn = activeData.data;
 
-            if (!activeShift) {
+            if (!activeClockIn) {
                 setError("You are not currently clocked in. Access to care plans is restricted to active shifts.");
                 setLoading(false);
                 return;
             }
 
-            const seekerId = activeShift.serviceSeekerId;
+            const seekerId = activeClockIn.serviceSeekerId;
+
+            if (!seekerId) {
+                setError("Active shift is not associated with a specific Service User.");
+                setLoading(false);
+                return;
+            }
+
             setServiceSeekerId(seekerId);
 
             // 2. Fetch Care Plan Data

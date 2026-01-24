@@ -60,11 +60,20 @@ export default function CareWorkerDashboard() {
                     const fetchedShifts = data.data || [];
                     setShifts(fetchedShifts);
 
+                    const now = new Date();
                     const active = fetchedShifts.find(s => s.clockedIn && !s.clockOutTime);
                     setActiveShift(active);
 
                     const upcoming = fetchedShifts
-                        .filter(s => !s.clockedIn && !s.clockOutTime)
+                        .filter(s => {
+                            // Filter out shifts that are already completed (clocked out) or active (clocked in)
+                            if (s.clockedIn || s.clockOutTime) return false;
+
+                            // Filter out shifts that have already passed their end time
+                            if (s.expectedEnd && new Date(s.expectedEnd) < now) return false;
+
+                            return true;
+                        })
                         .sort((a, b) => new Date(a.expectedStart) - new Date(b.expectedStart))[0];
 
                     setNextUpcomingShift(upcoming);

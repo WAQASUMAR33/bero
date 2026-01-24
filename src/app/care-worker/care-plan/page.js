@@ -188,7 +188,7 @@ export default function CareWorkerCarePlanPage() {
                         {healthTags.map((tag) => (
                             <span key={tag.id} className="px-3 py-1.5 bg-red-50 text-red-700 border border-red-100 rounded-lg text-sm font-bold flex items-center gap-1.5 shadow-sm">
                                 <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                {tag.name}
+                                {tag.tagName}
                             </span>
                         ))}
                     </div>

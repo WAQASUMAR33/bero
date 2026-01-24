@@ -42,7 +42,7 @@ export async function GET(request, { params }) {
             // 3. Health Tags
             prisma.serviceSeekerHealthTag.findMany({
                 where: { serviceSeekerId: seekerId },
-                select: { id: true, name: true, color: true }
+                select: { id: true, tagName: true }
             }),
 
             // 4. Contacts

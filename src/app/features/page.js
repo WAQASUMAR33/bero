@@ -61,13 +61,28 @@ export default function FeaturesPage() {
             <Navbar />
 
             {/* Hero */}
-            <section className="pt-32 pb-20 px-6 bg-slate-50 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#224fa6] opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <section className="pt-40 pb-24 px-6 bg-gradient-to-b from-blue-50/80 via-white to-white relative overflow-hidden">
+                {/* Decorative Background Elements */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-200/20 rounded-full blur-[100px] pointer-events-none" />
+
                 <div className="max-w-7xl mx-auto relative z-10 text-center">
-                    <h1 className="text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight text-slate-900">Capabilities that Empower</h1>
-                    <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-                        Explore the diverse toolset that makes BEERU the preferred choice for forward-thinking care agencies.
-                    </p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/50 text-[#224fa6] text-sm font-bold mb-8 border border-blue-100">
+                            <span className="w-2 h-2 rounded-full bg-[#224fa6]"></span>
+                            Comprehensive Platform
+                        </span>
+                        <h1 className="text-5xl lg:text-7xl font-extrabold mb-8 tracking-tight text-slate-900 leading-tight">
+                            Capabilities that <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#224fa6] to-cyan-500">Empower</span>
+                        </h1>
+                        <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto leading-relaxed font-medium">
+                            Explore the diverse toolset that makes BEERU the preferred choice for forward-thinking care agencies.
+                        </p>
+                    </motion.div>
                 </div>
             </section>
 

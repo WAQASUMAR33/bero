@@ -70,7 +70,7 @@ export default function CareWorkerDashboard() {
                             if (s.clockedIn || s.clockOutTime) return false;
 
                             // Filter out shifts that have already passed their end time
-                            if (s.expectedEnd && new Date(s.expectedEnd) < now) return false;
+                            if (s.expectedEndTime && new Date(s.expectedEndTime) < now) return false;
 
                             return true;
                         })

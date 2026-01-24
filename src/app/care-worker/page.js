@@ -70,7 +70,17 @@ export default function CareWorkerDashboard() {
                             if (s.clockedIn || s.clockOutTime) return false;
 
                             // Filter out shifts that have already passed their end time
-                            if (s.expectedEndTime && new Date(s.expectedEndTime) < now) return false;
+                            if (s.date && s.endTime) {
+                                // Construct deadline in LOCAL time to match the user's wall clock experience
+                                const datePart = s.date.split('T')[0];
+                                const deadlineString = `${datePart}T${s.endTime}`;
+                                const deadline = new Date(deadlineString);
+
+                                if (!isNaN(deadline.getTime()) && deadline < now) return false;
+                            } else if (s.expectedEndTime && new Date(s.expectedEndTime) < now) {
+                                // Fallback to server calculation if individual parts missing
+                                return false;
+                            }
 
                             return true;
                         })

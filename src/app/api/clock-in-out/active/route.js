@@ -19,6 +19,7 @@ export async function GET(request) {
 
         // Find ALL active clock-ins (active = clockOutTime is null)
         // We fetch all to handle cases where a user might have a stale "forgot to clock out" record
+        // Updated to findMany to resolve "Ghost Record" bug (ID 13 vs 37)
         const activeClockIns = await prisma.clockInOut.findMany({
             where: {
                 userId: userId,

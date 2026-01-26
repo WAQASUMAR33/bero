@@ -17,13 +17,21 @@ export async function GET(request) {
         const userId = decoded.userId;
         console.log(`[API] Checking active clock-in for user ${userId}`);
 
-        // Find ALL active clock-ins (active = clockOutTime is null)
-        // We fetch all to handle cases where a user might have a stale "forgot to clock out" record
-        // Updated to findMany to resolve "Ghost Record" bug (ID 13 vs 37)
+        // Find ALL active clock-ins (active = clockOutTime is null AND clocked in today)
+        // Updated to only return today's clock-ins to prevent stale "forgot to clock out" records
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
         const activeClockIns = await prisma.clockInOut.findMany({
             where: {
                 userId: userId,
-                clockOutTime: null
+                clockOutTime: null,
+                clockInTime: {
+                    gte: today,
+                    lt: tomorrow
+                }
             },
             orderBy: {
                 clockInTime: 'desc'

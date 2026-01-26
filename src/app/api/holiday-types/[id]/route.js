@@ -1,4 +1,4 @@
-'use server';
+
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
@@ -21,9 +21,9 @@ export async function GET(request, { params }) {
     });
 
     if (!holidayType) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Holiday type not found' 
+      return NextResponse.json({
+        success: false,
+        error: 'Holiday type not found'
       }, { status: 404 });
     }
 
@@ -33,10 +33,10 @@ export async function GET(request, { params }) {
     });
   } catch (error) {
     console.error('GET /holiday-types/[id] error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to fetch holiday type', 
-      details: error.message 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch holiday type',
+      details: error.message
     }, { status: 500 });
   }
 }
@@ -53,7 +53,7 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const holidayTypeId = parseInt(id);
     const body = await request.json();
-    
+
     const { name, description, isPaid, color } = body;
 
     const holidayType = await prisma.holidayType.update({
@@ -72,25 +72,25 @@ export async function PUT(request, { params }) {
     });
   } catch (error) {
     console.error('PUT /holiday-types/[id] error:', error);
-    
+
     if (error.code === 'P2025') {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Holiday type not found' 
+      return NextResponse.json({
+        success: false,
+        error: 'Holiday type not found'
       }, { status: 404 });
     }
 
     if (error.code === 'P2002') {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Holiday type with this name already exists' 
+      return NextResponse.json({
+        success: false,
+        error: 'Holiday type with this name already exists'
       }, { status: 400 });
     }
 
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to update holiday type', 
-      details: error.message 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to update holiday type',
+      details: error.message
     }, { status: 500 });
   }
 }
@@ -113,9 +113,9 @@ export async function DELETE(request, { params }) {
     });
 
     if (holidaysCount > 0) {
-      return NextResponse.json({ 
-        success: false, 
-        error: `Cannot delete holiday type. It is being used by ${holidaysCount} holiday(s).` 
+      return NextResponse.json({
+        success: false,
+        error: `Cannot delete holiday type. It is being used by ${holidaysCount} holiday(s).`
       }, { status: 400 });
     }
 
@@ -129,18 +129,18 @@ export async function DELETE(request, { params }) {
     });
   } catch (error) {
     console.error('DELETE /holiday-types/[id] error:', error);
-    
+
     if (error.code === 'P2025') {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Holiday type not found' 
+      return NextResponse.json({
+        success: false,
+        error: 'Holiday type not found'
       }, { status: 404 });
     }
 
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to delete holiday type', 
-      details: error.message 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to delete holiday type',
+      details: error.message
     }, { status: 500 });
   }
 }

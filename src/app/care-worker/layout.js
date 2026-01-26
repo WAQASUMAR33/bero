@@ -238,7 +238,7 @@ export default function CareWorkerLayout({ children }) {
 
                             {/* Notifications Panel */}
                             {showNotifications && (
-                                <div className="absolute right-0 mt-3 w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                                <div className="fixed top-[4.5rem] left-4 right-4 lg:absolute lg:inset-auto lg:right-0 lg:top-full lg:mt-3 lg:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 mx-auto max-w-sm lg:max-w-none">
                                     <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm sticky top-0">
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-bold text-gray-800">Notifications</h3>
@@ -258,7 +258,7 @@ export default function CareWorkerLayout({ children }) {
                                         </div>
                                     </div>
 
-                                    <div className="max-h-[28rem] overflow-y-auto custom-scrollbar">
+                                    <div className="max-h-[60vh] lg:max-h-[28rem] overflow-y-auto custom-scrollbar">
                                         {notifications.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
                                                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-3">
@@ -300,7 +300,7 @@ export default function CareWorkerLayout({ children }) {
                                                             </div>
                                                             <button
                                                                 onClick={(e) => deleteNotification(notif.id, e)}
-                                                                className="absolute top-3 right-3 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                                                                className="absolute top-3 right-3 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all lg:opacity-0 lg:group-hover:opacity-100"
                                                                 title="Remove"
                                                             >
                                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

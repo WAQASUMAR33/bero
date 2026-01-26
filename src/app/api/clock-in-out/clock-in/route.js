@@ -225,25 +225,11 @@ export async function POST(request) {
         }
 
         // If still no assignment, try to find any assignment for this user on this date
-        if (!assignment) {
-          assignment = await prisma.shiftAssignment.findFirst({
-            where: {
-              userId: decoded.userId,
-              date: clockInDate,
-              status: 'SCHEDULED'
-            },
-            include: {
-              shift: {
-                include: {
-                  serviceSeeker: true
-                }
-              }
-            },
-            orderBy: {
-              createdAt: 'desc'
-            }
-          });
-        }
+        // REMOVED: This fallback was causing issues where if the specific assignment wasn't found (e.g. ID mismatch),
+        // it would grab *any* assignment for the day (e.g. Hannan instead of Aston).
+        // if (!assignment) {
+        //   assignment = await prisma.shiftAssignment.findFirst({ ... });
+        // }
 
         if (assignment) {
           finalShiftAssignmentId = assignment.id;

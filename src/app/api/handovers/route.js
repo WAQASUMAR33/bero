@@ -278,6 +278,24 @@ export async function POST(request) {
       }
     });
 
+    // Create Notification for the receiving user
+    // Only if the user who created it is different from the receiving user (which should be true)
+    if (toAssignment.userId !== decoded.userId) {
+      const creatorName = `${handover.createdBy.firstName} ${handover.createdBy.lastName}`;
+      const seekerName = `${handover.serviceSeeker.firstName} ${handover.serviceSeeker.lastName}`;
+
+      await prisma.notification.create({
+        data: {
+          userId: toAssignment.userId,
+          title: 'Handover Completed',
+          message: `${creatorName} has completed a handover for ${seekerName}.`,
+          type: 'INFO',
+          link: '/care-worker/handover',
+          isRead: false
+        }
+      });
+    }
+
     return NextResponse.json({
       success: true,
       data: handover

@@ -26,21 +26,33 @@ export async function POST(request, { params }) {
       },
       include: {
         user: {
-          select: { 
-            id: true, 
-            firstName: true, 
+          select: {
+            id: true,
+            firstName: true,
             lastName: true,
             email: true
           }
         },
         holidayType: true,
         approvedBy: {
-          select: { 
-            id: true, 
-            firstName: true, 
-            lastName: true 
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
           }
         }
+      }
+    });
+
+    // Create Notification
+    await prisma.notification.create({
+      data: {
+        userId: holiday.userId,
+        title: 'Holiday Request Approved',
+        message: `Your holiday request for ${new Date(holiday.startDate).toLocaleDateString()} has been approved.`,
+        type: 'SUCCESS',
+        link: '/care-worker/holidays',
+        isRead: false
       }
     });
 
@@ -51,18 +63,18 @@ export async function POST(request, { params }) {
     });
   } catch (error) {
     console.error('POST /holidays/[id]/approve error:', error);
-    
+
     if (error.code === 'P2025') {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Holiday not found' 
+      return NextResponse.json({
+        success: false,
+        error: 'Holiday not found'
       }, { status: 404 });
     }
 
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to approve holiday', 
-      details: error.message 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to approve holiday',
+      details: error.message
     }, { status: 500 });
   }
 }

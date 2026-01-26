@@ -10,6 +10,28 @@ export default function CareWorkerLayout({ children }) {
     const router = useRouter();
     const [user, setUser] = useState(null);
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [showNotifications, setShowNotifications] = useState(false);
+
+    const fetchNotifications = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const res = await fetch('/api/notifications?limit=5', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    setNotifications(data.data);
+                    setUnreadCount(data.unreadCount);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     useEffect(() => {
         // Check auth
@@ -23,6 +45,14 @@ export default function CareWorkerLayout({ children }) {
 
         setUser(JSON.parse(storedUser));
     }, [router]);
+
+    useEffect(() => {
+        if (user) {
+            fetchNotifications();
+            const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+            return () => clearInterval(interval);
+        }
+    }, [user]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -159,13 +189,45 @@ export default function CareWorkerLayout({ children }) {
                     </div>
 
                     <div className="flex items-center space-x-3">
-                        {/* Notification Icon (Copied style from Admin) */}
-                        <button className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group rounded-lg hover:bg-gray-50">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-                        </button>
+                        {/* Notification Icon */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowNotifications(!showNotifications)}
+                                className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group rounded-lg hover:bg-gray-50"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
+                                )}
+                            </button>
+
+                            {/* Notifications Dropdown */}
+                            {showNotifications && (
+                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+                                    <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                        <h3 className="font-semibold text-sm text-gray-700">Notifications</h3>
+                                        <button onClick={fetchNotifications} className="text-xs text-blue-600 hover:text-blue-800">Refresh</button>
+                                    </div>
+                                    <div className="max-h-80 overflow-y-auto">
+                                        {notifications.length === 0 ? (
+                                            <div className="p-8 text-center text-gray-400 text-sm">
+                                                No notifications
+                                            </div>
+                                        ) : (
+                                            notifications.map((notif) => (
+                                                <div key={notif.id} className={`p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!notif.isRead ? 'bg-blue-50/30' : ''}`}>
+                                                    <p className="text-sm font-medium text-gray-800">{notif.title}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.message}</p>
+                                                    <p className="text-[10px] text-gray-400 mt-1">{new Date(notif.createdAt).toLocaleString()}</p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Mobile Logout (Small icon) */}
                         <button onClick={handleLogout} className="lg:hidden p-2 text-gray-400 hover:text-red-500">

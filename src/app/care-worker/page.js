@@ -38,9 +38,24 @@ export default function CareWorkerDashboard() {
         // Initial fetch
         fetchShifts();
         fetchAttendanceHistory();
+        checkNotifications(); // Trigger check for system notifications
 
         return () => clearInterval(timer);
     }, []);
+
+    const checkNotifications = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                await fetch('/api/notifications/check', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
+        } catch (e) {
+            console.error('Failed to check notifications', e);
+        }
+    };
 
     const fetchShifts = async () => {
         try {

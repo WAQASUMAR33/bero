@@ -33,6 +33,39 @@ export default function CareWorkerLayout({ children }) {
         }
     };
 
+    const deleteNotification = async (id, e) => {
+        if (e) e.stopPropagation();
+        try {
+            const token = localStorage.getItem('token');
+            // Optimistic update
+            setNotifications(prev => prev.filter(n => n.id !== id));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+
+            await fetch(`/api/notifications?id=${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            // Re-fetch to be sure
+            fetchNotifications();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const clearAllNotifications = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            setNotifications([]);
+            setUnreadCount(0);
+            await fetch(`/api/notifications`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
         // Check auth
         const token = localStorage.getItem('token');
@@ -189,11 +222,11 @@ export default function CareWorkerLayout({ children }) {
                     </div>
 
                     <div className="flex items-center space-x-3">
-                        {/* Notification Icon */}
+                        {/* Notification Dropdown */}
                         <div className="relative">
                             <button
                                 onClick={() => setShowNotifications(!showNotifications)}
-                                className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group rounded-lg hover:bg-gray-50"
+                                className="p-2 text-gray-400 hover:text-[#224fa6] transition-colors relative group rounded-lg hover:bg-gray-50 focus:outline-none"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -203,27 +236,87 @@ export default function CareWorkerLayout({ children }) {
                                 )}
                             </button>
 
-                            {/* Notifications Dropdown */}
+                            {/* Notifications Panel */}
                             {showNotifications && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
-                                    <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                        <h3 className="font-semibold text-sm text-gray-700">Notifications</h3>
-                                        <button onClick={fetchNotifications} className="text-xs text-blue-600 hover:text-blue-800">Refresh</button>
+                                <div className="absolute right-0 mt-3 w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                                    <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm sticky top-0">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-gray-800">Notifications</h3>
+                                            {unreadCount > 0 && <span className="bg-[#224fa6] text-white text-[10px] px-2 py-0.5 rounded-full font-bold">{unreadCount}</span>}
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <button onClick={fetchNotifications} className="text-gray-400 hover:text-[#224fa6] transition-colors" title="Refresh">
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                            </button>
+                                            {notifications.length > 0 && (
+                                                <button onClick={clearAllNotifications} className="text-xs font-semibold text-gray-500 hover:text-red-500 transition-colors">
+                                                    Clear All
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="max-h-80 overflow-y-auto">
+
+                                    <div className="max-h-[28rem] overflow-y-auto custom-scrollbar">
                                         {notifications.length === 0 ? (
-                                            <div className="p-8 text-center text-gray-400 text-sm">
-                                                No notifications
+                                            <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+                                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-3">
+                                                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-gray-500 font-medium text-sm">No new notifications</p>
+                                                <p className="text-gray-400 text-xs mt-1">We'll let you know when something important happens.</p>
                                             </div>
                                         ) : (
-                                            notifications.map((notif) => (
-                                                <div key={notif.id} className={`p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!notif.isRead ? 'bg-blue-50/30' : ''}`}>
-                                                    <p className="text-sm font-medium text-gray-800">{notif.title}</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.message}</p>
-                                                    <p className="text-[10px] text-gray-400 mt-1">{new Date(notif.createdAt).toLocaleString()}</p>
-                                                </div>
-                                            ))
+                                            <div className="divide-y divide-gray-50">
+                                                {notifications.map((notif) => {
+                                                    let iconColor = 'text-blue-500 bg-blue-50';
+                                                    let borderColor = 'border-l-blue-500';
+                                                    if (notif.type === 'SUCCESS') { iconColor = 'text-emerald-500 bg-emerald-50'; borderColor = 'border-l-emerald-500'; }
+                                                    if (notif.type === 'WARNING') { iconColor = 'text-amber-500 bg-amber-50'; borderColor = 'border-l-amber-500'; }
+                                                    if (notif.type === 'ERROR') { iconColor = 'text-red-500 bg-red-50'; borderColor = 'border-l-red-500'; }
+
+                                                    return (
+                                                        <div key={notif.id} className={`p-4 hover:bg-gray-50 transition-all group relative border-l-4 ${borderColor} ${!notif.isRead ? 'bg-blue-50/10' : ''}`}>
+                                                            <div className="flex gap-3">
+                                                                <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${iconColor}`}>
+                                                                    {notif.type === 'SUCCESS' ? (
+                                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                                                    ) : notif.type === 'ERROR' ? (
+                                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                                    ) : (
+                                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0 pr-6">
+                                                                    <p className="text-sm font-bold text-gray-800 leading-snug">{notif.title}</p>
+                                                                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{notif.message}</p>
+                                                                    <p className="text-[10px] text-gray-400 mt-2 font-medium">
+                                                                        {new Date(notif.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={(e) => deleteNotification(notif.id, e)}
+                                                                className="absolute top-3 right-3 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                                                                title="Remove"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         )}
+                                    </div>
+                                    <div className="border-t border-gray-100 p-2 bg-gray-50/50 text-center">
+                                        <Link href="/care-worker/notifications" className="text-xs font-semibold text-[#224fa6] hover:text-blue-800 py-1 block">
+                                            View All Notifications
+                                        </Link>
                                     </div>
                                 </div>
                             )}

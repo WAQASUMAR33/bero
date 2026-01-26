@@ -84,6 +84,7 @@ export async function GET(request) {
 }
 
 // Clear All (Move to Recycle Bin)
+// Clear All or Single (Move to Recycle Bin)
 export async function DELETE(request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -97,19 +98,36 @@ export async function DELETE(request) {
     }
 
     const { userId } = decoded;
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
 
-    // Soft delete all active notifications
-    await prisma.notification.updateMany({
-      where: {
-        userId,
-        deletedAt: null
-      },
-      data: {
-        deletedAt: new Date()
-      }
-    });
-
-    return NextResponse.json({ success: true, message: 'All notifications cleared to recycle bin' });
+    if (id) {
+      // Soft delete single notification
+      const notificationId = parseInt(id);
+      await prisma.notification.updateMany({
+        where: {
+          id: notificationId,
+          userId, // Ensure ownership
+          deletedAt: null
+        },
+        data: {
+          deletedAt: new Date()
+        }
+      });
+      return NextResponse.json({ success: true, message: 'Notification removed' });
+    } else {
+      // Soft delete all active notifications
+      await prisma.notification.updateMany({
+        where: {
+          userId,
+          deletedAt: null
+        },
+        data: {
+          deletedAt: new Date()
+        }
+      });
+      return NextResponse.json({ success: true, message: 'All notifications cleared to recycle bin' });
+    }
   } catch (error) {
     console.error('Error clearing notifications:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

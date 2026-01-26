@@ -80,12 +80,12 @@ export default function CareWorkerLayout({ children }) {
     }, [router]);
 
     useEffect(() => {
-        if (user) {
+        if (user?.id) {
             fetchNotifications();
             const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
             return () => clearInterval(interval);
         }
-    }, [user]);
+    }, [user?.id]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');

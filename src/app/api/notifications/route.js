@@ -27,19 +27,8 @@ export async function GET(request) {
     const view = searchParams.get('view') || 'active'; // 'active' or 'recycled'
     const skip = (page - 1) * limit;
 
-    // Auto-cleanup: Permanently delete notifications in recycle bin older than 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    // Fire and forget cleanup (non-blocking)
-    prisma.notification.deleteMany({
-      where: {
-        userId,
-        deletedAt: {
-          lt: thirtyDaysAgo
-        }
-      }
-    }).catch(err => console.error('Cleanup error:', err));
+    // Auto-cleanup removed from critical path to prevent high DB load
+    // Should be moved to a cron job or separate maintenance trigger
 
     let whereClause = { userId };
 

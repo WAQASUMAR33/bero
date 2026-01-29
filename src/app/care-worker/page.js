@@ -370,7 +370,7 @@ export default function CareWorkerDashboard() {
                 </div>
                 <button
                     onClick={() => router.push('/care-worker/emergency')}
-                    className="p-2 bg-red-50 text-red-600 rounded-lg border border-red-100 shadow-sm active:scale-95 transition-all lg:hidden" // Keep button lg:hidden if desired, or remove to show everywhere. User asked for consistency, so I will show it everywhere or rely on Sidebar. Sidebar has Emergency. Let's keep emergency button visible for easy access? Actually the sidebar link is "Emergency". This button is a "panic button" style. Keeping it visible is safer.
+                    className="p-2 bg-red-50 text-red-600 rounded-lg border border-red-100 shadow-sm active:scale-95 transition-all"
                     aria-label="Emergency"
                 >
                     <span className="text-xl animate-pulse">🚨</span>
@@ -481,225 +481,223 @@ export default function CareWorkerDashboard() {
                         )}
                     </div>
                 </div>
+            )}
+
+            {/* Quick Actions Grid */}
+            <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-4 px-1">Quick Actions</h3>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {quickActions.map((action, idx) => (
+                        <button
+                            key={idx}
+                            onClick={action.action} // if action defined
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all active:scale-[0.98] flex flex-col items-center justify-center gap-4 text-center h-40 group"
+                        >
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${action.color} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                                {action.icon}
+                            </div>
+                            <span className="font-semibold text-gray-700 text-sm">{action.title}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
-    )
-}
 
-{/* Quick Actions Grid */ }
-<div>
-    <h3 className="text-lg font-bold text-gray-900 mb-4 px-1">Quick Actions</h3>
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {quickActions.map((action, idx) => (
-            <button
-                key={idx}
-                onClick={action.action} // if action defined
-                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all active:scale-[0.98] flex flex-col items-center justify-center gap-4 text-center h-40 group"
-            >
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${action.color} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
-                    {action.icon}
-                </div>
-                <span className="font-semibold text-gray-700 text-sm">{action.title}</span>
-            </button>
-        ))}
-    </div>
-</div>
-
-{/* Recent Attendance History */ }
-<div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-    <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-bold text-gray-900">Recent Attendance</h3>
-        {attendanceHistory.length > 5 && (
-            <Link href="/care-worker/attendance" className="text-[#224fa6] text-sm font-semibold hover:text-blue-700">View All</Link>
-        )}
-    </div>
-    {loadingHistory ? (
-        <div className="flex justify-center p-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-200" />
-        </div>
-    ) : attendanceHistory.length === 0 ? (
-        <div className="text-center py-8 text-gray-400">
-            <p>No recent attendance records found.</p>
-        </div>
-    ) : (
-        <div className="space-y-4">
-            {attendanceHistory.map((record) => (
-                <div key={record.id} className="flex gap-4 border-b border-gray-50 last:border-0 pb-4 last:pb-0 items-center">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold ${record.clockOutTime ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
-                        }`}>
-                        {new Date(record.clockInTime).getDate()}
-                        <span className="text-[10px] font-normal ml-0.5">
-                            {new Date(record.clockInTime).toLocaleDateString([], { month: 'short' })}
-                        </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start">
-                            <p className="font-bold text-slate-800 truncate">
-                                {record.serviceSeeker?.firstName} {record.serviceSeeker?.lastName}
-                            </p>
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${record.clockOutTime ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
-                                }`}>
-                                {record.clockOutTime ? 'Completed' : 'Active'}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                {new Date(record.clockInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                {record.clockOutTime && ` - ${new Date(record.clockOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                            </span>
-                            {record.isLate && (
-                                <span className="text-red-500 font-medium bg-red-50 px-1 rounded">• Late</span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    )}
-</div>
-
-{/* Clock In Confirmation Modal */ }
-{
-    showClockInModal && selectedShiftForClockIn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
-            <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 scale-in-95 animate-in zoom-in-95">
-                <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#224fa6]">
-                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-800">Start Shift?</h3>
-                    <p className="text-slate-500 text-sm mt-1">Please confirm shift details below</p>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-3">
-                    <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Service User</span>
-                        <span className="font-bold text-slate-700">
-                            {selectedShiftForClockIn.serviceSeeker?.firstName} {selectedShiftForClockIn.serviceSeeker?.lastName}
-                        </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Schedule</span>
-                        <span className="font-bold text-slate-700">
-                            {getShiftSchedule(selectedShiftForClockIn)}
-                        </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Location</span>
-                        <div className="text-right">
-                            {isFetchingLocation ? (
-                                <div className="flex items-center gap-1 text-slate-400">
-                                    <span className="w-3 h-3 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin"></span>
-                                    <span className="text-xs">Fetching...</span>
-                                </div>
-                            ) : locationError ? (
-                                <span className="text-red-500 text-xs text-right max-w-[150px] block leading-tight">{locationError}</span>
-                            ) : (
-                                <span className="font-bold text-slate-700 flex items-center gap-1">
-                                    <svg className="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    Captured
-                                </span>
-                            )}
-                            {currentLocation && (
-                                <p className="text-[10px] text-slate-400 font-mono mt-0.5 max-w-[140px] truncate">{currentLocation}</p>
-                            )}
-                        </div>
-                    </div>
-                    {selectedShiftForClockIn.notes && (
-                        <div className="pt-2 border-t border-slate-200 mt-2">
-                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Notes</span>
-                            <p className="text-sm text-slate-600 bg-white p-2 rounded border border-slate-100">
-                                {selectedShiftForClockIn.notes || "No special notes for this shift."}
-                            </p>
-                        </div>
+            {/* Recent Attendance History */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-gray-900">Recent Attendance</h3>
+                    {attendanceHistory.length > 5 && (
+                        <Link href="/care-worker/attendance" className="text-[#224fa6] text-sm font-semibold hover:text-blue-700">View All</Link>
                     )}
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        onClick={() => setShowClockInModal(false)}
-                        className="py-3 px-4 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={confirmClockIn}
-                        disabled={loading || isFetchingLocation && !currentLocation} // Wait for location if preferred, or allow submit if desired (current logic allows, but better to wait or just show loading)
-                        className="py-3 px-4 rounded-xl bg-[#224fa6] font-bold text-white hover:bg-[#1e438f] shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-                    >
-                        {loading ? (
-                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                Clock In
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </>
-                        )}
-                    </button>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-{/* Clock Out / Early Exit Modal */ }
-{
-    showClockOutModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
-            <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 scale-in-95 animate-in zoom-in-95 border-t-4 border-red-500">
-                <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                {loadingHistory ? (
+                    <div className="flex justify-center p-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-200" />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-800">
-                        {isEarlyExit ? 'Leaving Early?' : 'Clock Out?'}
-                    </h3>
-                    <p className="text-slate-500 text-sm mt-1 max-w-[260px] mx-auto">
-                        {isEarlyExit
-                            ? 'It looks like your shift hasn\'t finished yet. Are you sure you want to clock out early?'
-                            : 'Confirm you want to end your shift now.'}
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        onClick={() => setShowClockOutModal(false)}
-                        className="py-3 px-4 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={() => handleClockOut(activeShift?.clockInOutId)}
-                        disabled={loading}
-                        className="py-3 px-4 rounded-xl bg-red-600 font-bold text-white hover:bg-red-700 shadow-lg shadow-red-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                {isEarlyExit ? 'Yes, Clock Out' : 'Clock Out'}
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
-                            </>
-                        )}
-                    </button>
-                </div>
+                ) : attendanceHistory.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                        <p>No recent attendance records found.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {attendanceHistory.map((record) => (
+                            <div key={record.id} className="flex gap-4 border-b border-gray-50 last:border-0 pb-4 last:pb-0 items-center">
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold ${record.clockOutTime ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                                    }`}>
+                                    {new Date(record.clockInTime).getDate()}
+                                    <span className="text-[10px] font-normal ml-0.5">
+                                        {new Date(record.clockInTime).toLocaleDateString([], { month: 'short' })}
+                                    </span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start">
+                                        <p className="font-bold text-slate-800 truncate">
+                                            {record.serviceSeeker?.firstName} {record.serviceSeeker?.lastName}
+                                        </p>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${record.clockOutTime ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
+                                            }`}>
+                                            {record.clockOutTime ? 'Completed' : 'Active'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                                        <span className="flex items-center gap-1">
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {new Date(record.clockInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {record.clockOutTime && ` - ${new Date(record.clockOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                                        </span>
+                                        {record.isLate && (
+                                            <span className="text-red-500 font-medium bg-red-50 px-1 rounded">• Late</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {/* Clock In Confirmation Modal */}
+            {
+                showClockInModal && selectedShiftForClockIn && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+                        <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 scale-in-95 animate-in zoom-in-95">
+                            <div className="text-center mb-6">
+                                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#224fa6]">
+                                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-800">Start Shift?</h3>
+                                <p className="text-slate-500 text-sm mt-1">Please confirm shift details below</p>
+                            </div>
+
+                            <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-3">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Service User</span>
+                                    <span className="font-bold text-slate-700">
+                                        {selectedShiftForClockIn.serviceSeeker?.firstName} {selectedShiftForClockIn.serviceSeeker?.lastName}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Schedule</span>
+                                    <span className="font-bold text-slate-700">
+                                        {getShiftSchedule(selectedShiftForClockIn)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Location</span>
+                                    <div className="text-right">
+                                        {isFetchingLocation ? (
+                                            <div className="flex items-center gap-1 text-slate-400">
+                                                <span className="w-3 h-3 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin"></span>
+                                                <span className="text-xs">Fetching...</span>
+                                            </div>
+                                        ) : locationError ? (
+                                            <span className="text-red-500 text-xs text-right max-w-[150px] block leading-tight">{locationError}</span>
+                                        ) : (
+                                            <span className="font-bold text-slate-700 flex items-center gap-1">
+                                                <svg className="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                Captured
+                                            </span>
+                                        )}
+                                        {currentLocation && (
+                                            <p className="text-[10px] text-slate-400 font-mono mt-0.5 max-w-[140px] truncate">{currentLocation}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                {selectedShiftForClockIn.notes && (
+                                    <div className="pt-2 border-t border-slate-200 mt-2">
+                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Notes</span>
+                                        <p className="text-sm text-slate-600 bg-white p-2 rounded border border-slate-100">
+                                            {selectedShiftForClockIn.notes || "No special notes for this shift."}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => setShowClockInModal(false)}
+                                    className="py-3 px-4 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmClockIn}
+                                    disabled={loading || isFetchingLocation && !currentLocation} // Wait for location if preferred, or allow submit if desired (current logic allows, but better to wait or just show loading)
+                                    className="py-3 px-4 rounded-xl bg-[#224fa6] font-bold text-white hover:bg-[#1e438f] shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                                >
+                                    {loading ? (
+                                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            Clock In
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Clock Out / Early Exit Modal */}
+            {
+                showClockOutModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+                        <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 scale-in-95 animate-in zoom-in-95 border-t-4 border-red-500">
+                            <div className="text-center mb-6">
+                                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-800">
+                                    {isEarlyExit ? 'Leaving Early?' : 'Clock Out?'}
+                                </h3>
+                                <p className="text-slate-500 text-sm mt-1 max-w-[260px] mx-auto">
+                                    {isEarlyExit
+                                        ? 'It looks like your shift hasn\'t finished yet. Are you sure you want to clock out early?'
+                                        : 'Confirm you want to end your shift now.'}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => setShowClockOutModal(false)}
+                                    className="py-3 px-4 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => handleClockOut(activeShift?.clockInOutId)}
+                                    disabled={loading}
+                                    className="py-3 px-4 rounded-xl bg-red-600 font-bold text-white hover:bg-red-700 shadow-lg shadow-red-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {loading ? (
+                                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            {isEarlyExit ? 'Yes, Clock Out' : 'Clock Out'}
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
         </div>
-    )
-}
-        </div >
     );
 }

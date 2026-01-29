@@ -13,10 +13,11 @@ export default function EmergencyPage() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [successData, setSuccessData] = useState(null);
 
-    useEffect(() => {
-        // Fetch location immediately on mount
+    const fetchLocation = () => {
+        setLocationStatus('fetching');
         if (!navigator.geolocation) {
             setLocationStatus('error');
+            console.error("Geolocation is not supported by this browser.");
             return;
         }
 
@@ -27,11 +28,18 @@ export default function EmergencyPage() {
                 setLocationStatus('success');
             },
             (error) => {
-                console.error("Error getting location:", error);
+                console.error("Error getting location:", {
+                    code: error.code,
+                    message: error.message,
+                });
                 setLocationStatus('error');
             },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
+    };
+
+    useEffect(() => {
+        fetchLocation();
     }, []);
 
     const handleTrigger = async () => {
@@ -135,10 +143,16 @@ export default function EmergencyPage() {
                                 </>
                             )}
                             {locationStatus === 'error' && (
-                                <>
+                                <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                                     <span className="text-xs font-medium text-slate-500">Location Unavailable</span>
-                                </>
+                                    <button
+                                        onClick={fetchLocation}
+                                        className="text-[10px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200 hover:bg-slate-200 text-slate-600 font-bold transition-colors"
+                                    >
+                                        RETRY
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>

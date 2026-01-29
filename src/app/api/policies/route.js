@@ -20,6 +20,8 @@ function getUserIdFromToken(request) {
 // GET all policies
 export async function GET(request) {
   try {
+    const userId = getUserIdFromToken(request);
+
     const policies = await prisma.policy.findMany({
       include: {
         createdBy: {
@@ -39,15 +41,8 @@ export async function GET(request) {
           }
         },
         signatures: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true
-              }
-            }
+          select: {
+            userId: true
           }
         },
         _count: {
@@ -69,31 +64,37 @@ export async function GET(request) {
       }
     });
 
-    const transformedPolicies = policies.map(policy => ({
-      id: policy.id,
-      name: policy.name,
-      fileName: policy.fileName,
-      fileUrl: policy.fileUrl,
-      reviewIn: policy.reviewIn,
-      lastReviewed: policy.lastReviewed,
-      createdAt: policy.createdAt,
-      updatedAt: policy.updatedAt,
-      createdBy: {
-        id: policy.createdBy.id,
-        firstName: policy.createdBy.firstName,
-        lastName: policy.createdBy.lastName,
-        email: policy.createdBy.email
-      },
-      updatedBy: {
-        id: policy.updatedBy.id,
-        firstName: policy.updatedBy.firstName,
-        lastName: policy.updatedBy.lastName,
-        email: policy.updatedBy.email
-      },
-      signedCount: policy._count.signatures,
-      totalStaffCount: totalStaffCount,
-      reviewCount: policy._count.reviews
-    }));
+    const transformedPolicies = policies.map(policy => {
+      // Check if current user has signed
+      const isSigned = userId ? policy.signatures.some(sig => sig.userId === userId) : false;
+
+      return {
+        id: policy.id,
+        name: policy.name,
+        fileName: policy.fileName,
+        fileUrl: policy.fileUrl,
+        reviewIn: policy.reviewIn,
+        lastReviewed: policy.lastReviewed,
+        createdAt: policy.createdAt,
+        updatedAt: policy.updatedAt,
+        createdBy: {
+          id: policy.createdBy.id,
+          firstName: policy.createdBy.firstName,
+          lastName: policy.createdBy.lastName,
+          email: policy.createdBy.email
+        },
+        updatedBy: {
+          id: policy.updatedBy.id,
+          firstName: policy.updatedBy.firstName,
+          lastName: policy.updatedBy.lastName,
+          email: policy.updatedBy.email
+        },
+        signedCount: policy._count.signatures,
+        totalStaffCount: totalStaffCount,
+        reviewCount: policy._count.reviews,
+        isSigned: isSigned // Add this field
+      };
+    });
 
     return NextResponse.json({
       success: true,

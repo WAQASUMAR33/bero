@@ -157,6 +157,28 @@ export default function Header({ user }) {
     return () => clearInterval(interval);
   }, []);
 
+  const dismissNotification = async (id) => {
+    try {
+      // Find the notification to check if it was unread
+      const notification = notifications.find(n => n.id === id);
+      const wasUnread = notification && !notification.isRead;
+
+      // Optimistic update
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      const token = localStorage.getItem('token');
+      await fetch(`/api/notifications?id=${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
   return (
     <header className="sticky top-0 bg-white shadow-sm border-b border-gray-200 px-6 py-4 z-30">
       <div className="flex items-center justify-between">
@@ -241,8 +263,22 @@ export default function Header({ user }) {
                       </div>
                     ) : (
                       notifications.map(n => (
-                        <div key={n.id} className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!n.isRead ? 'bg-blue-50/30' : ''}`}>
-                          <p className="text-sm text-gray-800 font-medium truncate">{n.title}</p>
+                        <div key={n.id} className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors group relative ${!n.isRead ? 'bg-blue-50/30' : ''}`}>
+                          <div className="flex justify-between items-start">
+                            <p className="text-sm text-gray-800 font-medium truncate pr-6">{n.title}</p>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                dismissNotification(n.id);
+                              }}
+                              className="text-gray-400 hover:text-red-500 p-0.5 rounded-full hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                              title="Dismiss"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
                           <p className="text-xs text-gray-500 mt-1 line-clamp-2">{n.message}</p>
                           <p className="text-[10px] text-gray-400 mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
                         </div>

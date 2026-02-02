@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
 // POST /api/notifications/check
-// Trigger system checks for generating notifications (e.g. upcoming shifts, visits)
+// OPTIMIZED: Uses parallel queries, batch operations, and minimal DB hits
+// Rate: Called by care worker dashboard, typically every 30-60 seconds
 export async function POST(request) {
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -12,137 +13,119 @@ export async function POST(request) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
         const userId = decoded.userId;
 
-        // 1. Check for Upcoming Shifts (next 24 hours)
         const now = new Date();
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const upcomingShifts = await prisma.shiftAssignment.findMany({
-            where: {
-                userId,
-                date: {
-                    gte: new Date(now.setHours(0, 0, 0, 0)), // Today 00:00
-                    lte: tomorrow
-                },
-                status: 'SCHEDULED'
-            },
-            include: {
-                shift: {
-                    include: {
-                        serviceSeeker: true
-                    }
-                }
-            }
-        });
-
-        const validShifts = [];
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(todayStart);
+        tomorrow.setDate(tomorrow.getDate() + 2); // Include tomorrow fully
 
-        // Filter shifts that need notification
-        for (const assignment of upcomingShifts) {
+        // OPTIMIZATION: Single transaction to fetch all needed data
+        const [upcomingShifts, activeClockIn, existingNotifications, policyData] = await prisma.$transaction([
+            // 1. Get upcoming shifts for user
+            prisma.shiftAssignment.findMany({
+                where: {
+                    userId,
+                    date: { gte: todayStart, lte: tomorrow },
+                    status: 'SCHEDULED'
+                },
+                select: {
+                    id: true,
+                    date: true,
+                    shift: {
+                        select: {
+                            startTime: true,
+                            serviceSeeker: {
+                                select: { firstName: true, lastName: true }
+                            }
+                        }
+                    }
+                },
+                take: 10 // Limit to prevent large result sets
+            }),
+            // 2. Get active clock-in
+            prisma.clockInOut.findFirst({
+                where: { userId, clockOutTime: null },
+                select: {
+                    serviceSeekerId: true,
+                    serviceSeeker: {
+                        select: { firstName: true, lastName: true, preferredName: true }
+                    }
+                }
+            }),
+            // 3. Get ALL today's notifications in one query
+            prisma.notification.findMany({
+                where: {
+                    userId,
+                    createdAt: { gte: todayStart }
+                },
+                select: { title: true, message: true }
+            }),
+            // 4. Get policy signature counts (optimized raw query)
+            prisma.$queryRaw`
+                SELECT 
+                    (SELECT COUNT(*) FROM Policy) as totalPolicies,
+                    (SELECT COUNT(*) FROM PolicySignature WHERE userId = ${userId}) as signedCount
+            `
+        ]);
+
+        // Create Set for O(1) existing notification lookup
+        const existingKeys = new Set(existingNotifications.map(n => `${n.title}|${n.message?.substring(0, 30)}`));
+        const notificationsToCreate = [];
+
+        // 1. Process Upcoming Shifts (filter in memory - faster than multiple DB calls)
+        const validShifts = upcomingShifts.filter(assignment => {
             const shiftDate = new Date(assignment.date);
             const [hours, minutes] = assignment.shift.startTime.split(':').map(Number);
             shiftDate.setHours(hours, minutes, 0, 0);
-
-            const diffHours = (shiftDate - new Date()) / (1000 * 60 * 60);
-
-            if (diffHours > -1 && diffHours <= 2) {
-                validShifts.push(assignment);
-            }
-        }
-
-        const notificationsToCreate = [];
-        let newNotifications = 0;
-
-        // Batch check for existing shift notifications
-        if (validShifts.length > 0) {
-            const existingShiftNotifications = await prisma.notification.findMany({
-                where: {
-                    userId,
-                    createdAt: { gte: todayStart },
-                    title: { in: validShifts.map(s => `Upcoming Shift: ${s.shift.serviceSeeker.firstName}`) }
-                },
-                select: { title: true }
-            });
-
-            const existingShiftTitles = new Set(existingShiftNotifications.map(n => n.title));
-
-            for (const assignment of validShifts) {
-                const title = `Upcoming Shift: ${assignment.shift.serviceSeeker.firstName}`;
-
-                if (!existingShiftTitles.has(title)) {
-                    notificationsToCreate.push({
-                        userId,
-                        title,
-                        message: `You have a shift with ${assignment.shift.serviceSeeker.firstName} ${assignment.shift.serviceSeeker.lastName} starting at ${assignment.shift.startTime}.`,
-                        type: 'INFO',
-                        link: '/care-worker/rota',
-                        isRead: false
-                    });
-                    existingShiftTitles.add(title);
-                    newNotifications++;
-                }
-            }
-        }
-
-        // 2. Check for Upcoming Visits (for the user's active clock-in)
-        const activeClockIn = await prisma.clockInOut.findFirst({
-            where: {
-                userId,
-                clockOutTime: null
-            },
-            select: { serviceSeekerId: true }
+            const diffHours = (shiftDate - now) / (1000 * 60 * 60);
+            return diffHours > -1 && diffHours <= 2;
         });
 
+        for (const assignment of validShifts) {
+            const title = `Upcoming Shift: ${assignment.shift.serviceSeeker.firstName}`;
+            const message = `You have a shift with ${assignment.shift.serviceSeeker.firstName} ${assignment.shift.serviceSeeker.lastName} starting at ${assignment.shift.startTime}.`;
+            const key = `${title}|${message.substring(0, 30)}`;
+
+            if (!existingKeys.has(key)) {
+                notificationsToCreate.push({
+                    userId,
+                    title,
+                    message,
+                    type: 'INFO',
+                    link: '/care-worker/rota',
+                    isRead: false
+                });
+                existingKeys.add(key);
+            }
+        }
+
+        // 2. Process Upcoming Visits (only if clocked in)
         if (activeClockIn?.serviceSeekerId) {
-            const serviceSeekerId = activeClockIn.serviceSeekerId;
-
-            // Get service seeker info
-            const serviceSeeker = await prisma.serviceSeeker.findUnique({
-                where: { id: serviceSeekerId },
-                select: { firstName: true, lastName: true, preferredName: true }
-            });
-
-            // Find upcoming visits for this service seeker (today and tomorrow)
+            // Fetch visits in a separate quick query
             const upcomingVisits = await prisma.serviceSeekerCalendarEntry.findMany({
                 where: {
-                    serviceSeekerId,
+                    serviceSeekerId: activeClockIn.serviceSeekerId,
                     entryType: { in: ['FAMILY_VISIT', 'PROFESSIONAL_VISIT'] },
-                    date: {
-                        gte: todayStart,
-                        lte: tomorrow
-                    },
-                    completed: null // Only pending visits
+                    date: { gte: todayStart, lte: tomorrow },
+                    completed: null
                 },
+                select: { id: true, name: true, date: true, time: true, entryType: true },
+                take: 10,
                 orderBy: [{ date: 'asc' }, { time: 'asc' }]
             });
 
-            // Check for existing visit notifications today
-            const existingVisitNotifications = await prisma.notification.findMany({
-                where: {
-                    userId,
-                    createdAt: { gte: todayStart },
-                    title: { startsWith: 'Upcoming Visit:' }
-                },
-                select: { title: true, message: true }
-            });
-
-            const existingVisitKeys = new Set(
-                existingVisitNotifications.map(n => `${n.title}|${n.message}`)
-            );
-
+            const serviceSeeker = activeClockIn.serviceSeeker;
             for (const visit of upcomingVisits) {
                 const visitDate = new Date(visit.date);
-                const isToday = visitDate.toDateString() === new Date().toDateString();
+                const isToday = visitDate.toDateString() === now.toDateString();
                 const dateLabel = isToday ? 'Today' : 'Tomorrow';
                 const visitorType = visit.entryType === 'FAMILY_VISIT' ? 'Family' : 'Professional';
 
                 const title = `Upcoming Visit: ${visit.name || 'Visitor'}`;
                 const message = `${visitorType} visit for ${serviceSeeker?.preferredName || serviceSeeker?.firstName} scheduled ${dateLabel} at ${visit.time || 'TBA'}.`;
-                const key = `${title}|${message}`;
+                const key = `${title}|${message.substring(0, 30)}`;
 
-                if (!existingVisitKeys.has(key)) {
+                if (!existingKeys.has(key)) {
                     notificationsToCreate.push({
                         userId,
                         title,
@@ -151,17 +134,41 @@ export async function POST(request) {
                         link: '/care-worker/visits',
                         isRead: false
                     });
-                    existingVisitKeys.add(key);
-                    newNotifications++;
+                    existingKeys.add(key);
                 }
             }
         }
 
-        // Create all notifications in batch
+        // 3. Process Pending Policy Signatures (from pre-fetched data)
+        const { totalPolicies, signedCount } = policyData[0] || { totalPolicies: 0, signedCount: 0 };
+        const unsignedCount = Number(totalPolicies) - Number(signedCount);
+
+        if (unsignedCount > 0) {
+            const policyKey = `Pending Policy Signatures|You have`;
+            const hasExistingPolicyNotif = existingNotifications.some(n =>
+                n.title === 'Pending Policy Signatures'
+            );
+
+            if (!hasExistingPolicyNotif) {
+                notificationsToCreate.push({
+                    userId,
+                    title: 'Pending Policy Signatures',
+                    message: `You have ${unsignedCount} policy/ies awaiting your signature.`,
+                    type: 'WARNING',
+                    link: '/care-worker/policies',
+                    isRead: false
+                });
+            }
+        }
+
+        // OPTIMIZATION: Batch create all notifications at once
+        let newNotifications = 0;
         if (notificationsToCreate.length > 0) {
             await prisma.notification.createMany({
-                data: notificationsToCreate
+                data: notificationsToCreate,
+                skipDuplicates: true
             });
+            newNotifications = notificationsToCreate.length;
         }
 
         return NextResponse.json({ success: true, newNotifications });

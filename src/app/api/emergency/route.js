@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { sendPushToRoles } from '@/lib/send-push';
 
 // POST /api/emergency - Trigger emergency alert (Mobile App)
 export async function POST(request) {
@@ -13,7 +14,7 @@ export async function POST(request) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    
+
     const body = await request.json();
     const { location, message } = body;
 
@@ -59,10 +60,49 @@ export async function POST(request) {
       }
     });
 
+    // Send emergency notification to all Admins, Directors, HR, and Register Managers
+    try {
+      const adminUsers = await prisma.user.findMany({
+        where: {
+          role: { name: { in: ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'] } },
+          status: 'CURRENT',
+          id: { not: user.id } // Don't notify the person who triggered it
+        },
+        select: { id: true }
+      });
+
+      if (adminUsers.length > 0) {
+        const triggerName = `${user.firstName} ${user.lastName}`;
+        const notificationMessage = `${triggerName} has triggered an emergency alert. ${message ? `Message: ${message}` : ''} ${location ? `Location: ${location}` : ''}`;
+
+        await prisma.notification.createMany({
+          data: adminUsers.map(admin => ({
+            userId: admin.id,
+            title: '🚨 EMERGENCY ALERT',
+            message: notificationMessage,
+            type: 'ERROR',
+            link: '/admin/emergency-reports',
+            isRead: false
+          }))
+        });
+
+        // Send push notification to admin devices (critical - send immediately)
+        sendPushToRoles(['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'], {
+          title: '🚨 EMERGENCY ALERT',
+          message: notificationMessage,
+          type: 'ERROR',
+          link: '/admin/emergency-reports'
+        }).catch(err => console.error('Push notification error:', err));
+      }
+    } catch (notifError) {
+      console.error('Failed to create emergency notifications:', notifError);
+    }
+
     return NextResponse.json({
       success: true,
       data: emergencyAlert
     }, { status: 201 });
+
 
   } catch (error) {
     console.error('POST /api/emergency error:', error);
@@ -82,7 +122,7 @@ export async function GET(request) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // 'ACTIVE', 'ACKNOWLEDGED', 'RESOLVED', or null for all
     const teamId = searchParams.get('teamId'); // Filter by team

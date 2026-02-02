@@ -296,6 +296,38 @@ export async function POST(request) {
       });
     }
 
+    // Notify Admins/Managers about new handover (OPTIMIZED)
+    try {
+      const adminUsers = await prisma.user.findMany({
+        where: {
+          role: { name: { in: ['ADMIN', 'DIRECTOR', 'REGISTER_MANAGER'] } },
+          status: 'CURRENT'
+        },
+        select: { id: true },
+        take: 50 // Limit to prevent excessive queries
+      });
+
+      if (adminUsers.length > 0) {
+        const creatorName = `${handover.createdBy.firstName} ${handover.createdBy.lastName}`;
+        const seekerName = handover.serviceSeeker?.preferredName ||
+          `${handover.serviceSeeker?.firstName} ${handover.serviceSeeker?.lastName}`;
+
+        await prisma.notification.createMany({
+          data: adminUsers.map(admin => ({
+            userId: admin.id,
+            title: 'New Handover Note',
+            message: `${creatorName} submitted a handover for ${seekerName}.`,
+            type: 'INFO',
+            link: '/admin/handovers',
+            isRead: false
+          })),
+          skipDuplicates: true
+        });
+      }
+    } catch (notifError) {
+      console.error('Failed to create handover admin notifications:', notifError);
+    }
+
     return NextResponse.json({
       success: true,
       data: handover

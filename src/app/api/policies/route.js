@@ -190,6 +190,40 @@ export async function POST(request) {
       reviewCount: 0
     };
 
+    // Notify all care workers about the new policy (OPTIMIZED: limit batch size)
+    try {
+      const careWorkers = await prisma.user.findMany({
+        where: {
+          role: { name: 'CARE_WORKER' },
+          status: 'CURRENT',
+          id: { not: userId }
+        },
+        select: { id: true },
+        take: 500 // Limit to prevent excessive notifications
+      });
+
+      if (careWorkers.length > 0) {
+        // Batch create in chunks of 100 to prevent connection issues
+        const BATCH_SIZE = 100;
+        for (let i = 0; i < careWorkers.length; i += BATCH_SIZE) {
+          const batch = careWorkers.slice(i, i + BATCH_SIZE);
+          await prisma.notification.createMany({
+            data: batch.map(worker => ({
+              userId: worker.id,
+              title: 'New Policy Uploaded',
+              message: `A new policy "${name}" has been uploaded. Please review and sign it.`,
+              type: 'INFO',
+              link: '/care-worker/policies',
+              isRead: false
+            })),
+            skipDuplicates: true
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error('Failed to create policy notifications:', notifError);
+    }
+
     return NextResponse.json({
       success: true,
       data: transformedPolicy

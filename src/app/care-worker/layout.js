@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import PushNotificationToggle from '@/components/PushNotificationToggle';
 
 export default function CareWorkerLayout({ children }) {
     const pathname = usePathname();
@@ -14,6 +15,7 @@ export default function CareWorkerLayout({ children }) {
     const [unreadCount, setUnreadCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
 
+    // OPTIMIZED: Fetch notifications with proper cleanup
     const fetchNotifications = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -79,12 +81,60 @@ export default function CareWorkerLayout({ children }) {
         setUser(JSON.parse(storedUser));
     }, [router]);
 
+    // OPTIMIZED: Notification polling with rate limiting and notification check
     useEffect(() => {
-        if (user?.id) {
-            fetchNotifications();
-            const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
-            return () => clearInterval(interval);
-        }
+        if (!user?.id) return;
+
+        let isMounted = true;
+        let lastCheckTime = 0;
+        const CHECK_COOLDOWN = 60000; // 1 minute between notification checks
+
+        // Trigger system notification check (shifts, visits, policies)
+        const triggerNotificationCheck = async () => {
+            const now = Date.now();
+            if (now - lastCheckTime < CHECK_COOLDOWN) return;
+            lastCheckTime = now;
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token || !isMounted) return;
+
+                await fetch('/api/notifications/check', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                // Refresh notifications after check
+                if (isMounted) fetchNotifications();
+            } catch (e) {
+                console.error('Notification check error:', e);
+            }
+        };
+
+        // Initial fetch
+        fetchNotifications();
+
+        // Delayed initial notification check (5s after load)
+        const initialCheck = setTimeout(() => {
+            if (isMounted) triggerNotificationCheck();
+        }, 5000);
+
+        // Poll every 45 seconds (optimized from 30s)
+        const notifInterval = setInterval(() => {
+            if (isMounted) fetchNotifications();
+        }, 45000);
+
+        // Run notification check every 2 minutes
+        const checkInterval = setInterval(() => {
+            if (isMounted) triggerNotificationCheck();
+        }, 120000);
+
+        return () => {
+            isMounted = false;
+            clearTimeout(initialCheck);
+            clearInterval(notifInterval);
+            clearInterval(checkInterval);
+        };
     }, [user?.id]);
 
     const handleLogout = () => {
@@ -236,6 +286,9 @@ export default function CareWorkerLayout({ children }) {
                     </div>
 
                     <div className="flex items-center space-x-3">
+                        {/* Push Notification Toggle */}
+                        <PushNotificationToggle />
+
                         {/* Notification Dropdown */}
                         <div className="relative">
                             <button

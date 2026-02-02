@@ -14,7 +14,7 @@ export async function GET(request) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { searchParams } = new URL(request.url);
-    
+
     const userId = searchParams.get('userId'); // Filter by specific user (admin only)
     const date = searchParams.get('date'); // Filter by date (YYYY-MM-DD)
     const startDate = searchParams.get('startDate'); // Filter by date range
@@ -75,23 +75,28 @@ export async function GET(request) {
       whereClause.isEarly = false;
     }
 
+    // OPTIMIZATION: Add limit to prevent large result sets
+    const limit = parseInt(searchParams.get('limit') || '100');
+    const page = parseInt(searchParams.get('page') || '1');
+    const skip = (page - 1) * limit;
+
     const clockInOuts = await prisma.clockInOut.findMany({
       where: whereClause,
       include: {
         user: {
-          select: { 
-            id: true, 
-            firstName: true, 
+          select: {
+            id: true,
+            firstName: true,
             lastName: true,
             email: true
           }
         },
         serviceSeeker: {
-          select: { 
-            id: true, 
-            firstName: true, 
-            lastName: true, 
-            preferredName: true 
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            preferredName: true
           }
         },
         shiftAssignment: {
@@ -102,11 +107,11 @@ export async function GET(request) {
                   select: { id: true, name: true }
                 },
                 serviceSeeker: {
-                  select: { 
-                    id: true, 
-                    firstName: true, 
-                    lastName: true, 
-                    preferredName: true 
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    preferredName: true
                   }
                 }
               }
@@ -116,7 +121,9 @@ export async function GET(request) {
       },
       orderBy: {
         date: 'desc'
-      }
+      },
+      take: Math.min(limit, 200), // Cap at 200 to prevent memory issues
+      skip
     });
 
     return NextResponse.json({
@@ -126,18 +133,18 @@ export async function GET(request) {
 
   } catch (error) {
     console.error('GET /clock-in-out error:', error);
-    
+
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Invalid or expired token' 
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid or expired token'
       }, { status: 401 });
     }
 
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to fetch clock in/out records', 
-      details: error.message 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch clock in/out records',
+      details: error.message
     }, { status: 500 });
   }
 }

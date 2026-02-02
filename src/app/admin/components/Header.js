@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Inbox from './Inbox';
 import EmergencyAlert from './EmergencyAlert';
+import PushNotificationToggle from '@/components/PushNotificationToggle';
 
 export default function Header({ user }) {
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
@@ -59,9 +60,14 @@ export default function Header({ user }) {
     };
   }, [canViewEmergencies]);
 
-  // Fetch notifications
+  // Fetch notifications - OPTIMIZED with longer intervals
   useEffect(() => {
+    let isMounted = true;
+    let lastAdminCheck = 0;
+    const ADMIN_CHECK_COOLDOWN = 120000; // 2 minutes between admin checks
+
     const fetchNotifications = async () => {
+      if (!isMounted) return;
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -69,8 +75,8 @@ export default function Header({ user }) {
         const res = await fetch('/api/notifications?limit=5', {
           headers: { Authorization: `Bearer ${token}` }
         });
+        if (!isMounted) return;
         const data = await res.json();
-        console.log('Fetched notifications:', data);
         if (data.success) {
           setNotifications(data.data);
           setUnreadCount(data.unreadCount);
@@ -80,18 +86,59 @@ export default function Header({ user }) {
       }
     };
 
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
-    return () => clearInterval(interval);
-  }, []);
+    // Check for admin-level notifications with rate limiting
+    const triggerAdminCheck = async () => {
+      if (!canViewEmergencies || !isMounted) return;
 
-  // Fetch unread message count
+      // Rate limit: only run if cooldown has passed
+      const now = Date.now();
+      if (now - lastAdminCheck < ADMIN_CHECK_COOLDOWN) return;
+      lastAdminCheck = now;
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        await fetch('/api/notifications/admin-check', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        // After admin check, refresh notifications
+        if (isMounted) fetchNotifications();
+      } catch (error) {
+        console.error('Admin check error:', error);
+      }
+    };
+
+    // Initial fetch
+    fetchNotifications();
+
+    // Delayed initial admin check (after 5 seconds to not block page load)
+    const initialAdminCheck = setTimeout(() => {
+      if (canViewEmergencies) triggerAdminCheck();
+    }, 5000);
+
+    // Poll notifications every 45 seconds (reduced from 30s)
+    const interval = setInterval(fetchNotifications, 45000);
+
+    // Admin check every 2 minutes (reduced from 60s)
+    const adminInterval = setInterval(triggerAdminCheck, 120000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(initialAdminCheck);
+      clearInterval(interval);
+      clearInterval(adminInterval);
+    };
+  }, [canViewEmergencies]);
+
+  // Fetch unread message count - OPTIMIZED with longer interval
   const fetchUnreadMessages = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const res = await fetch('/api/conversations', {
+      const res = await fetch('/api/conversations?countOnly=true', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -106,7 +153,7 @@ export default function Header({ user }) {
 
   useEffect(() => {
     fetchUnreadMessages();
-    const interval = setInterval(fetchUnreadMessages, 30000); // Poll every 30s
+    const interval = setInterval(fetchUnreadMessages, 60000); // Poll every 60s (was 30s)
     return () => clearInterval(interval);
   }, []);
 
@@ -136,6 +183,9 @@ export default function Header({ user }) {
 
           {/* Action Icons */}
           <div className="flex items-center space-x-3">
+            {/* Push Notification Toggle */}
+            <PushNotificationToggle />
+
             {/* Emergency Alert Button */}
             {canViewEmergencies && (
               <button

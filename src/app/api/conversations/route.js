@@ -29,6 +29,8 @@ export async function GET(request) {
     }
 
     const userId = decoded.userId;
+    const { searchParams } = new URL(request.url);
+    const countOnly = searchParams.get('countOnly') === 'true';
 
     // Check if conversation model exists in Prisma client
     if (!prisma.conversation) {
@@ -41,6 +43,33 @@ export async function GET(request) {
         },
         { status: 503 }
       );
+    }
+
+    // OPTIMIZATION: If only count is needed, skip full conversation loading
+    if (countOnly) {
+      const conversationIds = await prisma.conversationParticipant.findMany({
+        where: { userId: parseInt(userId) },
+        select: { conversationId: true },
+        take: 100 // Limit for performance
+      });
+
+      const unreadGroups = await prisma.message.groupBy({
+        by: ['conversationId'],
+        where: {
+          conversationId: { in: conversationIds.map(c => c.conversationId) },
+          senderId: { not: parseInt(userId) },
+          isRead: false
+        },
+        _count: { id: true }
+      });
+
+      // Format as minimal response for header unread count
+      const conversations = unreadGroups.map(group => ({
+        id: group.conversationId,
+        unreadCount: group._count.id
+      }));
+
+      return NextResponse.json({ conversations });
     }
 
     const conversations = await prisma.conversation.findMany({

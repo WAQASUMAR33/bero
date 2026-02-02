@@ -161,7 +161,7 @@ export async function GET(request) {
       const enhancedShifts = shifts.map(shift => {
         // Find the assignment for this user
         const userAssignment = shift.assignments.find(a => a.userId === decoded.userId);
-        
+
         if (userAssignment) {
           const assignmentDate = new Date(userAssignment.date);
           const dateKey = `${userAssignment.id}_${assignmentDate.toISOString().split('T')[0]}`;
@@ -180,7 +180,7 @@ export async function GET(request) {
             clockInOutId: clockInOut?.id || null
           };
         }
-        
+
         return shift;
       });
 
@@ -190,10 +190,10 @@ export async function GET(request) {
     return NextResponse.json(shifts);
   } catch (error) {
     console.error('GET /shifts error:', error);
-    
+
     // Handle database connection errors
     const message = (error && (error.message || '')).toString();
-    
+
     // MySQL connection / resource limits
     if (message.includes('max_connections_per_hour') || message.includes('ERROR 42000 (1226)')) {
       return NextResponse.json(
@@ -204,11 +204,11 @@ export async function GET(request) {
         { status: 503 }
       );
     }
-    
+
     // Database unavailable
     if (message.includes("Can't reach database server") || error.code === 'P1001') {
       return NextResponse.json(
-        { 
+        {
           error: 'Database unavailable. Please check your database connection.',
           details: 'Cannot reach database server at ' + (process.env.DATABASE_URL?.match(/@([^:]+):/)?.[1] || 'database server'),
           code: 'P1001'
@@ -216,7 +216,7 @@ export async function GET(request) {
         { status: 503 }
       );
     }
-    
+
     return NextResponse.json({ error: 'Failed to fetch shifts', details: error.message }, { status: 500 });
   }
 }
@@ -347,6 +347,31 @@ export async function POST(request) {
         }
       }
     });
+
+    // Notify assigned care workers about their new shift (OPTIMIZED)
+    if (uniqueAssignedUserIds.length > 0 && uniqueAssignedUserIds.length <= 50 && shiftWithAssignments) {
+      try {
+        const serviceSeekerName = shiftWithAssignments.serviceSeeker?.preferredName ||
+          `${shiftWithAssignments.serviceSeeker?.firstName} ${shiftWithAssignments.serviceSeeker?.lastName}`;
+        const shiftDate = new Date(fromDate).toLocaleDateString('en-GB', {
+          weekday: 'short', day: 'numeric', month: 'short'
+        });
+
+        await prisma.notification.createMany({
+          data: uniqueAssignedUserIds.map(userId => ({
+            userId: userId,
+            title: 'New Shift Assigned',
+            message: `You have been assigned to a shift for ${serviceSeekerName} on ${shiftDate} (${startTime} - ${endTime}).`,
+            type: 'INFO',
+            link: '/care-worker/rota',
+            isRead: false
+          })),
+          skipDuplicates: true
+        });
+      } catch (notifError) {
+        console.error('Failed to create shift assignment notifications:', notifError);
+      }
+    }
 
     return NextResponse.json(shiftWithAssignments ?? shift, { status: 201 });
   } catch (error) {

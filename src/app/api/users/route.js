@@ -6,14 +6,14 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
     // In a real app, you'd verify the JWT token here
     // For now, we'll just check if it exists
-    
+
     const users = await prisma.user.findMany({
       include: {
         region: true,
@@ -51,7 +51,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
@@ -147,6 +147,34 @@ export async function POST(request) {
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
+
+    // Notify HR and Admins about new staff member (OPTIMIZED)
+    try {
+      const hrAdmins = await prisma.user.findMany({
+        where: {
+          role: { name: { in: ['ADMIN', 'HR', 'DIRECTOR'] } },
+          status: 'CURRENT'
+        },
+        select: { id: true },
+        take: 50 // Limit to prevent excessive queries
+      });
+
+      if (hrAdmins.length > 0) {
+        await prisma.notification.createMany({
+          data: hrAdmins.map(admin => ({
+            userId: admin.id,
+            title: 'New Staff Member Registered',
+            message: `${firstName} ${lastName} has been added to the system.`,
+            type: 'INFO',
+            link: '/admin/staff-management',
+            isRead: false
+          })),
+          skipDuplicates: true
+        });
+      }
+    } catch (notifError) {
+      console.error('Failed to create new staff notifications:', notifError);
+    }
 
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {

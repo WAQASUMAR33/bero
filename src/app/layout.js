@@ -26,6 +26,7 @@ export default function RootLayout({ children }) {
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossOrigin=""
         />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body
         suppressHydrationWarning={true}

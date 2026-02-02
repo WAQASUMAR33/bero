@@ -163,6 +163,41 @@ export async function POST(request) {
             }
         });
 
+        // Get the care worker's name
+        const careWorker = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { firstName: true, lastName: true }
+        });
+
+        // Get service seeker name
+        const serviceSeekerName = visit.serviceSeeker?.preferredName ||
+            `${visit.serviceSeeker?.firstName} ${visit.serviceSeeker?.lastName}`;
+
+        // Send notification to all Admins about the unannounced visit
+        const adminUsers = await prisma.user.findMany({
+            where: {
+                role: { in: ['ADMIN', 'SUPER_ADMIN'] },
+                status: 'CURRENT'
+            },
+            select: { id: true }
+        });
+
+        if (adminUsers.length > 0) {
+            const visitorType = visitType === 'FAMILY' ? 'Family' : 'Professional';
+            const notificationsData = adminUsers.map(admin => ({
+                userId: admin.id,
+                title: `Unannounced ${visitorType} Visit Reported`,
+                message: `${careWorker?.firstName || 'Care Worker'} reported an unannounced visit by ${name || 'Unknown'} for ${serviceSeekerName}.`,
+                type: 'WARNING',
+                link: '/admin/calendar',
+                isRead: false
+            }));
+
+            await prisma.notification.createMany({
+                data: notificationsData
+            });
+        }
+
         return NextResponse.json({
             success: true,
             message: 'Unscheduled visit reported successfully.',

@@ -207,3 +207,30 @@ await prisma.serviceSeekerCalendarEntry.updateMany({
     }
 });
 ```
+
+---
+
+## 6. Notifications System ✅ IMPLEMENTED
+
+### A. Upcoming Visit Notifications (Care Worker)
+When a care worker is clocked in based on the `/api/notifications/check` polling:
+- The system checks for upcoming visits (today/tomorrow) for the service user they are clocked in with.
+- Creates notifications with title: `"Upcoming Visit: [Visitor Name]"`
+- Links to `/care-worker/visits`
+
+**Trigger:** Automatic polling via `POST /api/notifications/check` (called periodically by frontend).
+
+### B. Unannounced Visit Alert (Admin)
+When a care worker reports an unscheduled/unannounced visit:
+- The system automatically sends a notification to **all Admin and Super Admin users**.
+- Notification type: `WARNING`
+- Title: `"Unannounced [Family/Professional] Visit Reported"`
+- Message includes: Care worker name, visitor name, service user name.
+- Links to `/admin/calendar`
+
+**Trigger:** Immediate, upon `POST /api/mobile/visits` (report unscheduled visit).
+
+### Files Updated:
+- `src/app/api/notifications/check/route.js` - Added upcoming visit checks for care workers
+- `src/app/api/mobile/visits/route.js` - Added admin notification on unannounced visit report
+

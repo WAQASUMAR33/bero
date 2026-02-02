@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
 // POST /api/notifications/check
-// Trigger system checks for generating notifications (e.g. upcoming shifts)
+// Trigger system checks for generating notifications (e.g. upcoming shifts, visits)
 export async function POST(request) {
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -52,42 +52,112 @@ export async function POST(request) {
             }
         }
 
-        if (validShifts.length === 0) {
-            return NextResponse.json({ success: true, newNotifications: 0 });
-        }
-
-        // Batch check for existing notifications
-        const existingNotifications = await prisma.notification.findMany({
-            where: {
-                userId,
-                createdAt: { gte: todayStart },
-                title: { in: validShifts.map(s => `Upcoming Shift: ${s.shift.serviceSeeker.firstName}`) }
-            },
-            select: { title: true }
-        });
-
-        const existingTitles = new Set(existingNotifications.map(n => n.title));
         const notificationsToCreate = [];
-
         let newNotifications = 0;
 
-        for (const assignment of validShifts) {
-            const title = `Upcoming Shift: ${assignment.shift.serviceSeeker.firstName}`;
-
-            if (!existingTitles.has(title)) {
-                notificationsToCreate.push({
+        // Batch check for existing shift notifications
+        if (validShifts.length > 0) {
+            const existingShiftNotifications = await prisma.notification.findMany({
+                where: {
                     userId,
-                    title,
-                    message: `You have a shift with ${assignment.shift.serviceSeeker.firstName} ${assignment.shift.serviceSeeker.lastName} starting at ${assignment.shift.startTime}.`,
-                    type: 'INFO',
-                    link: '/care-worker/rota',
-                    isRead: false
-                });
-                existingTitles.add(title); // Prevent duplicates within the same batch
-                newNotifications++;
+                    createdAt: { gte: todayStart },
+                    title: { in: validShifts.map(s => `Upcoming Shift: ${s.shift.serviceSeeker.firstName}`) }
+                },
+                select: { title: true }
+            });
+
+            const existingShiftTitles = new Set(existingShiftNotifications.map(n => n.title));
+
+            for (const assignment of validShifts) {
+                const title = `Upcoming Shift: ${assignment.shift.serviceSeeker.firstName}`;
+
+                if (!existingShiftTitles.has(title)) {
+                    notificationsToCreate.push({
+                        userId,
+                        title,
+                        message: `You have a shift with ${assignment.shift.serviceSeeker.firstName} ${assignment.shift.serviceSeeker.lastName} starting at ${assignment.shift.startTime}.`,
+                        type: 'INFO',
+                        link: '/care-worker/rota',
+                        isRead: false
+                    });
+                    existingShiftTitles.add(title);
+                    newNotifications++;
+                }
             }
         }
 
+        // 2. Check for Upcoming Visits (for the user's active clock-in)
+        const activeClockIn = await prisma.clockInOut.findFirst({
+            where: {
+                userId,
+                clockOutTime: null
+            },
+            select: { serviceSeekerId: true }
+        });
+
+        if (activeClockIn?.serviceSeekerId) {
+            const serviceSeekerId = activeClockIn.serviceSeekerId;
+
+            // Get service seeker info
+            const serviceSeeker = await prisma.serviceSeeker.findUnique({
+                where: { id: serviceSeekerId },
+                select: { firstName: true, lastName: true, preferredName: true }
+            });
+
+            // Find upcoming visits for this service seeker (today and tomorrow)
+            const upcomingVisits = await prisma.serviceSeekerCalendarEntry.findMany({
+                where: {
+                    serviceSeekerId,
+                    entryType: { in: ['FAMILY_VISIT', 'PROFESSIONAL_VISIT'] },
+                    date: {
+                        gte: todayStart,
+                        lte: tomorrow
+                    },
+                    completed: null // Only pending visits
+                },
+                orderBy: [{ date: 'asc' }, { time: 'asc' }]
+            });
+
+            // Check for existing visit notifications today
+            const existingVisitNotifications = await prisma.notification.findMany({
+                where: {
+                    userId,
+                    createdAt: { gte: todayStart },
+                    title: { startsWith: 'Upcoming Visit:' }
+                },
+                select: { title: true, message: true }
+            });
+
+            const existingVisitKeys = new Set(
+                existingVisitNotifications.map(n => `${n.title}|${n.message}`)
+            );
+
+            for (const visit of upcomingVisits) {
+                const visitDate = new Date(visit.date);
+                const isToday = visitDate.toDateString() === new Date().toDateString();
+                const dateLabel = isToday ? 'Today' : 'Tomorrow';
+                const visitorType = visit.entryType === 'FAMILY_VISIT' ? 'Family' : 'Professional';
+
+                const title = `Upcoming Visit: ${visit.name || 'Visitor'}`;
+                const message = `${visitorType} visit for ${serviceSeeker?.preferredName || serviceSeeker?.firstName} scheduled ${dateLabel} at ${visit.time || 'TBA'}.`;
+                const key = `${title}|${message}`;
+
+                if (!existingVisitKeys.has(key)) {
+                    notificationsToCreate.push({
+                        userId,
+                        title,
+                        message,
+                        type: 'INFO',
+                        link: '/care-worker/visits',
+                        isRead: false
+                    });
+                    existingVisitKeys.add(key);
+                    newNotifications++;
+                }
+            }
+        }
+
+        // Create all notifications in batch
         if (notificationsToCreate.length > 0) {
             await prisma.notification.createMany({
                 data: notificationsToCreate

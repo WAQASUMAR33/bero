@@ -1,19 +1,43 @@
 // Service Worker for Push Notifications
+// Version 2 - Updated with logging
 // This file should be placed in the public folder
 
+console.log('[SW] Service Worker loaded, version 2');
+
+self.addEventListener('install', function (event) {
+    console.log('[SW] Installing service worker...');
+    // Force the waiting service worker to become active
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', function (event) {
+    console.log('[SW] Service worker activated');
+    // Claim all clients immediately
+    event.waitUntil(clients.claim());
+});
+
 self.addEventListener('push', function (event) {
+    console.log('[SW] Push event received!');
+
     if (!event.data) {
-        console.log('Push event but no data');
+        console.log('[SW] Push event but no data');
         return;
     }
 
-    const data = event.data.json();
+    let data;
+    try {
+        data = event.data.json();
+        console.log('[SW] Push data:', JSON.stringify(data));
+    } catch (e) {
+        console.error('[SW] Error parsing push data:', e);
+        data = { title: 'Notification', message: event.data.text() };
+    }
 
     const options = {
         body: data.message || data.body || 'You have a new notification',
         icon: '/assets/logo2.png',
-        badge: '/assets/logo-badge.png',
-        vibrate: [100, 50, 100],
+        badge: '/assets/logo2.png',
+        vibrate: [200, 100, 200],
         tag: data.tag || 'notification-' + Date.now(),
         renotify: true,
         requireInteraction: data.type === 'ERROR' || data.type === 'WARNING',
@@ -33,31 +57,30 @@ self.addEventListener('push', function (event) {
         ]
     };
 
-    // Set notification icon color based on type
-    if (data.type === 'ERROR') {
-        options.icon = '/assets/alert-icon.png';
-    } else if (data.type === 'WARNING') {
-        options.icon = '/assets/warning-icon.png';
-    }
+    console.log('[SW] Showing notification:', data.title, options);
 
     event.waitUntil(
         self.registration.showNotification(data.title || 'Beeru Care', options)
+            .then(() => console.log('[SW] Notification shown successfully'))
+            .catch(err => console.error('[SW] Error showing notification:', err))
     );
 });
 
 self.addEventListener('notificationclick', function (event) {
+    console.log('[SW] Notification clicked');
     event.notification.close();
 
     const action = event.action;
     const notificationData = event.notification.data;
 
     if (action === 'dismiss') {
-        // Just close the notification
+        console.log('[SW] Notification dismissed');
         return;
     }
 
     // Open the link (either from action or default click)
     const urlToOpen = notificationData?.url || '/';
+    console.log('[SW] Opening URL:', urlToOpen);
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
@@ -81,12 +104,11 @@ self.addEventListener('notificationclick', function (event) {
 
 // Handle subscription change
 self.addEventListener('pushsubscriptionchange', function (event) {
-    console.log('Push subscription changed');
+    console.log('[SW] Push subscription changed');
     event.waitUntil(
         self.registration.pushManager.subscribe({ userVisibleOnly: true })
             .then(function (subscription) {
-                console.log('Re-subscribed:', subscription);
-                // You would send this to your server here
+                console.log('[SW] Re-subscribed:', subscription);
             })
     );
 });

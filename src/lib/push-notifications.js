@@ -12,10 +12,17 @@ const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
  * Initialize web-push with VAPID details (lazy loading)
  */
 async function initWebPush() {
-    if (webpush && vapidConfigured) return true;
+    if (webpush && vapidConfigured) {
+        console.log('[WebPush] Already initialized');
+        return true;
+    }
+
+    console.log('[WebPush] Initializing...');
+    console.log('[WebPush] VAPID public key length:', vapidPublicKey?.length || 0);
+    console.log('[WebPush] VAPID private key length:', vapidPrivateKey?.length || 0);
 
     if (!vapidPublicKey || !vapidPrivateKey) {
-        console.warn('VAPID keys not configured. Push notifications disabled.');
+        console.error('[WebPush] VAPID keys not configured. Push notifications disabled.');
         return false;
     }
 
@@ -31,9 +38,10 @@ async function initWebPush() {
         );
 
         vapidConfigured = true;
+        console.log('[WebPush] Successfully initialized with VAPID');
         return true;
     } catch (error) {
-        console.error('Failed to initialize web-push:', error);
+        console.error('[WebPush] Failed to initialize:', error);
         return false;
     }
 }
@@ -45,24 +53,31 @@ async function initWebPush() {
  * @returns {Promise} - Resolves when notification is sent
  */
 export async function sendPushNotification(subscription, payload) {
+    console.log('[WebPush] sendPushNotification called');
+    console.log('[WebPush] Subscription endpoint:', subscription?.endpoint?.substring(0, 50) + '...');
+
     const initialized = await initWebPush();
     if (!initialized || !webpush) {
+        console.error('[WebPush] Not initialized, cannot send');
         return null;
     }
 
     try {
+        console.log('[WebPush] Sending notification with payload:', JSON.stringify(payload).substring(0, 100));
         const result = await webpush.sendNotification(
             subscription,
             JSON.stringify(payload)
         );
+        console.log('[WebPush] Notification sent successfully, status:', result.statusCode);
         return result;
     } catch (error) {
         // Handle expired subscriptions
         if (error.statusCode === 410 || error.statusCode === 404) {
-            console.log('Subscription expired or invalid:', error.endpoint);
+            console.log('[WebPush] Subscription expired or invalid:', subscription?.endpoint?.substring(0, 50));
             return { expired: true, endpoint: subscription.endpoint };
         }
-        console.error('Push notification error:', error);
+        console.error('[WebPush] Push notification error:', error.message);
+        console.error('[WebPush] Error details:', error.body || error);
         throw error;
     }
 }
@@ -74,12 +89,16 @@ export async function sendPushNotification(subscription, payload) {
  * @returns {Promise<Object>} - Results of sending to all subscriptions
  */
 export async function sendPushToMultiple(subscriptions, payload) {
+    console.log('[WebPush] sendPushToMultiple called with', subscriptions?.length, 'subscriptions');
+
     if (!subscriptions || subscriptions.length === 0) {
+        console.log('[WebPush] No subscriptions to send to');
         return { sent: 0, failed: 0, expired: [] };
     }
 
     const initialized = await initWebPush();
     if (!initialized) {
+        console.error('[WebPush] Initialization failed');
         return { sent: 0, failed: 0, expired: [] };
     }
 
@@ -100,10 +119,11 @@ export async function sendPushToMultiple(subscriptions, payload) {
             }
         } else {
             failed++;
-            console.error('Failed to send push:', result.reason);
+            console.error('[WebPush] Failed to send push:', result.reason?.message || result.reason);
         }
     });
 
+    console.log('[WebPush] sendPushToMultiple result: sent=', sent, 'failed=', failed, 'expired=', expired.length);
     return { sent, failed, expired };
 }
 

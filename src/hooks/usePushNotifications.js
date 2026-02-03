@@ -10,12 +10,14 @@ export function usePushNotifications() {
     const [isSupported, setIsSupported] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscription, setSubscription] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false); // Changed to false initially
     const [error, setError] = useState(null);
     const [permission, setPermission] = useState('default');
 
     // Check if push notifications are supported
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const supported = 'serviceWorker' in navigator && 'PushManager' in window;
         setIsSupported(supported);
 
@@ -23,24 +25,36 @@ export function usePushNotifications() {
             setPermission(Notification.permission);
         }
 
-        setIsLoading(false);
+        console.log('[PushNotifications] Browser support check:', {
+            serviceWorker: 'serviceWorker' in navigator,
+            pushManager: 'PushManager' in window,
+            notification: typeof Notification !== 'undefined',
+            isSecureContext: window.isSecureContext,
+            currentPermission: typeof Notification !== 'undefined' ? Notification.permission : 'N/A'
+        });
     }, []);
 
-    // Check existing subscription on mount
+    // Check existing subscription on mount (with timeout to prevent hanging)
     useEffect(() => {
         if (!isSupported) return;
 
         const checkSubscription = async () => {
             try {
-                const registration = await navigator.serviceWorker.ready;
-                const existingSubscription = await registration.pushManager.getSubscription();
+                // Check if service worker is already registered
+                const registrations = await navigator.serviceWorker.getRegistrations();
 
-                if (existingSubscription) {
-                    setSubscription(existingSubscription);
-                    setIsSubscribed(true);
+                if (registrations.length > 0) {
+                    const registration = registrations[0];
+                    const existingSubscription = await registration.pushManager.getSubscription();
+
+                    if (existingSubscription) {
+                        setSubscription(existingSubscription);
+                        setIsSubscribed(true);
+                        console.log('[PushNotifications] Found existing subscription');
+                    }
                 }
             } catch (err) {
-                console.error('Error checking subscription:', err);
+                console.error('[PushNotifications] Error checking subscription:', err);
             }
         };
 
@@ -52,12 +66,18 @@ export function usePushNotifications() {
         if (!isSupported) return null;
 
         try {
+            console.log('[PushNotifications] Registering service worker...');
             const registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('[PushNotifications] Service worker registered:', registration);
+
+            // Wait for it to be ready
             await navigator.serviceWorker.ready;
+            console.log('[PushNotifications] Service worker ready');
+
             return registration;
         } catch (err) {
-            console.error('Service worker registration failed:', err);
-            setError('Failed to register service worker');
+            console.error('[PushNotifications] Service worker registration failed:', err);
+            setError('Failed to register service worker: ' + err.message);
             return null;
         }
     }, [isSupported]);
@@ -67,20 +87,33 @@ export function usePushNotifications() {
         if (!isSupported) return false;
 
         try {
+            console.log('[PushNotifications] Requesting permission...');
             const result = await Notification.requestPermission();
+            console.log('[PushNotifications] Permission result:', result);
             setPermission(result);
             return result === 'granted';
         } catch (err) {
-            console.error('Error requesting permission:', err);
-            setError('Failed to request notification permission');
+            console.error('[PushNotifications] Error requesting permission:', err);
+            setError('Failed to request notification permission: ' + err.message);
             return false;
         }
     }, [isSupported]);
 
     // Subscribe to push notifications
     const subscribe = useCallback(async () => {
+        console.log('[PushNotifications] Subscribe called');
+
         if (!isSupported) {
-            setError('Push notifications not supported');
+            const msg = 'Push notifications not supported in this browser';
+            console.error('[PushNotifications]', msg);
+            setError(msg);
+            return false;
+        }
+
+        if (!window.isSecureContext) {
+            const msg = 'Push notifications require HTTPS or localhost';
+            console.error('[PushNotifications]', msg);
+            setError(msg);
             return false;
         }
 
@@ -89,7 +122,16 @@ export function usePushNotifications() {
 
         try {
             // Request permission if not granted
+            console.log('[PushNotifications] Current permission:', Notification.permission);
+
+            if (Notification.permission === 'denied') {
+                setError('Notifications are blocked. Please enable them in browser settings.');
+                setIsLoading(false);
+                return false;
+            }
+
             if (Notification.permission !== 'granted') {
+                console.log('[PushNotifications] Requesting permission...');
                 const granted = await requestPermission();
                 if (!granted) {
                     setError('Notification permission denied');
@@ -99,6 +141,7 @@ export function usePushNotifications() {
             }
 
             // Register service worker
+            console.log('[PushNotifications] Registering service worker...');
             const registration = await registerServiceWorker();
             if (!registration) {
                 setIsLoading(false);
@@ -106,16 +149,19 @@ export function usePushNotifications() {
             }
 
             // Get VAPID public key from server
+            console.log('[PushNotifications] Fetching VAPID key...');
             const token = localStorage.getItem('token');
             const vapidResponse = await fetch('/api/push-subscribe', {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
 
             if (!vapidResponse.ok) {
-                throw new Error('Failed to get VAPID key');
+                throw new Error('Failed to get VAPID key from server');
             }
 
             const vapidData = await vapidResponse.json();
+            console.log('[PushNotifications] VAPID response:', vapidData);
+
             if (!vapidData.success || !vapidData.vapidPublicKey) {
                 throw new Error('Push notifications not configured on server');
             }
@@ -124,15 +170,18 @@ export function usePushNotifications() {
             const vapidKey = urlBase64ToUint8Array(vapidData.vapidPublicKey);
 
             // Subscribe to push
+            console.log('[PushNotifications] Subscribing to push manager...');
             const pushSubscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: vapidKey
             });
+            console.log('[PushNotifications] Push subscription created:', pushSubscription);
 
             // Detect device type
             const deviceType = getDeviceType();
 
             // Save subscription to server
+            console.log('[PushNotifications] Saving subscription to server...');
             const saveResponse = await fetch('/api/push-subscribe', {
                 method: 'POST',
                 headers: {
@@ -147,15 +196,17 @@ export function usePushNotifications() {
             });
 
             if (!saveResponse.ok) {
-                throw new Error('Failed to save subscription');
+                const errorData = await saveResponse.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to save subscription');
             }
 
+            console.log('[PushNotifications] Subscription saved successfully!');
             setSubscription(pushSubscription);
             setIsSubscribed(true);
             setIsLoading(false);
             return true;
         } catch (err) {
-            console.error('Subscription error:', err);
+            console.error('[PushNotifications] Subscription error:', err);
             setError(err.message || 'Failed to subscribe');
             setIsLoading(false);
             return false;
@@ -186,7 +237,7 @@ export function usePushNotifications() {
             setIsLoading(false);
             return true;
         } catch (err) {
-            console.error('Unsubscribe error:', err);
+            console.error('[PushNotifications] Unsubscribe error:', err);
             setError(err.message || 'Failed to unsubscribe');
             setIsLoading(false);
             return false;

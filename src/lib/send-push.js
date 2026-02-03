@@ -9,13 +9,17 @@ import { sendPushToMultiple } from '@/lib/push-notifications';
  * @returns {Promise<{sent: number, failed: number}>}
  */
 export async function sendPushForNotifications(notifications) {
+    console.log('[SendPush] sendPushForNotifications called with', notifications?.length, 'notifications');
+
     if (!notifications || notifications.length === 0) {
+        console.log('[SendPush] No notifications to send');
         return { sent: 0, failed: 0 };
     }
 
     try {
         // Get unique user IDs
         const userIds = [...new Set(notifications.map(n => n.userId))];
+        console.log('[SendPush] Looking for subscriptions for user IDs:', userIds);
 
         // Fetch all active push subscriptions for these users
         const subscriptions = await prisma.pushSubscription.findMany({
@@ -32,7 +36,10 @@ export async function sendPushForNotifications(notifications) {
             }
         });
 
+        console.log('[SendPush] Found', subscriptions.length, 'active subscriptions');
+
         if (subscriptions.length === 0) {
+            console.log('[SendPush] No active subscriptions found for these users');
             return { sent: 0, failed: 0 };
         }
 
@@ -58,7 +65,10 @@ export async function sendPushForNotifications(notifications) {
 
         for (const notification of notifications) {
             const userSubs = subsByUser[notification.userId];
-            if (!userSubs || userSubs.length === 0) continue;
+            if (!userSubs || userSubs.length === 0) {
+                console.log('[SendPush] No subscription for user', notification.userId);
+                continue;
+            }
 
             const payload = {
                 title: notification.title,
@@ -68,7 +78,10 @@ export async function sendPushForNotifications(notifications) {
                 tag: `notif-${notification.userId}-${Date.now()}`
             };
 
+            console.log('[SendPush] Sending push to user', notification.userId, 'with', userSubs.length, 'subscriptions');
             const result = await sendPushToMultiple(userSubs, payload);
+            console.log('[SendPush] Result:', result);
+
             totalSent += result.sent;
             totalFailed += result.failed;
 
@@ -79,6 +92,7 @@ export async function sendPushForNotifications(notifications) {
 
         // Deactivate expired subscriptions
         if (expiredEndpoints.length > 0) {
+            console.log('[SendPush] Deactivating', expiredEndpoints.length, 'expired subscriptions');
             await prisma.pushSubscription.updateMany({
                 where: {
                     endpoint: { in: expiredEndpoints }
@@ -87,9 +101,10 @@ export async function sendPushForNotifications(notifications) {
             });
         }
 
+        console.log('[SendPush] Final result: sent=', totalSent, 'failed=', totalFailed);
         return { sent: totalSent, failed: totalFailed };
     } catch (error) {
-        console.error('Error sending push notifications:', error);
+        console.error('[SendPush] Error sending push notifications:', error);
         return { sent: 0, failed: 0, error: error.message };
     }
 }
@@ -101,6 +116,7 @@ export async function sendPushForNotifications(notifications) {
  * @returns {Promise<{sent: number, failed: number}>}
  */
 export async function sendPushToUser(userId, { title, message, type = 'INFO', link }) {
+    console.log('[SendPush] sendPushToUser called for user', userId);
     return sendPushForNotifications([{ userId, title, message, type, link }]);
 }
 
@@ -111,6 +127,8 @@ export async function sendPushToUser(userId, { title, message, type = 'INFO', li
  * @returns {Promise<{sent: number, failed: number}>}
  */
 export async function sendPushToRoles(roles, { title, message, type = 'INFO', link }) {
+    console.log('[SendPush] sendPushToRoles called for roles:', roles);
+
     try {
         // Get users with these roles
         const users = await prisma.user.findMany({
@@ -118,13 +136,19 @@ export async function sendPushToRoles(roles, { title, message, type = 'INFO', li
                 role: { name: { in: roles } },
                 status: 'CURRENT'
             },
-            select: { id: true },
+            select: { id: true, firstName: true, lastName: true },
             take: 100 // Limit to prevent overload
         });
 
+        console.log('[SendPush] Found', users.length, 'users with roles:', roles);
+
         if (users.length === 0) {
+            console.log('[SendPush] No users found with these roles');
             return { sent: 0, failed: 0 };
         }
+
+        // Log user details
+        users.forEach(u => console.log('[SendPush] - User:', u.id, u.firstName, u.lastName));
 
         const notifications = users.map(u => ({
             userId: u.id,
@@ -136,7 +160,7 @@ export async function sendPushToRoles(roles, { title, message, type = 'INFO', li
 
         return sendPushForNotifications(notifications);
     } catch (error) {
-        console.error('Error sending push to roles:', error);
+        console.error('[SendPush] Error sending push to roles:', error);
         return { sent: 0, failed: 0, error: error.message };
     }
 }

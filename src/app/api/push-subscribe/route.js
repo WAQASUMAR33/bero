@@ -94,6 +94,17 @@ export async function POST(request) {
             }
         });
 
+        // Deactivate all OTHER subscriptions for same user + device type to prevent duplicates
+        await prisma.pushSubscription.updateMany({
+            where: {
+                userId,
+                deviceType,
+                id: { not: pushSubscription.id },
+                isActive: true
+            },
+            data: { isActive: false }
+        });
+
         return NextResponse.json({
             success: true,
             data: { id: pushSubscription.id }

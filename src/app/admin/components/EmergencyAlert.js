@@ -46,46 +46,46 @@ export default function EmergencyAlert({ user, onClose }) {
     try {
       // Create audio context
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      
+
       // Create oscillator for beep sound
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       // Configure beep sound (800Hz, emergency-like)
       oscillator.frequency.value = 800;
       oscillator.type = 'sine';
-      
+
       // Gain envelope for beeping pattern
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
       gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      
+
       // Start and stop for beep pattern
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.2);
-      
+
       // Repeat beep every 0.5 seconds
       beepIntervalRef.current = setInterval(() => {
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
-        
+
         osc.connect(gain);
         gain.connect(audioContext.destination);
-        
+
         osc.frequency.value = 800;
         osc.type = 'sine';
-        
+
         gain.gain.setValueAtTime(0, audioContext.currentTime);
         gain.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
         gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-        
+
         osc.start(audioContext.currentTime);
         osc.stop(audioContext.currentTime + 0.2);
       }, 500);
-      
+
       // Store context for cleanup
       audioRef.current = { context: audioContext };
       setIsPlaying(true);
@@ -129,7 +129,7 @@ export default function EmergencyAlert({ user, onClose }) {
       if (res.ok) {
         await fetchAlerts();
         // If no more active alerts, stop sound
-        const updatedAlerts = alerts.map(a => 
+        const updatedAlerts = alerts.map(a =>
           a.id === alertId ? { ...a, status: 'ACKNOWLEDGED' } : a
         );
         const stillActive = updatedAlerts.filter(a => a.status === 'ACTIVE');
@@ -158,7 +158,7 @@ export default function EmergencyAlert({ user, onClose }) {
       if (res.ok) {
         await fetchAlerts();
         // If no more active alerts, stop sound
-        const updatedAlerts = alerts.map(a => 
+        const updatedAlerts = alerts.map(a =>
           a.id === alertId ? { ...a, status: 'RESOLVED' } : a
         );
         const stillActive = updatedAlerts.filter(a => a.status === 'ACTIVE');
@@ -175,10 +175,10 @@ export default function EmergencyAlert({ user, onClose }) {
   useEffect(() => {
     fetchAlerts();
 
-    // Poll every 5 seconds for new alerts
+    // Poll every 30 seconds for new alerts (reduced from 5s to save DB connections)
     pollingIntervalRef.current = setInterval(() => {
       fetchAlerts();
-    }, 5000);
+    }, 30000);
 
     return () => {
       if (pollingIntervalRef.current) {
@@ -303,11 +303,10 @@ function EmergencyAlertCard({ alert, onAcknowledge, onResolve, isActive }) {
   const timeAgo = getTimeAgo(new Date(alert.createdAt));
 
   return (
-    <div className={`border-2 rounded-xl p-4 ${
-      isActive 
-        ? 'border-red-500 bg-red-50 animate-pulse' 
+    <div className={`border-2 rounded-xl p-4 ${isActive
+        ? 'border-red-500 bg-red-50 animate-pulse'
         : 'border-yellow-300 bg-yellow-50'
-    }`}>
+      }`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">

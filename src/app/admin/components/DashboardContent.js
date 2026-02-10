@@ -17,7 +17,7 @@ export default function DashboardContent({ user }) {
   const [patients, setPatients] = useState([]);
   const [visits, setVisits] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Refs for optimization
   const isFetchingRef = useRef(false);
   const abortControllerRef = useRef(null);
@@ -32,7 +32,7 @@ export default function DashboardContent({ user }) {
 
     try {
       isFetchingRef.current = true;
-      
+
       // Only show loading on initial load, not background refreshes
       if (isInitialLoadRef.current) {
         setIsLoading(true);
@@ -52,7 +52,7 @@ export default function DashboardContent({ user }) {
 
       // Fetch all dashboard data in parallel with abort signal
       let statsRes, holidaysRes, serviceUsersRes, visitsRes;
-      
+
       try {
         [statsRes, holidaysRes, serviceUsersRes, visitsRes] = await Promise.all([
           fetch('/api/dashboard/stats', {
@@ -149,13 +149,13 @@ export default function DashboardContent({ user }) {
       }
     };
 
-    // Refresh data every 60 seconds (reduced frequency for better performance)
+    // Refresh data every 120 seconds (reduced frequency to save DB connections)
     // Only refresh if page is visible
     intervalRef.current = setInterval(() => {
       if (document.visibilityState === 'visible' && !isFetchingRef.current) {
         fetchDashboardData(true);
       }
-    }, 60000); // Increased from 30s to 60s
+    }, 120000);
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
@@ -298,11 +298,10 @@ export default function DashboardContent({ user }) {
                     <div className="flex items-center gap-2 mb-1">
                       <p className="text-sm font-medium text-[#224fa6]">{visit.date}</p>
                       <p className="text-xs text-gray-600">{visit.time}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        visit.type === 'Family Visit' 
-                          ? 'bg-pink-100 text-pink-700' 
+                      <span className={`text-xs px-2 py-0.5 rounded ${visit.type === 'Family Visit'
+                          ? 'bg-pink-100 text-pink-700'
                           : 'bg-purple-100 text-purple-700'
-                      }`}>
+                        }`}>
                         {visit.type}
                       </span>
                     </div>
@@ -465,7 +464,7 @@ export default function DashboardContent({ user }) {
               </div>
             </div>
           </div>
-          
+
           {/* Legend */}
           <div className="mt-6 space-y-2">
             <div className="flex items-center justify-between">

@@ -51,7 +51,7 @@ export default function Header({ user }) {
     fetchEmergencyCount();
 
     // Poll every 5 seconds
-    pollingIntervalRef.current = setInterval(fetchEmergencyCount, 5000);
+    pollingIntervalRef.current = setInterval(fetchEmergencyCount, 30000);
 
     return () => {
       if (pollingIntervalRef.current) {

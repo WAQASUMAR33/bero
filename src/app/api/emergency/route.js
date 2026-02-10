@@ -7,16 +7,20 @@ import { sendPushToRoles } from '@/lib/send-push';
 
 // POST /api/emergency - Trigger emergency alert (Mobile App)
 export async function POST(request) {
+  console.log('[API] POST /api/emergency called');
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
+      console.log('[API] No token provided');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    console.log('[API] Token verified for user:', decoded.userId);
 
     const body = await request.json();
     const { location, message } = body;
+    console.log('[API] Emergency payload:', { location, message });
 
     // Get the user who triggered the emergency
     const user = await prisma.user.findUnique({
@@ -28,6 +32,7 @@ export async function POST(request) {
     });
 
     if (!user) {
+      console.log('[API] User not found:', decoded.userId);
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
@@ -60,16 +65,21 @@ export async function POST(request) {
       }
     });
 
+    console.log('[API] Emergency alert created:', emergencyAlert.id);
+
     // Send emergency notification to all Admins, Directors, HR, and Register Managers
     try {
       const adminUsers = await prisma.user.findMany({
         where: {
           role: { name: { in: ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'] } },
           status: 'CURRENT',
-          id: { not: user.id } // Don't notify the person who triggered it
+          // id: { not: user.id } // Don't notify the person who triggered it (Commented out for testing)
         },
-        select: { id: true }
+        select: { id: true, role: { select: { name: true } } }
       });
+
+      console.log('[API] Found admin users to notify:', adminUsers.length);
+      adminUsers.forEach(u => console.log(`[API] - User ${u.id} (${u.role?.name})`));
 
       if (adminUsers.length > 0) {
         const triggerName = `${user.firstName} ${user.lastName}`;
@@ -86,16 +96,24 @@ export async function POST(request) {
           }))
         });
 
-        // Send push notification to admin devices (critical - send immediately)
-        sendPushToRoles(['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'], {
-          title: '🚨 EMERGENCY ALERT',
-          message: notificationMessage,
-          type: 'ERROR',
-          link: '/admin/emergency-reports'
-        }).catch(err => console.error('Push notification error:', err));
+        console.log('[API] Database notifications created');
+
+        // Send push notification to admin devices
+        console.log('[API] Sending push notifications...');
+        try {
+          const pushResult = await sendPushToRoles(['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'], {
+            title: '🚨 EMERGENCY ALERT',
+            message: notificationMessage,
+            type: 'ERROR',
+            link: '/admin/emergency-reports'
+          });
+          console.log('[API] Push result:', JSON.stringify(pushResult));
+        } catch (pushErr) {
+          console.error('[API] Push send error:', pushErr);
+        }
       }
     } catch (notifError) {
-      console.error('Failed to create emergency notifications:', notifError);
+      console.error('[API] Failed to create emergency notifications:', notifError);
     }
 
     return NextResponse.json({

@@ -4,203 +4,189 @@ import { useState, useEffect } from 'react';
 import usePushNotifications from '@/hooks/usePushNotifications';
 
 export default function TestPushPage() {
-    const {
-        isSupported,
-        isSubscribed,
-        isLoading,
-        error,
-        permission,
-        subscribe,
-        unsubscribe,
-        requestPermission
-    } = usePushNotifications();
-
+    const { isSupported, isSubscribed, isLoading, error, permission, subscribe, unsubscribe } = usePushNotifications();
     const [logs, setLogs] = useState([]);
-    const [subscriptionInfo, setSubscriptionInfo] = useState(null);
-    const [sendingTest, setSendingTest] = useState(false);
+    const [busy, setBusy] = useState(false);
 
-    const addLog = (msg) => {
-        console.log('[TestPush]', msg);
-        setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
-    };
+    const log = (msg) => setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
 
-    const checkSupport = () => {
-        addLog(`Is Secure Context: ${window.isSecureContext}`);
-        addLog(`Service Worker in navigator: ${'serviceWorker' in navigator}`);
-        addLog(`PushManager in window: ${'PushManager' in window}`);
-        addLog(`Notification permission: ${Notification.permission}`);
-    };
+    useEffect(() => {
+        log('Page loaded');
+        log('Supported: ' + isSupported);
+        log('Permission: ' + (typeof Notification !== 'undefined' ? Notification.permission : 'N/A'));
+        log('Secure context: ' + (typeof window !== 'undefined' ? window.isSecureContext : 'N/A'));
+    }, []);
+
+    useEffect(() => {
+        log('Subscribed: ' + isSubscribed);
+    }, [isSubscribed]);
+
+    useEffect(() => {
+        if (error) log('❌ Error: ' + error);
+    }, [error]);
 
     const handleSubscribe = async () => {
-        addLog('Attemping to subscribe...');
-        const result = await subscribe();
-        addLog(`Subscribe result: ${result}`);
-        if (result) {
-            checkSubscriptionStatus();
-        }
+        log('Subscribing...');
+        const ok = await subscribe();
+        log(ok ? '✅ Subscribed!' : '❌ Subscribe failed');
     };
 
     const handleUnsubscribe = async () => {
-        addLog('Attemping to unsubscribe...');
-        const result = await unsubscribe();
-        addLog(`Unsubscribe result: ${result}`);
-        setSubscriptionInfo(null);
+        log('Unsubscribing...');
+        const ok = await unsubscribe();
+        log(ok ? '✅ Unsubscribed!' : '❌ Unsubscribe failed');
     };
 
-    const checkSubscriptionStatus = async () => {
-        addLog('Checking subscription status on server...');
+    const handleLocalTest = async () => {
+        log('Testing local notification...');
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                addLog('ERROR: Not logged in. Please login first.');
+            const regs = await navigator.serviceWorker.getRegistrations();
+            const reg = regs.find(r => r.active);
+            if (!reg) {
+                log('❌ No active service worker found. Try refreshing the page.');
                 return;
             }
-
-            const res = await fetch('/api/test-push', {
-                headers: { 'Authorization': `Bearer ${token}` }
+            await reg.showNotification('🔔 Local Test', {
+                body: 'This is a local test notification from the service worker.',
+                icon: '/assets/logo2.png',
+                tag: 'local-test-' + Date.now(),
+                requireInteraction: true
             });
-            const data = await res.json();
-
-            if (data.success) {
-                setSubscriptionInfo(data);
-                addLog(`Found ${data.subscriptions.length} subscription(s) for user ${data.userId}`);
-                data.subscriptions.forEach((sub, i) => {
-                    addLog(`  [${i + 1}] ${sub.deviceType} - Active: ${sub.isActive}`);
-                });
-            } else {
-                addLog(`ERROR: ${data.error}`);
-            }
+            log('✅ Local notification triggered! Check your taskbar/notification area.');
         } catch (e) {
-            addLog(`Error checking status: ${e.message}`);
+            log('❌ Local test failed: ' + e.message);
         }
     };
 
-    const handleTestNotification = async () => {
-        addLog('Sending test notification...');
-        setSendingTest(true);
-
+    const handleServerTest = async () => {
+        log('Sending server push test...');
+        setBusy(true);
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                addLog('ERROR: Not logged in. Please login first.');
-                setSendingTest(false);
-                return;
-            }
-
             const res = await fetch('/api/test-push', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
             });
-
             const data = await res.json();
-
             if (data.success) {
-                addLog(`✅ Test notification sent!`);
-                addLog(`   Sent: ${data.result?.sent || 0}, Failed: ${data.result?.failed || 0}`);
-                addLog('   Check your notifications!');
+                log(`✅ Server push sent! Sent: ${data.result?.sent || 0}, Failed: ${data.result?.failed || 0}`);
             } else {
-                addLog(`❌ Failed: ${data.error}`);
-                if (data.debug) {
-                    addLog(`   Debug: ${JSON.stringify(data.debug)}`);
-                }
+                log('❌ Server push failed: ' + data.error);
             }
         } catch (e) {
-            addLog(`Error: ${e.message}`);
+            log('❌ Error: ' + e.message);
         }
-
-        setSendingTest(false);
+        setBusy(false);
     };
 
-    // Check subscription status on mount
-    useEffect(() => {
-        if (isSubscribed) {
-            checkSubscriptionStatus();
+    const handleEmergencyTest = async () => {
+        log('🚨 Triggering emergency alert...');
+        setBusy(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/emergency', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ location: 'Debug Page', message: 'Test emergency from debug page' })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                log(`✅ Emergency created! ID: ${data.data?.id}. Push notification should arrive.`);
+            } else {
+                log('❌ Emergency failed: ' + data.error);
+            }
+        } catch (e) {
+            log('❌ Error: ' + e.message);
         }
-    }, [isSubscribed]);
+        setBusy(false);
+    };
+
+    const handleCleanup = async () => {
+        log('Cleaning up old subscriptions...');
+        setBusy(true);
+        try {
+            const token = localStorage.getItem('token');
+            // Delete ALL subscriptions for this user from server
+            await fetch('/api/push-subscribe', {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            // Unsubscribe push on all registrations (but don't unregister SW)
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const reg of regs) {
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) await sub.unsubscribe();
+            }
+            log('✅ Cleaned up! Now click Subscribe to start fresh.');
+        } catch (e) {
+            log('❌ Cleanup error: ' + e.message);
+        }
+        setBusy(false);
+    };
 
     return (
-        <div className="p-8 max-w-2xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">🔔 Push Notification Debugger</h1>
+        <div style={{ maxWidth: 700, margin: '0 auto', padding: 24, fontFamily: 'system-ui' }}>
+            <h1 style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>🔔 Push Notification Debugger</h1>
 
-            <div className="space-y-4 mb-8">
-                <div className="p-4 bg-gray-100 rounded-lg">
-                    <p><strong>Status:</strong> {isLoading ? 'Loading...' : 'Ready'}</p>
-                    <p><strong>Supported:</strong> {isSupported ? '✅ Yes' : '❌ No'}</p>
-                    <p><strong>Subscribed:</strong> {isSubscribed ? '✅ Yes' : '❌ No'}</p>
-                    <p><strong>Permission:</strong> {permission}</p>
-                    <p><strong>Error:</strong> {error || 'None'}</p>
-                </div>
+            {/* Status */}
+            <div style={{ padding: 16, background: '#f3f4f6', borderRadius: 8, marginBottom: 16 }}>
+                <p><strong>Supported:</strong> {isSupported ? '✅' : '❌'}</p>
+                <p><strong>Subscribed:</strong> {isSubscribed ? '✅' : '❌'}</p>
+                <p><strong>Permission:</strong> {permission}</p>
+                <p><strong>Loading:</strong> {isLoading ? 'Yes' : 'No'}</p>
+                {error && <p style={{ color: 'red' }}><strong>Error:</strong> {error}</p>}
+            </div>
 
-                {subscriptionInfo && (
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="font-bold text-green-800">Server Subscription Status</p>
-                        <p>User ID: {subscriptionInfo.userId}</p>
-                        <p>Subscriptions: {subscriptionInfo.subscriptions?.length || 0}</p>
-                    </div>
-                )}
-
-                <div className="flex flex-wrap gap-4">
-                    <button
-                        onClick={checkSupport}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                        Check Support
+            {/* Step 1: Subscribe */}
+            <div style={{ marginBottom: 16 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>Step 1: Manage Subscription</h2>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={handleSubscribe} disabled={isLoading || isSubscribed}
+                        style={{ padding: '8px 16px', background: isSubscribed ? '#9ca3af' : '#22c55e', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+                        {isLoading ? 'Working...' : isSubscribed ? 'Already Subscribed' : '✅ Subscribe'}
                     </button>
-
-                    <button
-                        onClick={handleSubscribe}
-                        disabled={isSubscribed || isLoading}
-                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-                    >
-                        Subscribe
-                    </button>
-
-                    <button
-                        onClick={handleUnsubscribe}
-                        disabled={!isSubscribed || isLoading}
-                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
-                    >
+                    <button onClick={handleUnsubscribe} disabled={isLoading || !isSubscribed}
+                        style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
                         Unsubscribe
                     </button>
-
-                    <button
-                        onClick={checkSubscriptionStatus}
-                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
-                        Check Server Status
-                    </button>
-                </div>
-
-                <div className="flex gap-4 pt-4 border-t">
-                    <button
-                        onClick={handleTestNotification}
-                        disabled={!isSubscribed || sendingTest}
-                        className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 font-bold"
-                    >
-                        {sendingTest ? 'Sending...' : '📨 Send Test Notification'}
+                    <button onClick={handleCleanup} disabled={busy}
+                        style={{ padding: '8px 16px', background: '#6b7280', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+                        🧹 Clean All & Reset
                     </button>
                 </div>
             </div>
 
-            <div className="border border-gray-300 rounded p-4 h-64 overflow-y-auto font-mono text-sm bg-black text-green-400">
-                {logs.length === 0 ? <div className="text-gray-500">Logs will appear here...</div> : logs.map((log, i) => (
-                    <div key={i}>{log}</div>
-                ))}
+            {/* Step 2: Test */}
+            <div style={{ marginBottom: 16 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>Step 2: Test Notifications</h2>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={handleLocalTest} disabled={!isSubscribed || busy}
+                        style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+                        🔔 Local Test (No Server)
+                    </button>
+                    <button onClick={handleServerTest} disabled={!isSubscribed || busy}
+                        style={{ padding: '8px 16px', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+                        📨 Server Push Test
+                    </button>
+                    <button onClick={handleEmergencyTest} disabled={!isSubscribed || busy}
+                        style={{ padding: '10px 20px', background: '#dc2626', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 'bold' }}>
+                        🚨 Trigger Emergency
+                    </button>
+                </div>
             </div>
 
-            <div className="mt-4 text-sm text-gray-500">
-                <p><strong>Note:</strong> Service Workers require <strong>HTTPS</strong> or <strong>localhost</strong>.</p>
-                <p>If you are accessing via IP address (e.g. 192.168.x.x), push notifications will NOT work.</p>
-                <p className="mt-2"><strong>Steps:</strong></p>
-                <ol className="list-decimal ml-5">
-                    <li>Login to the app first</li>
-                    <li>Click "Check Support" to verify browser compatibility</li>
-                    <li>Click "Subscribe" to enable push notifications</li>
-                    <li>Click "Send Test Notification" to test</li>
-                </ol>
+            {/* Logs */}
+            <div style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <h2 style={{ fontSize: 18, fontWeight: 'bold' }}>Logs</h2>
+                    <button onClick={() => setLogs([])} style={{ padding: '4px 12px', background: '#e5e7eb', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+                        Clear
+                    </button>
+                </div>
+                <div style={{ background: '#1f2937', color: '#10b981', padding: 16, borderRadius: 8, height: 300, overflowY: 'auto', fontFamily: 'monospace', fontSize: 13 }}>
+                    {logs.map((l, i) => <div key={i}>{l}</div>)}
+                    {logs.length === 0 && <span style={{ color: '#6b7280' }}>No logs yet...</span>}
+                </div>
             </div>
         </div>
     );

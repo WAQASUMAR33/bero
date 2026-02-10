@@ -127,12 +127,12 @@ export default function ProfilePage() {
       showNotification('New passwords do not match', 'error');
       return;
     }
-    
+
     setIsUpdating(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -191,11 +191,10 @@ export default function ProfilePage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
-                        activeTab === tab.id
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${activeTab === tab.id
                           ? 'bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white shadow-lg'
                           : 'text-gray-700 hover:bg-gray-50 hover:text-[#224fa6]'
-                      }`}
+                        }`}
                     >
                       <span className="text-xl">{tab.icon}</span>
                       <span className="font-medium">{tab.name}</span>
@@ -307,7 +306,7 @@ export default function ProfilePage() {
                           <input
                             type="tel"
                             value={profileData.phoneNo}
-                            onChange={(e) => setProfileData({...profileData, phoneNo: e.target.value})}
+                            onChange={(e) => setProfileData({ ...profileData, phoneNo: e.target.value })}
                             disabled={!isEditing}
                             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
                           />
@@ -416,7 +415,7 @@ export default function ProfilePage() {
                             <input
                               type="text"
                               value={profileData.emergencyName}
-                              onChange={(e) => setProfileData({...profileData, emergencyName: e.target.value})}
+                              onChange={(e) => setProfileData({ ...profileData, emergencyName: e.target.value })}
                               disabled={!isEditing}
                               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
                             />
@@ -426,7 +425,7 @@ export default function ProfilePage() {
                             <input
                               type="tel"
                               value={profileData.emergencyContact}
-                              onChange={(e) => setProfileData({...profileData, emergencyContact: e.target.value})}
+                              onChange={(e) => setProfileData({ ...profileData, emergencyContact: e.target.value })}
                               disabled={!isEditing}
                               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
                             />
@@ -438,7 +437,7 @@ export default function ProfilePage() {
                             <input
                               type="text"
                               value={profileData.postalCode}
-                              onChange={(e) => setProfileData({...profileData, postalCode: e.target.value})}
+                              onChange={(e) => setProfileData({ ...profileData, postalCode: e.target.value })}
                               disabled={!isEditing}
                               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
                             />
@@ -500,7 +499,7 @@ export default function ProfilePage() {
                                 type="password"
                                 required
                                 value={passwordData.currentPassword}
-                                onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                               />
                             </div>
@@ -511,7 +510,7 @@ export default function ProfilePage() {
                                   type="password"
                                   required
                                   value={passwordData.newPassword}
-                                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                                 />
                               </div>
@@ -521,7 +520,7 @@ export default function ProfilePage() {
                                   type="password"
                                   required
                                   value={passwordData.confirmPassword}
-                                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                                 />
                               </div>
@@ -546,22 +545,6 @@ export default function ProfilePage() {
                         )}
                       </div>
 
-                      {/* Two-Factor Authentication */}
-                      <div className="border border-gray-200 rounded-xl p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">Two-Factor Authentication</h3>
-                            <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
-                          </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#224fa6]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#224fa6]"></div>
-                          </label>
-                        </div>
-                      </div>
 
                       {/* Login History */}
                       <div className="border border-gray-200 rounded-xl p-6">

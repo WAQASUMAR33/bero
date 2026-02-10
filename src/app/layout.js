@@ -14,6 +14,10 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "BEERU",
   description: "Business, Employee & Enterprise Resource Unification",
+  icons: {
+    icon: "/assets/icon.png",
+    apple: "/assets/icon.png",
+  },
 };
 
 export default function RootLayout({ children }) {

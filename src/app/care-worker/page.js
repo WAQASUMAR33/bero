@@ -158,6 +158,33 @@ export default function CareWorkerDashboard() {
 
     const initiateClockIn = async (shift) => {
         if (!shift) return;
+
+        // 1. Check if shift has passed (Expired)
+        // Construct shift end time
+        const shiftDateStr = shift.date ? shift.date.split('T')[0] : new Date().toISOString().split('T')[0];
+        const shiftEndDateTimeStr = `${shiftDateStr}T${shift.endTime}`;
+        const shiftEndTime = new Date(shiftEndDateTimeStr);
+        const now = new Date();
+
+        if (now > shiftEndTime) {
+            alert("This shift has already ended. You cannot clock in.");
+            return;
+        }
+
+        // 2. Check 10-minute early rule
+        // Construct shift start time
+        const shiftStartDateTimeStr = `${shiftDateStr}T${shift.startTime}`;
+        const shiftStartTime = new Date(shiftStartDateTimeStr);
+
+        // Calculate 10 minutes before start
+        const tenMinutesBeforeStart = new Date(shiftStartTime.getTime() - 10 * 60000);
+
+        if (now < tenMinutesBeforeStart) {
+            const timeToWait = Math.ceil((tenMinutesBeforeStart - now) / 60000);
+            alert(`You can only clock in 10 minutes before your shift starts.\nPlease wait ${timeToWait} minute(s).`);
+            return;
+        }
+
         setSelectedShiftForClockIn(shift);
         setShowClockInModal(true);
 

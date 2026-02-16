@@ -160,8 +160,32 @@ export default function RotaPage() {
 
     const initiateClockIn = async (shift) => {
         if (!shift) return;
-        // Optional: Prevent clocking in if not today?
-        // For now, let's allow it but maybe the API restricts it.
+
+        // 1. Check if shift has passed (Expired)
+        const dateStr = shift.assignmentDate
+            ? shift.assignmentDate.split('T')[0]
+            : shift.fromDate.split('T')[0];
+
+        const shiftEndDateTimeStr = `${dateStr}T${shift.endTime}`;
+        const shiftEndTime = new Date(shiftEndDateTimeStr);
+        const now = new Date();
+
+        if (now > shiftEndTime) {
+            alert("This shift has already ended. You cannot clock in.");
+            return; // Enforce no action on expired shifts
+        }
+
+        // 2. Check 10-minute early rule
+        const shiftStartDateTimeStr = `${dateStr}T${shift.startTime}`;
+        const shiftStartTime = new Date(shiftStartDateTimeStr);
+        // Calculate 10 minutes before start
+        const tenMinutesBeforeStart = new Date(shiftStartTime.getTime() - 10 * 60000);
+
+        if (now < tenMinutesBeforeStart) {
+            const timeToWait = Math.ceil((tenMinutesBeforeStart - now) / 60000);
+            alert(`You can only clock in 10 minutes before your shift starts.\nPlease wait ${timeToWait} minute(s).`);
+            return;
+        }
 
         setSelectedShiftForClockIn(shift);
         setShowClockInModal(true);
@@ -428,21 +452,42 @@ export default function RotaPage() {
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex flex-col items-end gap-1">
-                                                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500">
-                                                                        Scheduled
-                                                                    </span>
-                                                                    {isToday && (
-                                                                        <button
-                                                                            onClick={() => initiateClockIn(shift)}
-                                                                            className="text-xs bg-[#224fa6] text-white font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-800 transition-colors flex items-center gap-1"
-                                                                        >
-                                                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                            </svg>
-                                                                            Start Shift
-                                                                        </button>
-                                                                    )}
+                                                                    {(() => {
+                                                                        // Determine status for display
+                                                                        const dateStr = shift.assignmentDate
+                                                                            ? shift.assignmentDate.split('T')[0]
+                                                                            : shift.fromDate.split('T')[0];
+                                                                        const shiftEnd = new Date(`${dateStr}T${shift.endTime}`);
+                                                                        const isExpired = new Date() > shiftEnd;
+
+                                                                        if (isExpired) {
+                                                                            return (
+                                                                                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                                                                                    Missed
+                                                                                </span>
+                                                                            );
+                                                                        }
+
+                                                                        return (
+                                                                            <>
+                                                                                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500">
+                                                                                    Scheduled
+                                                                                </span>
+                                                                                {isToday && (
+                                                                                    <button
+                                                                                        onClick={() => initiateClockIn(shift)}
+                                                                                        className="text-xs bg-[#224fa6] text-white font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-800 transition-colors flex items-center gap-1"
+                                                                                    >
+                                                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                                        </svg>
+                                                                                        Start Shift
+                                                                                    </button>
+                                                                                )}
+                                                                            </>
+                                                                        );
+                                                                    })()}
                                                                 </div>
                                                             )
                                                         }

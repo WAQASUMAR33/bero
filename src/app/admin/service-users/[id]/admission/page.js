@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Sidebar from '../../../components/Sidebar';
 import Header from '../../../components/Header';
 import Notification from '../../../components/Notification';
+import FileUpload from '../../../components/FileUpload';
 import IdentificationForm from '../../components/IdentificationForm';
 import OtherIdsForm from '../../components/OtherIdsForm';
 import CouncilForm from '../../components/CouncilForm';
@@ -46,7 +47,7 @@ import WeightForm from '../../components/WeightForm';
 import MuacForm from '../../components/MuacForm';
 import PersonCentredForm from '../../components/PersonCentredForm';
 
-function SummaryRow({ label, value }){
+function SummaryRow({ label, value }) {
   return (
     <div>
       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</p>
@@ -55,7 +56,7 @@ function SummaryRow({ label, value }){
   );
 }
 
-export default function AdmissionPage(){
+export default function AdmissionPage() {
   const params = useParams();
   const [serviceSeekerId, setServiceSeekerId] = useState(null);
   const [user, setUser] = useState(null);
@@ -73,6 +74,7 @@ export default function AdmissionPage(){
     defaultShiftRunId: '',
   });
   const [shiftRuns, setShiftRuns] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [identification, setIdentification] = useState({
     nhsHscNo: '',
@@ -177,33 +179,33 @@ export default function AdmissionPage(){
   };
 
   const handleSaveIdentification = async () => {
-    if(!serviceSeekerId) return;
+    if (!serviceSeekerId) return;
     setSavingIdentification(true);
-    try{
+    try {
       const token = localStorage.getItem('token');
       const payload = {
         ...admission,
-        teamId: admission.teamId === '' ? null : parseInt(admission.teamId,10),
-        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId,10),
+        teamId: admission.teamId === '' ? null : parseInt(admission.teamId, 10),
+        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId, 10),
         startDate: admission.startDate || null,
         nhsHscNo: identification.nhsHscNo || null,
         chiNumber: identification.chiNumber || null,
         niNumber: identification.niNumber || null,
         personId: identification.personId || null,
       };
-      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
         method: 'PUT',
-        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       if (!res.ok && res.status === 404) {
-        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
           method: 'POST',
-          headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
-      });
-    }
-      if(res.ok){
+        });
+      }
+      if (res.ok) {
         setNotification({ show: true, message: 'Identification saved successfully.', type: 'success' });
       } else {
         let message = 'Failed to save identification.';
@@ -211,24 +213,24 @@ export default function AdmissionPage(){
           const err = await res.json();
           if (typeof err?.error === 'string' && err.error.trim()) message = err.error;
           if (typeof err?.message === 'string' && err.message.trim()) message = err.message;
-        } catch (_) {}
+        } catch (_) { }
         setNotification({ show: true, message, type: 'error' });
       }
-    } catch(e){ console.error(e); setNotification({ show: true, message: 'Failed to save identification.', type: 'error' }); }
+    } catch (e) { console.error(e); setNotification({ show: true, message: 'Failed to save identification.', type: 'error' }); }
     finally {
       setSavingIdentification(false);
     }
   };
 
   const handleSaveCouncil = async () => {
-    if(!serviceSeekerId) return;
+    if (!serviceSeekerId) return;
     setSavingCouncil(true);
-    try{
+    try {
       const token = localStorage.getItem('token');
       const payload = {
         ...admission,
-        teamId: admission.teamId === '' ? null : parseInt(admission.teamId,10),
-        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId,10),
+        teamId: admission.teamId === '' ? null : parseInt(admission.teamId, 10),
+        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId, 10),
         startDate: admission.startDate || null,
         nhsHscNo: identification.nhsHscNo || null,
         chiNumber: identification.chiNumber || null,
@@ -239,19 +241,19 @@ export default function AdmissionPage(){
         serviceType: council.serviceType || null,
         serviceLevel: council.serviceLevel || null,
       };
-      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
         method: 'PUT',
-        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       if (!res.ok && res.status === 404) {
-        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
           method: 'POST',
-          headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       }
-      if(res.ok){
+      if (res.ok) {
         setNotification({ show: true, message: 'Council information saved successfully.', type: 'success' });
       } else {
         let message = 'Failed to save council information.';
@@ -259,24 +261,24 @@ export default function AdmissionPage(){
           const err = await res.json();
           if (typeof err?.error === 'string' && err.error.trim()) message = err.error;
           if (typeof err?.message === 'string' && err.message.trim()) message = err.message;
-        } catch (_) {}
+        } catch (_) { }
         setNotification({ show: true, message, type: 'error' });
       }
-    } catch(e){ console.error(e); setNotification({ show: true, message: 'Failed to save council information.', type: 'error' }); }
+    } catch (e) { console.error(e); setNotification({ show: true, message: 'Failed to save council information.', type: 'error' }); }
     finally {
       setSavingCouncil(false);
     }
   };
 
   const handleSaveBackground = async () => {
-    if(!serviceSeekerId) return;
+    if (!serviceSeekerId) return;
     setSavingBackground(true);
-    try{
+    try {
       const token = localStorage.getItem('token');
       const payload = {
         ...admission,
-        teamId: admission.teamId === '' ? null : parseInt(admission.teamId,10),
-        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId,10),
+        teamId: admission.teamId === '' ? null : parseInt(admission.teamId, 10),
+        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId, 10),
         startDate: admission.startDate || null,
         nhsHscNo: identification.nhsHscNo || null,
         chiNumber: identification.chiNumber || null,
@@ -307,19 +309,19 @@ export default function AdmissionPage(){
         email: background.email || null,
         preferredContactMethod: background.preferredContactMethod || null,
       };
-      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
         method: 'PUT',
-        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       if (!res.ok && res.status === 404) {
-        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
           method: 'POST',
-          headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       }
-      if(res.ok){
+      if (res.ok) {
         setNotification({ show: true, message: 'Background information saved successfully.', type: 'success' });
       } else {
         let message = 'Failed to save background information.';
@@ -327,24 +329,24 @@ export default function AdmissionPage(){
           const err = await res.json();
           if (typeof err?.error === 'string' && err.error.trim()) message = err.error;
           if (typeof err?.message === 'string' && err.message.trim()) message = err.message;
-        } catch (_) {}
+        } catch (_) { }
         setNotification({ show: true, message, type: 'error' });
       }
-    } catch(e){ console.error(e); setNotification({ show: true, message: 'Failed to save background information.', type: 'error' }); }
+    } catch (e) { console.error(e); setNotification({ show: true, message: 'Failed to save background information.', type: 'error' }); }
     finally {
       setSavingBackground(false);
     }
   };
 
   const handleSaveHealth = async () => {
-    if(!serviceSeekerId) return;
+    if (!serviceSeekerId) return;
     setSavingHealth(true);
-    try{
+    try {
       const token = localStorage.getItem('token');
       const payload = {
         ...admission,
-        teamId: admission.teamId === '' ? null : parseInt(admission.teamId,10),
-        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId,10),
+        teamId: admission.teamId === '' ? null : parseInt(admission.teamId, 10),
+        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId, 10),
         startDate: admission.startDate || null,
         nhsHscNo: identification.nhsHscNo || null,
         chiNumber: identification.chiNumber || null,
@@ -383,19 +385,19 @@ export default function AdmissionPage(){
         onCatheter: health.onCatheter || null,
         teamInvolvement: health.teamInvolvement && Array.isArray(health.teamInvolvement) ? health.teamInvolvement : null,
       };
-      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
         method: 'PUT',
-        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       if (!res.ok && res.status === 404) {
-        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
           method: 'POST',
-          headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       }
-      if(res.ok){
+      if (res.ok) {
         setNotification({ show: true, message: 'Health information saved successfully.', type: 'success' });
       } else {
         let message = 'Failed to save health information.';
@@ -403,24 +405,24 @@ export default function AdmissionPage(){
           const err = await res.json();
           if (typeof err?.error === 'string' && err.error.trim()) message = err.error;
           if (typeof err?.message === 'string' && err.message.trim()) message = err.message;
-        } catch (_) {}
+        } catch (_) { }
         setNotification({ show: true, message, type: 'error' });
       }
-    } catch(e){ console.error(e); setNotification({ show: true, message: 'Failed to save health information.', type: 'error' }); }
+    } catch (e) { console.error(e); setNotification({ show: true, message: 'Failed to save health information.', type: 'error' }); }
     finally {
       setSavingHealth(false);
     }
   };
 
   const handleSaveDiet = async () => {
-    if(!serviceSeekerId) return;
+    if (!serviceSeekerId) return;
     setSavingDiet(true);
-    try{
+    try {
       const token = localStorage.getItem('token');
       const payload = {
         ...admission,
-        teamId: admission.teamId === '' ? null : parseInt(admission.teamId,10),
-        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId,10),
+        teamId: admission.teamId === '' ? null : parseInt(admission.teamId, 10),
+        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId, 10),
         startDate: admission.startDate || null,
         nhsHscNo: identification.nhsHscNo || null,
         chiNumber: identification.chiNumber || null,
@@ -464,19 +466,19 @@ export default function AdmissionPage(){
         specialDiet: diet.specialDiet || null,
         dietInstructions: diet.dietInstructions || null,
       };
-      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
         method: 'PUT',
-        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       if (!res.ok && res.status === 404) {
-        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
           method: 'POST',
-          headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       }
-      if(res.ok){
+      if (res.ok) {
         setNotification({ show: true, message: 'Diet information saved successfully.', type: 'success' });
       } else {
         let message = 'Failed to save diet information.';
@@ -484,19 +486,19 @@ export default function AdmissionPage(){
           const err = await res.json();
           if (typeof err?.error === 'string' && err.error.trim()) message = err.error;
           if (typeof err?.message === 'string' && err.message.trim()) message = err.message;
-        } catch (_) {}
+        } catch (_) { }
         setNotification({ show: true, message, type: 'error' });
       }
-    } catch(e){ console.error(e); setNotification({ show: true, message: 'Failed to save diet information.', type: 'error' }); }
+    } catch (e) { console.error(e); setNotification({ show: true, message: 'Failed to save diet information.', type: 'error' }); }
     finally {
       setSavingDiet(false);
     }
   };
 
   const handleSaveBasicInfo = async () => {
-    if(!serviceSeekerId) return;
+    if (!serviceSeekerId) return;
     setSavingBasicInfo(true);
-    try{
+    try {
       const token = localStorage.getItem('token');
       const payload = {
         firstName: basicInfo.firstName,
@@ -518,7 +520,7 @@ export default function AdmissionPage(){
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
-      if(res.ok){
+      if (res.ok) {
         const updated = await res.json();
         setSeeker(updated);
         setNotification({ show: true, message: 'Basic information saved successfully.', type: 'success' });
@@ -526,7 +528,7 @@ export default function AdmissionPage(){
         const err = await res.json().catch(() => ({}));
         setNotification({ show: true, message: err?.error || 'Failed to save basic information.', type: 'error' });
       }
-    } catch(e){
+    } catch (e) {
       console.error(e);
       setNotification({ show: true, message: 'Failed to save basic information.', type: 'error' });
     } finally {
@@ -536,22 +538,22 @@ export default function AdmissionPage(){
 
   // Collapsible sections removed to simplify and avoid any focus/scroll side-effects
 
-  useEffect(()=>{
+  useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
     setIsLoading(false);
-  },[]);
+  }, []);
 
-  useEffect(()=>{
-    setServiceSeekerId(params?.id ? parseInt(params.id,10) : null);
+  useEffect(() => {
+    setServiceSeekerId(params?.id ? parseInt(params.id, 10) : null);
   }, [params?.id]);
 
-  useEffect(()=>{
-    if(!user || !serviceSeekerId) return;
+  useEffect(() => {
+    if (!user || !serviceSeekerId) return;
     const token = localStorage.getItem('token');
-    (async ()=>{
-      try{
-        const res = await fetch(`/api/service-seekers/${serviceSeekerId}`,{ headers: { Authorization: `Bearer ${token}` }});
+    (async () => {
+      try {
+        const res = await fetch(`/api/service-seekers/${serviceSeekerId}`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
         setSeeker(data);
         // Populate basic info form
@@ -572,14 +574,14 @@ export default function AdmissionPage(){
             postalCode: data.postalCode || '',
           });
         }
-      }catch(e){ console.error(e); }
-      try{
-        const res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{ headers: { Authorization: `Bearer ${token}` }});
+      } catch (e) { console.error(e); }
+      try {
+        const res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-        if (data){
+        if (data) {
           setAdmission({
             advancedCarePlanUrl: data.advancedCarePlanUrl || '',
-            startDate: data.startDate ? new Date(data.startDate).toISOString().substring(0,10) : '',
+            startDate: data.startDate ? new Date(data.startDate).toISOString().substring(0, 10) : '',
             banding: data.banding || '',
             authorityCategory: data.authorityCategory || '',
             funeralArrangement: data.funeralArrangement || 'UNKNOWN',
@@ -639,16 +641,21 @@ export default function AdmissionPage(){
             dietInstructions: data.dietInstructions || '',
           });
         }
-      }catch(e){ console.error(e); }
-      try{
-        const res = await fetch(`/api/shift-runs`,{ headers: { Authorization: `Bearer ${token}` }});
+      } catch (e) { console.error(e); }
+      try {
+        const res = await fetch(`/api/shift-runs`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-        if(Array.isArray(data)) setShiftRuns(data);
-      }catch(e){ console.error(e); }
+        if (Array.isArray(data)) setShiftRuns(data);
+      } catch (e) { console.error(e); }
+      try {
+        const res = await fetch(`/api/teams`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (Array.isArray(data)) setTeams(data);
+      } catch (e) { console.error(e); }
     })();
-  },[user, serviceSeekerId]);
+  }, [user, serviceSeekerId]);
 
-  if (isLoading || !user){
+  if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#224fa6]"></div>
@@ -657,14 +664,14 @@ export default function AdmissionPage(){
   }
 
   const handleSave = async () => {
-    if(!serviceSeekerId) return;
+    if (!serviceSeekerId) return;
     setSaving(true);
-    try{
+    try {
       const token = localStorage.getItem('token');
       const payload = {
         ...admission,
-        teamId: admission.teamId === '' ? null : parseInt(admission.teamId,10),
-        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId,10),
+        teamId: admission.teamId === '' ? null : parseInt(admission.teamId, 10),
+        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId, 10),
         startDate: admission.startDate || null,
         // identification fields
         nhsHscNo: identification.nhsHscNo || null,
@@ -672,19 +679,19 @@ export default function AdmissionPage(){
         niNumber: identification.niNumber || null,
         personId: identification.personId || null,
       };
-      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+      let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
         method: 'PUT',
-        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       if (!res.ok && res.status === 404) {
-        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`,{
+        res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
           method: 'POST',
-          headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       }
-      if(res.ok){
+      if (res.ok) {
         setNotification({ show: true, message: 'Admission saved successfully.', type: 'success' });
       } else {
         let message = 'Failed to save admission.';
@@ -692,11 +699,11 @@ export default function AdmissionPage(){
           const err = await res.json();
           if (typeof err?.error === 'string' && err.error.trim()) message = err.error;
           if (typeof err?.message === 'string' && err.message.trim()) message = err.message;
-        } catch (_) {}
+        } catch (_) { }
         setNotification({ show: true, message, type: 'error' });
       }
-    }catch(e){ console.error(e); }
-    finally{ setSaving(false); }
+    } catch (e) { console.error(e); }
+    finally { setSaving(false); }
   };
 
   // Shift run creation removed
@@ -725,52 +732,52 @@ export default function AdmissionPage(){
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
-                  <input 
-                    value={basicInfo.firstName} 
-                    onChange={e => setBasicInfoField('firstName', e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+                  <input
+                    value={basicInfo.firstName}
+                    onChange={e => setBasicInfoField('firstName', e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
-                  <input 
-                    value={basicInfo.lastName} 
-                    onChange={e => setBasicInfoField('lastName', e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+                  <input
+                    value={basicInfo.lastName}
+                    onChange={e => setBasicInfoField('lastName', e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Name</label>
-                  <input 
-                    value={basicInfo.preferredName} 
-                    onChange={e => setBasicInfoField('preferredName', e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+                  <input
+                    value={basicInfo.preferredName}
+                    onChange={e => setBasicInfoField('preferredName', e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                  <input 
-                    value={basicInfo.title} 
-                    onChange={e => setBasicInfoField('title', e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+                  <input
+                    value={basicInfo.title}
+                    onChange={e => setBasicInfoField('title', e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                  <input 
-                    type="date" 
-                    value={basicInfo.dateOfBirth} 
-                    onChange={e => setBasicInfoField('dateOfBirth', e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+                  <input
+                    type="date"
+                    value={basicInfo.dateOfBirth}
+                    onChange={e => setBasicInfoField('dateOfBirth', e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                  <select 
-                    value={basicInfo.gender} 
-                    onChange={e => setBasicInfoField('gender', e.target.value)} 
+                  <select
+                    value={basicInfo.gender}
+                    onChange={e => setBasicInfoField('gender', e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   >
                     <option value="">Select gender</option>
@@ -783,9 +790,9 @@ export default function AdmissionPage(){
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Gender at Birth</label>
-                  <select 
-                    value={basicInfo.genderAtBirth} 
-                    onChange={e => setBasicInfoField('genderAtBirth', e.target.value)} 
+                  <select
+                    value={basicInfo.genderAtBirth}
+                    onChange={e => setBasicInfoField('genderAtBirth', e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   >
                     <option value="">Select gender at birth</option>
@@ -798,9 +805,9 @@ export default function AdmissionPage(){
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Pronouns</label>
-                  <select 
-                    value={basicInfo.pronouns} 
-                    onChange={e => setBasicInfoField('pronouns', e.target.value)} 
+                  <select
+                    value={basicInfo.pronouns}
+                    onChange={e => setBasicInfoField('pronouns', e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   >
                     <option value="">Select pronouns</option>
@@ -811,9 +818,9 @@ export default function AdmissionPage(){
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Sexuality</label>
-                  <select 
-                    value={basicInfo.sexuality} 
-                    onChange={e => setBasicInfoField('sexuality', e.target.value)} 
+                  <select
+                    value={basicInfo.sexuality}
+                    onChange={e => setBasicInfoField('sexuality', e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   >
                     <option value="">Select sexuality</option>
@@ -827,9 +834,9 @@ export default function AdmissionPage(){
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">DNAR</label>
-                  <select 
-                    value={basicInfo.dnar ? 'DO_NOT_RESUSCITATE' : 'RESUSCITATE'} 
-                    onChange={e => setBasicInfoField('dnar', e.target.value === 'DO_NOT_RESUSCITATE')} 
+                  <select
+                    value={basicInfo.dnar ? 'DO_NOT_RESUSCITATE' : 'RESUSCITATE'}
+                    onChange={e => setBasicInfoField('dnar', e.target.value === 'DO_NOT_RESUSCITATE')}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   >
                     <option value="RESUSCITATE">Resuscitate</option>
@@ -838,9 +845,9 @@ export default function AdmissionPage(){
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select 
-                    value={basicInfo.status} 
-                    onChange={e => setBasicInfoField('status', e.target.value)} 
+                  <select
+                    value={basicInfo.status}
+                    onChange={e => setBasicInfoField('status', e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   >
                     <option value="LIVE">LIVE</option>
@@ -852,18 +859,18 @@ export default function AdmissionPage(){
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                  <input 
-                    value={basicInfo.address} 
-                    onChange={e => setBasicInfoField('address', e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+                  <input
+                    value={basicInfo.address}
+                    onChange={e => setBasicInfoField('address', e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
-                  <input 
-                    value={basicInfo.postalCode} 
-                    onChange={e => setBasicInfoField('postalCode', e.target.value.toUpperCase())} 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all" 
+                  <input
+                    value={basicInfo.postalCode}
+                    onChange={e => setBasicInfoField('postalCode', e.target.value.toUpperCase())}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                     placeholder="e.g. SW1A 1AA"
                     maxLength={8}
                   />
@@ -888,36 +895,36 @@ export default function AdmissionPage(){
               <h2 className="text-xl font-semibold">Summary</h2>
             </div>
             <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Name</p>
-                <p className="text-gray-900 font-medium">{seeker ? `${seeker.firstName} ${seeker.lastName}` : '-'}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Name</p>
+                  <p className="text-gray-900 font-medium">{seeker ? `${seeker.firstName} ${seeker.lastName}` : '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Preferred</p>
+                  <p className="text-gray-900 font-medium">{seeker?.preferredName ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">DOB</p>
+                  <p className="text-gray-900 font-medium">{seeker?.dateOfBirth ? new Date(seeker.dateOfBirth).toLocaleDateString() : '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Gender</p>
+                  <p className="text-gray-900 font-medium">{seeker?.gender ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pronouns</p>
+                  <p className="text-gray-900 font-medium">{seeker?.pronouns ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Status</p>
+                  <p className="text-gray-900 font-medium">{seeker?.status ?? '-'}</p>
+                </div>
+                <div className="md:col-span-3">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Address</p>
+                  <p className="text-gray-900 font-medium">{seeker?.address ?? '-'}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Preferred</p>
-                <p className="text-gray-900 font-medium">{seeker?.preferredName ?? '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">DOB</p>
-                <p className="text-gray-900 font-medium">{seeker?.dateOfBirth ? new Date(seeker.dateOfBirth).toLocaleDateString() : '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Gender</p>
-                <p className="text-gray-900 font-medium">{seeker?.gender ?? '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pronouns</p>
-                <p className="text-gray-900 font-medium">{seeker?.pronouns ?? '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Status</p>
-                <p className="text-gray-900 font-medium">{seeker?.status ?? '-'}</p>
-              </div>
-              <div className="md:col-span-3">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Address</p>
-                <p className="text-gray-900 font-medium">{seeker?.address ?? '-'}</p>
-              </div>
-            </div>
             </div>
           </div>
 
@@ -927,52 +934,74 @@ export default function AdmissionPage(){
               <h2 className="text-xl font-semibold">Admission</h2>
             </div>
             <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm text-gray-600 mb-1">Advanced Care Plan (URL or uploaded link)</label>
-                <input value={admission.advancedCarePlanUrl} onChange={e=>setAdmissionField('advancedCarePlanUrl', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" placeholder="https://..." />
-                <p className="text-xs text-gray-500 mt-1">Upload support coming soon. Paste a link for now.</p>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Start Date</label>
-                <input type="date" value={admission.startDate} onChange={e=>setAdmissionField('startDate', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Banding</label>
-                <input value={admission.banding} onChange={e=>setAdmissionField('banding', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Authority/Category</label>
-                <input value={admission.authorityCategory} onChange={e=>setAdmissionField('authorityCategory', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Funeral Arrangements</label>
-                <select value={admission.funeralArrangement} onChange={e=>setAdmissionField('funeralArrangement', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900">
-                  <option value="UNKNOWN">Unknown</option>
-                  <option value="BURIAL">Burial</option>
-                  <option value="CREMATION">Cremation</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Funeral Director</label>
-                <input value={admission.funeralDirector} onChange={e=>setAdmissionField('funeralDirector', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Team</label>
-                <input value={admission.teamId} onChange={e=>setAdmissionField('teamId', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" placeholder="Team ID (coming soon)" />
-                <p className="text-xs text-gray-500 mt-1">Team assignment will be enhanced later.</p>
-              </div>
-              <div className="md:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm text-gray-600 mb-1">Advanced Care Plan (File)</label>
+                  <div className="flex flex-col gap-2">
+                    <FileUpload
+                      label="Upload Care Plan"
+                      accept=".pdf,.doc,.docx"
+                      onUploadComplete={(url, name) => {
+                        setAdmissionField('advancedCarePlanUrl', url);
+                        setNotification({ show: true, message: 'Care plan uploaded successfully', type: 'success' });
+                      }}
+                      onError={(err) => setNotification({ show: true, message: err, type: 'error' })}
+                    />
+                    {admission.advancedCarePlanUrl && (
+                      <div className="text-sm text-blue-600 truncate">
+                        Current file: <a href={admission.advancedCarePlanUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800">{admission.advancedCarePlanUrl.split('/').pop()}</a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Start Date</label>
+                  <input type="date" value={admission.startDate} onChange={e => setAdmissionField('startDate', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Banding</label>
+                  <input value={admission.banding} onChange={e => setAdmissionField('banding', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Authority/Category</label>
+                  <input value={admission.authorityCategory} onChange={e => setAdmissionField('authorityCategory', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Funeral Arrangements</label>
+                  <select value={admission.funeralArrangement} onChange={e => setAdmissionField('funeralArrangement', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                    <option value="UNKNOWN">Unknown</option>
+                    <option value="BURIAL">Burial</option>
+                    <option value="CREMATION">Cremation</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Funeral Director</label>
+                  <input value={admission.funeralDirector} onChange={e => setAdmissionField('funeralDirector', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Team</label>
+                  <select
+                    value={admission.teamId}
+                    onChange={e => setAdmissionField('teamId', e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-gray-900"
+                  >
+                    <option value="">Select a team</option>
+                    {Array.isArray(teams) && teams.map(team => (
+                      <option key={team.id} value={team.id}>{team.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
                   <label className="block text-sm text-gray-600 mb-1">Default Shift Run</label>
-                <select value={admission.defaultShiftRunId} onChange={e=>setAdmissionField('defaultShiftRunId', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900">
-                  <option value="">Select a shift run</option>
-                  {shiftRuns.map(sr => (<option key={sr.id} value={sr.id}>{sr.name}</option>))}
-                </select>
+                  <select value={admission.defaultShiftRunId} onChange={e => setAdmissionField('defaultShiftRunId', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                    <option value="">Select a shift run</option>
+                    {shiftRuns.map(sr => (<option key={sr.id} value={sr.id}>{sr.name}</option>))}
+                  </select>
+                </div>
               </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button type="button" onClick={handleSave} disabled={saving} className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">{saving? 'Saving...' : 'Save Admission'}</button>
-            </div>
+              <div className="mt-6 flex justify-end">
+                <button type="button" onClick={handleSave} disabled={saving} className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">{saving ? 'Saving...' : 'Save Admission'}</button>
+              </div>
             </div>
           </div>
 

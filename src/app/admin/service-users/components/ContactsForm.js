@@ -285,7 +285,7 @@ export default function ContactsForm({ serviceSeekerId, onNotification }) {
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
             {/* Blue Header */}
             <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
               <div className="flex items-center justify-between">
@@ -294,7 +294,7 @@ export default function ContactsForm({ serviceSeekerId, onNotification }) {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 min-h-0">
               <div className="mb-6">
                 <div className="flex items-center space-x-4 mb-4">
                   <label className="flex items-center space-x-2 text-sm text-gray-700">
@@ -388,7 +388,7 @@ export default function ContactsForm({ serviceSeekerId, onNotification }) {
       )}
 
       {showManageRoles && (
-        <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-xl font-semibold text-gray-900">Manage Roles</h3>

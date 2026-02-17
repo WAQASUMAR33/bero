@@ -15,11 +15,8 @@ export default function EmergencyReportsPage() {
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const router = useRouter();
 
-  // Filters
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, ACTIVE, ACKNOWLEDGED, RESOLVED
-  const [teamFilter, setTeamFilter] = useState('ALL');
   const [dateFilter, setDateFilter] = useState('');
-  const [teams, setTeams] = useState([]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -34,13 +31,13 @@ export default function EmergencyReportsPage() {
   useEffect(() => {
     if (user) {
       fetchAlerts();
-      fetchTeams();
+      fetchAlerts();
     }
   }, [user]);
 
   useEffect(() => {
     applyFilters();
-  }, [alerts, statusFilter, teamFilter, dateFilter]);
+  }, [alerts, statusFilter, dateFilter]);
 
   const fetchAlerts = async () => {
     try {
@@ -70,23 +67,7 @@ export default function EmergencyReportsPage() {
     }
   };
 
-  const fetchTeams = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/teams', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
 
-      if (res.ok) {
-        const data = await res.json();
-        setTeams(Array.isArray(data) ? data : []);
-      }
-    } catch (error) {
-      console.error('Error fetching teams:', error);
-    }
-  };
 
   const applyFilters = () => {
     let filtered = [...alerts];
@@ -96,11 +77,7 @@ export default function EmergencyReportsPage() {
       filtered = filtered.filter(alert => alert.status === statusFilter);
     }
 
-    // Filter by team
-    if (teamFilter !== 'ALL') {
-      const teamId = parseInt(teamFilter);
-      filtered = filtered.filter(alert => alert.teamId === teamId);
-    }
+
 
     // Filter by date
     if (dateFilter) {
@@ -320,19 +297,7 @@ export default function EmergencyReportsPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Team</label>
-                <select
-                  value={teamFilter}
-                  onChange={(e) => setTeamFilter(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent"
-                >
-                  <option value="ALL">All Teams</option>
-                  {teams.map(team => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
-                  ))}
-                </select>
-              </div>
+
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
@@ -348,7 +313,6 @@ export default function EmergencyReportsPage() {
                 <button
                   onClick={() => {
                     setStatusFilter('ALL');
-                    setTeamFilter('ALL');
                     setDateFilter('');
                   }}
                   className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
@@ -361,7 +325,8 @@ export default function EmergencyReportsPage() {
 
           {/* Alerts Table */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               {isLoadingAlerts ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#224fa6]"></div>
@@ -487,6 +452,100 @@ export default function EmergencyReportsPage() {
                     ))}
                   </tbody>
                 </table>
+              )}
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden">
+              {isLoadingAlerts ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#224fa6]"></div>
+                </div>
+              ) : filteredAlerts.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 text-lg">No emergency alerts found</p>
+                  <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {filteredAlerts.map((alert) => (
+                    <div key={alert.id} className="p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center space-x-3">
+                          {alert.triggeredByUser?.profilePic ? (
+                            <img
+                              src={alert.triggeredByUser.profilePic}
+                              alt={`${alert.triggeredByUser.firstName} ${alert.triggeredByUser.lastName}`}
+                              className="w-10 h-10 rounded-full"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                              <span className="text-blue-700 font-semibold">
+                                {alert.triggeredByUser?.firstName?.[0]}{alert.triggeredByUser?.lastName?.[0]}
+                              </span>
+                            </div>
+                          )}
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {alert.triggeredByUser?.firstName} {alert.triggeredByUser?.lastName}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {alert.team?.name || 'N/A'} • {getTimeAgo(alert.createdAt)}
+                            </div>
+                          </div>
+                        </div>
+                        <div>{getStatusBadge(alert.status)}</div>
+                      </div>
+
+                      <div className="text-sm text-gray-800 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <p className="font-medium mb-1">Message:</p>
+                        {alert.message || 'No message'}
+                        {alert.location && (
+                          <div className="mt-2 text-xs text-gray-500 flex items-center">
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {alert.location}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-xs text-gray-500 flex justify-between">
+                        <span>ID: #{alert.id}</span>
+                        <span>{formatDate(alert.createdAt)}</span>
+                      </div>
+
+                      {(alert.status === 'ACTIVE' || alert.status === 'ACKNOWLEDGED') && (
+                        <div className="flex gap-2 pt-2 border-t border-gray-100 mt-2">
+                          {alert.status === 'ACTIVE' && (
+                            <button
+                              onClick={() => handleAcknowledge(alert.id)}
+                              className="flex-1 text-yellow-600 hover:text-yellow-900 px-3 py-2 rounded border border-yellow-300 hover:bg-yellow-50 transition-colors text-sm font-medium"
+                            >
+                              Acknowledge
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleResolve(alert.id)}
+                            className="flex-1 text-green-600 hover:text-green-900 px-3 py-2 rounded border border-green-300 hover:bg-green-50 transition-colors text-sm font-medium"
+                          >
+                            Resolve
+                          </button>
+                        </div>
+                      )}
+
+                      {alert.status === 'RESOLVED' && alert.resolvedAt && (
+                        <div className="text-xs text-green-600 font-medium pt-2 border-t border-gray-100 mt-2 flex items-center">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Resolved on {formatDate(alert.resolvedAt)}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>

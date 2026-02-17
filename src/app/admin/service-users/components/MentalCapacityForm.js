@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import FileUpload from '../../components/FileUpload';
+
+
 
 export default function MentalCapacityForm({ serviceSeekerId, onNotification }) {
   const [mentalCapacities, setMentalCapacities] = useState([]);
@@ -19,9 +22,9 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
     appliedForDate: '',
     dolsStartDate: '',
     dolsEndDate: '',
-    dolsNotes: '',
     cqcInformed: false,
     dolsAppliedForDate: '',
+    documentUrl: '',
   });
 
   const fetchMentalCapacities = async () => {
@@ -50,7 +53,7 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
   const handleFieldChange = (field, value) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
-      
+
       // Reset conditional fields when DOLS changes
       if (field === 'dols') {
         if (value === 'N/A' || value === '') {
@@ -78,7 +81,7 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
           updated.cqcInformed = false;
         }
       }
-      
+
       return updated;
     });
   };
@@ -90,7 +93,7 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
       const isEdit = editingId !== null;
       const url = `/api/service-seekers/${serviceSeekerId}/mental-capacity`;
       const method = isEdit ? 'PUT' : 'POST';
-      
+
       const payload = {
         ...formData,
         ...(isEdit ? { id: editingId } : {}),
@@ -164,7 +167,9 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
       dolsEndDate: item.dolsEndDate ? new Date(item.dolsEndDate).toISOString().substring(0, 10) : '',
       dolsNotes: item.dolsNotes || '',
       cqcInformed: item.cqcInformed || false,
+      cqcInformed: item.cqcInformed || false,
       dolsAppliedForDate: item.dolsAppliedForDate ? new Date(item.dolsAppliedForDate).toISOString().substring(0, 10) : '',
+      documentUrl: item.documentUrl || '',
     });
     setShowAddModal(true);
   };
@@ -215,7 +220,9 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
       dolsEndDate: '',
       dolsNotes: '',
       cqcInformed: false,
+      cqcInformed: false,
       dolsAppliedForDate: '',
+      documentUrl: '',
     });
     setEditingId(null);
   };
@@ -246,89 +253,89 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
         <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
           <h2 className="text-xl font-semibold">Mental Capacity</h2>
         </div>
-        
+
         <div className="p-6">
 
-        {loading ? (
-          <div className="text-center py-4 text-gray-500">Loading...</div>
-        ) : mentalCapacities.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <p className="mb-4">No mental capacity records added yet.</p>
-            <p className="text-sm text-gray-400">Click the Add button to add a record.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">MCA</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Capacity</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Best Interests</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Score</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">DOLS</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">DOLS Start Date</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">DOLS End Date</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Modified</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mentalCapacities.map((item, idx) => (
-                  <tr key={item.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-blue-50' : 'bg-white'}`}>
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.mca)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.capacity || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.bestInterests || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.score || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.dols || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.dolsStartDate)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.dolsEndDate)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{formatDate(item.createdAt)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{formatDate(item.updatedAt)}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center space-x-3">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(item)}
-                          className="text-[#224fa6] hover:text-[#224fa6]/80 text-sm"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+          {loading ? (
+            <div className="text-center py-4 text-gray-500">Loading...</div>
+          ) : mentalCapacities.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p className="mb-4">No mental capacity records added yet.</p>
+              <p className="text-sm text-gray-400">Click the Add button to add a record.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">MCA</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Capacity</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Best Interests</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Score</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">DOLS</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">DOLS Start Date</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">DOLS End Date</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Modified</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {mentalCapacities.map((item, idx) => (
+                    <tr key={item.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-blue-50' : 'bg-white'}`}>
+                      <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.mca)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{item.capacity || '-'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{item.bestInterests || '-'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{item.score || '-'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{item.dols || '-'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.dolsStartDate)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.dolsEndDate)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{formatDate(item.createdAt)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{formatDate(item.updatedAt)}</td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center space-x-3">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(item)}
+                            className="text-[#224fa6] hover:text-[#224fa6]/80 text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(item.id)}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center text-sm text-gray-600">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            <span className="text-gray-600">You can add mental capacity records for the Service User here</span>
+          <div className="mt-6 flex items-center justify-between">
+            <div className="flex items-center text-sm text-gray-600">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span className="text-gray-600">You can add mental capacity records for the Service User here</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+                setShowAddModal(true);
+              }}
+              className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-2xl text-[#224fa6] font-light transition-colors"
+              aria-label="Add mental capacity"
+            >
+              +
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              resetForm();
-              setShowAddModal(true);
-            }}
-            className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-2xl text-[#224fa6] font-light transition-colors"
-            aria-label="Add mental capacity"
-          >
-            +
-          </button>
-        </div>
         </div>
       </div>
 
@@ -492,19 +499,29 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
 
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-600 mb-1">Documents</label>
-                  <button
-                    type="button"
-                    className="w-full border-2 border-dashed border-gray-300 rounded-lg px-4 py-8 text-center hover:border-gray-400 transition-colors"
-                    onClick={() => {
-                      // File upload will be implemented later
-                      alert('File upload feature will be available soon');
-                    }}
-                  >
-                    <svg className="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <span className="text-sm text-gray-600">Click to upload file</span>
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <FileUpload
+                      label="Upload Document"
+                      onUploadComplete={(url) => {
+                        handleFieldChange('documentUrl', url);
+                        onNotification?.({ show: true, message: 'Document uploaded.', type: 'success' });
+                      }}
+                      onError={(err) => onNotification?.({ show: true, message: err, type: 'error' })}
+                    />
+                    {formData.documentUrl && (
+                      <div className="text-sm">
+                        <span className="text-gray-600 mr-2">Current file:</span>
+                        <a
+                          href={formData.documentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#224fa6] hover:underline"
+                        >
+                          {formData.documentUrl.split('/').pop() || 'View Document'}
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -541,15 +558,15 @@ export default function MentalCapacityForm({ serviceSeekerId, onNotification }) 
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              
+
               <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
                 Delete Mental Capacity Record
               </h3>
-              
+
               <p className="text-sm text-gray-600 text-center mb-6">
                 Are you sure you want to delete this mental capacity record? This action cannot be undone.
               </p>
-              
+
               <div className="flex space-x-3">
                 <button
                   onClick={handleDeleteCancel}

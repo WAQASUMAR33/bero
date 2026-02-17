@@ -2,11 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-export default function LocationMap({ 
-  postalCode, 
-  latitude, 
-  longitude, 
-  onLocationSelect, 
+export default function LocationMap({
+  postalCode,
+  searchQuery,
+  latitude,
+  longitude,
+  latitude,
+  longitude,
+  onLocationSelect,
   readOnly = false,
   className = "w-full h-64 rounded-lg border"
 }) {
@@ -26,7 +29,7 @@ export default function LocationMap({
       try {
         // Dynamically import Leaflet to avoid SSR issues
         const L = (await import('leaflet')).default;
-        
+
         // Check if map container is already initialized and clean it up
         if (mapRef.current._leaflet_id) {
           // Remove existing map instance
@@ -37,7 +40,7 @@ export default function LocationMap({
           // Clear the container
           mapRef.current._leaflet_id = undefined;
         }
-        
+
         // Fix default markers in Leaflet
         delete L.Icon.Default.prototype._getIconUrl;
         L.Icon.Default.mergeOptions({
@@ -70,17 +73,17 @@ export default function LocationMap({
         if (!readOnly) {
           mapInstance.on('click', async (e) => {
             const { lat, lng } = e.latlng;
-            
+
             // Remove existing marker from the map instance
             if (markerRef.current) {
               mapInstance.removeLayer(markerRef.current);
               markerRef.current = null;
             }
-            
+
             // Add new marker
             const newMarker = L.marker([lat, lng]).addTo(mapInstance);
             markerRef.current = newMarker;
-            
+
             // Call callback with new coordinates
             if (onLocationSelect) {
               onLocationSelect(lat, lng);
@@ -113,21 +116,21 @@ export default function LocationMap({
     };
   }, []); // Empty dependency array - only initialize once
 
-  // Handle postal code geocoding
+  // Handle postal code/query geocoding
   useEffect(() => {
-    if (!postalCode || !map || readOnly) return;
+    if ((!postalCode && !searchQuery) || !map || readOnly) return;
 
     // Validate postal code format (basic UK postal code validation)
     const ukPostalCodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
-    const trimmedPostalCode = postalCode.trim();
-    
-    // Only geocode if it looks like a complete UK postal code
-    if (!ukPostalCodeRegex.test(trimmedPostalCode) || trimmedPostalCode.length < 5) {
+    const trimmedPostalCode = postalCode ? postalCode.trim() : '';
+
+    // Only geocode if it looks like a complete UK postal code OR if we have a specific search query
+    if (!searchQuery && (!ukPostalCodeRegex.test(trimmedPostalCode) || trimmedPostalCode.length < 5)) {
       return;
     }
 
-    // Don't geocode if we already geocoded this postal code
-    if (lastGeocodedPostalCode === trimmedPostalCode) {
+    // Don't geocode if we already geocoded this postal code/query
+    if ((searchQuery && lastGeocodedPostalCode === searchQuery) || (!searchQuery && lastGeocodedPostalCode === trimmedPostalCode)) {
       return;
     }
 
@@ -136,17 +139,22 @@ export default function LocationMap({
       setError(null);
 
       try {
+        let url = '';
+        if (searchQuery) {
+          url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=gb&q=${encodeURIComponent(searchQuery)}&limit=1`;
+        } else {
+          url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=gb&postalcode=${encodeURIComponent(trimmedPostalCode)}&limit=1`;
+        }
+
         // Use Nominatim (OpenStreetMap) geocoding service
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&countrycodes=gb&postalcode=${encodeURIComponent(trimmedPostalCode)}&limit=1`
-        );
-        
+        const response = await fetch(url);
+
         if (!response.ok) {
           throw new Error('Geocoding request failed');
         }
 
         const data = await response.json();
-        
+
         if (data && data.length > 0) {
           const { lat, lon } = data[0];
           const newLat = parseFloat(lat);
@@ -171,8 +179,8 @@ export default function LocationMap({
             onLocationSelect(newLat, newLng);
           }
 
-          // Remember this postal code to avoid duplicate requests
-          setLastGeocodedPostalCode(trimmedPostalCode);
+          // Remember this postal code/query to avoid duplicate requests
+          setLastGeocodedPostalCode(searchQuery || trimmedPostalCode);
         } else {
           setError('Postal code not found');
         }
@@ -187,7 +195,7 @@ export default function LocationMap({
     // Debounce the geocoding request with longer delay
     const timeoutId = setTimeout(geocodePostalCode, 1500);
     return () => clearTimeout(timeoutId);
-  }, [postalCode, map, onLocationSelect, readOnly, lastGeocodedPostalCode]);
+  }, [postalCode, searchQuery, map, onLocationSelect, readOnly, lastGeocodedPostalCode]);
 
   // Update marker when coordinates change externally
   useEffect(() => {
@@ -222,7 +230,7 @@ export default function LocationMap({
           </div>
         </div>
       )}
-      
+
       {error && (
         <div className="absolute top-2 left-2 z-[1000] bg-red-100 border border-red-300 px-3 py-1 rounded-lg shadow-md">
           <span className="text-sm text-red-600">{error}</span>

@@ -59,7 +59,7 @@ export default function PolicyProceduresPage() {
         }
       });
       const result = await response.json();
-      
+
       if (result.success) {
         setPolicies(result.data);
       } else {
@@ -94,7 +94,7 @@ export default function PolicyProceduresPage() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setPolicies(prev => [result.data, ...prev]);
         setShowAddModal(false);
@@ -120,7 +120,7 @@ export default function PolicyProceduresPage() {
         }
       });
       const result = await response.json();
-      
+
       if (result.success) {
         setPolicyHistory(result.data);
         setSelectedPolicy(policy);
@@ -159,7 +159,7 @@ export default function PolicyProceduresPage() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setShowReviewModal(false);
         setReviewFormData({ reviewText: '' });
@@ -189,7 +189,7 @@ export default function PolicyProceduresPage() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         fetchPolicies(); // Refresh policies to update signature count
         showNotification('Policy signed successfully!', 'success');
@@ -211,7 +211,7 @@ export default function PolicyProceduresPage() {
         }
       });
       const result = await response.json();
-      
+
       if (result.success) {
         setPolicySignatures(result.data.signatures);
         setSelectedPolicy({
@@ -315,9 +315,10 @@ export default function PolicyProceduresPage() {
                 </div>
               </div>
 
-              {/* Policies Table */}
+              {/* Policies List */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                       <tr>
@@ -437,6 +438,95 @@ export default function PolicyProceduresPage() {
                     </tbody>
                   </table>
                 </div>
+
+
+                {/* Mobile Card View */}
+                <div className="md:hidden">
+                  {policies.length === 0 ? (
+                    <div className="p-6 text-center text-gray-500">
+                      No policies found. {isAdmin && 'Create your first policy to get started.'}
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-200">
+                      {policies.map((policy) => (
+                        <div key={policy.id} className="p-4 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3
+                                className="text-sm font-bold text-gray-900 cursor-pointer hover:text-[#224fa6]"
+                                onClick={() => handleOpenFile(policy)}
+                              >
+                                {policy.name}
+                              </h3>
+                              <p
+                                className="text-xs text-gray-500 mt-1 cursor-pointer hover:text-[#224fa6]"
+                                onClick={() => handleOpenFile(policy)}
+                              >
+                                {policy.fileName}
+                              </p>
+                            </div>
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                              {policy.signedCount || 0}/{policy.totalStaffCount || 0} Signed
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                            <div>
+                              <span className="font-medium">Review In:</span> {policy.reviewIn ? `${policy.reviewIn} days` : 'N/A'}
+                            </div>
+                            <div>
+                              <span className="font-medium">Last Reviewed:</span> {formatDate(policy.lastReviewed).split(',')[0]}
+                            </div>
+                            <div>
+                              <span className="font-medium">Created:</span> {formatDate(policy.createdAt).split(',')[0]}
+                            </div>
+                            <div>
+                              <span className="font-medium">By:</span> {policy.createdBy?.firstName} {policy.createdBy?.lastName}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-end space-x-3 pt-2 border-t border-gray-100 mt-2">
+                            <button
+                              onClick={() => handleViewHistory(policy)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                              title="View History"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleReviewPrivacy(policy)}
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                              title="Review Privacy"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleSendSignoff(policy)}
+                                className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg"
+                                title="Send Signoff"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleSignPolicy(policy)}
+                              className="px-4 py-1.5 text-xs font-medium bg-[#224fa6] text-white rounded-lg hover:bg-[#3270e9]"
+                            >
+                              Sign
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -471,7 +561,7 @@ export default function PolicyProceduresPage() {
                         type="text"
                         required
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         placeholder="Enter policy name"
                       />
@@ -482,7 +572,7 @@ export default function PolicyProceduresPage() {
                         type="text"
                         required
                         value={formData.fileName}
-                        onChange={(e) => setFormData({...formData, fileName: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, fileName: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         placeholder="Enter file name"
                       />
@@ -515,7 +605,7 @@ export default function PolicyProceduresPage() {
                       <input
                         type="text"
                         value={formData.fileUrl || ''}
-                        onChange={(e) => setFormData({...formData, fileUrl: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
                         className="w-full mt-2 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         placeholder="Or enter file URL manually"
                       />
@@ -525,7 +615,7 @@ export default function PolicyProceduresPage() {
                       <input
                         type="number"
                         value={formData.reviewIn}
-                        onChange={(e) => setFormData({...formData, reviewIn: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, reviewIn: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         placeholder="e.g., 30, 90, 365"
                         min="1"
@@ -590,12 +680,11 @@ export default function PolicyProceduresPage() {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center space-x-2">
-                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                  item.type === 'CREATED' ? 'bg-green-100 text-green-800' :
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${item.type === 'CREATED' ? 'bg-green-100 text-green-800' :
                                   item.type === 'UPDATED' ? 'bg-blue-100 text-blue-800' :
-                                  item.type === 'SIGNED' ? 'bg-purple-100 text-purple-800' :
-                                  'bg-yellow-100 text-yellow-800'
-                                }`}>
+                                    item.type === 'SIGNED' ? 'bg-purple-100 text-purple-800' :
+                                      'bg-yellow-100 text-yellow-800'
+                                  }`}>
                                   {item.type}
                                 </span>
                                 <span className="text-sm font-medium text-gray-900">{item.description}</span>
@@ -652,7 +741,7 @@ export default function PolicyProceduresPage() {
                       <textarea
                         required
                         value={reviewFormData.reviewText}
-                        onChange={(e) => setReviewFormData({...reviewFormData, reviewText: e.target.value})}
+                        onChange={(e) => setReviewFormData({ ...reviewFormData, reviewText: e.target.value })}
                         rows={8}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         placeholder="Enter your review of the policy..."
@@ -743,7 +832,7 @@ export default function PolicyProceduresPage() {
           />
         </main>
       </div>
-    </div>
+    </div >
   );
 }
 

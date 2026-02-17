@@ -167,38 +167,36 @@ export default function CareWorkerDashboard() {
     const initiateClockIn = async (shift) => {
         if (!shift) return;
 
-        // 1. Determine Start and End times safely
-        let shiftStartTime, shiftEndTime;
+        // 1. Determine Start and End times using LOCAL User Time (Browser Timezone)
+        // We purposefully ignore shift.expectedStartTime from backend because it is an ISO string 
+        // that may have been calculated in a different timezone (e.g. UTC server vs PKT user).
+        // We want "17:40" to mean "17:40" on the user's wall clock.
 
-        if (shift.expectedStartTime && shift.expectedEndTime) {
-            shiftStartTime = new Date(shift.expectedStartTime);
-            shiftEndTime = new Date(shift.expectedEndTime);
-        } else {
-            // Fallback Logic
-            const shiftDateStr = shift.date ? shift.date.split('T')[0] : new Date().toISOString().split('T')[0];
+        const shiftDateStr = shift.date ? shift.date.split('T')[0] : new Date().toISOString().split('T')[0];
 
-            const startStr = `${shiftDateStr}T${shift.startTime}`;
-            shiftStartTime = new Date(startStr);
+        // Construct Start Time (Local)
+        // new Date("YYYY-MM-DDTHH:MM:SS") without 'Z' parses in local time
+        const startStr = `${shiftDateStr}T${shift.startTime}`;
+        const shiftStartTime = new Date(startStr);
 
-            const endStr = `${shiftDateStr}T${shift.endTime}`;
-            shiftEndTime = new Date(endStr);
+        // Construct End Time (Local)
+        const endStr = `${shiftDateStr}T${shift.endTime}`;
+        const shiftEndTime = new Date(endStr);
 
-            // Handle overnight shift manually if needed (if end time is earlier than start time, it must be next day)
-            if (shiftEndTime < shiftStartTime) {
-                shiftEndTime.setDate(shiftEndTime.getDate() + 1);
-            }
+        // Handle overnight shift: if End Time < Start Time, it ends the next day
+        if (shiftEndTime < shiftStartTime) {
+            shiftEndTime.setDate(shiftEndTime.getDate() + 1);
         }
 
         const now = new Date();
 
+        // 2. Check if shift has passed (Expired)
         if (now > shiftEndTime) {
             alert("This shift has already ended. You cannot clock in.");
             return;
         }
 
-        // 2. Check 10-minute early rule
-        // Use the shiftStartTime already calculated above
-
+        // 3. Check 10-minute early rule
         // Calculate 10 minutes before start
         const tenMinutesBeforeStart = new Date(shiftStartTime.getTime() - 10 * 60000);
 

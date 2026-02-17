@@ -645,12 +645,20 @@ export default function AdmissionPage() {
       try {
         const res = await fetch(`/api/shift-runs`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-        if (Array.isArray(data)) setShiftRuns(data);
+        if (data && Array.isArray(data.data)) {
+          setShiftRuns(data.data);
+        } else if (Array.isArray(data)) {
+          setShiftRuns(data);
+        }
       } catch (e) { console.error(e); }
       try {
         const res = await fetch(`/api/teams`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-        if (Array.isArray(data)) setTeams(data);
+        if (data && Array.isArray(data.data)) {
+          setTeams(data.data);
+        } else if (Array.isArray(data)) {
+          setTeams(data);
+        }
       } catch (e) { console.error(e); }
     })();
   }, [user, serviceSeekerId]);

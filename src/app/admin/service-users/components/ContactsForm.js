@@ -389,12 +389,12 @@ export default function ContactsForm({ serviceSeekerId, onNotification }) {
 
       {showManageRoles && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-xl font-semibold text-gray-900">Manage Roles</h3>
               <button type="button" onClick={() => setShowManageRoles(false)} className="text-gray-500 hover:text-gray-700 text-2xl leading-none">×</button>
             </div>
-            <div className="p-6 space-y-3">
+            <div className="p-6 space-y-3 overflow-y-auto flex-1 min-h-0">
               {roleOptions.map((r, idx) => (
                 <div key={idx} className="flex items-center justify-between border rounded-lg px-3 py-2">
                   <span className="text-sm text-gray-800">{r}</span>

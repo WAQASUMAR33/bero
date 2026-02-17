@@ -15,7 +15,7 @@ export async function GET(request) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { searchParams } = new URL(request.url);
-    
+
     const dateParam = searchParams.get('date'); // Optional: YYYY-MM-DD format
     const date = dateParam ? new Date(dateParam) : new Date();
     date.setHours(0, 0, 0, 0);
@@ -89,17 +89,25 @@ export async function GET(request) {
     const shiftsWithStatus = assignments.map(assignment => {
       const clockInOut = clockInOutMap[assignment.id];
       const shift = assignment.shift;
-      
+
+
+
       // Calculate expected times
       const shiftDate = new Date(assignment.date);
       const [startHour, startMin] = shift.startTime.split(':').map(Number);
       const [endHour, endMin] = shift.endTime.split(':').map(Number);
-      
+
       const expectedStart = new Date(shiftDate);
       expectedStart.setHours(startHour, startMin, 0, 0);
-      
+
       const expectedEnd = new Date(shiftDate);
       expectedEnd.setHours(endHour, endMin, 0, 0);
+
+      // Handle overnight shifts (end time on the next day)
+      // E.g. Start 17:40, End 06:00
+      if (expectedEnd < expectedStart) {
+        expectedEnd.setDate(expectedEnd.getDate() + 1);
+      }
 
       return {
         shiftAssignmentId: assignment.id,
@@ -132,18 +140,18 @@ export async function GET(request) {
 
   } catch (error) {
     console.error('GET /clock-in-out/my-shifts error:', error);
-    
+
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Invalid or expired token' 
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid or expired token'
       }, { status: 401 });
     }
 
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to fetch shifts', 
-      details: error.message 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch shifts',
+      details: error.message
     }, { status: 500 });
   }
 }

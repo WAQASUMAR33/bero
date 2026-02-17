@@ -167,11 +167,28 @@ export default function CareWorkerDashboard() {
     const initiateClockIn = async (shift) => {
         if (!shift) return;
 
-        // 1. Check if shift has passed (Expired)
-        // Construct shift end time
-        const shiftDateStr = shift.date ? shift.date.split('T')[0] : new Date().toISOString().split('T')[0];
-        const shiftEndDateTimeStr = `${shiftDateStr}T${shift.endTime}`;
-        const shiftEndTime = new Date(shiftEndDateTimeStr);
+        // 1. Determine Start and End times safely
+        let shiftStartTime, shiftEndTime;
+
+        if (shift.expectedStartTime && shift.expectedEndTime) {
+            shiftStartTime = new Date(shift.expectedStartTime);
+            shiftEndTime = new Date(shift.expectedEndTime);
+        } else {
+            // Fallback Logic
+            const shiftDateStr = shift.date ? shift.date.split('T')[0] : new Date().toISOString().split('T')[0];
+
+            const startStr = `${shiftDateStr}T${shift.startTime}`;
+            shiftStartTime = new Date(startStr);
+
+            const endStr = `${shiftDateStr}T${shift.endTime}`;
+            shiftEndTime = new Date(endStr);
+
+            // Handle overnight shift manually if needed (if end time is earlier than start time, it must be next day)
+            if (shiftEndTime < shiftStartTime) {
+                shiftEndTime.setDate(shiftEndTime.getDate() + 1);
+            }
+        }
+
         const now = new Date();
 
         if (now > shiftEndTime) {
@@ -180,9 +197,7 @@ export default function CareWorkerDashboard() {
         }
 
         // 2. Check 10-minute early rule
-        // Construct shift start time
-        const shiftStartDateTimeStr = `${shiftDateStr}T${shift.startTime}`;
-        const shiftStartTime = new Date(shiftStartDateTimeStr);
+        // Use the shiftStartTime already calculated above
 
         // Calculate 10 minutes before start
         const tenMinutesBeforeStart = new Date(shiftStartTime.getTime() - 10 * 60000);

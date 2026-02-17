@@ -16,7 +16,13 @@ export default function PersonalPropertyForm({ serviceSeekerId, serviceUserName,
   useEffect(() => { fetchRows(); }, [serviceSeekerId, archived]);
   useEffect(() => { fetchStaff(); }, []);
 
-  const fetchStaff = async () => { try { const res = await fetch('/api/users'); if (res.ok) { setStaff(await res.json()); } } catch (e) { console.error(e); } };
+  const fetchStaff = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) { setStaff(await res.json()); }
+    } catch (e) { console.error(e); }
+  };
 
   const fetchRows = async () => {
     if (!serviceSeekerId) return;

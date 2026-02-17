@@ -214,6 +214,27 @@ export default function CareWorkerCarePlanPage() {
                 {admission && (
                     <SectionCard title="Medical & Emergency" icon="🏥">
                         <div className="space-y-4">
+                            {admission.advancedCarePlanUrl && (
+                                <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 011.414.586l4 4a1 1 0 01.586 1.414V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <div>
+                                            <p className="font-bold text-blue-900 text-sm">Advanced Care Plan</p>
+                                            <p className="text-[10px] text-blue-700">Tap to view document</p>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={admission.advancedCarePlanUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="bg-white text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm border border-blue-200 hover:bg-blue-50"
+                                    >
+                                        Open
+                                    </a>
+                                </div>
+                            )}
                             <div className="grid grid-cols-2 gap-4">
                                 <SummaryRow label="DNAR / Resuscitation" value={admission.dnarStatus || 'Check File'} /> {/* Assuming field exists or we add dummy if critical */}
                                 <SummaryRow label="Emergency Rating" value={admission.emergencyRating} />

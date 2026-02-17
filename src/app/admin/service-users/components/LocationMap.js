@@ -7,8 +7,7 @@ export default function LocationMap({
   searchQuery,
   latitude,
   longitude,
-  latitude,
-  longitude,
+
   onLocationSelect,
   readOnly = false,
   className = "w-full h-64 rounded-lg border"

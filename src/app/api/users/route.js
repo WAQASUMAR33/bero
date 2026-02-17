@@ -1,18 +1,21 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { hasPermission } from '@/lib/permissions';
 
 // GET /api/users - Fetch all users
 export async function GET(request) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const currentUser = await getCurrentUser(request);
 
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // In a real app, you'd verify the JWT token here
-    // For now, we'll just check if it exists
+    if (!hasPermission(currentUser, 'users.view')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const users = await prisma.user.findMany({
       include: {
@@ -50,10 +53,14 @@ export async function GET(request) {
 // POST /api/users - Create a new user
 export async function POST(request) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const currentUser = await getCurrentUser(request);
 
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!hasPermission(currentUser, 'users.create')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await request.json();

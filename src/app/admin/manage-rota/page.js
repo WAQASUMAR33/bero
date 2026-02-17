@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
 import CreateShiftModal from './components/CreateShiftModal';
+import { hasPermission } from '@/lib/permissions';
 
 export default function ManageRotaPage() {
   const [user, setUser] = useState(null);
@@ -43,10 +44,10 @@ export default function ManageRotaPage() {
   const fetchShifts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const dateParam = view === 'daily' 
+      const dateParam = view === 'daily'
         ? `date=${currentDate.toISOString().split('T')[0]}`
         : `week=${getWeekStart(currentDate).toISOString().split('T')[0]}`;
-      
+
       const res = await fetch(`/api/shifts?view=all&${dateParam}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -196,8 +197,10 @@ export default function ManageRotaPage() {
   };
 
   const handleShiftClick = (shift) => {
-    setEditingShift(shift);
-    setShowCreateModal(true);
+    if (hasPermission(user, 'shifts.update')) {
+      setEditingShift(shift);
+      setShowCreateModal(true);
+    }
   };
 
   const handleCreateNew = () => {
@@ -220,7 +223,7 @@ export default function ManageRotaPage() {
   const getShiftsForTimeSlot = (date, hour) => {
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
-    
+
     // Get all shifts that match the time and date criteria
     const matchingShifts = shifts.filter(shift => {
       // Parse start and end times more accurately
@@ -230,18 +233,18 @@ export default function ManageRotaPage() {
       const shiftStartMin = parseInt(startMinStr || 0);
       const shiftEndHour = parseInt(endHourStr);
       const shiftEndMin = parseInt(endMinStr || 0);
-      
+
       // Convert to total minutes for more accurate comparison
       const shiftStartTotalMinutes = shiftStartHour * 60 + shiftStartMin;
       const shiftEndTotalMinutes = shiftEndHour * 60 + shiftEndMin;
       const slotStartTotalMinutes = hour * 60;
       const slotEndTotalMinutes = (hour + 1) * 60;
-      
+
       // Check if shift overlaps with this time slot
       // Shift should appear if it starts in this hour OR is ongoing during this hour
       const shiftStartsInSlot = shiftStartTotalMinutes >= slotStartTotalMinutes && shiftStartTotalMinutes < slotEndTotalMinutes;
       const shiftOverlapsSlot = shiftStartTotalMinutes < slotEndTotalMinutes && shiftEndTotalMinutes > slotStartTotalMinutes;
-      
+
       const isInTimeRange = shiftStartsInSlot || shiftOverlapsSlot;
       if (!isInTimeRange) return false;
 
@@ -294,7 +297,7 @@ export default function ManageRotaPage() {
           return false;
       }
     });
-    
+
     // Remove duplicates by shift ID (in case same shift appears multiple times)
     const uniqueShifts = [];
     const seenShiftIds = new Set();
@@ -304,7 +307,7 @@ export default function ManageRotaPage() {
         uniqueShifts.push(shift);
       }
     }
-    
+
     // Filter assignments to only show ones for the current date
     const shiftsWithFilteredAssignments = uniqueShifts.map(shift => {
       // Filter assignments to only show ones for the current date
@@ -314,7 +317,7 @@ export default function ManageRotaPage() {
         assignmentDate.setHours(0, 0, 0, 0);
         return assignmentDate.getTime() === checkDate.getTime();
       }) || [];
-      
+
       // Remove duplicate assignments (same user on same date)
       const uniqueAssignments = [];
       const seenUserIds = new Set();
@@ -324,13 +327,13 @@ export default function ManageRotaPage() {
           uniqueAssignments.push(assignment);
         }
       }
-      
+
       return {
         ...shift,
         assignments: uniqueAssignments
       };
     });
-    
+
     // Sort shifts by start time, then by service seeker name
     return shiftsWithFilteredAssignments.sort((a, b) => {
       const aStart = a.startTime;
@@ -361,7 +364,7 @@ export default function ManageRotaPage() {
     );
   }
 
-  const displayDate = view === 'daily' 
+  const displayDate = view === 'daily'
     ? currentDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     : `Week of ${getWeekStart(currentDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
 
@@ -386,21 +389,19 @@ export default function ManageRotaPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setView('daily')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    view === 'daily'
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${view === 'daily'
                       ? 'bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   Daily
                 </button>
                 <button
                   onClick={() => setView('weekly')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    view === 'weekly'
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${view === 'weekly'
                       ? 'bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   Weekly
                 </button>
@@ -416,7 +417,7 @@ export default function ManageRotaPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                
+
                 <div className="text-center min-w-[250px]">
                   <div className="text-lg font-semibold text-gray-900">{displayDate}</div>
                 </div>
@@ -439,15 +440,17 @@ export default function ManageRotaPage() {
               </div>
 
               {/* Create Shift Button */}
-              <button
-                onClick={handleCreateNew}
-                className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all font-medium flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create Shift
-              </button>
+              {hasPermission(user, 'shifts.create') && (
+                <button
+                  onClick={handleCreateNew}
+                  className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all font-medium flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Shift
+                </button>
+              )}
             </div>
           </div>
 
@@ -483,8 +486,8 @@ export default function ManageRotaPage() {
                       // Calculate minimum height based on number of shifts (at least 60px, +80px per additional shift)
                       const minHeight = Math.max(60, 60 + (shiftsInSlot.length - 1) * 80);
                       return (
-                        <div 
-                          key={idx} 
+                        <div
+                          key={idx}
                           className="border-b border-gray-200 p-2 hover:bg-gray-50 transition-colors relative"
                           style={{ minHeight: `${minHeight}px` }}
                         >
@@ -505,55 +508,55 @@ export default function ManageRotaPage() {
                               ];
                               const colorClass = colorVariants[shiftIdx % colorVariants.length];
                               return (
-                              <div
-                                key={`shift-${shift.id}-${shiftIdx}`}
-                                onClick={() => handleShiftClick(shift)}
-                                className={`mb-2 p-2 rounded-lg bg-gradient-to-r ${colorClass} border-l-4 cursor-pointer hover:shadow-md transition-all relative`}
-                                title={`Shift ${shiftIdx + 1} of ${shiftsInSlot.length}: ${shift.serviceSeeker?.preferredName || shift.serviceSeeker?.firstName} ${shift.serviceSeeker?.lastName} - ${shift.startTime} to ${shift.endTime}`}
-                              >
-                              <div className="font-semibold text-sm text-gray-900">
-                                {shift.serviceSeeker.preferredName || shift.serviceSeeker.firstName} {shift.serviceSeeker.lastName}
-                              </div>
-                              <div className="text-xs text-gray-600 mt-1">
-                                {shift.startTime} - {shift.endTime}
-                              </div>
-                              <div className="text-xs text-blue-700 mt-1 font-medium">
-                                {shift.shiftType.name}
-                              </div>
-                              <div className="text-[11px] text-gray-500 mt-1 flex flex-wrap gap-1">
-                                {shift.assignments && shift.assignments.length > 0
-                                  ? (() => {
-                                      // Remove duplicate users (in case of duplicate assignments)
-                                      const uniqueUsers = [];
-                                      const seenUserIds = new Set();
-                                      shift.assignments.forEach(assignment => {
-                                        if (assignment.user && !seenUserIds.has(assignment.user.id)) {
-                                          seenUserIds.add(assignment.user.id);
-                                          uniqueUsers.push(assignment);
-                                        }
-                                      });
-                                      
-                                      return uniqueUsers.map((assignment) => (
-                                        <span
-                                          key={`${shift.id}-${assignment.user.id}`}
-                                          className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-200 text-gray-700"
-                                          title={`Assigned: ${assignment.user.firstName} ${assignment.user.lastName}`}
-                                        >
-                                          {assignment.user.firstName} {assignment.user.lastName}
-                                        </span>
-                                      ));
-                                    })()
-                                  : <span className="italic text-gray-400">Unassigned</span>}
-                              </div>
-                              {shift.timeCritical && (
-                                <div className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                  </svg>
-                                  Critical
+                                <div
+                                  key={`shift-${shift.id}-${shiftIdx}`}
+                                  onClick={() => handleShiftClick(shift)}
+                                  className={`mb-2 p-2 rounded-lg bg-gradient-to-r ${colorClass} border-l-4 cursor-pointer hover:shadow-md transition-all relative`}
+                                  title={`Shift ${shiftIdx + 1} of ${shiftsInSlot.length}: ${shift.serviceSeeker?.preferredName || shift.serviceSeeker?.firstName} ${shift.serviceSeeker?.lastName} - ${shift.startTime} to ${shift.endTime}`}
+                                >
+                                  <div className="font-semibold text-sm text-gray-900">
+                                    {shift.serviceSeeker.preferredName || shift.serviceSeeker.firstName} {shift.serviceSeeker.lastName}
+                                  </div>
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    {shift.startTime} - {shift.endTime}
+                                  </div>
+                                  <div className="text-xs text-blue-700 mt-1 font-medium">
+                                    {shift.shiftType.name}
+                                  </div>
+                                  <div className="text-[11px] text-gray-500 mt-1 flex flex-wrap gap-1">
+                                    {shift.assignments && shift.assignments.length > 0
+                                      ? (() => {
+                                        // Remove duplicate users (in case of duplicate assignments)
+                                        const uniqueUsers = [];
+                                        const seenUserIds = new Set();
+                                        shift.assignments.forEach(assignment => {
+                                          if (assignment.user && !seenUserIds.has(assignment.user.id)) {
+                                            seenUserIds.add(assignment.user.id);
+                                            uniqueUsers.push(assignment);
+                                          }
+                                        });
+
+                                        return uniqueUsers.map((assignment) => (
+                                          <span
+                                            key={`${shift.id}-${assignment.user.id}`}
+                                            className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-200 text-gray-700"
+                                            title={`Assigned: ${assignment.user.firstName} ${assignment.user.lastName}`}
+                                          >
+                                            {assignment.user.firstName} {assignment.user.lastName}
+                                          </span>
+                                        ));
+                                      })()
+                                      : <span className="italic text-gray-400">Unassigned</span>}
+                                  </div>
+                                  {shift.timeCritical && (
+                                    <div className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                      </svg>
+                                      Critical
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                              </div>
                               );
                             })
                           ) : (

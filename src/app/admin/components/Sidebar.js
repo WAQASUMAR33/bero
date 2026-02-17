@@ -45,20 +45,20 @@ export default function Sidebar({ user }) {
   // Set active item based on current pathname
   useEffect(() => {
     const currentPath = pathname;
-    
+
     // Check main menu items (exact match or starts with for sub-pages)
-    const mainItem = allMenuItems.find(item => 
+    const mainItem = allMenuItems.find(item =>
       item.path && (item.path === currentPath || currentPath.startsWith(item.path + '/'))
     );
     if (mainItem) {
       setActiveItem(mainItem.name);
       return;
     }
-    
+
     // Check submenu items
     for (const item of allMenuItems) {
       if (item.subItems) {
-        const subItem = item.subItems.find(sub => 
+        const subItem = item.subItems.find(sub =>
           sub.path && (sub.path === currentPath || currentPath.startsWith(sub.path + '/'))
         );
         if (subItem) {
@@ -68,7 +68,7 @@ export default function Sidebar({ user }) {
         }
       }
     }
-    
+
     // Default to Dashboard if no match found
     if (currentPath === '/admin') {
       setActiveItem('Dashboard');
@@ -154,12 +154,6 @@ export default function Sidebar({ user }) {
           name: 'Shift Run Management',
           permission: 'setup.manage',
           path: '/admin/shift-run-management',
-        },
-        {
-          id: 'staff-management',
-          name: 'Staff Management',
-          permission: 'staff.manage',
-          path: '/admin/staff-management',
         },
         {
           id: 'care-plan',
@@ -349,7 +343,7 @@ export default function Sidebar({ user }) {
   const allPermissions = getAllUserPermissions(user);
   const adminRoles = ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'];
   const isAdminRole = adminRoles.includes(user?.role?.name);
-  
+
   const menuItems = allMenuItems.filter(item => {
     // Emergency reports visible to admin roles
     if (item.id === 'emergency-reports') {
@@ -383,16 +377,16 @@ export default function Sidebar({ user }) {
     if (deferredPrompt) {
       // Show the install prompt
       deferredPrompt.prompt();
-      
+
       // Wait for the user to respond to the prompt
       const { outcome } = await deferredPrompt.userChoice;
-      
+
       if (outcome === 'accepted') {
         console.log('User accepted the install prompt');
       } else {
         console.log('User dismissed the install prompt');
       }
-      
+
       // Clear the deferredPrompt so it can only be used once
       setDeferredPrompt(null);
       return;
@@ -444,11 +438,10 @@ export default function Sidebar({ user }) {
                     toggleExpanded(item.id);
                   }
                 }}
-                className={`w-full flex items-center justify-between py-3 px-3 rounded-lg text-left transition-colors ${
-                  activeItem === item.name
+                className={`w-full flex items-center justify-between py-3 px-3 rounded-lg text-left transition-colors ${activeItem === item.name
                     ? 'bg-blue-50 text-[#224fa6]'
                     : 'text-gray-700 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 <div className="flex items-center">
                   <span className={`mr-3 ${activeItem === item.name ? 'text-[#224fa6]' : 'text-gray-400'}`}>
@@ -458,9 +451,8 @@ export default function Sidebar({ user }) {
                 </div>
                 {item.hasArrow && (
                   <svg
-                    className={`w-4 h-4 transition-transform ${
-                      expandedItems[item.id] ? 'rotate-90' : ''
-                    }`}
+                    className={`w-4 h-4 transition-transform ${expandedItems[item.id] ? 'rotate-90' : ''
+                      }`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -468,30 +460,29 @@ export default function Sidebar({ user }) {
                   </svg>
                 )}
               </button>
-              
+
               {/* Submenu Items */}
               {item.subItems && expandedItems[item.id] && (
                 <div className="ml-4 mt-1 space-y-1">
                   {item.subItems
-                    .filter(subItem => 
+                    .filter(subItem =>
                       allPermissions.includes(subItem.permission) || user?.role?.name === 'ADMIN'
                     )
                     .map((subItem) => (
-                    <button
-                      key={subItem.id}
-                      onClick={() => {
-                        setActiveItem(subItem.name);
-                        router.push(subItem.path);
-                      }}
-                      className={`w-full flex items-center py-2 px-3 rounded-lg text-left text-sm transition-colors ${
-                        activeItem === subItem.name
-                          ? 'bg-blue-50 text-[#224fa6]'
-                          : 'text-gray-600 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="ml-6">{subItem.name}</span>
-                    </button>
-                  ))}
+                      <button
+                        key={subItem.id}
+                        onClick={() => {
+                          setActiveItem(subItem.name);
+                          router.push(subItem.path);
+                        }}
+                        className={`w-full flex items-center py-2 px-3 rounded-lg text-left text-sm transition-colors ${activeItem === subItem.name
+                            ? 'bg-blue-50 text-[#224fa6]'
+                            : 'text-gray-600 hover:bg-gray-50'
+                          }`}
+                      >
+                        <span className="ml-6">{subItem.name}</span>
+                      </button>
+                    ))}
                 </div>
               )}
             </div>
@@ -501,7 +492,7 @@ export default function Sidebar({ user }) {
 
       {/* User Profile Section */}
       <div className="p-4 border-t border-gray-200 relative" ref={dropdownRef}>
-        <button 
+        <button
           onClick={() => setShowLogoutDropdown(!showLogoutDropdown)}
           className="w-full flex items-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
         >

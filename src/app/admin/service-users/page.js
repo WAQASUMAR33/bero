@@ -7,6 +7,7 @@ import Header from '../components/Header';
 import Notification from '../components/Notification';
 import FileUpload from '../components/FileUpload';
 import LocationMap from './components/LocationMap';
+import { hasPermission } from '@/lib/permissions';
 
 export default function ServiceUsersPage() {
   const router = useRouter();
@@ -63,14 +64,14 @@ export default function ServiceUsersPage() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/service-seekers', { headers: { Authorization: `Bearer ${token}` } });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData?.error || `HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       // Ensure we always set an array
       if (Array.isArray(data)) {
         setSeekers(data);
@@ -188,7 +189,7 @@ export default function ServiceUsersPage() {
         body: JSON.stringify(payload),
       });
       if (response.ok) {
-        const resJson = await response.json().catch(()=>null);
+        const resJson = await response.json().catch(() => null);
         setShowModal(false);
         await fetchSeekers();
         setNotification({ show: true, message: editing ? 'Service user updated successfully.' : 'Service user created successfully.', type: 'success' });
@@ -301,9 +302,11 @@ export default function ServiceUsersPage() {
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Service Users</h1>
                 <p className="text-gray-600">Create and manage all service users</p>
               </div>
-              <button onClick={openAdd} className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200">
-                Add Service User
-              </button>
+              {hasPermission(user, 'service_seekers.create') && (
+                <button onClick={openAdd} className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200">
+                  Add Service User
+                </button>
+              )}
             </div>
           </div>
 
@@ -312,7 +315,7 @@ export default function ServiceUsersPage() {
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
                 <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Total Users</p>
@@ -323,33 +326,33 @@ export default function ServiceUsersPage() {
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
                 <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Live</p>
-                  <p className="text-2xl font-bold text-gray-900">{countBy('status','LIVE')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{countBy('status', 'LIVE')}</p>
                 </div>
               </div>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
                 <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Pre-admission</p>
-                  <p className="text-2xl font-bold text-gray-900">{countBy('status','PRE_ADMISSION')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{countBy('status', 'PRE_ADMISSION')}</p>
                 </div>
               </div>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
                 <div className="p-3 bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Archived</p>
-                  <p className="text-2xl font-bold text-gray-900">{countBy('status','ARCHIVED')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{countBy('status', 'ARCHIVED')}</p>
                 </div>
               </div>
             </div>
@@ -360,12 +363,12 @@ export default function ServiceUsersPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                  <input value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Search by name or postal code" className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900" />
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search by name or postal code" className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900" />
                 </div>
               </div>
               <div>
-                <select value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
                   <option value="ALL">All Statuses</option>
                   <option value="LIVE">LIVE</option>
                   <option value="PRE_ADMISSION">PRE_ADMISSION</option>
@@ -395,7 +398,7 @@ export default function ServiceUsersPage() {
                       <td className="px-6 py-4 text-gray-900">
                         <div className="flex items-center">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center text-white font-semibold mr-3">
-                            {(s.firstName?.[0]||'S')}{(s.lastName?.[0]||'U')}
+                            {(s.firstName?.[0] || 'S')}{(s.lastName?.[0] || 'U')}
                           </div>
                           <div>
                             <div className="font-medium text-gray-900">{s.firstName} {s.lastName}</div>
@@ -405,13 +408,12 @@ export default function ServiceUsersPage() {
                       </td>
                       <td className="px-6 py-4 text-gray-700">{calculateAge(s.dateOfBirth)}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          s.status === 'LIVE' ? 'bg-green-50 text-green-700' :
-                          s.status === 'PRE_ADMISSION' ? 'bg-yellow-50 text-yellow-700' :
-                          s.status === 'ON_HOLD_HOSPITAL' ? 'bg-blue-50 text-blue-700' :
-                          s.status === 'ARCHIVED_PRE_ADMISSION' ? 'bg-purple-50 text-purple-700' :
-                          'bg-gray-50 text-gray-700'
-                        }`}>{s.status}</span>
+                        <span className={`px-2 py-1 text-xs rounded-full ${s.status === 'LIVE' ? 'bg-green-50 text-green-700' :
+                            s.status === 'PRE_ADMISSION' ? 'bg-yellow-50 text-yellow-700' :
+                              s.status === 'ON_HOLD_HOSPITAL' ? 'bg-blue-50 text-blue-700' :
+                                s.status === 'ARCHIVED_PRE_ADMISSION' ? 'bg-purple-50 text-purple-700' :
+                                  'bg-gray-50 text-gray-700'
+                          }`}>{s.status}</span>
                       </td>
                       <td className="px-6 py-4 text-gray-700">
                         <div className="text-sm text-gray-900 truncate max-w-[260px]">{s.address || '-'}</div>
@@ -419,23 +421,27 @@ export default function ServiceUsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end space-x-2">
-                          <button 
-                            title="View" 
-                            onClick={() => router.push(`/admin/service-users/${s.id}/admission`)} 
+                          <button
+                            title="View"
+                            onClick={() => router.push(`/admin/service-users/${s.id}/admission`)}
                             className="p-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                           </button>
-                          <button 
-                            title="Edit" 
-                            onClick={() => router.push(`/admin/service-users/${s.id}/admission`)} 
-                            className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50 transition-colors"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                          </button>
-                          <button title="Delete" onClick={() => handleDeleteClick(s)} className="p-2 rounded-lg text-red-600 hover:bg-red-50">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                          </button>
+                          {hasPermission(user, 'service_seekers.update') && (
+                            <button
+                              title="Edit"
+                              onClick={() => router.push(`/admin/service-users/${s.id}/admission`)}
+                              className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            </button>
+                          )}
+                          {hasPermission(user, 'service_seekers.delete') && (
+                            <button title="Delete" onClick={() => handleDeleteClick(s)} className="p-2 rounded-lg text-red-600 hover:bg-red-50">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -458,12 +464,12 @@ export default function ServiceUsersPage() {
                 <span className="font-medium text-gray-900"> {filteredSeekers.length}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <select value={pageSize} onChange={(e)=>{ setPageSize(parseInt(e.target.value)||10); setCurrentPage(1); }} className="px-2 py-1 border rounded">
-                  {[10,20,50].map(n => (<option key={n} value={n}>{n} / page</option>))}
+                <select value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value) || 10); setCurrentPage(1); }} className="px-2 py-1 border rounded">
+                  {[10, 20, 50].map(n => (<option key={n} value={n}>{n} / page</option>))}
                 </select>
-                <button onClick={()=> setCurrentPage(p => Math.max(1, p-1))} disabled={pageSafe===1} className={`px-3 py-1 rounded border ${pageSafe===1? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Prev</button>
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={pageSafe === 1} className={`px-3 py-1 rounded border ${pageSafe === 1 ? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Prev</button>
                 <span className="text-sm text-gray-700">Page {pageSafe} / {totalPages}</span>
-                <button onClick={()=> setCurrentPage(p => Math.min(totalPages, p+1))} disabled={pageSafe===totalPages} className={`px-3 py-1 rounded border ${pageSafe===totalPages? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Next</button>
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={pageSafe === totalPages} className={`px-3 py-1 rounded border ${pageSafe === totalPages ? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'}`}>Next</button>
               </div>
             </div>
           </div>
@@ -473,27 +479,27 @@ export default function ServiceUsersPage() {
               <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900">{editing ? 'Edit' : 'Add'} Service User</h2>
-                  <button onClick={()=>setShowModal(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">✕</button>
                 </div>
 
                 {/* Progress */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between">
-                    {[1,2,3].map(step => (
+                    {[1, 2, 3].map(step => (
                       <div key={step} className="flex items-center flex-1">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${currentStep>=step ? 'bg-[#224fa6] text-white' : 'bg-gray-200 text-gray-500'}`}>{step}</div>
-                        {step<3 && <div className={`h-0.5 flex-1 mx-2 ${currentStep>step ? 'bg-[#224fa6]' : 'bg-gray-200'}`}></div>}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${currentStep >= step ? 'bg-[#224fa6] text-white' : 'bg-gray-200 text-gray-500'}`}>{step}</div>
+                        {step < 3 && <div className={`h-0.5 flex-1 mx-2 ${currentStep > step ? 'bg-[#224fa6]' : 'bg-gray-200'}`}></div>}
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <form onSubmit={(e)=>{
+                <form onSubmit={(e) => {
                   e.preventDefault();
-                  if(currentStep<3){ setCurrentStep(currentStep+1); return; }
+                  if (currentStep < 3) { setCurrentStep(currentStep + 1); return; }
                   handleSubmit(e);
                 }} className="space-y-4">
-                  {currentStep===1 && (
+                  {currentStep === 1 && (
                     <div className="space-y-6">
                       {/* Profile Photo Section - Prominent at top */}
                       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
@@ -526,7 +532,7 @@ export default function ServiceUsersPage() {
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Upload Section */}
                           <div className="flex-1">
                             <label className="block text-base font-semibold text-gray-900 mb-3">
@@ -562,41 +568,41 @@ export default function ServiceUsersPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">First Name *</label>
-                          <input required value={formData.firstName} onChange={e=>setFormData({...formData, firstName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input required value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Last Name *</label>
-                          <input required value={formData.lastName} onChange={e=>setFormData({...formData, lastName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input required value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Preferred Name</label>
-                          <input value={formData.preferredName} onChange={e=>setFormData({...formData, preferredName:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input value={formData.preferredName} onChange={e => setFormData({ ...formData, preferredName: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Title</label>
-                          <input value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Date of Birth</label>
-                          <input type="date" value={formData.dateOfBirth} onChange={e=>setFormData({...formData, dateOfBirth:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {currentStep===2 && (
+                  {currentStep === 2 && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Address</label>
-                          <input value={formData.address} onChange={e=>setFormData({...formData, address:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Postal Code</label>
-                          <input 
-                            value={formData.postalCode} 
-                            onChange={e=>setFormData({...formData, postalCode:e.target.value.toUpperCase()})} 
-                            className="w-full border rounded-lg px-3 py-2 text-gray-900" 
+                          <input
+                            value={formData.postalCode}
+                            onChange={e => setFormData({ ...formData, postalCode: e.target.value.toUpperCase() })}
+                            className="w-full border rounded-lg px-3 py-2 text-gray-900"
                             placeholder="e.g. SW1A 1AA"
                             maxLength={8}
                           />
@@ -614,7 +620,7 @@ export default function ServiceUsersPage() {
                             </span>
                           )}
                         </div>
-                        
+
                         <LocationMap
                           postalCode={formData.postalCode}
                           latitude={formData.latitude ? parseFloat(formData.latitude) : null}
@@ -622,28 +628,28 @@ export default function ServiceUsersPage() {
                           onLocationSelect={handleLocationSelect}
                           className="w-full h-80 rounded-lg border-2 border-gray-200"
                         />
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm text-gray-600 mb-1">Latitude</label>
-                            <input 
-                              type="number" 
-                              step="any" 
-                              value={formData.latitude} 
-                              onChange={e=>setFormData({...formData, latitude:e.target.value})} 
-                              className="w-full border rounded-lg px-3 py-2 text-gray-900 bg-gray-50" 
+                            <input
+                              type="number"
+                              step="any"
+                              value={formData.latitude}
+                              onChange={e => setFormData({ ...formData, latitude: e.target.value })}
+                              className="w-full border rounded-lg px-3 py-2 text-gray-900 bg-gray-50"
                               placeholder="Auto-filled from map"
                               readOnly
                             />
                           </div>
                           <div>
                             <label className="block text-sm text-gray-600 mb-1">Longitude</label>
-                            <input 
-                              type="number" 
-                              step="any" 
-                              value={formData.longitude} 
-                              onChange={e=>setFormData({...formData, longitude:e.target.value})} 
-                              className="w-full border rounded-lg px-3 py-2 text-gray-900 bg-gray-50" 
+                            <input
+                              type="number"
+                              step="any"
+                              value={formData.longitude}
+                              onChange={e => setFormData({ ...formData, longitude: e.target.value })}
+                              className="w-full border rounded-lg px-3 py-2 text-gray-900 bg-gray-50"
                               placeholder="Auto-filled from map"
                               readOnly
                             />
@@ -653,11 +659,11 @@ export default function ServiceUsersPage() {
                     </div>
                   )}
 
-                  {currentStep===3 && (
+                  {currentStep === 3 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Gender</label>
-                        <select value={formData.gender} onChange={e=>setFormData({...formData, gender:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                        <select value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900">
                           <option value="">Select gender</option>
                           <option value="MALE">Male</option>
                           <option value="FEMALE">Female</option>
@@ -666,12 +672,12 @@ export default function ServiceUsersPage() {
                           <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
                         </select>
                         {formData.gender === 'OTHER' && (
-                          <input placeholder="Please specify" value={formData.genderOther} onChange={e=>setFormData({...formData, genderOther:e.target.value})} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input placeholder="Please specify" value={formData.genderOther} onChange={e => setFormData({ ...formData, genderOther: e.target.value })} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
                         )}
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Gender at Birth</label>
-                        <select value={formData.genderAtBirth} onChange={e=>setFormData({...formData, genderAtBirth:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                        <select value={formData.genderAtBirth} onChange={e => setFormData({ ...formData, genderAtBirth: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900">
                           <option value="">Select gender at birth</option>
                           <option value="MALE">Male</option>
                           <option value="FEMALE">Female</option>
@@ -680,12 +686,12 @@ export default function ServiceUsersPage() {
                           <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
                         </select>
                         {formData.genderAtBirth === 'OTHER' && (
-                          <input placeholder="Please specify" value={formData.genderAtBirthOther} onChange={e=>setFormData({...formData, genderAtBirthOther:e.target.value})} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input placeholder="Please specify" value={formData.genderAtBirthOther} onChange={e => setFormData({ ...formData, genderAtBirthOther: e.target.value })} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
                         )}
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Pronouns</label>
-                        <select value={formData.pronouns} onChange={e=>setFormData({...formData, pronouns:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                        <select value={formData.pronouns} onChange={e => setFormData({ ...formData, pronouns: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900">
                           <option value="">Select pronouns</option>
                           <option value="they">They</option>
                           <option value="he">He</option>
@@ -694,7 +700,7 @@ export default function ServiceUsersPage() {
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Sexuality</label>
-                        <select value={formData.sexuality} onChange={e=>setFormData({...formData, sexuality:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                        <select value={formData.sexuality} onChange={e => setFormData({ ...formData, sexuality: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900">
                           <option value="">Select sexuality</option>
                           <option value="HETEROSEXUAL">Heterosexual</option>
                           <option value="GAY">Gay</option>
@@ -704,14 +710,14 @@ export default function ServiceUsersPage() {
                           <option value="OTHER">Other</option>
                         </select>
                         {formData.sexuality === 'OTHER' && (
-                          <input placeholder="Please specify" value={formData.sexualityOther} onChange={e=>setFormData({...formData, sexualityOther:e.target.value})} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
+                          <input placeholder="Please specify" value={formData.sexualityOther} onChange={e => setFormData({ ...formData, sexualityOther: e.target.value })} className="mt-2 w-full border rounded-lg px-3 py-2 text-gray-900" />
                         )}
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm text-gray-600 mb-1">DNAR</label>
                         <select
                           value={formData.dnar ? 'DO_NOT_RESUSCITATE' : 'RESUSCITATE'}
-                          onChange={e=>setFormData({...formData, dnar: e.target.value === 'DO_NOT_RESUSCITATE'})}
+                          onChange={e => setFormData({ ...formData, dnar: e.target.value === 'DO_NOT_RESUSCITATE' })}
                           className="w-full border rounded-lg px-3 py-2 text-gray-900"
                         >
                           <option value="RESUSCITATE">Resuscitate</option>
@@ -720,7 +726,7 @@ export default function ServiceUsersPage() {
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm text-gray-600 mb-1">Status</label>
-                        <select value={formData.status} onChange={e=>setFormData({...formData, status:e.target.value})} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                        <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-gray-900">
                           <option value="LIVE">LIVE</option>
                           <option value="PRE_ADMISSION">PRE_ADMISSION</option>
                           <option value="ARCHIVED">ARCHIVED</option>
@@ -732,11 +738,11 @@ export default function ServiceUsersPage() {
                   )}
 
                   <div className="flex justify-between pt-2">
-                    <button type="button" className="px-4 py-2 rounded border text-gray-700 bg-gray-100 hover:bg-gray-200" onClick={()=>{
-                      if(currentStep>1){ setCurrentStep(currentStep-1); } else { setShowModal(false); }
+                    <button type="button" className="px-4 py-2 rounded border text-gray-700 bg-gray-100 hover:bg-gray-200" onClick={() => {
+                      if (currentStep > 1) { setCurrentStep(currentStep - 1); } else { setShowModal(false); }
                     }}>Back</button>
                     <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded bg-[#224fa6] text-white disabled:opacity-70">
-                      {currentStep<3 ? 'Next' : (isSubmitting? 'Saving...' : (editing? 'Update' : 'Create'))}
+                      {currentStep < 3 ? 'Next' : (isSubmitting ? 'Saving...' : (editing ? 'Update' : 'Create'))}
                     </button>
                   </div>
                 </form>
@@ -749,7 +755,7 @@ export default function ServiceUsersPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
                 <div className="p-6">
                   <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Delete Service User</h3>
                   <p className="text-sm text-gray-600 text-center mb-6">Are you sure you want to delete <span className="font-medium text-gray-900">{seekerToDelete?.firstName} {seekerToDelete?.lastName}</span>? This action cannot be undone.</p>
@@ -767,27 +773,26 @@ export default function ServiceUsersPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 my-8">
                 {/* Header with gradient */}
                 <div className="relative bg-gradient-to-r from-[#224fa6] to-[#3270e9] p-6 rounded-t-2xl">
-                  <button onClick={()=>setShowViewModal(false)} className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                  <button onClick={() => setShowViewModal(false)} className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                   <div className="flex items-center space-x-4">
                     {viewData.photoUrl ? (
                       <img src={viewData.photoUrl} alt={`${viewData.firstName} ${viewData.lastName}`} className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover" />
                     ) : (
                       <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-white flex items-center justify-center">
-                        <span className="text-3xl font-bold text-[#224fa6]">{(viewData.firstName?.[0]||'S')}{(viewData.lastName?.[0]||'U')}</span>
+                        <span className="text-3xl font-bold text-[#224fa6]">{(viewData.firstName?.[0] || 'S')}{(viewData.lastName?.[0] || 'U')}</span>
                       </div>
                     )}
                     <div className="text-white">
                       <h3 className="text-2xl font-bold mb-1">{viewData.firstName} {viewData.lastName}</h3>
                       {viewData.preferredName && <p className="text-blue-100 text-sm mb-2">Preferred: {viewData.preferredName}</p>}
-                      <span className={`inline-block px-3 py-1 text-xs rounded-full font-semibold ${
-                        viewData.status === 'LIVE' ? 'bg-green-500 text-white' :
-                        viewData.status === 'PRE_ADMISSION' ? 'bg-yellow-500 text-white' :
-                        viewData.status === 'ON_HOLD_HOSPITAL' ? 'bg-blue-400 text-white' :
-                        viewData.status === 'ARCHIVED_PRE_ADMISSION' ? 'bg-purple-500 text-white' :
-                        'bg-gray-500 text-white'
-                      }`}>{viewData.status}</span>
+                      <span className={`inline-block px-3 py-1 text-xs rounded-full font-semibold ${viewData.status === 'LIVE' ? 'bg-green-500 text-white' :
+                          viewData.status === 'PRE_ADMISSION' ? 'bg-yellow-500 text-white' :
+                            viewData.status === 'ON_HOLD_HOSPITAL' ? 'bg-blue-400 text-white' :
+                              viewData.status === 'ARCHIVED_PRE_ADMISSION' ? 'bg-purple-500 text-white' :
+                                'bg-gray-500 text-white'
+                        }`}>{viewData.status}</span>
                     </div>
                   </div>
                 </div>
@@ -797,7 +802,7 @@ export default function ServiceUsersPage() {
                   <div className="mb-6">
                     <div className="flex items-center mb-4">
                       <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
-                        <svg className="w-5 h-5 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <svg className="w-5 h-5 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Personal Information</h4>
                     </div>
@@ -821,7 +826,7 @@ export default function ServiceUsersPage() {
                   <div className="mb-6">
                     <div className="flex items-center mb-4">
                       <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mr-3">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Address & Location</h4>
                     </div>
@@ -840,15 +845,15 @@ export default function ServiceUsersPage() {
                           <p className="text-gray-900 font-medium">{viewData.latitude && viewData.longitude ? `${parseFloat(viewData.latitude).toFixed(4)}, ${parseFloat(viewData.longitude).toFixed(4)}` : '-'}</p>
                         </div>
                       </div>
-                      
+
                       {/* Location Map */}
                       {viewData.latitude && viewData.longitude && (
                         <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
                           <div className="bg-gradient-to-r from-green-50 to-blue-50 px-4 py-2 border-b border-gray-200">
                             <p className="text-sm font-medium text-gray-700 flex items-center">
                               <svg className="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
                               Service User Location
                             </p>
@@ -868,7 +873,7 @@ export default function ServiceUsersPage() {
                   <div className="mb-6">
                     <div className="flex items-center mb-4">
                       <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
-                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" /></svg>
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Identity & Preferences</h4>
                     </div>
@@ -896,7 +901,7 @@ export default function ServiceUsersPage() {
                   <div className="mb-6">
                     <div className="flex items-center mb-4">
                       <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mr-3">
-                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Medical Information</h4>
                     </div>
@@ -914,7 +919,7 @@ export default function ServiceUsersPage() {
                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
                     <div className="flex items-center mb-4">
                       <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center mr-3">
-                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Audit Trail</h4>
                     </div>
@@ -949,7 +954,7 @@ export default function ServiceUsersPage() {
 
                 {/* Footer with action button */}
                 <div className="border-t border-gray-200 p-4 rounded-b-2xl bg-gray-50">
-                  <button onClick={()=>setShowViewModal(false)} className="w-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200">
+                  <button onClick={() => setShowViewModal(false)} className="w-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200">
                     Close
                   </button>
                 </div>

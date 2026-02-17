@@ -6,6 +6,8 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
 import FileUpload from '../components/FileUpload';
+import PermissionMatrix from '../components/PermissionMatrix';
+import { hasPermission } from '@/lib/permissions';
 
 export default function StaffManagementPage() {
   const [user, setUser] = useState(null);
@@ -127,7 +129,7 @@ export default function StaffManagementPage() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setRoles(data);
@@ -163,7 +165,7 @@ export default function StaffManagementPage() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         // Show all users
@@ -336,8 +338,8 @@ export default function StaffManagementPage() {
 
   const filteredStaff = staff.filter(member => {
     const matchesSearch = member.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      member.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === 'all' || member.roleId === filterRole;
     return matchesSearch && matchesRole;
   });
@@ -379,258 +381,607 @@ export default function StaffManagementPage() {
             </div>
           ) : (
             <>
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Staff Management</h1>
-            <p className="text-gray-600">Manage all users, roles, and permissions</p>
-          </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span>Add User</span>
-          </button>
-        </div>
-      </div>
+              {/* Header */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Staff Management</h1>
+                    <p className="text-gray-600">Manage all users, roles, and permissions</p>
+                  </div>
+                  {hasPermission(user, 'users.create') && (
+                    <button
+                      onClick={() => setShowAddModal(true)}
+                      className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      <span>Add User</span>
+                    </button>
+                  )}
+                </div>
+              </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{staff.length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Users</p>
-              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.status === 'CURRENT').length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Admin Users</p>
-              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => ['ADMIN', 'DIRECTOR', 'HR'].includes(s.role)).length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Care Staff</p>
-              <p className="text-2xl font-bold text-gray-900">{staff.filter(s => ['CAREWORKER', 'SUPPORT_WORKER', 'REGISTER_MANAGER'].includes(s.role)).length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search staff..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
-              />
-            </div>
-          </div>
-          <div>
-            <select
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
-              className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
-            >
-              <option value="all">All Roles</option>
-              {roles.map(role => (
-                <option key={role.id} value={role.id}>{role.displayName}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Staff Table */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Staff Member</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Permissions</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {filteredStaff.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50 transition-colors duration-200">
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-12 w-12">
-                        <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center shadow-lg">
-                          <span className="text-white font-semibold text-sm">
-                            {member.firstName?.[0]}{member.lastName?.[0]}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-semibold text-gray-900">
-                          {member.firstName} {member.lastName}
-                        </div>
-                        <div className="text-sm text-gray-500">{member.email}</div>
-                      </div>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center">
+                    <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                      </svg>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(member.role?.name)}`}>
-                      {member.role?.displayName || 'N/A'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(member.status)}`}>
-                      {member.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{member.permissions?.length || 0} permissions</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(member.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-3">
-                      <button
-                        onClick={() => openEditModal(member)}
-                        className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(member)}
-                        className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Total Users</p>
+                      <p className="text-2xl font-bold text-gray-900">{staff.length}</p>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center">
+                    <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Active Users</p>
+                      <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.status === 'CURRENT').length}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center">
+                    <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Admin Users</p>
+                      <p className="text-2xl font-bold text-gray-900">{staff.filter(s => ['ADMIN', 'DIRECTOR', 'HR'].includes(s.role)).length}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center">
+                    <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Care Staff</p>
+                      <p className="text-2xl font-bold text-gray-900">{staff.filter(s => ['CAREWORKER', 'SUPPORT_WORKER', 'REGISTER_MANAGER'].includes(s.role)).length}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filters */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="Search staff..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <select
+                      value={filterRole}
+                      onChange={(e) => setFilterRole(e.target.value)}
+                      className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                    >
+                      <option value="all">All Roles</option>
+                      {roles.map(role => (
+                        <option key={role.id} value={role.id}>{role.displayName}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Staff Table */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Staff Member</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Permissions</th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                      {filteredStaff.map((member) => (
+                        <tr key={member.id} className="hover:bg-gray-50 transition-colors duration-200">
+                          <td className="px-6 py-5 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-12 w-12">
+                                <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center shadow-lg">
+                                  <span className="text-white font-semibold text-sm">
+                                    {member.firstName?.[0]}{member.lastName?.[0]}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-semibold text-gray-900">
+                                  {member.firstName} {member.lastName}
+                                </div>
+                                <div className="text-sm text-gray-500">{member.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(member.role?.name)}`}>
+                              {member.role?.displayName || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(member.status)}`}>
+                              {member.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{member.permissions?.length || 0} permissions</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(member.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end space-x-3">
+                              {hasPermission(user, 'users.update') && (
+                                <button
+                                  onClick={() => openEditModal(member)}
+                                  className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
+                                  title="Edit User"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                              )}
+                              {hasPermission(user, 'users.delete') && (
+                                <button
+                                  onClick={() => handleDeleteClick(member)}
+                                  className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                  title="Delete User"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </>
           )}
 
-      {/* Add Staff Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Add New User</h3>
-                    <p className="text-sm text-gray-600 mt-1">Create a new user account with role and permissions</p>
-                  </div>
-                <button
-                  onClick={() => { setShowAddModal(false); resetForm(); }}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Progress Indicator */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between">
-                  {[1, 2, 3].map((step) => (
-                    <div key={step} className="flex items-center flex-1">
-                      <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
-                        currentStep >= step 
-                          ? 'border-[#224fa6] bg-[#224fa6] text-white' 
-                          : 'border-gray-300 bg-white text-gray-400'
-                      }`}>
-                        {currentStep > step ? (
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        ) : (
-                          <span className="font-semibold">{step}</span>
-                        )}
-                      </div>
-                      {step < 3 && (
-                        <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
-                          currentStep > step ? 'bg-[#224fa6]' : 'bg-gray-300'
-                        }`}></div>
-                      )}
+          {/* Add Staff Modal */}
+          {showAddModal && (
+            <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+              <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Add New User</h3>
+                      <p className="text-sm text-gray-600 mt-1">Create a new user account with role and permissions</p>
                     </div>
-                  ))}
-                </div>
-                <div className="flex justify-between mt-3">
-                  <p className={`text-xs font-medium ${currentStep >= 1 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Basic Info</p>
-                  <p className={`text-xs font-medium ${currentStep >= 2 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Employment Details</p>
-                  <p className={`text-xs font-medium ${currentStep >= 3 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Emergency & Additional</p>
+                    <button
+                      onClick={() => { setShowAddModal(false); resetForm(); }}
+                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Progress Indicator */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between">
+                      {[1, 2, 3].map((step) => (
+                        <div key={step} className="flex items-center flex-1">
+                          <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${currentStep >= step
+                            ? 'border-[#224fa6] bg-[#224fa6] text-white'
+                            : 'border-gray-300 bg-white text-gray-400'
+                            }`}>
+                            {currentStep > step ? (
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            ) : (
+                              <span className="font-semibold">{step}</span>
+                            )}
+                          </div>
+                          {step < 3 && (
+                            <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${currentStep > step ? 'bg-[#224fa6]' : 'bg-gray-300'
+                              }`}></div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-3">
+                      <p className={`text-xs font-medium ${currentStep >= 1 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Basic Info</p>
+                      <p className={`text-xs font-medium ${currentStep >= 2 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Employment Details</p>
+                      <p className={`text-xs font-medium ${currentStep >= 3 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Emergency & Additional</p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (currentStep < 3) {
+                      nextStep();
+                    } else {
+                      handleAddStaff(e);
+                    }
+                  }} className="space-y-6">
+
+                    {/* Step 1: Basic Info */}
+                    {currentStep === 1 && (
+                      <div className="space-y-4">
+                        {/* Profile Photo Section - Prominent at top */}
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
+                          <div className="flex items-start space-x-4 sm:space-x-6">
+                            {/* Photo Preview */}
+                            <div className="flex-shrink-0">
+                              {formData.profilePic ? (
+                                <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden border-4 border-white shadow-lg">
+                                  <img src={formData.profilePic} alt="Profile Preview" className="w-full h-full object-cover" />
+                                  <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, profilePic: '' })}
+                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md"
+                                    title="Remove photo"
+                                  >
+                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-gradient-to-br from-[#224fa6] to-[#3270e9] flex items-center justify-center border-4 border-white shadow-lg">
+                                  <svg className="w-12 h-12 sm:w-16 sm:h-16 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Upload Section */}
+                            <div className="flex-1 min-w-0">
+                              <label className="block text-base font-semibold text-gray-900 mb-2 sm:mb-3">
+                                Profile Photo
+                              </label>
+                              <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+                                Upload a profile photo for this staff member. This will help identify them in the system.
+                              </p>
+                              <FileUpload
+                                accept="image/*"
+                                label="📷 Upload Photo"
+                                onUploadComplete={(fileUrl) => {
+                                  setFormData({ ...formData, profilePic: fileUrl });
+                                  showNotification('Photo uploaded successfully!', 'success');
+                                }}
+                                onError={(error) => {
+                                  showNotification(`Photo upload failed: ${error}`, 'error');
+                                }}
+                                className="mb-2"
+                              />
+                              {formData.profilePic && (
+                                <div className="mt-2 sm:mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                  <p className="text-xs text-green-700 flex items-center">
+                                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    Photo uploaded successfully
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                            <input
+                              type="email"
+                              required
+                              value={formData.email}
+                              onChange={(e) => {
+                                const email = e.target.value;
+                                const username = email.split('@')[0];
+                                setFormData({ ...formData, email, username });
+                              }}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="user@example.com"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Username (Auto-generated)</label>
+                            <input
+                              type="text"
+                              value={formData.username}
+                              readOnly
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                              placeholder="Auto-generated from email"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.firstName}
+                              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="First name"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.lastName}
+                              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="Last name"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
+                            <input
+                              type="password"
+                              required
+                              value={formData.password}
+                              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="Enter secure password"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                            <input
+                              type="tel"
+                              required
+                              value={formData.phoneNo}
+                              onChange={(e) => setFormData({ ...formData, phoneNo: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="+44 123 456 7890"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Role *</label>
+                          <select
+                            value={formData.roleId}
+                            onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                            required
+                          >
+                            <option value="">Select Role</option>
+                            {roles.map(role => (
+                              <option key={role.id} value={role.id}>{role.displayName}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 2: Employment Details */}
+                    {currentStep === 2 && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Employee Number</label>
+                            <input
+                              type="text"
+                              value={formData.employeeNumber}
+                              onChange={(e) => setFormData({ ...formData, employeeNumber: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="EMP-001"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Region</label>
+                            <select
+                              value={formData.regionId}
+                              onChange={(e) => setFormData({ ...formData, regionId: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                            >
+                              <option value="">Select Region</option>
+                              {regions.map(region => (
+                                <option key={region.id} value={region.id}>{region.title}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
+                            <input
+                              type="date"
+                              value={formData.startDate}
+                              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Leave Date</label>
+                            <input
+                              type="date"
+                              value={formData.leaveDate}
+                              onChange={(e) => setFormData({ ...formData, leaveDate: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 3: Emergency & Additional Info */}
+                    {currentStep === 3 && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Name</label>
+                            <input
+                              type="text"
+                              value={formData.emergencyName}
+                              onChange={(e) => setFormData({ ...formData, emergencyName: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="Emergency contact name"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Number</label>
+                            <input
+                              type="tel"
+                              value={formData.emergencyContact}
+                              onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="+44 123 456 7890"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
+                            <input
+                              type="text"
+                              value={formData.postalCode}
+                              onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="SW1A 1AA"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Contracted Hours</label>
+                            <input
+                              type="number"
+                              value={formData.contractedHours}
+                              onChange={(e) => setFormData({ ...formData, contractedHours: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="40"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+                            <select
+                              value={formData.status}
+                              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                            >
+                              <option value="CURRENT">Current</option>
+                              <option value="ARCHIVED">Archived</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">NI Number</label>
+                          <input
+                            type="text"
+                            value={formData.niNumber}
+                            onChange={(e) => setFormData({ ...formData, niNumber: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
+                            placeholder="AB123456C"
+                          />
+                        </div>
+                        {/* Hide permissions for Care Workers & Support Workers as they have all permissions by default */
+                          !['CAREWORKER', 'SUPPORT_WORKER'].includes(roles.find(r => r.id == formData.roleId)?.name) && (
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
+                              <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">
+                                <PermissionMatrix
+                                  selectedPermissions={formData.permissions}
+                                  onChange={(newPermissions) => setFormData({ ...formData, permissions: newPermissions })}
+                                />
+                              </div>
+                            </div>
+                          )}
+                      </div>
+                    )}
+
+                    {/* Navigation Buttons */}
+                    <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+                      <button
+                        type="button"
+                        onClick={() => { setShowAddModal(false); resetForm(); }}
+                        className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <div className="flex space-x-3">
+                        {currentStep > 1 && (
+                          <button
+                            type="button"
+                            onClick={previousStep}
+                            className="px-6 py-3 text-[#224fa6] bg-blue-50 rounded-xl hover:bg-blue-100 transition-all duration-200 font-medium"
+                          >
+                            Previous
+                          </button>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={isSubmitting && currentStep === 3}
+                          className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {currentStep === 3 ? (isSubmitting ? 'Creating...' : 'Create User') : 'Next'}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
                 </div>
               </div>
+            </div>
+          )}
 
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                if (currentStep < 3) {
-                  nextStep();
-                } else {
-                  handleAddStaff(e);
-                }
-              }} className="space-y-6">
-                
-                {/* Step 1: Basic Info */}
-                {currentStep === 1 && (
-                  <div className="space-y-4">
-                    {/* Profile Photo Section - Prominent at top */}
+          {/* Edit Staff Modal */}
+          {showEditModal && (
+            <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+              <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Edit User</h3>
+                      <p className="text-sm text-gray-600 mt-1">Update user information and permissions</p>
+                    </div>
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleEditStaff} className="space-y-4">
+                    {/* Profile Photo Section */}
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
                       <div className="flex items-start space-x-4 sm:space-x-6">
                         {/* Photo Preview */}
@@ -657,14 +1008,14 @@ export default function StaffManagementPage() {
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Upload Section */}
                         <div className="flex-1 min-w-0">
                           <label className="block text-base font-semibold text-gray-900 mb-2 sm:mb-3">
                             Profile Photo
                           </label>
                           <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                            Upload a profile photo for this staff member. This will help identify them in the system.
+                            Upload or update the profile photo for this staff member.
                           </p>
                           <FileUpload
                             accept="image/*"
@@ -692,497 +1043,134 @@ export default function StaffManagementPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
-                        <input
-                          type="email"
-                          required
-                          value={formData.email}
-                          onChange={(e) => {
-                            const email = e.target.value;
-                            const username = email.split('@')[0];
-                            setFormData({...formData, email, username});
-                          }}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="user@example.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Username (Auto-generated)</label>
-                        <input
-                          type="text"
-                          value={formData.username}
-                          readOnly
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
-                          placeholder="Auto-generated from email"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
                         <input
                           type="text"
                           required
                           value={formData.firstName}
-                          onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="First name"
+                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
                         <input
                           type="text"
                           required
                           value={formData.lastName}
-                          onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="Last name"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
-                        <input
-                          type="password"
-                          required
-                          value={formData.password}
-                          onChange={(e) => setFormData({...formData, password: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="Enter secure password"
+                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                         <input
-                          type="tel"
+                          type="email"
                           required
-                          value={formData.phoneNo}
-                          onChange={(e) => setFormData({...formData, phoneNo: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="+44 123 456 7890"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         />
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Role *</label>
-                      <select
-                        value={formData.roleId}
-                        onChange={(e) => setFormData({...formData, roleId: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
-                        required
-                      >
-                        <option value="">Select Role</option>
-                        {roles.map(role => (
-                          <option key={role.id} value={role.id}>{role.displayName}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
 
-                {/* Step 2: Employment Details */}
-                {currentStep === 2 && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Employee Number</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
                         <input
                           type="text"
-                          value={formData.employeeNumber}
-                          onChange={(e) => setFormData({...formData, employeeNumber: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="EMP-001"
+                          required
+                          value={formData.username}
+                          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Region</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                        <input
+                          type="tel"
+                          value={formData.phoneNo}
+                          onChange={(e) => setFormData({ ...formData, phoneNo: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">New Password (optional)</label>
+                        <input
+                          type="password"
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
+                          placeholder="Leave empty to keep current password"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
                         <select
-                          value={formData.regionId}
-                          onChange={(e) => setFormData({...formData, regionId: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                          value={formData.roleId}
+                          onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
+                          required
                         >
-                          <option value="">Select Region</option>
-                          {regions.map(region => (
-                            <option key={region.id} value={region.id}>{region.title}</option>
+                          <option value="">Select Role</option>
+                          {roles.map(role => (
+                            <option key={role.id} value={role.id}>{role.displayName}</option>
                           ))}
                         </select>
                       </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
-                        <input
-                          type="date"
-                          value={formData.startDate}
-                          onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Leave Date</label>
-                        <input
-                          type="date"
-                          value={formData.leaveDate}
-                          onChange={(e) => setFormData({...formData, leaveDate: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 3: Emergency & Additional Info */}
-                {currentStep === 3 && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Name</label>
-                        <input
-                          type="text"
-                          value={formData.emergencyName}
-                          onChange={(e) => setFormData({...formData, emergencyName: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="Emergency contact name"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Number</label>
-                        <input
-                          type="tel"
-                          value={formData.emergencyContact}
-                          onChange={(e) => setFormData({...formData, emergencyContact: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="+44 123 456 7890"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
-                        <input
-                          type="text"
-                          value={formData.postalCode}
-                          onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="SW1A 1AA"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Contracted Hours</label>
-                        <input
-                          type="number"
-                          value={formData.contractedHours}
-                          onChange={(e) => setFormData({...formData, contractedHours: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                          placeholder="40"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
                         <select
                           value={formData.status}
-                          onChange={(e) => setFormData({...formData, status: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
                         >
                           <option value="CURRENT">Current</option>
-                          <option value="ARCHIVED">Archived</option>
+                          <option value="FORMER">Former</option>
+                          <option value="PENDING">Pending</option>
                         </select>
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">NI Number</label>
-                      <input
-                        type="text"
-                        value={formData.niNumber}
-                        onChange={(e) => setFormData({...formData, niNumber: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                        placeholder="AB123456C"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
-                        {allPermissions.map(permission => (
-                          <label key={permission} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={formData.permissions.includes(permission)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setFormData({...formData, permissions: [...formData.permissions, permission]});
-                                } else {
-                                  setFormData({...formData, permissions: formData.permissions.filter(p => p !== permission)});
-                                }
-                              }}
-                              className="rounded border-gray-300 text-[#224fa6] focus:ring-[#224fa6] w-4 h-4"
-                            />
-                            <span className="text-xs text-gray-700 font-medium">{permission}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* Navigation Buttons */}
-                <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => { setShowAddModal(false); resetForm(); }}
-                    className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <div className="flex space-x-3">
-                    {currentStep > 1 && (
+                    {/* Hide permissions for Care Workers & Support Workers as they have all permissions by default */
+                      !['CAREWORKER', 'SUPPORT_WORKER'].includes(roles.find(r => r.id == formData.roleId)?.name) && (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
+                          <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">
+                            <PermissionMatrix
+                              selectedPermissions={formData.permissions}
+                              onChange={(newPermissions) => setFormData({ ...formData, permissions: newPermissions })}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                    <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
                       <button
                         type="button"
-                        onClick={previousStep}
-                        className="px-6 py-3 text-[#224fa6] bg-blue-50 rounded-xl hover:bg-blue-100 transition-all duration-200 font-medium"
+                        onClick={() => setShowEditModal(false)}
+                        className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
                       >
-                        Previous
+                        Cancel
                       </button>
-                    )}
-                    <button
-                      type="submit"
-                      disabled={isSubmitting && currentStep === 3}
-                      className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {currentStep === 3 ? (isSubmitting ? 'Creating...' : 'Create User') : 'Next'}
-                    </button>
-                  </div>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Updating...' : 'Update User'}
+                      </button>
+                    </div>
+                  </form>
                 </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Staff Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Edit User</h3>
-                    <p className="text-sm text-gray-600 mt-1">Update user information and permissions</p>
-                  </div>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
               </div>
-
-              <form onSubmit={handleEditStaff} className="space-y-4">
-                {/* Profile Photo Section */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
-                  <div className="flex items-start space-x-4 sm:space-x-6">
-                    {/* Photo Preview */}
-                    <div className="flex-shrink-0">
-                      {formData.profilePic ? (
-                        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden border-4 border-white shadow-lg">
-                          <img src={formData.profilePic} alt="Profile Preview" className="w-full h-full object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => setFormData({ ...formData, profilePic: '' })}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md"
-                            title="Remove photo"
-                          >
-                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-gradient-to-br from-[#224fa6] to-[#3270e9] flex items-center justify-center border-4 border-white shadow-lg">
-                          <svg className="w-12 h-12 sm:w-16 sm:h-16 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Upload Section */}
-                    <div className="flex-1 min-w-0">
-                      <label className="block text-base font-semibold text-gray-900 mb-2 sm:mb-3">
-                        Profile Photo
-                      </label>
-                      <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                        Upload or update the profile photo for this staff member.
-                      </p>
-                      <FileUpload
-                        accept="image/*"
-                        label="📷 Upload Photo"
-                        onUploadComplete={(fileUrl) => {
-                          setFormData({ ...formData, profilePic: fileUrl });
-                          showNotification('Photo uploaded successfully!', 'success');
-                        }}
-                        onError={(error) => {
-                          showNotification(`Photo upload failed: ${error}`, 'error');
-                        }}
-                        className="mb-2"
-                      />
-                      {formData.profilePic && (
-                        <div className="mt-2 sm:mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
-                          <p className="text-xs text-green-700 flex items-center">
-                            <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            Photo uploaded successfully
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.firstName}
-                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.username}
-                      onChange={(e) => setFormData({...formData, username: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={formData.phoneNo}
-                      onChange={(e) => setFormData({...formData, phoneNo: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">New Password (optional)</label>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData({...formData, password: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                      placeholder="Leave empty to keep current password"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
-                    <select
-                      value={formData.roleId}
-                      onChange={(e) => setFormData({...formData, roleId: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
-                      required
-                    >
-                      <option value="">Select Role</option>
-                      {roles.map(role => (
-                        <option key={role.id} value={role.id}>{role.displayName}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({...formData, status: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
-                    >
-                      <option value="CURRENT">Current</option>
-                      <option value="FORMER">Former</option>
-                      <option value="PENDING">Pending</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
-                    {allPermissions.map(permission => (
-                      <label key={permission} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={formData.permissions.includes(permission)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setFormData({...formData, permissions: [...formData.permissions, permission]});
-                            } else {
-                              setFormData({...formData, permissions: formData.permissions.filter(p => p !== permission)});
-                            }
-                          }}
-                          className="rounded border-gray-300 text-[#224fa6] focus:ring-[#224fa6] w-4 h-4"
-                        />
-                        <span className="text-xs text-gray-700 font-medium">{permission}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                    className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Updating...' : 'Update User'}
-                  </button>
-                </div>
-              </form>
             </div>
-          </div>
-        </div>
-      )}
+          )}
         </main>
       </div>
 
@@ -1196,16 +1184,16 @@ export default function StaffManagementPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              
+
               <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
                 Delete User
               </h3>
-              
+
               <p className="text-sm text-gray-600 text-center mb-6">
-                Are you sure you want to delete <span className="font-medium text-gray-900">&quot;{staffToDelete?.firstName} {staffToDelete?.lastName}&quot;</span>? 
+                Are you sure you want to delete <span className="font-medium text-gray-900">&quot;{staffToDelete?.firstName} {staffToDelete?.lastName}&quot;</span>?
                 This action cannot be undone and will remove all associated data.
               </p>
-              
+
               <div className="flex space-x-3">
                 <button
                   onClick={handleDeleteCancel}

@@ -23,7 +23,7 @@ export default function LoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, portal: 'admin' }),
       });
 
       const data = await response.json();
@@ -32,7 +32,7 @@ export default function LoginPage() {
         // Check if user role is allowed to access web portal (frontend check)
         const allowedWebRoles = ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'];
         const userRoleName = data.user?.role?.name;
-        
+
         if (!allowedWebRoles.includes(userRoleName)) {
           // User is not allowed to access web portal (CAREWORKER, SUPPORT_WORKER, etc.)
           router.push('/use-app');

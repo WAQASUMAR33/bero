@@ -1,13 +1,20 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { hasPermission } from '@/lib/permissions';
+
 // GET /api/users/[id] - Get a specific user
 export async function GET(request, { params }) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    const currentUser = await getCurrentUser(request);
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!hasPermission(currentUser, 'users.view')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { id } = await params;
@@ -44,10 +51,14 @@ export async function GET(request, { params }) {
 // PUT /api/users/[id] - Update a specific user
 export async function PUT(request, { params }) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    const currentUser = await getCurrentUser(request);
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!hasPermission(currentUser, 'users.update')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { id } = await params;
@@ -126,7 +137,7 @@ export async function PUT(request, { params }) {
 
     // Prepare update data - only include fields that are provided (partial update)
     const updateData = {};
-    
+
     if (firstName !== undefined) updateData.firstName = firstName;
     if (lastName !== undefined) updateData.lastName = lastName;
     if (email !== undefined) updateData.email = email;
@@ -204,10 +215,14 @@ export async function PUT(request, { params }) {
 // DELETE /api/users/[id] - Delete a specific user
 export async function DELETE(request, { params }) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    const currentUser = await getCurrentUser(request);
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!hasPermission(currentUser, 'users.delete')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { id } = await params;
@@ -236,10 +251,77 @@ export async function DELETE(request, { params }) {
       where: { userId: userId }
     });
 
+    // Delete related Handovers (dependencies of ShiftAssignments and User)
+    // 1. Get shift assignments to identify linked handovers
+    const userShiftAssignments = await prisma.shiftAssignment.findMany({
+      where: { userId: userId },
+      select: { id: true }
+    });
+    const shiftAssignmentIds = userShiftAssignments.map(sa => sa.id);
+
+    // 2. Delete handovers linked to these shifts OR created by the user
+    if (shiftAssignmentIds.length > 0) {
+      await prisma.handover.deleteMany({
+        where: {
+          OR: [
+            { fromShiftAssignmentId: { in: shiftAssignmentIds } },
+            { toShiftAssignmentId: { in: shiftAssignmentIds } },
+            { createdById: userId }
+          ]
+        }
+      });
+    } else {
+      // Just delete created handovers if no shifts
+      await prisma.handover.deleteMany({
+        where: { createdById: userId }
+      });
+    }
+
+    // Delete Emergency Alerts triggered by user
+    await prisma.emergencyAlert.deleteMany({
+      where: { triggeredBy: userId }
+    });
+
     // Delete standby shifts
     await prisma.standByShift.deleteMany({
       where: { caretakerId: userId }
     });
+
+    // Delete shift assignments
+    await prisma.shiftAssignment.deleteMany({
+      where: { userId: userId }
+    });
+
+    // Delete clock in/out records
+    await prisma.clockInOut.deleteMany({
+      where: { userId: userId }
+    });
+
+    // Delete notifications
+    await prisma.notification.deleteMany({
+      where: { userId: userId }
+    });
+
+    // Delete push subscriptions
+    await prisma.pushSubscription.deleteMany({
+      where: { userId: userId }
+    });
+
+    // Delete conversation participants
+    await prisma.conversationParticipant.deleteMany({
+      where: { userId: userId }
+    });
+
+    // Delete PP stock transactions
+    await prisma.pPStockTransaction.deleteMany({
+      where: { userId: userId }
+    });
+
+    // Delete policy signatures
+    await prisma.policySignature.deleteMany({
+      where: { userId: userId }
+    });
+
 
     // Now delete the user
     await prisma.user.delete({

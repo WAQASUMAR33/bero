@@ -89,6 +89,19 @@ export async function POST(request) {
       );
     }
 
+    // Backend Check: Restrict access to Admin Portal based on role
+    // If the request comes from the Admin Login page (portal: 'admin')
+    if (body.portal === 'admin') {
+      const allowedAdminRoles = ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'];
+      // Ensure user has a role and it is in the allowed list
+      if (!user.role || !allowedAdminRoles.includes(user.role.name)) {
+        return NextResponse.json(
+          { error: 'Access denied. You do not have permission to access the Admin Dashboard.' },
+          { status: 403 }
+        );
+      }
+    }
+
     // Update last login
     await prisma.user.update({
       where: { id: user.id },

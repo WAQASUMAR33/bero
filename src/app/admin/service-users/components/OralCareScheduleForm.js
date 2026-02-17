@@ -285,7 +285,7 @@ export default function OralCareScheduleForm({ serviceSeekerId, onNotification }
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
         <h2 className="text-xl font-semibold">Oral Care</h2>
       </div>
-      
+
       <div className="p-6">
 
         {loading ? (
@@ -387,7 +387,7 @@ export default function OralCareScheduleForm({ serviceSeekerId, onNotification }
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="bg-teal-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-white text-lg">ℹ️</span>
                 <h3 className="text-xl font-semibold">

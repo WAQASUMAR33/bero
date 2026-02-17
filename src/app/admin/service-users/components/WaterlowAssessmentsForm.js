@@ -42,16 +42,66 @@ export default function WaterlowAssessmentsForm({ serviceSeekerId, serviceUserNa
 
   const calculateScore = () => {
     let score = 0;
+
+    // 1. BMI Score (Waterlow: >30=+2, >25=+1, 20-25=0, <20=+3)
     const bmi = formData.currentWeightKg && formData.heightM ? (parseFloat(formData.currentWeightKg) / (parseFloat(formData.heightM) ** 2)) : null;
     if (bmi !== null) {
-      if (bmi < 18.5) score += 2; else if (bmi < 20) score += 1;
+      if (bmi > 30) score += 2;
+      else if (bmi >= 25) score += 1;
+      else if (bmi >= 20) score += 0;
+      else score += 3;
     }
-    const recentWeightLoss = formData.previousWeightKg && formData.currentWeightKg ? (parseFloat(formData.previousWeightKg) - parseFloat(formData.currentWeightKg)) : 0;
-    if (recentWeightLoss > 5) score += 1;
-    const addBy = (val) => { if (val === '') return 0; const idx = 1 + Math.max(0, (val.length % 3)); return idx; };
-    score += addBy(formData.continence) + addBy(formData.skinType) + addBy(formData.mobility) + addBy(formData.specialSurgeryTrauma);
-    score += (formData.specialTissue?.length || 0) + (formData.specialNeuro?.length || 0) + (formData.specialMedication?.length || 0);
-    let riskLevel = 'Low'; if (score >= 10) riskLevel = 'High'; else if (score >= 5) riskLevel = 'Medium';
+
+    // 2. Weight Loss (Waterlow doesn't strictly have a "recent weight loss" score in the same way MUST does, 
+    // but often includes "Unplanned Weight Loss" in Malnutrition section. 
+    // We'll calculate 0.5-5kg = 1, >5kg = 2 if we follow general malnutrition risks, 
+    // but strictly Waterlow uses specific Tissue Malnutrition categories.
+    // Given the form has "Previous Weight" input, we'll keep a simple check or rely on the "Tissue" dropdowns.
+    // For now, let's rely on the Tissue Malnutrition dropdowns as they map to Waterlow scores better.)
+    // However, to keep existing field relevance:
+    const weightLoss = formData.previousWeightKg && formData.currentWeightKg ? (parseFloat(formData.previousWeightKg) - parseFloat(formData.currentWeightKg)) : 0;
+    if (weightLoss > 5) score += 2; // Approximating "Unplanned weight loss" risk
+
+    // 3. Continence
+    const continenceMap = { 'Dry': 0, 'Occasional': 1, 'Catheter': 0, 'Incontinent': 3 };
+    score += continenceMap[formData.continence] || 0;
+
+    // 4. Skin Type
+    const skinMap = { 'Healthy': 0, 'Red areas': 2, 'Broken skin': 3, 'Ulcer present': 3 };
+    score += skinMap[formData.skinType] || 0;
+
+    // 5. Mobility
+    const mobilityMap = { 'Fully mobile': 0, 'Restless': 1, 'Walks with help': 3, 'Chairbound': 5, 'Bedbound': 4 };
+    score += mobilityMap[formData.mobility] || 0;
+
+    // 6. Surgery/Trauma
+    const surgeryMap = { 'None': 0, 'Within last month': 5, 'Major within last month': 8 };
+    score += surgeryMap[formData.specialSurgeryTrauma] || 0;
+
+    // 7. Special - Tissue
+    const tissueMap = {
+      'Anaemia = Hb < 8': 2,
+      'Multiple organ failure/terminal cachexia': 8,
+      'Peripheral vascular disease': 5,
+      'Single organ failure e.g. cardiac, renal, respiratory': 5,
+      'Smoking': 1
+    };
+    (formData.specialTissue || []).forEach(item => score += (tissueMap[item] || 0));
+
+    // 8. Special - Neuro
+    const neuroMap = { 'CVA': 4, 'Diabetes': 4, 'motor': 4, 'MS': 4, 'paraplegia': 6, 'sensory': 4 };
+    (formData.specialNeuro || []).forEach(item => score += (neuroMap[item] || 0));
+
+    // 9. Special - Medication
+    const medsMap = { 'Anti-Inflammatory': 4, 'Cytotoxic': 4, 'High Dose Steroids': 4, 'Long Term Steroids': 4 };
+    (formData.specialMedication || []).forEach(item => score += (medsMap[item] || 0));
+
+    // Risk Level
+    let riskLevel = 'Low Risk';
+    if (score >= 20) riskLevel = 'Very High Risk';
+    else if (score >= 15) riskLevel = 'High Risk';
+    else if (score >= 10) riskLevel = 'At Risk';
+
     setFormData(prev => ({ ...prev, score: String(score), riskLevel }));
   };
 
@@ -144,7 +194,6 @@ export default function WaterlowAssessmentsForm({ serviceSeekerId, serviceUserNa
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Assessed On</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Score</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Risk Level</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Conducted By</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Modified</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
@@ -156,7 +205,6 @@ export default function WaterlowAssessmentsForm({ serviceSeekerId, serviceUserNa
                     <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.assessedOn)}</td>
                     <td className="py-3 px-4 text-sm text-gray-900">{r.score ?? '-'}</td>
                     <td className="py-3 px-4 text-sm text-gray-900">{r.riskLevel || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{r.conductedBy || '-'}</td>
                     <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
                     <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.updatedAt)}</td>
                     <td className="py-3 px-4"><button type="button" onClick={() => deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm">Delete</button></td>

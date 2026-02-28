@@ -32,10 +32,10 @@ export default function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4">
-                        <Link href="/login" className="inline-flex justify-center items-center gap-2 bg-[#224fa6] hover:bg-[#1e438f] text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-blue-900/20 active:scale-95 transition-all">
+                        <Link href="/login-choice" className="inline-flex justify-center items-center gap-2 bg-[#224fa6] hover:bg-[#1e438f] text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-blue-900/20 active:scale-95 transition-all">
                             Start Free Trial <ArrowRight className="w-5 h-5" />
                         </Link>
-                        <Link href="/login" className="inline-flex justify-center items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg transition-all">
+                        <Link href="/contact" className="inline-flex justify-center items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg transition-all">
                             Book Demo
                         </Link>
                     </div>

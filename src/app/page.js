@@ -23,8 +23,8 @@ export default function LandingPage() {
             Join hundreds of care agencies using BEERU to streamline operations and deliver better care. Start your 14-day free trial today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/login" className="px-8 py-4 bg-white text-[#224fa6] font-bold rounded-xl text-lg hover:bg-blue-50 transition-all shadow-xl active:scale-95">Get Started Now</a>
-            <a href="/login" className="px-8 py-4 bg-[#2f66d4] text-white border border-blue-400 font-bold rounded-xl text-lg hover:bg-[#346fe0] transition-all">Contact Sales</a>
+            <a href="/login-choice" className="px-8 py-4 bg-white text-[#224fa6] font-bold rounded-xl text-lg hover:bg-blue-50 transition-all shadow-xl active:scale-95">Get Started Now</a>
+            <a href="/contact" className="px-8 py-4 bg-[#2f66d4] text-white border border-blue-400 font-bold rounded-xl text-lg hover:bg-[#346fe0] transition-all">Contact Sales</a>
           </div>
         </div>
       </section>

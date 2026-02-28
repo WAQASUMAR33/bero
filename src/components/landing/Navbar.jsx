@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [isLoginOpen, setIsLoginOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -29,10 +30,44 @@ export default function Navbar() {
                     <Link href="/contact" className="text-slate-600 hover:text-[#224fa6] font-medium transition-colors">Contact</Link>
                 </div>
 
-                <div className="hidden md:flex items-center gap-4">
-                    <Link href="/login" className="text-[#224fa6] font-bold hover:bg-blue-50 px-5 py-2.5 rounded-xl transition-all">
-                        Login
-                    </Link>
+                <div className="hidden md:flex items-center gap-4 relative">
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsLoginOpen(!isLoginOpen)}
+                            className="text-[#224fa6] font-bold hover:bg-blue-50 px-5 py-2.5 rounded-xl transition-all flex items-center gap-1"
+                        >
+                            Login
+                            <svg className={`w-4 h-4 transition-transform ${isLoginOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <AnimatePresence>
+                            {isLoginOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden"
+                                >
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setIsLoginOpen(false)}
+                                        className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#224fa6] border-b border-slate-100 transition-colors"
+                                    >
+                                        Sign in as Management
+                                    </Link>
+                                    <Link
+                                        href="/care-worker-login"
+                                        onClick={() => setIsLoginOpen(false)}
+                                        className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#224fa6] transition-colors"
+                                    >
+                                        Sign in as Caretaker
+                                    </Link>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                     <Link href="/login" className="bg-[#224fa6] hover:bg-[#1e438f] text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-900/20 hover:shadow-xl transition-all active:scale-95">
                         Get Started
                     </Link>
@@ -57,7 +92,11 @@ export default function Navbar() {
                             <Link href="/about" onClick={() => setIsOpen(false)} className="text-slate-600 font-medium">About</Link>
                             <Link href="/contact" onClick={() => setIsOpen(false)} className="text-slate-600 font-medium">Contact</Link>
                             <hr />
-                            <Link href="/login" className="text-[#224fa6] font-bold">Login</Link>
+                            <div className="flex flex-col gap-3">
+                                <span className="text-slate-500 font-semibold text-sm uppercase tracking-wider">Login Options</span>
+                                <Link href="/login" onClick={() => setIsOpen(false)} className="text-[#224fa6] font-bold pl-2 hover:text-[#1e438f] transition-colors">Sign in as Management</Link>
+                                <Link href="/care-worker-login" onClick={() => setIsOpen(false)} className="text-[#224fa6] font-bold pl-2 hover:text-[#1e438f] transition-colors">Sign in as Caretaker</Link>
+                            </div>
                         </div>
                     </motion.div>
                 )}

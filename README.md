@@ -97,23 +97,6 @@ The application is built around several core data models:
     ```
     Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Environment Variables
-
-Ensure your `.env` file typically contains:
-
-```ini
-# Database Connection
-DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
-
-# Security
-JWT_SECRET="your-secure-random-hex-string" # Generated 64-char hex string
-
-# Features
-NEXT_PUBLIC_VAPID_PUBLIC_KEY="your-public-key"
-VAPID_PRIVATE_KEY="your-private-key"
-```
-
----
 
 ## Usage Manual
 

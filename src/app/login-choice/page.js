@@ -3,7 +3,18 @@ import Link from 'next/link';
 
 export default function LoginChoice() {
     return (
-        <div className="flex flex-col md:flex-row min-h-screen">
+        <div className="flex flex-col md:flex-row min-h-screen relative">
+            {/* Back to Home Button */}
+            <Link
+                href="/"
+                className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md rounded-full text-slate-700 hover:text-[#224fa6] hover:bg-white border text-sm border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 font-medium group mix-blend-luminosity"
+            >
+                <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
+            </Link>
+
             {/* Administrator Side (White) */}
             <Link
                 href="/login"

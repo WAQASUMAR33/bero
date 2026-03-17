@@ -282,6 +282,18 @@ model User {
 
   notifications            Notification[]
   pushSubscriptions        PushSubscription[]
+
+  // Training & Development relations
+  trainingRecords           StaffTrainingRecord[]      @relation("StaffTrainingRecords")
+  createdTrainingRecords    StaffTrainingRecord[]      @relation("TrainingRecordCreatedBy")
+  supervisions              Supervision[]              @relation("SupervisionStaff")
+  conductedSupervisions     Supervision[]              @relation("SupervisionSupervisor")
+  pdps                      PersonalDevelopmentPlan[]  @relation("PDPUser")
+  createdPDPs               PersonalDevelopmentPlan[]  @relation("PDPCreatedBy")
+  competencyAssessments     CompetencySignoff[]        @relation("CompetencyStaff")
+  conductedCompetencies     CompetencySignoff[]        @relation("CompetencyAssessor")
+  inductionProgress         StaffInductionProgress[]   @relation("InductionProgressUser")
+  signedOffInductions       StaffInductionProgress[]   @relation("InductionProgressSignedBy")
 }
 
 model Team {
@@ -2844,4 +2856,158 @@ model PushSubscription {
   @@index([isActive])
 }
 
+// =============================================
+// STAFF TRAINING & DEVELOPMENT MODELS
+// =============================================
 
+model TrainingType {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String?  @db.Text
+  expiryMonths Int?     // null = never expires
+  isMandatory  Boolean  @default(true)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  records          StaffTrainingRecord[]
+  roleRequirements RoleTrainingRequirement[]
+}
+
+model RoleTrainingRequirement {
+  id             Int      @id @default(autoincrement())
+  roleName       String
+  trainingTypeId Int
+  levelRequired  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  trainingType TrainingType @relation(fields: [trainingTypeId], references: [id])
+
+  @@unique([roleName, trainingTypeId])
+  @@index([trainingTypeId])
+}
+
+model StaffTrainingRecord {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  trainingTypeId Int
+  completedDate  DateTime
+  expiryDate     DateTime?
+  certificateUrl String?   @db.Text
+  provider       String?
+  notes          String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdById    Int
+
+  user         User         @relation("StaffTrainingRecords", fields: [userId], references: [id])
+  trainingType TrainingType @relation(fields: [trainingTypeId], references: [id])
+  createdBy    User         @relation("TrainingRecordCreatedBy", fields: [createdById], references: [id])
+
+  @@index([userId])
+  @@index([trainingTypeId])
+}
+
+model Supervision {
+  id              Int       @id @default(autoincrement())
+  staffId         Int
+  supervisorId    Int
+  scheduledDate   DateTime
+  conductedDate   DateTime?
+  type            String    @default("SUPERVISION") // SUPERVISION, APPRAISAL, PROBATION
+  status          String    @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  notes           String?   @db.Text
+  actionPoints    String?   @db.Text
+  nextSupervision DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  staff      User @relation("SupervisionStaff", fields: [staffId], references: [id])
+  supervisor User @relation("SupervisionSupervisor", fields: [supervisorId], references: [id])
+
+  @@index([staffId])
+  @@index([supervisorId])
+}
+
+model PersonalDevelopmentPlan {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  reviewDate  DateTime?
+  status      String    @default("ACTIVE") // ACTIVE, COMPLETED, ARCHIVED
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+
+  user      User      @relation("PDPUser", fields: [userId], references: [id])
+  createdBy User      @relation("PDPCreatedBy", fields: [createdById], references: [id])
+  goals     PDPGoal[]
+
+  @@index([userId])
+}
+
+model PDPGoal {
+  id         Int       @id @default(autoincrement())
+  pdpId      Int
+  goal       String    @db.Text
+  targetDate DateTime?
+  status     String    @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, CANCELLED
+  notes      String?   @db.Text
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  pdp PersonalDevelopmentPlan @relation(fields: [pdpId], references: [id], onDelete: Cascade)
+
+  @@index([pdpId])
+}
+
+model CompetencySignoff {
+  id             Int      @id @default(autoincrement())
+  staffId        Int
+  assessorId     Int
+  competencyName String
+  type           String   @default("OBSERVATION") // OBSERVATION, SHADOWING, PRACTICAL_TEST
+  date           DateTime
+  outcome        String   @default("PASS") // PASS, FAIL, NEEDS_REVIEW
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  staff    User @relation("CompetencyStaff", fields: [staffId], references: [id])
+  assessor User @relation("CompetencyAssessor", fields: [assessorId], references: [id])
+
+  @@index([staffId])
+  @@index([assessorId])
+}
+
+model InductionItem {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  category    String   @default("GENERAL") // GENERAL, CARE_CERTIFICATE, COMPLIANCE, POLICY
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  progress StaffInductionProgress[]
+}
+
+model StaffInductionProgress {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  inductionItemId Int
+  completedAt     DateTime?
+  signedOffById   Int?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user          User          @relation("InductionProgressUser", fields: [userId], references: [id])
+  inductionItem InductionItem @relation(fields: [inductionItemId], references: [id])
+  signedOffBy   User?         @relation("InductionProgressSignedBy", fields: [signedOffById], references: [id])
+
+  @@unique([userId, inductionItemId])
+  @@index([userId])
+}

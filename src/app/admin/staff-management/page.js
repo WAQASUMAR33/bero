@@ -543,6 +543,15 @@ export default function StaffManagementPage() {
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex items-center justify-end space-x-3">
+                              <button
+                                onClick={() => router.push(`/admin/staff-management/${member.id}/training`)}
+                                className="p-2 text-green-600 hover:text-white hover:bg-green-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                title="Training Profile"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                </svg>
+                              </button>
                               {hasPermission(user, 'users.update') && (
                                 <button
                                   onClick={() => openEditModal(member)}

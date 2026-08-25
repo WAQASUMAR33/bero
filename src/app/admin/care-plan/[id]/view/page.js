@@ -329,10 +329,9 @@ export default function CarePlanViewPage() {
                 <SummaryRow label="Start Date" value={formatDate(admission?.startDate)} />
                 <SummaryRow label="Banding" value={admission?.banding ?? '-'} />
                 <SummaryRow label="Authority/Category" value={admission?.authorityCategory ?? '-'} />
-                <SummaryRow label="Funeral Arrangements" value={admission?.funeralArrangement ?? '-'} />
-                <SummaryRow label="Funeral Director" value={admission?.funeralDirector ?? '-'} />
+                <SummaryRow label="Sleep in Night" value={admission?.sleepInNight ?? '-'} />
+                <SummaryRow label="Hours Per Day" value={admission?.hoursPerDay ? `${admission.hoursPerDay} hrs` : '-'} />
                 <SummaryRow label="Team ID" value={admission?.teamId ?? '-'} />
-                <SummaryRow label="Default Shift Run" value={admission?.defaultShiftRun?.name ?? '-'} />
               </div>
             </SectionCard>
           )}

@@ -68,10 +68,9 @@ export default function AdmissionPage() {
     startDate: '',
     banding: '',
     authorityCategory: '',
-    funeralArrangement: 'UNKNOWN',
-    funeralDirector: '',
+    sleepInNight: 'No',
+    hoursPerDay: '',
     teamId: '',
-    defaultShiftRunId: '',
   });
   const [shiftRuns, setShiftRuns] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -584,10 +583,9 @@ export default function AdmissionPage() {
             startDate: data.startDate ? new Date(data.startDate).toISOString().substring(0, 10) : '',
             banding: data.banding || '',
             authorityCategory: data.authorityCategory || '',
-            funeralArrangement: data.funeralArrangement || 'UNKNOWN',
-            funeralDirector: data.funeralDirector || '',
+            sleepInNight: data.sleepInNight || 'No',
+            hoursPerDay: data.hoursPerDay?.toString() || '',
             teamId: data.teamId?.toString() || '',
-            defaultShiftRunId: data.defaultShiftRunId?.toString() || '',
           });
           setIdentification({
             nhsHscNo: data.nhsHscNo || '',
@@ -679,7 +677,8 @@ export default function AdmissionPage() {
       const payload = {
         ...admission,
         teamId: admission.teamId === '' ? null : parseInt(admission.teamId, 10),
-        defaultShiftRunId: admission.defaultShiftRunId === '' ? null : parseInt(admission.defaultShiftRunId, 10),
+        hoursPerDay: admission.hoursPerDay !== '' && admission.hoursPerDay !== null ? parseFloat(admission.hoursPerDay) : null,
+        sleepInNight: admission.sleepInNight || 'No',
         startDate: admission.startDate || null,
         // identification fields
         nhsHscNo: identification.nhsHscNo || null,
@@ -975,16 +974,23 @@ export default function AdmissionPage() {
                   <input value={admission.authorityCategory} onChange={e => setAdmissionField('authorityCategory', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Funeral Arrangements</label>
-                  <select value={admission.funeralArrangement} onChange={e => setAdmissionField('funeralArrangement', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900">
-                    <option value="UNKNOWN">Unknown</option>
-                    <option value="BURIAL">Burial</option>
-                    <option value="CREMATION">Cremation</option>
+                  <label className="block text-sm text-gray-600 mb-1">Sleep in Night</label>
+                  <select value={admission.sleepInNight || 'No'} onChange={e => setAdmissionField('sleepInNight', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Funeral Director</label>
-                  <input value={admission.funeralDirector} onChange={e => setAdmissionField('funeralDirector', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900" />
+                  <label className="block text-sm text-gray-600 mb-1">Hours per Day</label>
+                  <input
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    placeholder="e.g. 8"
+                    value={admission.hoursPerDay}
+                    onChange={e => setAdmissionField('hoursPerDay', e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-gray-900"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">Team</label>
@@ -997,13 +1003,6 @@ export default function AdmissionPage() {
                     {Array.isArray(teams) && teams.map(team => (
                       <option key={team.id} value={team.id}>{team.name}</option>
                     ))}
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm text-gray-600 mb-1">Default Shift Run</label>
-                  <select value={admission.defaultShiftRunId} onChange={e => setAdmissionField('defaultShiftRunId', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-gray-900">
-                    <option value="">Select a shift run</option>
-                    {shiftRuns.map(sr => (<option key={sr.id} value={sr.id}>{sr.name}</option>))}
                   </select>
                 </div>
               </div>

@@ -455,6 +455,8 @@ model ServiceSeekerAdmission {
   authorityCategory       String?
   funeralArrangement      FuneralArrangement?
   funeralDirector         String?
+  sleepInNight            String? // "Yes", "No"
+  hoursPerDay             Float?
   teamId                  Int?
   defaultShiftRunId       Int?
   // Identification fields

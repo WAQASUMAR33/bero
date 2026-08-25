@@ -19,15 +19,6 @@ export default function IdentificationForm({ identification, setField, serviceSe
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">CHI Number</label>
-            <input
-              value={identification.chiNumber}
-              onChange={e => setField('chiNumber', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
-              placeholder="Enter CHI Number"
-            />
-          </div>
-          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">NI No.</label>
             <input
               value={identification.niNumber}

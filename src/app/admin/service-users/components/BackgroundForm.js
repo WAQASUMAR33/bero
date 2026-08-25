@@ -66,19 +66,6 @@ export default function BackgroundForm({ background, setField, onSave, saving })
               <option value="Trusted Person">Trusted Person</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Emergency Rating</label>
-            <select
-              value={background.emergencyRating || ''}
-              onChange={e => setField('emergencyRating', e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-gray-900"
-            >
-              <option value="">Please Select</option>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </select>
-          </div>
           <div className="md:col-span-2 border-t border-gray-200 pt-4 mt-2">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Address</h3>
           </div>

@@ -146,6 +146,8 @@ export default function AdmissionPage() {
     status: 'LIVE',
     address: '',
     postalCode: '',
+    photoUrl: '',
+    photoDate: '',
   });
   const [savingBasicInfo, setSavingBasicInfo] = useState(false);
 
@@ -513,6 +515,8 @@ export default function AdmissionPage() {
         status: basicInfo.status,
         address: basicInfo.address || null,
         postalCode: basicInfo.postalCode || null,
+        photoUrl: basicInfo.photoUrl || null,
+        photoDate: basicInfo.photoDate || null,
       };
       const res = await fetch(`/api/service-seekers/${serviceSeekerId}`, {
         method: 'PUT',
@@ -571,6 +575,8 @@ export default function AdmissionPage() {
             status: data.status || 'LIVE',
             address: data.address || '',
             postalCode: data.postalCode || '',
+            photoUrl: data.photoUrl || '',
+            photoDate: data.photoDate ? new Date(data.photoDate).toISOString().substring(0, 10) : '',
           });
         }
       } catch (e) { console.error(e); }
@@ -737,6 +743,62 @@ export default function AdmissionPage() {
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Photo Upload & Photo Date Taken */}
+                <div className="md:col-span-2 bg-gray-50 rounded-xl p-5 border border-gray-200">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                    {/* Photo Preview */}
+                    <div className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-gray-300 shadow-sm bg-gray-100 flex-shrink-0">
+                      {basicInfo.photoUrl ? (
+                        <>
+                          <img src={basicInfo.photoUrl} alt="Service User" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setBasicInfo(prev => ({ ...prev, photoUrl: '' }))}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow cursor-pointer"
+                            title="Remove photo"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#224fa6] to-[#3270e9]">
+                          <svg className="w-12 h-12 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload & Date Photo Taken */}
+                    <div className="flex-1 w-full space-y-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-800 mb-1.5">Profile Photo</label>
+                        <FileUpload
+                          accept="image/*"
+                          label="📷 Upload / Change Photo"
+                          onUploadComplete={(url) => {
+                            setBasicInfo(prev => ({ ...prev, photoUrl: url }));
+                            setNotification({ show: true, message: 'Photo uploaded successfully', type: 'success' });
+                          }}
+                          onError={(err) => setNotification({ show: true, message: `Upload failed: ${err}`, type: 'error' })}
+                        />
+                      </div>
+
+                      <div className="max-w-xs">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Date Photo Taken</label>
+                        <input
+                          type="date"
+                          value={basicInfo.photoDate}
+                          onChange={e => setBasicInfoField('photoDate', e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
                   <input
@@ -903,6 +965,17 @@ export default function AdmissionPage() {
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {seeker?.photoUrl && (
+                  <div className="md:col-span-3 flex items-center gap-4 pb-2 border-b border-gray-100">
+                    <img src={seeker.photoUrl} alt={`${seeker.firstName} ${seeker.lastName}`} className="w-16 h-16 rounded-xl object-cover border border-gray-200 shadow-sm" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{seeker.firstName} {seeker.lastName}</p>
+                      {seeker.photoDate && (
+                        <p className="text-xs text-gray-500">Photo taken: {new Date(seeker.photoDate).toLocaleDateString()}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Name</p>
                   <p className="text-gray-900 font-medium">{seeker ? `${seeker.firstName} ${seeker.lastName}` : '-'}</p>

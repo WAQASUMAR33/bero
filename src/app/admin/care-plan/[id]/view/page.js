@@ -341,7 +341,6 @@ export default function CarePlanViewPage() {
             <SectionCard title="Identification">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SummaryRow label="NHS/HSC No" value={admission?.nhsHscNo ?? '-'} />
-                <SummaryRow label="CHI Number" value={admission?.chiNumber ?? '-'} />
                 <SummaryRow label="NI Number" value={admission?.niNumber ?? '-'} />
                 <SummaryRow label="Person ID" value={admission?.personId ?? '-'} />
               </div>
@@ -392,7 +391,6 @@ export default function CarePlanViewPage() {
                 <SummaryRow label="Religion" value={admission?.religion ?? '-'} />
                 <SummaryRow label="Ethnicity" value={admission?.ethnicity ?? '-'} />
                 <SummaryRow label="Communication Preference" value={admission?.communicationPreference ?? '-'} />
-                <SummaryRow label="Emergency Rating" value={admission?.emergencyRating ?? '-'} />
                 <SummaryRow label="Region" value={admission?.region ?? '-'} />
                 <div className="md:col-span-2">
                   <SummaryRow label="Address Line 1" value={admission?.addressLine1 ?? '-'} />
@@ -710,9 +708,9 @@ export default function CarePlanViewPage() {
             </SectionCard>
           )}
 
-          {/* Outcomes */}
+          {/* Support Plan */}
           {outcomes.length > 0 && (
-            <SectionCard title="Outcomes">
+            <SectionCard title="Support Plan">
               <div className="space-y-4">
                 {outcomes.map((outcome) => (
                   <div key={outcome.id} className="border border-gray-200 rounded-lg p-4">

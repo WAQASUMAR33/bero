@@ -43,7 +43,7 @@ export async function PUT(request, { params }) {
     // Define allowed fields for ServiceSeeker model
     const allowedFields = [
       'firstName', 'lastName', 'postalCode', 'address', 'latitude', 'longitude',
-      'photoUrl', 'title', 'preferredName', 'dateOfBirth', 'gender', 'genderAtBirth',
+      'photoUrl', 'photoDate', 'title', 'preferredName', 'dateOfBirth', 'gender', 'genderAtBirth',
       'pronouns', 'dnar', 'sexuality', 'status'
     ];
 
@@ -55,11 +55,17 @@ export async function PUT(request, { params }) {
       }
     });
 
-    // Handle dateOfBirth conversion
+    // Handle date conversions
     if (filteredData.dateOfBirth) {
       filteredData.dateOfBirth = new Date(filteredData.dateOfBirth);
     } else if (filteredData.dateOfBirth === null || filteredData.dateOfBirth === '') {
       filteredData.dateOfBirth = null;
+    }
+
+    if (filteredData.photoDate) {
+      filteredData.photoDate = new Date(filteredData.photoDate);
+    } else if (filteredData.photoDate === null || filteredData.photoDate === '') {
+      filteredData.photoDate = null;
     }
 
     // Handle numeric conversions

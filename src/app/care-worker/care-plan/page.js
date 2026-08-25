@@ -236,8 +236,8 @@ export default function CareWorkerCarePlanPage() {
                                 </div>
                             )}
                             <div className="grid grid-cols-2 gap-4">
-                                <SummaryRow label="DNAR / Resuscitation" value={admission.dnarStatus || 'Check File'} /> {/* Assuming field exists or we add dummy if critical */}
-                                <SummaryRow label="Emergency Rating" value={admission.emergencyRating} />
+                                <SummaryRow label="DNAR / Resuscitation" value={admission.dnarStatus || 'Check File'} />
+                                <SummaryRow label="Sleep in Night" value={admission.sleepInNight || '-'} />
                             </div>
 
                             <div className="bg-red-50 p-3 rounded-xl border border-red-100">

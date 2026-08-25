@@ -272,7 +272,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
       {/* Blue Header */}
       <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Outcomes</h2>
+          <h2 className="text-xl font-semibold">Support Plan</h2>
           <div className="flex items-center space-x-2">
             <button type="button" onClick={()=>setShowHistory(true)} className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm text-white font-medium transition-colors">View All</button>
             <button type="button" onClick={openAdd} className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors flex items-center space-x-2">

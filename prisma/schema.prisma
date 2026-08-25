@@ -346,6 +346,7 @@ model ServiceSeeker {
   latitude      Float?
   longitude     Float?
   photoUrl      String?
+  photoDate     DateTime?
   title         String?
   preferredName String?
   dateOfBirth   DateTime?
@@ -575,6 +576,13 @@ model ServiceSeekerHealthTag {
 }
 
 model Diet {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SpecialDiet {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   createdAt DateTime @default(now())

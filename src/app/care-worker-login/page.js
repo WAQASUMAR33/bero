@@ -30,9 +30,12 @@ export default function CareWorkerLoginPage() {
 
             if (response.ok && data.success) {
                 const userRoleName = data.user?.role?.name;
-                // Allowed roles for this separate dashboard
-                if (['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'].includes(userRoleName)) {
-                    // Admin roles can access, but main dashboard is /admin
+                const allowedWorkerRoles = ['CAREWORKER', 'CARE_WORKER', 'SUPPORT_WORKER'];
+                
+                if (!allowedWorkerRoles.includes(userRoleName)) {
+                    setError('Access denied. Please use the Management Login for the administrator dashboard.');
+                    setIsLoading(false);
+                    return;
                 }
 
                 localStorage.setItem('token', data.token);

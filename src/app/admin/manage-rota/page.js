@@ -196,9 +196,13 @@ export default function ManageRotaPage() {
     setCurrentDate(new Date());
   };
 
-  const handleShiftClick = (shift) => {
-    if (hasPermission(user, 'shifts.update')) {
-      setEditingShift(shift);
+  const handleShiftClick = (shift, day) => {
+    if (hasPermission(user, 'shifts.update') || hasPermission(user, 'shifts.delete')) {
+      const selectedDateStr = day ? new Date(day).toISOString().split('T')[0] : (currentDate ? currentDate.toISOString().split('T')[0] : null);
+      setEditingShift({
+        ...shift,
+        _selectedDate: selectedDateStr
+      });
       setShowCreateModal(true);
     }
   };
@@ -220,33 +224,46 @@ export default function ManageRotaPage() {
     });
   };
 
-  const getShiftsForTimeSlot = (date, hour) => {
+  const handleShiftDeleted = (message = 'Shift deleted successfully!') => {
+    setShowCreateModal(false);
+    setEditingShift(null);
+    fetchShifts();
+    fetchStaff();
+    setNotification({
+      show: true,
+      message,
+      type: 'success'
+    });
+  };
+
+  const processLanes = (shiftsForDay) => {
+    const lanes = [];
+    const result = [];
+    shiftsForDay.forEach(shift => {
+      const [startH, startM] = shift.startTime.split(':').map(Number);
+      let [endH, endM] = shift.endTime.split(':').map(Number);
+      let startMins = startH * 60 + startM;
+      let endMins = endH * 60 + endM;
+      if (endMins <= startMins) endMins += 24 * 60;
+      let laneIdx = 0;
+      while (true) {
+        const lane = lanes[laneIdx] || [];
+        if (!lane.some(s => Math.max(startMins, s.start) < Math.min(endMins, s.end))) {
+          lanes[laneIdx] = [...lane, { start: startMins, end: endMins }];
+          result.push({ ...shift, _lane: laneIdx, _start: startMins, _end: endMins });
+          break;
+        }
+        laneIdx++;
+      }
+    });
+    return result;
+  };
+
+  const getShiftsForDate = (date) => {
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
 
-    // Get all shifts that match the time and date criteria
     const matchingShifts = shifts.filter(shift => {
-      // Parse start and end times more accurately
-      const [startHourStr, startMinStr] = shift.startTime.split(':');
-      const [endHourStr, endMinStr] = shift.endTime.split(':');
-      const shiftStartHour = parseInt(startHourStr);
-      const shiftStartMin = parseInt(startMinStr || 0);
-      const shiftEndHour = parseInt(endHourStr);
-      const shiftEndMin = parseInt(endMinStr || 0);
-
-      // Convert to total minutes for more accurate comparison
-      const shiftStartTotalMinutes = shiftStartHour * 60 + shiftStartMin;
-      const shiftEndTotalMinutes = shiftEndHour * 60 + shiftEndMin;
-      const slotStartTotalMinutes = hour * 60;
-      const slotEndTotalMinutes = (hour + 1) * 60;
-
-      // Check if shift overlaps with this time slot
-      // Shift should appear if it starts in this hour OR is ongoing during this hour
-      const shiftStartsInSlot = shiftStartTotalMinutes >= slotStartTotalMinutes && shiftStartTotalMinutes < slotEndTotalMinutes;
-      const shiftOverlapsSlot = shiftStartTotalMinutes < slotEndTotalMinutes && shiftEndTotalMinutes > slotStartTotalMinutes;
-
-      const isInTimeRange = shiftStartsInSlot || shiftOverlapsSlot;
-      if (!isInTimeRange) return false;
 
       // Check if shift occurs on this date based on recurrence
       const fromDate = new Date(shift.fromDate);
@@ -373,7 +390,7 @@ export default function ManageRotaPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className="flex-1 min-w-0 flex flex-col lg:ml-64">
         <Header user={user} />
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {/* Page Header */}
@@ -455,118 +472,93 @@ export default function ManageRotaPage() {
           </div>
 
           {/* Calendar Grid */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className={view === 'weekly' ? 'overflow-x-auto' : ''}>
-              <div className="min-w-full">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-8 mx-auto w-full">
+            <div className="overflow-x-auto pb-4">
+              <div style={{ width: '3800px' }} className="relative bg-white">
                 {/* Header */}
-                <div className="grid" style={{ gridTemplateColumns: view === 'daily' ? `80px 1fr` : `80px repeat(7, minmax(150px, 1fr))` }}>
-                  <div className="bg-gray-50 border-b border-r border-gray-200 p-3 font-semibold text-gray-700">
-                    Time
+                <div className="flex border-b border-gray-200 bg-gray-100 sticky top-0 z-30">
+                  <div className="w-[120px] flex-shrink-0 border-r border-gray-200 p-3 font-semibold text-gray-700 sticky left-0 bg-gray-100 z-40">
+                    Day / Time
                   </div>
-                  {weekDays.map((day, idx) => (
-                    <div key={idx} className="bg-gray-50 border-b border-gray-200 p-3 text-center">
+                  {hours.map(hour => (
+                    <div key={hour} className="flex-1 border-r border-gray-200 p-3 text-center">
                       <div className="font-semibold text-gray-900">
-                        {day.toLocaleDateString('en-GB', { weekday: 'short' })}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {day.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        {hour.toString().padStart(2, '0')}:00
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Time Slots */}
-                {hours.map(hour => (
-                  <div key={hour} className="grid" style={{ gridTemplateColumns: view === 'daily' ? `80px 1fr` : `80px repeat(7, minmax(150px, 1fr))` }}>
-                    <div className="border-b border-r border-gray-200 p-3 text-sm font-medium text-gray-600 bg-gray-50">
-                      {hour.toString().padStart(2, '0')}:00
-                    </div>
-                    {weekDays.map((day, idx) => {
-                      const shiftsInSlot = getShiftsForTimeSlot(day, hour);
-                      // Calculate minimum height based on number of shifts (at least 60px, +80px per additional shift)
-                      const minHeight = Math.max(60, 60 + (shiftsInSlot.length - 1) * 80);
-                      return (
-                        <div
-                          key={idx}
-                          className="border-b border-gray-200 p-2 hover:bg-gray-50 transition-colors relative"
-                          style={{ minHeight: `${minHeight}px` }}
-                        >
-                          {shiftsInSlot.length > 1 && (
-                            <div className="absolute top-1 right-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-semibold z-10">
-                              {shiftsInSlot.length} shifts
-                            </div>
-                          )}
-                          {shiftsInSlot.length > 0 ? (
-                            shiftsInSlot.map((shift, shiftIdx) => {
-                              // Use different colors for different shifts to make them more distinguishable
-                              const colorVariants = [
-                                'from-blue-50 to-blue-100 border-blue-500',
-                                'from-purple-50 to-purple-100 border-purple-500',
-                                'from-green-50 to-green-100 border-green-500',
-                                'from-yellow-50 to-yellow-100 border-yellow-500',
-                                'from-pink-50 to-pink-100 border-pink-500',
-                              ];
-                              const colorClass = colorVariants[shiftIdx % colorVariants.length];
-                              return (
-                                <div
-                                  key={`shift-${shift.id}-${shiftIdx}`}
-                                  onClick={() => handleShiftClick(shift)}
-                                  className={`mb-2 p-2 rounded-lg bg-gradient-to-r ${colorClass} border-l-4 cursor-pointer hover:shadow-md transition-all relative`}
-                                  title={`Shift ${shiftIdx + 1} of ${shiftsInSlot.length}: ${shift.serviceSeeker?.preferredName || shift.serviceSeeker?.firstName} ${shift.serviceSeeker?.lastName} - ${shift.startTime} to ${shift.endTime}`}
-                                >
-                                  <div className="font-semibold text-sm text-gray-900">
-                                    {shift.serviceSeeker.preferredName || shift.serviceSeeker.firstName} {shift.serviceSeeker.lastName}
-                                  </div>
-                                  <div className="text-xs text-gray-600 mt-1">
-                                    {shift.startTime} - {shift.endTime}
-                                  </div>
-                                  <div className="text-xs text-blue-700 mt-1 font-medium">
-                                    {shift.shiftType.name}
-                                  </div>
-                                  <div className="text-[11px] text-gray-500 mt-1 flex flex-wrap gap-1">
-                                    {shift.assignments && shift.assignments.length > 0
-                                      ? (() => {
-                                        // Remove duplicate users (in case of duplicate assignments)
-                                        const uniqueUsers = [];
-                                        const seenUserIds = new Set();
-                                        shift.assignments.forEach(assignment => {
-                                          if (assignment.user && !seenUserIds.has(assignment.user.id)) {
-                                            seenUserIds.add(assignment.user.id);
-                                            uniqueUsers.push(assignment);
-                                          }
-                                        });
+                {/* Day Rows */}
+                {weekDays.map((day, idx) => {
+                  const dayShifts = getShiftsForDate(day);
+                  const processedShifts = processLanes(dayShifts);
+                  const maxLanes = processedShifts.length > 0 ? Math.max(...processedShifts.map(s => s._lane)) + 1 : 1;
+                  const rowHeight = Math.max(80, maxLanes * 70 + 20);
 
-                                        return uniqueUsers.map((assignment) => (
-                                          <span
-                                            key={`${shift.id}-${assignment.user.id}`}
-                                            className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-200 text-gray-700"
-                                            title={`Assigned: ${assignment.user.firstName} ${assignment.user.lastName}`}
-                                          >
-                                            {assignment.user.firstName} {assignment.user.lastName}
-                                          </span>
-                                        ));
-                                      })()
-                                      : <span className="italic text-gray-400">Unassigned</span>}
-                                  </div>
-                                  {shift.timeCritical && (
-                                    <div className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                      </svg>
-                                      Critical
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <div className="text-xs text-gray-400 text-center py-2">No shifts</div>
-                          )}
+                  return (
+                    <div key={idx} className="flex relative border-b border-gray-200 group" style={{ height: `${rowHeight}px` }}>
+                      
+                      {/* Fixed Day Label */}
+                      <div className="w-[120px] flex-shrink-0 border-r border-gray-200 bg-gray-50 sticky left-0 z-20 flex flex-col justify-center items-center text-center p-2 border-b-white">
+                        <div className="font-semibold text-gray-900">
+                          {day.toLocaleDateString('en-GB', { weekday: 'short' })}
                         </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                        <div className="text-sm text-gray-600">
+                          {day.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        </div>
+                      </div>
+
+                      {/* Hour slots background */}
+                      <div className="flex flex-1 relative">
+                        {hours.map(hour => (
+                          <div key={hour} className="flex-1 border-r border-gray-100 bg-white group-hover:bg-gray-50/50 transition-colors"></div>
+                        ))}
+
+                        {/* Absolute positioned shifts */}
+                        {processedShifts.map((shift, shiftIdx) => {
+                          const totalMins = 24 * 60;
+                          const startPerc = (shift._start / totalMins) * 100;
+                          const durationMins = Math.min(totalMins, shift._end - shift._start);
+                          const widthPerc = (durationMins / totalMins) * 100;
+                          const topPos = shift._lane * 70 + 10;
+                          const colorVariants = [
+                            'from-blue-50 to-blue-100 border-blue-500',
+                            'from-purple-50 to-purple-100 border-purple-500',
+                            'from-green-50 to-green-100 border-green-500',
+                            'from-yellow-50 to-yellow-100 border-yellow-500',
+                            'from-pink-50 to-pink-100 border-pink-500',
+                          ];
+                          const colorClass = colorVariants[shiftIdx % colorVariants.length];
+
+                          return (
+                              <div
+                                key={`shift-${shift.id}-${shiftIdx}`}
+                                onClick={() => handleShiftClick && handleShiftClick(shift, day)}
+                                className={`absolute p-2 rounded-lg bg-gradient-to-r ${colorClass} border-l-4 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-sm overflow-hidden z-10 flex flex-col justify-center`}
+                                style={{
+                                    left: `${startPerc}%`,
+                                    width: `${widthPerc}%`,
+                                    top: `${topPos}px`,
+                                    height: '60px',
+                                }}
+                                title={`Shift: ${shift.serviceSeeker?.preferredName || shift.serviceSeeker?.firstName} ${shift.serviceSeeker?.lastName} - ${shift.startTime} to ${shift.endTime}`}
+                              >
+                                  <div className="font-semibold text-sm text-gray-900 truncate flex items-center gap-1">
+                                      {shift.serviceSeeker?.firstName} {shift.serviceSeeker?.lastName}
+                                      {shift.timeCritical && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse ml-1"></span>}
+                                  </div>
+                                  <div className="text-xs text-gray-700 truncate">
+                                      {shift.startTime} - {shift.endTime} | {shift.shiftType?.name}
+                                  </div>
+                              </div>
+                          );
+                        })}
+                      </div>
+
+                    </div>
+                );
+              })}
               </div>
             </div>
           </div>
@@ -587,6 +579,7 @@ export default function ManageRotaPage() {
             setEditingShift(null);
           }}
           onSaved={handleShiftSaved}
+          onDeleted={handleShiftDeleted}
           onShiftRunCreated={fetchShiftRuns}
           onShiftTypeCreated={fetchShiftTypes}
         />
@@ -603,4 +596,3 @@ export default function ManageRotaPage() {
     </div>
   );
 }
-

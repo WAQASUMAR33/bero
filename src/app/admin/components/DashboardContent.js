@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 export default function DashboardContent({ user }) {
   const [stats, setStats] = useState({
@@ -266,19 +267,31 @@ export default function DashboardContent({ user }) {
     <div className="space-y-6">
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metrics.map((metric) => (
-          <div key={metric.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
-                <p className="text-sm text-gray-600 mt-1">{metric.title}</p>
+        {metrics.map((metric) => {
+          let href = '#';
+          if (metric.title === 'Unassigned shifts') href = '/admin/manage-rota';
+          if (metric.title === 'No. of late clock ins today') href = '/admin/clock-in-out';
+          if (metric.title === 'Task overdue today') href = '/admin/daily-tasks';
+          if (metric.title === 'Birthdays') href = '/admin/staff-management';
+          if (metric.title === 'Reviews') href = '/admin/quality-assurance';
+          if (metric.title === "Rota'd Hours this week") href = '/admin/manage-rota';
+          if (metric.title === 'Staff') href = '/admin/staff-management';
+          if (metric.title === 'Service User') href = '/admin/service-users';
+
+          return (
+            <Link key={metric.id} href={href} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 block hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+                  <p className="text-sm text-gray-600 mt-1">{metric.title}</p>
+                </div>
+                <div className={`p-3 rounded-lg bg-gray-50 ${metric.color}`}>
+                  {metric.icon}
+                </div>
               </div>
-              <div className={`p-3 rounded-lg bg-gray-50 ${metric.color}`}>
-                {metric.icon}
-              </div>
-            </div>
-          </div>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Charts Row */}

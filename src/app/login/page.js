@@ -35,7 +35,8 @@ export default function LoginPage() {
 
         if (!allowedWebRoles.includes(userRoleName)) {
           // User is not allowed to access web portal (CAREWORKER, SUPPORT_WORKER, etc.)
-          router.push('/use-app');
+          setError('Access denied. Care Workers and Support Workers must use the Care Worker Login.');
+          setIsLoading(false);
           return;
         }
 

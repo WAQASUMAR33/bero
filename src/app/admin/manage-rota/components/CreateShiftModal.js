@@ -11,6 +11,7 @@ export default function CreateShiftModal({
   shiftRuns,
   onClose,
   onSaved,
+  onDeleted,
   onShiftRunCreated,
   onShiftTypeCreated
 }) {
@@ -53,6 +54,64 @@ export default function CreateShiftModal({
   const [staffSearch, setStaffSearch] = useState('');
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState(null);
+
+  // Shift deletion state
+  const [showDeleteShiftModal, setShowDeleteShiftModal] = useState(false);
+  const [deleteScope, setDeleteScope] = useState('following'); // 'occurrence' | 'following' | 'all'
+  const [isDeletingShift, setIsDeletingShift] = useState(false);
+
+  // Check if shift is recurring
+  const isRecurringShift = Boolean(
+    shift && (
+      !shift.untilDate ||
+      (shift.fromDate && shift.untilDate && new Date(shift.fromDate).toISOString().split('T')[0] !== new Date(shift.untilDate).toISOString().split('T')[0])
+    )
+  );
+
+  const targetDateStr = shift?._selectedDate || formData.fromDate;
+  const formattedTargetDate = targetDateStr
+    ? new Date(targetDateStr).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+    : '';
+
+  const currentServiceSeeker = serviceSeekers?.find(s => s.id === parseInt(formData.serviceSeekerId));
+  const serviceSeekerName = currentServiceSeeker 
+    ? (currentServiceSeeker.preferredName || `${currentServiceSeeker.firstName} ${currentServiceSeeker.lastName}`)
+    : (shift?.serviceSeeker ? `${shift.serviceSeeker.firstName} ${shift.serviceSeeker.lastName}` : 'Service User');
+
+  const handleDeleteShift = async () => {
+    if (!shift?.id) return;
+    setIsDeletingShift(true);
+    try {
+      const token = localStorage.getItem('token');
+      const targetDate = shift._selectedDate || formData.fromDate;
+      const url = `/api/shifts/${shift.id}?scope=${deleteScope}&date=${targetDate}`;
+
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to delete shift');
+      }
+
+      const data = await res.json();
+      setShowDeleteShiftModal(false);
+      if (onDeleted) {
+        onDeleted(data.message || 'Shift deleted successfully!');
+      } else if (onSaved) {
+        onSaved();
+      }
+    } catch (error) {
+      console.error('Delete shift error:', error);
+      showNotification(error.message || 'Failed to delete shift', 'error');
+    } finally {
+      setIsDeletingShift(false);
+    }
+  };
 
   // Show notification
   const showNotification = (message, type = 'success') => {
@@ -982,29 +1041,48 @@ export default function CreateShiftModal({
           </div>
 
           {/* Footer Buttons */}
-          <div className="flex justify-end space-x-3 pt-6 border-t mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px]"
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <div className="flex items-center justify-between pt-6 border-t mt-6">
+            <div>
+              {shift && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteScope(isRecurringShift ? 'following' : 'all');
+                    setShowDeleteShiftModal(true);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors font-medium flex items-center gap-2 border border-red-200 text-sm cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  Saving...
-                </>
-              ) : shift ? 'Update Shift' : 'Create Shift'}
-            </button>
+                  Delete Shift
+                </button>
+              )}
+            </div>
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px] cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : shift ? 'Update Shift' : 'Create Shift'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -1324,6 +1402,189 @@ export default function CreateShiftModal({
                   className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
                 >
                   Delete Shift Type
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete Shift Modal (with recurring options) */}
+      {showDeleteShiftModal && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center backdrop-blur-md bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 flex items-center justify-between text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Delete Shift</h3>
+                  <p className="text-xs text-red-100">
+                    {isRecurringShift ? 'Manage recurring shift deletion' : 'Confirm shift deletion'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeleteShiftModal(false)}
+                className="text-white/80 hover:text-white text-2xl font-light leading-none cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              {/* Shift Summary Card */}
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex flex-col gap-1">
+                <div className="text-sm font-semibold text-gray-900 flex items-center justify-between">
+                  <span>{serviceSeekerName}</span>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-normal">
+                    {formData.startTime} - {formData.endTime}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-600 flex items-center gap-2 mt-1">
+                  <span>📅 Date: <strong className="text-gray-800">{formattedTargetDate}</strong></span>
+                  {isRecurringShift && (
+                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-medium">
+                      Repeats {formData.recurrence}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {isRecurringShift ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-700 font-medium">
+                    This is a recurring shift. Which shifts do you want to delete?
+                  </p>
+
+                  {/* Option 1: This occurrence only */}
+                  <label
+                    onClick={() => setDeleteScope('occurrence')}
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                      deleteScope === 'occurrence'
+                        ? 'border-blue-600 bg-blue-50/60 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="deleteScope"
+                      checked={deleteScope === 'occurrence'}
+                      onChange={() => setDeleteScope('occurrence')}
+                      className="mt-1 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-gray-900">
+                        This occurrence only
+                      </div>
+                      <div className="text-xs text-gray-600 mt-0.5">
+                        Only remove the shift on <strong>{formattedTargetDate}</strong>. All other past and future occurrences stay unchanged.
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* Option 2: This and following (Recommended) */}
+                  <label
+                    onClick={() => setDeleteScope('following')}
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                      deleteScope === 'following'
+                        ? 'border-blue-600 bg-blue-50/60 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="deleteScope"
+                      checked={deleteScope === 'following'}
+                      onChange={() => setDeleteScope('following')}
+                      className="mt-1 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-gray-900">
+                          This and all following shifts
+                        </span>
+                        <span className="bg-emerald-100 text-emerald-800 text-[11px] font-semibold px-2 py-0.5 rounded-full">
+                          Recommended
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-600 mt-0.5">
+                        Stop recurrence from <strong>{formattedTargetDate}</strong> onwards. All past shifts, clock-in timesheets, and records remain completely safe.
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* Option 3: All occurrences */}
+                  <label
+                    onClick={() => setDeleteScope('all')}
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                      deleteScope === 'all'
+                        ? 'border-red-600 bg-red-50/60 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="deleteScope"
+                      checked={deleteScope === 'all'}
+                      onChange={() => setDeleteScope('all')}
+                      className="mt-1 text-red-600 focus:ring-red-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-gray-900 flex items-center gap-1.5">
+                        <span>All occurrences (Entire series)</span>
+                      </div>
+                      <div className="text-xs text-gray-600 mt-0.5">
+                        Delete all past, present, and future shifts for this schedule definition.
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              ) : (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
+                  <div className="font-semibold mb-1 flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Are you sure you want to delete this shift?
+                  </div>
+                  <p className="text-xs text-amber-800">
+                    This action will remove the shift and its staff assignments. This cannot be undone.
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteShiftModal(false)}
+                  disabled={isDeletingShift}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium text-sm disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteShift}
+                  disabled={isDeletingShift}
+                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium text-sm transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                >
+                  {isDeletingShift ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Deleting...
+                    </>
+                  ) : (
+                    'Confirm Delete'
+                  )}
                 </button>
               </div>
             </div>

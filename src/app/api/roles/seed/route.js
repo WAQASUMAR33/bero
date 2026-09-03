@@ -13,7 +13,7 @@ export async function POST(request) {
           'finance.manage', 'reports.view', 'settings.manage', 'roles.manage',
           'audit.view', 'calendar.manage', 'clock-in-out.manage', 'cqc-inspection.manage',
           'quality-assurance.manage', 'holidays.manage', 'handovers.manage', 'handovers.view',
-          'maintenance.manage', 'ppe-stock.manage', 'rota.manage', 'rota.view',
+          'maintenance.manage', 'rota.manage', 'rota.view',
           'care-plan.manage', 'policy-procedures.manage', 'profile.view',
           'agenda.manage', 'setup.manage', 'incidents.manage'
         ],

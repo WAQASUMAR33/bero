@@ -54,7 +54,6 @@ export default function RoleManagementPage() {
     { key: 'handovers.manage', label: 'Manage Handovers', category: 'Operations' },
     { key: 'handovers.view', label: 'View Handovers', category: 'Operations' },
     { key: 'maintenance.manage', label: 'Maintenance', category: 'Operations' },
-    { key: 'ppe-stock.manage', label: 'PPE Stock Management', category: 'Operations' },
     { key: 'rota.manage', label: 'Manage Rota', category: 'Operations' },
     { key: 'rota.view', label: 'View Rota', category: 'Operations' },
     { key: 'care-plan.manage', label: 'Manage Care Plans', category: 'Service' },

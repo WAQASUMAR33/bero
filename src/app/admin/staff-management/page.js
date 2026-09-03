@@ -80,7 +80,6 @@ export default function StaffManagementPage() {
     'incidents.manage',
     'handovers.manage',
     'handovers.view',
-    'ppe-stock.manage',
     'rota.manage',
     'rota.view',
     'care-plan.manage',

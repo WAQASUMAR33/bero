@@ -22,7 +22,6 @@ const APP_PAGES = [
   { name: 'CQC Staff Overworked', path: '/admin/cqc-inspection/staff-overworked', description: 'Monitor overworked staff hours', keywords: ['overworked', 'overtime', 'fatigue', 'cqc'] },
   { name: 'Policy & Procedures', path: '/admin/policy-procedures', description: 'Company policies and signatures', keywords: ['policies', 'policy', 'procedures', 'documents', 'sign'] },
   { name: 'Quality Assurance', path: '/admin/quality-assurance', description: 'Feedback, complaints, and suggestions', keywords: ['quality assurance', 'qa', 'feedback', 'complaints', 'suggestions', 'compliments'] },
-  { name: 'PPE Stock', path: '/admin/ppe-stock', description: 'Track PPE products and inventory', keywords: ['ppe', 'stock', 'inventory', 'masks', 'gloves', 'supplies'] },
   { name: 'Maintenance Issues', path: '/admin/maintenance', description: 'Property and equipment maintenance tickets', keywords: ['maintenance', 'repairs', 'issues', 'facilities'] },
   { name: 'Emergency Reports', path: '/admin/emergency-reports', description: 'View logged emergency alerts', keywords: ['emergency', 'panic', 'alerts', 'sos'] },
   { name: 'Clock In / Out Records', path: '/admin/clock-in-out', description: 'Real-time attendance logs', keywords: ['clock in', 'clock out', 'attendance', 'timesheets'] },

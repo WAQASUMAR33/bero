@@ -24,7 +24,6 @@ const PAGE_TITLES = {
   '/admin/cqc-inspection/staff-overworked': 'CQC Staff Overworked',
   '/admin/policy-procedures': 'Policies & Procedures',
   '/admin/quality-assurance': 'Quality Assurance',
-  '/admin/ppe-stock': 'PPE Stock Management',
   '/admin/maintenance': 'Maintenance Issues',
   '/admin/emergency-reports': 'Emergency Reports',
   '/admin/clock-in-out': 'Clock In / Out Records',

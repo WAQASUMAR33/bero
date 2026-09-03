@@ -71,7 +71,6 @@ export function getAllUserPermissions(user) {
       'rota.view',
       'care-plan.view',
       'policy-procedures.view',
-      'ppe-stock.view',
       'notifications.view',
       'incidents.view',
       'documents.view',

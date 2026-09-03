@@ -43,6 +43,10 @@ export async function getCurrentUser(request) {
             }
         });
 
+        if (!user || user.status !== 'CURRENT') {
+            return null;
+        }
+
         return user;
     } catch (error) {
         console.error('Error fetching current user:', error);

@@ -82,6 +82,13 @@ export async function POST(request) {
     }
 
     // Check if user is active
+    if (user.status === 'ARCHIVED') {
+      return NextResponse.json(
+        { error: 'This account has been archived. Access is disabled.' },
+        { status: 403 }
+      );
+    }
+
     if (user.status !== 'CURRENT') {
       return NextResponse.json(
         { error: 'Account is not active' },

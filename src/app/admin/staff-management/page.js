@@ -22,6 +22,9 @@ export default function StaffManagementPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [staffToArchive, setStaffToArchive] = useState(null);
+  const [showArchivedView, setShowArchivedView] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -159,7 +162,7 @@ export default function StaffManagementPage() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/users', {
+      const response = await fetch('/api/users?status=all', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -264,11 +267,13 @@ export default function StaffManagementPage() {
         }
       });
 
+      const data = await response.json().catch(() => null);
+
       if (response.ok) {
         fetchStaff();
         showNotification('User deleted successfully!', 'success');
       } else {
-        showNotification('Error deleting user. Please try again.', 'error');
+        showNotification(data?.error || 'Error deleting user. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Error deleting staff:', error);
@@ -282,6 +287,65 @@ export default function StaffManagementPage() {
   const handleDeleteCancel = () => {
     setShowDeleteConfirm(false);
     setStaffToDelete(null);
+  };
+
+  const handleArchiveClick = (staffMember) => {
+    setStaffToArchive(staffMember);
+    setShowArchiveConfirm(true);
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!staffToArchive) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/users/${staffToArchive.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'ARCHIVED' })
+      });
+
+      const data = await response.json().catch(() => null);
+      if (response.ok) {
+        fetchStaff();
+        showNotification(`"${staffToArchive.firstName} ${staffToArchive.lastName}" archived successfully!`, 'success');
+      } else {
+        showNotification(data?.error || 'Error archiving user.', 'error');
+      }
+    } catch (error) {
+      console.error('Error archiving staff:', error);
+      showNotification('Error archiving staff member. Please try again.', 'error');
+    } finally {
+      setShowArchiveConfirm(false);
+      setStaffToArchive(null);
+    }
+  };
+
+  const handleRestoreStaff = async (staffMember) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/users/${staffMember.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'CURRENT' })
+      });
+
+      const data = await response.json().catch(() => null);
+      if (response.ok) {
+        fetchStaff();
+        showNotification(`"${staffMember.firstName} ${staffMember.lastName}" restored to active staff!`, 'success');
+      } else {
+        showNotification(data?.error || 'Error restoring user.', 'error');
+      }
+    } catch (error) {
+      console.error('Error restoring staff:', error);
+      showNotification('Error restoring user. Please try again.', 'error');
+    }
   };
 
   const resetForm = () => {
@@ -336,7 +400,12 @@ export default function StaffManagementPage() {
     setShowEditModal(true);
   };
 
-  const filteredStaff = staff.filter(member => {
+  const activeStaffList = staff.filter(s => s.status !== 'ARCHIVED');
+  const archivedStaffList = staff.filter(s => s.status === 'ARCHIVED');
+
+  const displayedStaff = showArchivedView ? archivedStaffList : activeStaffList;
+
+  const filteredStaff = displayedStaff.filter(member => {
     const matchesSearch = member.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -356,6 +425,7 @@ export default function StaffManagementPage() {
   const getStatusBadgeColor = (status) => {
     switch (status) {
       case 'CURRENT': return 'bg-green-100 text-green-800';
+      case 'ARCHIVED': return 'bg-amber-100 text-amber-800';
       case 'FORMER': return 'bg-gray-100 text-gray-800';
       case 'PENDING': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -383,22 +453,58 @@ export default function StaffManagementPage() {
             <>
               {/* Header */}
               <div className="mb-8">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Staff Management</h1>
-                    <p className="text-gray-600">Manage all users, roles, and permissions</p>
+                    <div className="flex items-center space-x-3">
+                      <h1 className="text-3xl font-bold text-gray-900">
+                        {showArchivedView ? 'Archived Staff' : 'Staff Management'}
+                      </h1>
+                      {showArchivedView && (
+                        <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-300">
+                          Archived Records
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-600 mt-1">
+                      {showArchivedView 
+                        ? 'Archived users are inactive and excluded from shifts, rotas, and daily tasks across the system.'
+                        : 'Manage all users, roles, and permissions'}
+                    </p>
                   </div>
-                  {hasPermission(user, 'users.create') && (
+                  <div className="flex items-center space-x-3">
+                    {/* Archived Staff Toggle Button */}
                     <button
-                      onClick={() => setShowAddModal(true)}
-                      className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                      onClick={() => setShowArchivedView(!showArchivedView)}
+                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 border shadow-sm ${
+                        showArchivedView
+                          ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                      title={showArchivedView ? "Switch back to active staff list" : "View archived staff members"}
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                       </svg>
-                      <span>Add User</span>
+                      <span>{showArchivedView ? 'Active Staff' : 'Archived Staff'}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                        showArchivedView ? 'bg-amber-200 text-amber-900' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {archivedStaffList.length}
+                      </span>
                     </button>
-                  )}
+
+                    {hasPermission(user, 'users.create') && !showArchivedView && (
+                      <button
+                        onClick={() => setShowAddModal(true)}
+                        className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-5 py-2.5 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2 text-sm font-medium"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <span>Add User</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -425,8 +531,21 @@ export default function StaffManagementPage() {
                       </svg>
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Active Users</p>
-                      <p className="text-2xl font-bold text-gray-900">{staff.filter(s => s.status === 'CURRENT').length}</p>
+                      <p className="text-sm font-medium text-gray-600">Active Staff</p>
+                      <p className="text-2xl font-bold text-gray-900">{activeStaffList.length}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center">
+                    <div className="p-3 bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Archived Staff</p>
+                      <p className="text-2xl font-bold text-gray-900">{archivedStaffList.length}</p>
                     </div>
                   </div>
                 </div>
@@ -438,21 +557,8 @@ export default function StaffManagementPage() {
                       </svg>
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Admin Users</p>
-                      <p className="text-2xl font-bold text-gray-900">{staff.filter(s => ['ADMIN', 'DIRECTOR', 'HR'].includes(s.role)).length}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center">
-                    <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
-                      </svg>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Care Staff</p>
-                      <p className="text-2xl font-bold text-gray-900">{staff.filter(s => ['CAREWORKER', 'SUPPORT_WORKER', 'REGISTER_MANAGER'].includes(s.role)).length}</p>
+                      <p className="text-sm font-medium text-gray-600">Active Admins</p>
+                      <p className="text-2xl font-bold text-gray-900">{activeStaffList.filter(s => ['ADMIN', 'DIRECTOR', 'HR'].includes(s.role?.name || s.role)).length}</p>
                     </div>
                   </div>
                 </div>
@@ -505,7 +611,26 @@ export default function StaffManagementPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
-                      {filteredStaff.map((member) => (
+                      {filteredStaff.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                            <div className="flex flex-col items-center justify-center">
+                              <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
+                              </svg>
+                              <p className="text-base font-medium text-gray-900">
+                                {showArchivedView ? 'No archived staff members found' : 'No staff members found'}
+                              </p>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {showArchivedView 
+                                  ? 'Active staff can be archived using the archive button in the staff list.'
+                                  : 'Try adjusting your search or filter options.'}
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredStaff.map((member) => (
                         <tr key={member.id} className="hover:bg-gray-50 transition-colors duration-200">
                           <td className="px-6 py-5 whitespace-nowrap">
                             <div className="flex items-center">
@@ -541,33 +666,85 @@ export default function StaffManagementPage() {
                             {new Date(member.createdAt).toLocaleDateString()}
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-3">
-                              {hasPermission(user, 'users.update') && (
-                                <button
-                                  onClick={() => openEditModal(member)}
-                                  className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
-                                  title="Edit User"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                  </svg>
-                                </button>
-                              )}
-                              {hasPermission(user, 'users.delete') && (
-                                <button
-                                  onClick={() => handleDeleteClick(member)}
-                                  className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
-                                  title="Delete User"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
+                            <div className="flex items-center justify-end space-x-2">
+                              {showArchivedView ? (
+                                <>
+                                  {hasPermission(user, 'users.update') && (
+                                    <button
+                                      onClick={() => handleRestoreStaff(member)}
+                                      className="p-2 text-green-600 hover:text-white hover:bg-green-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                      title="Restore to Active Staff"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                  {hasPermission(user, 'users.update') && (
+                                    <button
+                                      onClick={() => openEditModal(member)}
+                                      className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
+                                      title="Edit User"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                  {hasPermission(user, 'users.delete') && (
+                                    <button
+                                      onClick={() => handleDeleteClick(member)}
+                                      className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                      title="Delete User Permanently"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  {hasPermission(user, 'users.update') && (
+                                    <button
+                                      onClick={() => openEditModal(member)}
+                                      className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
+                                      title="Edit User"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                  {hasPermission(user, 'users.update') && (
+                                    <button
+                                      onClick={() => handleArchiveClick(member)}
+                                      className="p-2 text-amber-600 hover:text-white hover:bg-amber-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                      title="Archive Staff"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                  {hasPermission(user, 'users.delete') && (
+                                    <button
+                                      onClick={() => handleDeleteClick(member)}
+                                      className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                      title="Delete User"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                </>
                               )}
                             </div>
                           </td>
                         </tr>
-                      ))}
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1149,24 +1326,25 @@ export default function StaffManagementPage() {
                           className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
                         >
                           <option value="CURRENT">Current</option>
+                          <option value="ARCHIVED">Archived</option>
                           <option value="FORMER">Former</option>
                           <option value="PENDING">Pending</option>
                         </select>
                       </div>
                     </div>
 
-                    {/* Hide permissions for Care Workers & Support Workers as they have all permissions by default */
-                      !['CAREWORKER', 'SUPPORT_WORKER'].includes(roles.find(r => r.id == formData.roleId)?.name) && (
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
-                          <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">
-                            <PermissionMatrix
-                              selectedPermissions={formData.permissions}
-                              onChange={(newPermissions) => setFormData({ ...formData, permissions: newPermissions })}
-                            />
-                          </div>
+                    {/* Hide permissions for Care Workers & Support Workers as they have all permissions by default */}
+                    {!['CAREWORKER', 'SUPPORT_WORKER'].includes(roles.find(r => r.id == formData.roleId)?.name) && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
+                        <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">
+                          <PermissionMatrix
+                            selectedPermissions={formData.permissions}
+                            onChange={(newPermissions) => setFormData({ ...formData, permissions: newPermissions })}
+                          />
                         </div>
-                      )}
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
                       <button
@@ -1191,6 +1369,45 @@ export default function StaffManagementPage() {
           )}
         </main>
       </div>
+
+      {/* Archive Confirmation Modal */}
+      {showArchiveConfirm && (
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-amber-100 rounded-full">
+                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                Archive Staff Member
+              </h3>
+
+              <p className="text-sm text-gray-600 text-center mb-6">
+                Are you sure you want to archive <span className="font-medium text-gray-900">&quot;{staffToArchive?.firstName} {staffToArchive?.lastName}&quot;</span>?
+                They will be moved to the Archived list and removed from shift scheduling, rotas, and daily tasks across the system. You can restore them anytime.
+              </p>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => { setShowArchiveConfirm(false); setStaffToArchive(null); }}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleArchiveConfirm}
+                  className="flex-1 px-4 py-2 text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors duration-200 font-medium"
+                >
+                  Archive
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

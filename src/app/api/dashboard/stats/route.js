@@ -62,7 +62,7 @@ export async function GET(request) {
         where: { date: { gte: today, lte: endOfToday }, isLate: true }
       }),
       prisma.user.count({ where: { status: 'CURRENT' } }),
-      prisma.serviceSeeker.count(),
+      prisma.serviceSeeker.count({ where: { status: { notIn: ['ARCHIVED', 'ARCHIVED_PRE_ADMISSION'] } } }),
       prisma.policyReview.count().catch(() => 0),
       prisma.serviceSeekerMarReview.count().catch(() => 0),
 
@@ -87,7 +87,10 @@ export async function GET(request) {
 
       // Birthdays - minimal fields
       prisma.serviceSeeker.findMany({
-        where: { dateOfBirth: { not: null } },
+        where: {
+          dateOfBirth: { not: null },
+          status: { notIn: ['ARCHIVED', 'ARCHIVED_PRE_ADMISSION'] }
+        },
         select: { dateOfBirth: true },
         take: 1000
       }),

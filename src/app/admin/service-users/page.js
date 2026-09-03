@@ -25,6 +25,9 @@ export default function ServiceUsersPage() {
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [seekerToDelete, setSeekerToDelete] = useState(null);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [seekerToArchive, setSeekerToArchive] = useState(null);
+  const [showArchivedView, setShowArchivedView] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewData, setViewData] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -63,7 +66,7 @@ export default function ServiceUsersPage() {
   const fetchSeekers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/service-seekers', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/service-seekers?status=all', { headers: { Authorization: `Bearer ${token}` } });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -239,6 +242,59 @@ export default function ServiceUsersPage() {
     setSeekerToDelete(null);
   };
 
+  const handleArchiveClick = (s) => {
+    setSeekerToArchive(s);
+    setShowArchiveConfirm(true);
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!seekerToArchive) return;
+    try {
+      const token = localStorage.getItem('token');
+      const targetStatus = seekerToArchive.status === 'PRE_ADMISSION' ? 'ARCHIVED_PRE_ADMISSION' : 'ARCHIVED';
+      const res = await fetch(`/api/service-seekers/${seekerToArchive.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: targetStatus })
+      });
+      if (res.ok) {
+        await fetchSeekers();
+        setNotification({ show: true, message: `"${seekerToArchive.firstName} ${seekerToArchive.lastName}" archived successfully.`, type: 'success' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to archive service user.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while archiving.', type: 'error' });
+    } finally {
+      setShowArchiveConfirm(false);
+      setSeekerToArchive(null);
+    }
+  };
+
+  const handleRestoreSeeker = async (s) => {
+    try {
+      const token = localStorage.getItem('token');
+      const targetStatus = s.status === 'ARCHIVED_PRE_ADMISSION' ? 'PRE_ADMISSION' : 'LIVE';
+      const res = await fetch(`/api/service-seekers/${s.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: targetStatus })
+      });
+      if (res.ok) {
+        await fetchSeekers();
+        setNotification({ show: true, message: `"${s.firstName} ${s.lastName}" restored to active service users.`, type: 'success' });
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Failed' }));
+        setNotification({ show: true, message: err?.error || 'Failed to restore service user.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setNotification({ show: true, message: 'Unexpected error while restoring.', type: 'error' });
+    }
+  };
+
   if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -247,17 +303,22 @@ export default function ServiceUsersPage() {
     );
   }
 
-  const filteredSeekers = (Array.isArray(seekers) ? seekers : [])
-    .filter((s) => {
-      if (statusFilter !== 'ALL' && s.status !== statusFilter) return false;
-      if (!searchTerm) return true;
-      const q = searchTerm.toLowerCase();
-      return (
-        s.firstName?.toLowerCase().includes(q) ||
-        s.lastName?.toLowerCase().includes(q) ||
-        s.postalCode?.toLowerCase().includes(q)
-      );
-    });
+  const isArchived = (s) => s.status === 'ARCHIVED' || s.status === 'ARCHIVED_PRE_ADMISSION';
+  const activeSeekers = (Array.isArray(seekers) ? seekers : []).filter((s) => !isArchived(s));
+  const archivedSeekers = (Array.isArray(seekers) ? seekers : []).filter((s) => isArchived(s));
+
+  const displayedSeekers = showArchivedView ? archivedSeekers : activeSeekers;
+
+  const filteredSeekers = displayedSeekers.filter((s) => {
+    if (statusFilter !== 'ALL' && s.status !== statusFilter) return false;
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    return (
+      s.firstName?.toLowerCase().includes(q) ||
+      s.lastName?.toLowerCase().includes(q) ||
+      s.postalCode?.toLowerCase().includes(q)
+    );
+  });
 
   const countBy = (key, value) => (Array.isArray(seekers) ? seekers : []).filter((s) => s[key] === value).length;
 
@@ -297,16 +358,56 @@ export default function ServiceUsersPage() {
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Service Users</h1>
-                <p className="text-gray-600">Create and manage all service users</p>
+                <div className="flex items-center space-x-3">
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {showArchivedView ? 'Archived Service Users' : 'Service Users'}
+                  </h1>
+                  {showArchivedView && (
+                    <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-300">
+                      Archived Records
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-600 mt-1">
+                  {showArchivedView 
+                    ? 'Archived service users are inactive and excluded from shifts, rotas, daily tasks, and calendar entries across the system.'
+                    : 'Create and manage all service users'}
+                </p>
               </div>
-              {hasPermission(user, 'service_seekers.create') && (
-                <button onClick={openAdd} className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200">
-                  Add Service User
+              <div className="flex items-center space-x-3">
+                {/* Archived Service Users Toggle Button */}
+                <button
+                  onClick={() => {
+                    setShowArchivedView(!showArchivedView);
+                    setStatusFilter('ALL');
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 border shadow-sm ${
+                    showArchivedView
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                  title={showArchivedView ? "Switch back to active service users" : "View archived service users"}
+                >
+                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                  </svg>
+                  <span>{showArchivedView ? 'Active Users' : 'Archived Users'}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                    showArchivedView ? 'bg-amber-200 text-amber-900' : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {archivedSeekers.length}
+                  </span>
                 </button>
-              )}
+
+                {hasPermission(user, 'service_seekers.create') && !showArchivedView && (
+                  <button onClick={openAdd} className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-5 py-2.5 rounded-lg hover:shadow-lg transition-all duration-200 text-sm font-medium">
+                    Add Service User
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -330,7 +431,7 @@ export default function ServiceUsersPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Live</p>
-                  <p className="text-2xl font-bold text-gray-900">{countBy('status', 'LIVE')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{activeSeekers.filter(s => s.status === 'LIVE').length}</p>
                 </div>
               </div>
             </div>
@@ -341,18 +442,18 @@ export default function ServiceUsersPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Pre-admission</p>
-                  <p className="text-2xl font-bold text-gray-900">{countBy('status', 'PRE_ADMISSION')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{activeSeekers.filter(s => s.status === 'PRE_ADMISSION').length}</p>
                 </div>
               </div>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center">
-                <div className="p-3 bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <div className="p-3 bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Archived</p>
-                  <p className="text-2xl font-bold text-gray-900">{countBy('status', 'ARCHIVED')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{archivedSeekers.length}</p>
                 </div>
               </div>
             </div>
@@ -364,17 +465,25 @@ export default function ServiceUsersPage() {
               <div className="flex-1">
                 <div className="relative">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search by name or postal code" className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900" />
+                  <input value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} placeholder="Search by name or postal code" className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900" />
                 </div>
               </div>
               <div>
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
-                  <option value="ALL">All Statuses</option>
-                  <option value="LIVE">LIVE</option>
-                  <option value="PRE_ADMISSION">PRE_ADMISSION</option>
-                  <option value="ON_HOLD_HOSPITAL">ON_HOLD_HOSPITAL</option>
-                  <option value="ARCHIVED_PRE_ADMISSION">ARCHIVED_PRE_ADMISSION</option>
-                  <option value="ARCHIVED">ARCHIVED</option>
+                <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-gray-50 focus:bg-white text-gray-900">
+                  {showArchivedView ? (
+                    <>
+                      <option value="ALL">All Archived</option>
+                      <option value="ARCHIVED">ARCHIVED</option>
+                      <option value="ARCHIVED_PRE_ADMISSION">ARCHIVED_PRE_ADMISSION</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="ALL">All Active Statuses</option>
+                      <option value="LIVE">LIVE</option>
+                      <option value="PRE_ADMISSION">PRE_ADMISSION</option>
+                      <option value="ON_HOLD_HOSPITAL">ON_HOLD_HOSPITAL</option>
+                    </>
+                  )}
                 </select>
               </div>
             </div>
@@ -421,26 +530,76 @@ export default function ServiceUsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end space-x-2">
-                          <button
-                            title="View"
-                            onClick={() => router.push(`/admin/service-users/${s.id}/admission`)}
-                            className="p-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                          </button>
-                          {hasPermission(user, 'service_seekers.update') && (
-                            <button
-                              title="Edit"
-                              onClick={() => router.push(`/admin/service-users/${s.id}/admission`)}
-                              className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50 transition-colors"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </button>
-                          )}
-                          {hasPermission(user, 'service_seekers.delete') && (
-                            <button title="Delete" onClick={() => handleDeleteClick(s)} className="p-2 rounded-lg text-red-600 hover:bg-red-50">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
+                          {showArchivedView ? (
+                            <>
+                              {hasPermission(user, 'service_seekers.update') && (
+                                <button
+                                  title="Restore to Active Service Users"
+                                  onClick={() => handleRestoreSeeker(s)}
+                                  className="p-2 rounded-lg text-green-600 hover:text-white hover:bg-green-600 transition-all duration-200 hover:shadow-md"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                  </svg>
+                                </button>
+                              )}
+                              <button
+                                title="View"
+                                onClick={() => router.push(`/admin/service-users/${s.id}/admission`)}
+                                className="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                              </button>
+                              {hasPermission(user, 'service_seekers.update') && (
+                                <button
+                                  title="Edit"
+                                  onClick={() => router.push(`/admin/service-users/${s.id}/admission`)}
+                                  className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </button>
+                              )}
+                              {hasPermission(user, 'service_seekers.delete') && (
+                                <button title="Delete Permanently" onClick={() => handleDeleteClick(s)} className="p-2 rounded-lg text-red-600 hover:text-white hover:bg-red-600 transition-all duration-200 hover:shadow-md">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                title="View"
+                                onClick={() => router.push(`/admin/service-users/${s.id}/admission`)}
+                                className="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                              </button>
+                              {hasPermission(user, 'service_seekers.update') && (
+                                <button
+                                  title="Edit"
+                                  onClick={() => router.push(`/admin/service-users/${s.id}/admission`)}
+                                  className="p-2 rounded-lg text-[#224fa6] hover:bg-blue-50 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </button>
+                              )}
+                              {hasPermission(user, 'service_seekers.update') && (
+                                <button
+                                  title="Archive Service User"
+                                  onClick={() => handleArchiveClick(s)}
+                                  className="p-2 rounded-lg text-amber-600 hover:text-white hover:bg-amber-600 transition-all duration-200 hover:shadow-md"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                  </svg>
+                                </button>
+                              )}
+                              {hasPermission(user, 'service_seekers.delete') && (
+                                <button title="Delete" onClick={() => handleDeleteClick(s)} className="p-2 rounded-lg text-red-600 hover:text-white hover:bg-red-600 transition-all duration-200 hover:shadow-md">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>
@@ -448,8 +607,20 @@ export default function ServiceUsersPage() {
                   ))}
                   {filteredSeekers.length === 0 && (
                     <tr>
-                      <td className="px-6 py-10 text-gray-500 text-center" colSpan={4}>
-                        No service users match your filters.
+                      <td className="px-6 py-12 text-center text-gray-500" colSpan={5}>
+                        <div className="flex flex-col items-center justify-center">
+                          <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
+                          </svg>
+                          <p className="text-base font-medium text-gray-900">
+                            {showArchivedView ? 'No archived service users found' : 'No service users found'}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {showArchivedView 
+                              ? 'Active service users can be archived using the archive button in the list.'
+                              : 'Try adjusting your search or filter options.'}
+                          </p>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -749,6 +920,40 @@ export default function ServiceUsersPage() {
               </div>
             </div>
           )}
+          {/* Archive Confirmation Modal */}
+          {showArchiveConfirm && (
+            <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+                <div className="p-6">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-amber-100 rounded-full">
+                    <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Archive Service User</h3>
+                  <p className="text-sm text-gray-600 text-center mb-6">
+                    Are you sure you want to archive <span className="font-medium text-gray-900">{seekerToArchive?.firstName} {seekerToArchive?.lastName}</span>?
+                    They will be moved to the Archived list and removed from shift scheduling, rotas, and daily tasks across the system. You can restore them anytime.
+                  </p>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => { setShowArchiveConfirm(false); setSeekerToArchive(null); }}
+                      className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleArchiveConfirm}
+                      className="flex-1 px-4 py-2 text-white bg-amber-600 rounded-lg hover:bg-amber-700"
+                    >
+                      Archive
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Delete Confirmation Modal */}
           {showDeleteConfirm && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">

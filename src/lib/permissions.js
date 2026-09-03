@@ -19,6 +19,7 @@ export function expandPermissions(permissions) {
       expanded.add(`${base}.view`);
       expanded.add(`${base}.update`);
       expanded.add(`${base}.create`);
+      expanded.add(`${base}.delete`);
     }
 
     // If user has create/update/delete, they also have read

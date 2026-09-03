@@ -13,6 +13,9 @@ export async function GET(request) {
     jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const serviceUsers = await prisma.serviceSeeker.findMany({
+      where: {
+        status: { notIn: ['ARCHIVED', 'ARCHIVED_PRE_ADMISSION'] }
+      },
       select: {
         id: true,
         firstName: true,

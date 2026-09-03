@@ -17,7 +17,22 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const statusParam = searchParams.get('status');
+    const includeArchived = searchParams.get('includeArchived');
+
+    const where = {};
+    if ((statusParam && statusParam.toLowerCase() === 'all') || includeArchived === 'true') {
+      // Return all users
+    } else if (statusParam && statusParam.toUpperCase() === 'ARCHIVED') {
+      where.status = 'ARCHIVED';
+    } else {
+      // Default: only CURRENT users across the system (shifts, rota, calendar, etc.)
+      where.status = 'CURRENT';
+    }
+
     const users = await prisma.user.findMany({
+      where,
       include: {
         region: true,
         role: true,

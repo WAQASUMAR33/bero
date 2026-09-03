@@ -102,14 +102,114 @@ export async function DELETE(request, { params }) {
     const { id } = await params;
     const seekerId = parseInt(id);
 
-    // Ensure there are no dependent shifts blocking deletion
-    await prisma.shift.deleteMany({ where: { serviceSeekerId: seekerId } });
+    // 1. Delete handovers and shifts
+    await prisma.handover.deleteMany({ where: { serviceSeekerId: seekerId } });
+    
+    const shifts = await prisma.shift.findMany({
+      where: { serviceSeekerId: seekerId },
+      select: { id: true }
+    });
+    const shiftIds = shifts.map(s => s.id);
+    if (shiftIds.length > 0) {
+      await prisma.shiftAssignment.deleteMany({
+        where: { shiftId: { in: shiftIds } }
+      });
+      await prisma.shift.deleteMany({ where: { serviceSeekerId: seekerId } });
+    }
+
+    // 2. Delete clock in/outs
+    await prisma.clockInOut.deleteMany({ where: { serviceSeekerId: seekerId } });
+
+    // 3. Delete care tasks
+    const taskModels = [
+      'bathingTask', 'behaviourTask', 'bloodTestTask', 'bloodPressureTask',
+      'comfortCheckTask', 'communicationNotesTask', 'familyPhotoMessageTask',
+      'foodDrinkTask', 'generalSupportTask', 'houseKeepingTask', 'incidentFallTask',
+      'medicinePrnTask', 'muacTask', 'observationTask', 'oneToOneTask',
+      'oralCareTask', 'oxygenTask', 'personCentredTask', 'physicalInterventionTask',
+      'pulseTask', 'repositionTask', 'spendingMoneyTask', 'stoolTask',
+      'temperatureTask', 'visitTask', 'weightTask', 'encouragementTask', 'followUpTask'
+    ];
+
+    for (const model of taskModels) {
+      if (prisma[model]) {
+        await prisma[model].deleteMany({ where: { serviceSeekerId: seekerId } });
+      }
+    }
+
+    // 4. Calendar and resident meetings
+    await prisma.serviceSeekerResidentMeeting.deleteMany({ where: { serviceSeekerId: seekerId } });
+    await prisma.serviceSeekerCalendarEntry.deleteMany({ where: { serviceSeekerId: seekerId } });
+
+    // 5. Assessments, Safeguarding, Feedback & Forms
+    const assessmentModels = [
+      'serviceSeekerOutcome', 'serviceSeekerRiskAssessment', 'serviceSeekerSafeguarding',
+      'serviceSeekerFeedback', 'serviceSeekerMarReview', 'serviceSeekerAlertThreshold',
+      'serviceSeekerMustAssessment', 'serviceSeekerWaterlowAssessment',
+      'serviceSeekerPersonalProperty', 'serviceSeekerMentalCapacity', 'serviceSeekerMcaAssessment'
+    ];
+    for (const model of assessmentModels) {
+      if (prisma[model]) {
+        await prisma[model].deleteMany({ where: { serviceSeekerId: seekerId } });
+      }
+    }
+
+    // 6. Admission, Contacts, Docs & Notes
+    const profileModels = [
+      'serviceSeekerAdmission', 'serviceSeekerContact', 'serviceSeekerDocument',
+      'serviceSeekerConfidentialNote', 'serviceSeekerFunding', 'serviceSeekerOtherId',
+      'serviceSeekerOtherTelephone', 'serviceSeekerOtherAddress', 'serviceSeekerHealthTag'
+    ];
+    for (const model of profileModels) {
+      if (prisma[model]) {
+        await prisma[model].deleteMany({ where: { serviceSeekerId: seekerId } });
+      }
+    }
+
+    // 7. External Access
+    await prisma.serviceSeekerExternalLogin.deleteMany({ where: { serviceSeekerId: seekerId } });
+    await prisma.serviceSeekerExternalInboxAccess.deleteMany({ where: { serviceSeekerId: seekerId } });
+
+    // 8. Allowance
+    await prisma.serviceSeekerAllowanceTransaction.deleteMany({ where: { serviceSeekerId: seekerId } });
+    await prisma.serviceSeekerAllowanceSettings.deleteMany({ where: { serviceSeekerId: seekerId } });
+
+    // 9. Schedules
+    const bathingSchedules = await prisma.serviceSeekerBathingSchedule.findMany({
+      where: { serviceSeekerId: seekerId },
+      select: { id: true }
+    });
+    const bathingScheduleIds = bathingSchedules.map(b => b.id);
+    if (bathingScheduleIds.length > 0) {
+      await prisma.serviceSeekerBathingScheduleItem.deleteMany({
+        where: { scheduleId: { in: bathingScheduleIds } }
+      });
+      await prisma.serviceSeekerBathingSchedule.deleteMany({
+        where: { serviceSeekerId: seekerId }
+      });
+    }
+
+    const scheduleModels = [
+      'serviceSeekerFoodDrinksSchedule', 'serviceSeekerFoodDrinksSettings',
+      'serviceSeekerHouseKeepingSchedule', 'serviceSeekerSocialVisitInstructions',
+      'serviceSeekerMedicineAccessCodes', 'serviceSeekerPositioningHandling',
+      'serviceSeekerBathingDefaultTime', 'serviceSeekerMedicineSchedule',
+      'serviceSeekerMedicinePrnPlan', 'serviceSeekerOralCareSchedule',
+      'serviceSeekerOralCareDefaultTime', 'serviceSeekerEncouragementSchedule',
+      'serviceSeekerStoolSchedule', 'serviceSeekerWeightSchedule',
+      'serviceSeekerMuacSchedule', 'serviceSeekerPersonCentredSchedule'
+    ];
+    for (const model of scheduleModels) {
+      if (prisma[model]) {
+        await prisma[model].deleteMany({ where: { serviceSeekerId: seekerId } });
+      }
+    }
 
     await prisma.serviceSeeker.delete({ where: { id: seekerId } });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('DELETE /service-seekers/[id] error:', error);
-    return NextResponse.json({ error: 'Failed to delete service user' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to delete service user' }, { status: 500 });
   }
 }
 

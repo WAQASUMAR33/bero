@@ -228,6 +228,14 @@ export async function DELETE(request, { params }) {
     const { id } = await params;
     const userId = parseInt(id);
 
+    // Prevent self-deletion
+    if (currentUser.id === userId) {
+      return NextResponse.json(
+        { error: 'You cannot delete your own account while logged in.' },
+        { status: 400 }
+      );
+    }
+
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { id: userId }
@@ -240,26 +248,30 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Delete related records first to avoid foreign key constraint errors
-    // Delete permissions
+    const currentAdminId = currentUser.id;
+
+    // 1. Delete permissions
     await prisma.userPermission.deleteMany({
       where: { userId: userId }
     });
 
-    // Delete documents owned by user
+    // 2. Delete documents owned by or uploaded by user
     await prisma.document.deleteMany({
-      where: { userId: userId }
+      where: {
+        OR: [
+          { userId: userId },
+          { uploadedBy: userId }
+        ]
+      }
     });
 
-    // Delete related Handovers (dependencies of ShiftAssignments and User)
-    // 1. Get shift assignments to identify linked handovers
+    // 3. Delete related Handovers (dependencies of ShiftAssignments and User)
     const userShiftAssignments = await prisma.shiftAssignment.findMany({
       where: { userId: userId },
       select: { id: true }
     });
     const shiftAssignmentIds = userShiftAssignments.map(sa => sa.id);
 
-    // 2. Delete handovers linked to these shifts OR created by the user
     if (shiftAssignmentIds.length > 0) {
       await prisma.handover.deleteMany({
         where: {
@@ -271,57 +283,181 @@ export async function DELETE(request, { params }) {
         }
       });
     } else {
-      // Just delete created handovers if no shifts
       await prisma.handover.deleteMany({
         where: { createdById: userId }
       });
     }
 
-    // Delete Emergency Alerts triggered by user
+    // 4. Emergency Alerts
     await prisma.emergencyAlert.deleteMany({
       where: { triggeredBy: userId }
     });
+    await prisma.emergencyAlert.updateMany({
+      where: { acknowledgedBy: userId },
+      data: { acknowledgedBy: null }
+    });
 
-    // Delete standby shifts
+    // 5. Standby shifts
     await prisma.standByShift.deleteMany({
       where: { caretakerId: userId }
     });
 
-    // Delete shift assignments
+    // 6. Shift assignments
     await prisma.shiftAssignment.deleteMany({
       where: { userId: userId }
     });
 
-    // Delete clock in/out records
+    // 7. Clock in/out records
     await prisma.clockInOut.deleteMany({
       where: { userId: userId }
     });
 
-    // Delete notifications
+    // 8. Notifications
     await prisma.notification.deleteMany({
       where: { userId: userId }
     });
 
-    // Delete push subscriptions
+    // 9. Push subscriptions
     await prisma.pushSubscription.deleteMany({
       where: { userId: userId }
     });
 
-    // Delete conversation participants
+    // 10. Messages & conversations
+    await prisma.message.deleteMany({
+      where: { senderId: userId }
+    });
     await prisma.conversationParticipant.deleteMany({
       where: { userId: userId }
     });
 
-    // Delete PP stock transactions
-    await prisma.pPStockTransaction.deleteMany({
-      where: { userId: userId }
-    });
-
-    // Delete policy signatures
+    // 11. Policy signatures and reviews
     await prisma.policySignature.deleteMany({
       where: { userId: userId }
     });
+    await prisma.policyReview.deleteMany({
+      where: { createdById: userId }
+    });
+    await prisma.policy.updateMany({
+      where: { createdById: userId },
+      data: { createdById: currentAdminId }
+    });
+    await prisma.policy.updateMany({
+      where: { updatedById: userId },
+      data: { updatedById: currentAdminId }
+    });
 
+    // 12. Holidays
+    await prisma.holiday.deleteMany({
+      where: { userId: userId }
+    });
+    await prisma.holiday.updateMany({
+      where: { approvedById: userId },
+      data: { approvedById: null }
+    });
+    await prisma.holiday.updateMany({
+      where: { createdById: userId },
+      data: { createdById: currentAdminId }
+    });
+    await prisma.holiday.updateMany({
+      where: { updatedById: userId },
+      data: { updatedById: currentAdminId }
+    });
+
+    // 13. Calendar entries
+    await prisma.serviceSeekerCalendarEntry.updateMany({
+      where: { careWorkerId: userId },
+      data: { careWorkerId: null }
+    });
+    await prisma.serviceSeekerCalendarEntry.updateMany({
+      where: { createdById: userId },
+      data: { createdById: currentAdminId }
+    });
+    await prisma.serviceSeekerCalendarEntry.updateMany({
+      where: { updatedById: userId },
+      data: { updatedById: currentAdminId }
+    });
+
+    // 14. Shifts and Shift Runs created/updated
+    await prisma.shift.updateMany({
+      where: { createdById: userId },
+      data: { createdById: currentAdminId }
+    });
+    await prisma.shift.updateMany({
+      where: { updatedById: userId },
+      data: { updatedById: currentAdminId }
+    });
+    await prisma.shiftRun.updateMany({
+      where: { createdById: userId },
+      data: { createdById: currentAdminId }
+    });
+    await prisma.shiftRun.updateMany({
+      where: { updatedById: userId },
+      data: { updatedById: currentAdminId }
+    });
+
+    // 15. Quality Assurance & Maintenance Issues
+    await prisma.qualityAssurance.updateMany({
+      where: { createdById: userId },
+      data: { createdById: currentAdminId }
+    });
+    await prisma.qualityAssurance.updateMany({
+      where: { updatedById: userId },
+      data: { updatedById: currentAdminId }
+    });
+    await prisma.maintenanceIssue.updateMany({
+      where: { createdById: userId },
+      data: { createdById: currentAdminId }
+    });
+    await prisma.maintenanceIssue.updateMany({
+      where: { updatedById: userId },
+      data: { updatedById: currentAdminId }
+    });
+
+    // 16. Service Seekers created/updated & external inbox access
+    await prisma.serviceSeeker.updateMany({
+      where: { createdById: userId },
+      data: { createdById: currentAdminId }
+    });
+    await prisma.serviceSeeker.updateMany({
+      where: { updatedById: userId },
+      data: { updatedById: currentAdminId }
+    });
+    await prisma.serviceSeekerExternalInboxAccess.deleteMany({
+      where: { userId: userId }
+    });
+
+    // 17. Clinical tasks signoffs & authorship
+    await prisma.incidentFallTask.updateMany({
+      where: { witnessedByStaffId: userId },
+      data: { witnessedByStaffId: null }
+    });
+    await prisma.medicinePrnTask.updateMany({
+      where: { signoffByStaffId: userId },
+      data: { signoffByStaffId: null }
+    });
+
+    const taskModels = [
+      'bathingTask', 'behaviourTask', 'bloodTestTask', 'bloodPressureTask',
+      'comfortCheckTask', 'communicationNotesTask', 'familyPhotoMessageTask',
+      'foodDrinkTask', 'generalSupportTask', 'houseKeepingTask', 'incidentFallTask',
+      'medicinePrnTask', 'muacTask', 'observationTask', 'oneToOneTask',
+      'oralCareTask', 'oxygenTask', 'personCentredTask', 'physicalInterventionTask',
+      'pulseTask', 'repositionTask', 'spendingMoneyTask', 'stoolTask',
+      'temperatureTask', 'visitTask', 'weightTask', 'encouragementTask', 'followUpTask'
+    ];
+
+    for (const model of taskModels) {
+      if (prisma[model]) {
+        await prisma[model].updateMany({
+          where: { createdById: userId },
+          data: { createdById: currentAdminId }
+        });
+        await prisma[model].updateMany({
+          where: { updatedById: userId },
+          data: { updatedById: currentAdminId }
+        });
+      }
+    }
 
     // Now delete the user
     await prisma.user.delete({
@@ -332,7 +468,7 @@ export async function DELETE(request, { params }) {
   } catch (error) {
     console.error('Error deleting user:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

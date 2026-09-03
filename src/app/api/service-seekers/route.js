@@ -19,7 +19,24 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
     }
     
+    const { searchParams } = new URL(request.url);
+    const statusParam = searchParams.get('status');
+    const includeArchived = searchParams.get('includeArchived');
+
+    const where = {};
+    if ((statusParam && statusParam.toLowerCase() === 'all') || includeArchived === 'true') {
+      // Return all service users
+    } else if (statusParam && statusParam.toUpperCase() === 'ARCHIVED') {
+      where.status = { in: ['ARCHIVED', 'ARCHIVED_PRE_ADMISSION'] };
+    } else if (statusParam) {
+      where.status = statusParam.toUpperCase();
+    } else {
+      // Default: exclude archived service users across the system (shifts, rota, daily tasks, etc.)
+      where.status = { notIn: ['ARCHIVED', 'ARCHIVED_PRE_ADMISSION'] };
+    }
+
     const seekers = await prisma.serviceSeeker.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
     });
     

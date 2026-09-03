@@ -129,6 +129,7 @@ export default function AdmissionPage() {
     nilByMouth: '',
     mainDiet: '',
     specialDiet: '',
+    fluids: '',
     dietInstructions: '',
   });
   const [savingDiet, setSavingDiet] = useState(false);
@@ -465,6 +466,7 @@ export default function AdmissionPage() {
         nilByMouth: diet.nilByMouth || null,
         mainDiet: diet.mainDiet || null,
         specialDiet: diet.specialDiet || null,
+        fluids: diet.fluids || null,
         dietInstructions: diet.dietInstructions || null,
       };
       let res = await fetch(`/api/service-seekers/${serviceSeekerId}/admission`, {
@@ -642,6 +644,7 @@ export default function AdmissionPage() {
             nilByMouth: data.nilByMouth || '',
             mainDiet: data.mainDiet || '',
             specialDiet: data.specialDiet || '',
+            fluids: data.fluids || '',
             dietInstructions: data.dietInstructions || '',
           });
         }

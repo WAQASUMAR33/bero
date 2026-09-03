@@ -505,6 +505,7 @@ model ServiceSeekerAdmission {
   nilByMouth              String?
   mainDiet                String?
   specialDiet             String?
+  fluids                  String?
   dietInstructions        String?
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
@@ -583,6 +584,13 @@ model Diet {
 }
 
 model SpecialDiet {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Fluid {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   createdAt DateTime @default(now())

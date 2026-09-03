@@ -259,6 +259,8 @@ export default function CareWorkerCarePlanPage() {
                     <SectionCard title="Dietary Needs" icon="🍽️">
                         <div className="grid grid-cols-2 gap-4">
                             <SummaryRow label="Main Diet" value={admission.mainDiet} />
+                            <SummaryRow label="Special Diet" value={admission.specialDiet} />
+                            <SummaryRow label="Fluids" value={admission.fluids} />
                             <SummaryRow label="Fluid Consistency" value={admission.fluidConsistency || 'Normal'} />
                         </div>
                         <div className="mt-3">

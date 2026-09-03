@@ -512,6 +512,7 @@ export default function CarePlanViewPage() {
                 <SummaryRow label="Nil By Mouth" value={admission?.nilByMouth ?? '-'} />
                 <SummaryRow label="Main Diet" value={admission?.mainDiet ?? '-'} />
                 <SummaryRow label="Special Diet" value={admission?.specialDiet ?? '-'} />
+                <SummaryRow label="Fluids" value={admission?.fluids ?? '-'} />
                 <div className="md:col-span-2">
                   <SummaryRow label="Diet Instructions" value={admission?.dietInstructions ?? '-'} />
                 </div>

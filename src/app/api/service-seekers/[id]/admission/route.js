@@ -91,6 +91,7 @@ export async function PUT(request, { params }) {
       nilByMouth,
       mainDiet,
       specialDiet,
+      fluids,
       dietInstructions,
     } = body;
 
@@ -155,6 +156,7 @@ export async function PUT(request, { params }) {
         nilByMouth: nilByMouth || null,
         mainDiet: mainDiet || null,
         specialDiet: specialDiet || null,
+        fluids: fluids || null,
         dietInstructions: dietInstructions || null,
       },
       create: {
@@ -209,6 +211,7 @@ export async function PUT(request, { params }) {
         nilByMouth: nilByMouth || null,
         mainDiet: mainDiet || null,
         specialDiet: specialDiet || null,
+        fluids: fluids || null,
         dietInstructions: dietInstructions || null,
       },
     });
@@ -285,6 +288,7 @@ export async function POST(request, { params }) {
       nilByMouth,
       mainDiet,
       specialDiet,
+      fluids,
       dietInstructions,
     } = body;
 
@@ -349,6 +353,7 @@ export async function POST(request, { params }) {
         nilByMouth: nilByMouth || null,
         mainDiet: mainDiet || null,
         specialDiet: specialDiet || null,
+        fluids: fluids || null,
         dietInstructions: dietInstructions || null,
       },
     });

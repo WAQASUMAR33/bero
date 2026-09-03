@@ -169,7 +169,7 @@ export default function QualityAssurancePage() {
       // Title
       doc.setFontSize(18);
       doc.setTextColor(34, 79, 166); // #224fa6
-      doc.text('Quality Assurance Report', 14, 20);
+      doc.text('Feedback Monitoring Report', 14, 20);
       
       // Date generated
       doc.setFontSize(10);
@@ -330,7 +330,7 @@ export default function QualityAssurancePage() {
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#224fa6] mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading quality assurance entries...</p>
+                <p className="text-gray-600">Loading feedback monitoring entries...</p>
               </div>
             </div>
           ) : (
@@ -339,7 +339,7 @@ export default function QualityAssurancePage() {
               <div className="mb-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Quality Assurance</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Feedback Monitoring</h1>
                     <p className="text-gray-600">Manage compliments, suggestions, and concerns</p>
                   </div>
                   <div className="flex items-center space-x-3">

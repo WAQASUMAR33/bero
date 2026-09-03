@@ -24,10 +24,8 @@ import FundingForm from '../../components/FundingForm';
 import CalendarForm from '../../components/CalendarForm';
 import OutcomesForm from '../../components/OutcomesForm';
 import RiskAssessmentsForm from '../../components/RiskAssessmentsForm';
-import MedicineRiskAssessmentsForm from '../../components/MedicineRiskAssessmentsForm';
 import SafeguardingForm from '../../components/SafeguardingForm';
 import FeedbackForms from '../../components/FeedbackForms';
-import WaterlowAssessmentsForm from '../../components/WaterlowAssessmentsForm';
 import MarReviewsForm from '../../components/MarReviewsForm';
 import PersonalPropertyForm from '../../components/PersonalPropertyForm';
 import ExternalLoginsForm from '../../components/ExternalLoginsForm';
@@ -1192,12 +1190,6 @@ export default function AdmissionPage() {
             onNotification={setNotification}
           />
 
-          <MedicineRiskAssessmentsForm
-            serviceSeekerId={serviceSeekerId}
-            serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
-            onNotification={setNotification}
-          />
-
           <SafeguardingForm
             serviceSeekerId={serviceSeekerId}
             serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
@@ -1205,12 +1197,6 @@ export default function AdmissionPage() {
           />
 
           <FeedbackForms
-            serviceSeekerId={serviceSeekerId}
-            serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
-            onNotification={setNotification}
-          />
-
-          <WaterlowAssessmentsForm
             serviceSeekerId={serviceSeekerId}
             serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
             onNotification={setNotification}

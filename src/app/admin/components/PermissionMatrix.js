@@ -11,7 +11,7 @@ const PermissionMatrix = ({ selectedPermissions = [], onChange, readOnly = false
         { name: 'Finance', key: 'finance', actions: ['create', 'update', 'delete'] },
         { name: 'Settings', key: 'settings', actions: ['update'] },
         { name: 'Reports', key: 'reports', actions: ['create', 'delete'] }, // View is default
-        { name: 'Quality Assurance', key: 'quality-assurance', actions: ['create', 'update', 'delete'] },
+        { name: 'Feedback Monitoring', key: 'quality-assurance', actions: ['create', 'update', 'delete'] },
         { name: 'Maintenance', key: 'maintenance', actions: ['create', 'update', 'delete'] },
     ];
 

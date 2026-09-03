@@ -23,7 +23,7 @@ const PAGE_TITLES = {
   '/admin/cqc-inspection/late-arrivals': 'CQC Late Arrivals',
   '/admin/cqc-inspection/staff-overworked': 'CQC Staff Overworked',
   '/admin/policy-procedures': 'Policies & Procedures',
-  '/admin/quality-assurance': 'Quality Assurance',
+  '/admin/quality-assurance': 'Feedback Monitoring',
   '/admin/maintenance': 'Maintenance Issues',
   '/admin/emergency-reports': 'Emergency Reports',
   '/admin/clock-in-out': 'Clock In / Out Records',
@@ -739,11 +739,11 @@ export default function Header({ user }) {
                     </div>
                   )}
 
-                  {/* 7. Quality Assurance */}
+                  {/* 7. Feedback Monitoring */}
                   {searchResults?.qualityAssurance?.length > 0 && (
                     <div className="pt-2">
                       <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">
-                        Quality Assurance
+                        Feedback Monitoring
                       </div>
                       <div className="space-y-1 mt-1">
                         {searchResults.qualityAssurance.map((qa) => {

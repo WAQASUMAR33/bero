@@ -49,7 +49,7 @@ export default function RoleManagementPage() {
     { key: 'calendar.manage', label: 'Manage Calendar', category: 'General' },
     { key: 'clock-in-out.manage', label: 'Clock In/Out', category: 'Operations' },
     { key: 'cqc-inspection.manage', label: 'CQC Inspection', category: 'Compliance' },
-    { key: 'quality-assurance.manage', label: 'Quality Assurance', category: 'Compliance' },
+    { key: 'quality-assurance.manage', label: 'Feedback Monitoring', category: 'Compliance' },
     { key: 'holidays.manage', label: 'Manage Holidays', category: 'HR' },
     { key: 'handovers.manage', label: 'Manage Handovers', category: 'Operations' },
     { key: 'handovers.view', label: 'View Handovers', category: 'Operations' },

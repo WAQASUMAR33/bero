@@ -219,7 +219,7 @@ export default function Sidebar({ user }) {
     },
     {
       id: 'quality-assurance',
-      name: 'Quality Assurance',
+      name: 'Feedback Monitoring',
       permission: 'quality-assurance.manage',
       path: '/admin/quality-assurance',
       icon: (

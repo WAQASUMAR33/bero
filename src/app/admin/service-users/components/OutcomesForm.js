@@ -16,6 +16,38 @@ const categories = [
   { key: 'MY_NEEDS_SUPPORT', title: 'My Needs/Support' },
   { key: 'DECISION_MAKING', title: 'Decision making' },
   { key: 'EMOTIONAL_SUPPORT', title: 'Emotional Support' },
+  { key: 'RIGHTS_CONSENT_CAPACITY', title: 'Rights, Consent and Capacity' },
+  { key: 'MEDICAL_CONDITIONS_DIAGNOSIS', title: 'Medical Conditions and Diagnosis' },
+  { key: 'PERSONAL_CARE', title: 'Personal Care' },
+  { key: 'SLEEP', title: 'Sleep' },
+  { key: 'BREATHING', title: 'Breathing' },
+  { key: 'ALTERED_STATES_OF_CONSCIOUSNESS', title: 'Altered States of Consciousness' },
+  { key: 'LIFE_HISTORY', title: 'Life History' },
+  { key: 'RELIGION_AND_CULTURE', title: 'Religion and Culture' },
+  { key: 'SEXUALITY_AND_GENDER', title: 'Sexuality and Gender' },
+  { key: 'PSYCHOLOGICAL_MENTAL_HEALTH', title: 'Psychological & Mental Health' },
+  { key: 'POSITIVE_BEHAVIOUR_SUPPORT', title: 'Positive Behaviour Support' },
+  { key: 'PERSONAL_RELATIONSHIPS', title: 'Personal Relationships' },
+  { key: 'HOBBIES_AND_INTERESTS', title: 'Hobbies and Interests' },
+  { key: 'EDUCATION_AND_EMPLOYMENT', title: 'Education and Employment' },
+  { key: 'SMOKING', title: 'Smoking' },
+  { key: 'ALCOHOL_INTAKE', title: 'Alcohol Intake' },
+  { key: 'SUBSTANCE_MISUSE', title: 'Substance Misuse' },
+  { key: 'COMMUNICATION_RECORDS', title: 'Communication Records' },
+];
+
+const standardSupportPlanFields = [
+  { key: 'identifiedNeeds', label: 'Identified Needs:' },
+  { key: 'goodDay', label: 'What Does a Good Day Look Like?:' },
+  { key: 'badDay', label: 'What Does a Bad Day Look Like?:' },
+  { key: 'goals', label: 'Goals:' },
+  { key: 'howAchieved', label: 'How Can These Be Achieved?:' },
+  { key: 'supportNeeded', label: 'What Support Do I Need In This Area?:' },
+  { section: 'Sign-off' },
+  { key: 'serviceUserSignature', label: 'Service User Signature:', type: 'text' },
+  { key: 'signDate', label: 'Date:', type: 'date' },
+  { key: 'staffMemberName', label: 'Staff Member Name:', type: 'text' },
+  { key: 'staffMemberSignature', label: 'Staff Member Signature:', type: 'text' },
 ];
 
 export default function OutcomesForm({ serviceSeekerId, onNotification }){
@@ -262,10 +294,25 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
           { key:'startDoing', label:'Things I will start doing:' },
           { key:'doMore', label:'Things I will do more of:' },
         ];
+      case 'PSYCHOLOGICAL_MENTAL_HEALTH':
+        return [
+          { key: 'ableToDo', label: 'I am able to do the following:' },
+          { key: 'needSupportWith', label: 'I need support with the following:' },
+          { key: 'importantInfo', label: 'Important information about my mental health you may need to know:' },
+          ...standardSupportPlanFields,
+        ];
       default:
-        return [];
+        return standardSupportPlanFields;
     }
   }, [active]);
+
+  const [categorySearch, setCategorySearch] = useState('');
+  const [viewRecord, setViewRecord] = useState(null);
+
+  const filteredCategories = useMemo(() => {
+    if (!categorySearch.trim()) return categories;
+    return categories.filter(c => c.title.toLowerCase().includes(categorySearch.toLowerCase()));
+  }, [categorySearch]);
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
@@ -285,10 +332,32 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
       
       <div className="p-6">
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        {categories.map(c => (
-          <button key={c.key} type="button" onClick={()=>setActive(c.key)} className={`px-3 py-2 rounded-lg text-sm ${active===c.key? 'bg-[#224fa6] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>{c.title}</button>
+      <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="relative max-w-xs w-full">
+          <input
+            type="text"
+            placeholder="Search categories..."
+            value={categorySearch}
+            onChange={e => setCategorySearch(e.target.value)}
+            className="w-full text-xs px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#224fa6]"
+          />
+          {categorySearch && (
+            <button onClick={() => setCategorySearch('')} className="absolute right-2 top-1.5 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+          )}
+        </div>
+        <span className="text-xs text-gray-500 font-medium">Showing {filteredCategories.length} categories</span>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-6 max-h-48 overflow-y-auto p-1 border border-gray-100 rounded-lg bg-gray-50/50">
+        {filteredCategories.map(c => (
+          <button key={c.key} type="button" onClick={()=>setActive(c.key)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${active===c.key? 'bg-[#224fa6] text-white shadow-sm ring-2 ring-blue-300' : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-200'}`}>{c.title}</button>
         ))}
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-base font-semibold text-gray-800">
+          {categories.find(c => c.key === active)?.title} Entries
+        </h3>
       </div>
 
       {loading ? (
@@ -309,12 +378,13 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
               </tr>
             </thead>
             <tbody>
-              {rows.slice(0,1).map(r => (
-                <tr key={r.id} className="border-b border-gray-100 bg-blue-50">
+              {rows.map(r => (
+                <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
                   <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.createdAt)}</td>
                   <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.updatedAt)}</td>
-                  <td className="py-3 px-4">
-                    <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                  <td className="py-3 px-4 space-x-3">
+                    <button type="button" onClick={()=>setViewRecord(r)} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
+                    <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -396,12 +466,48 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
                       <tr key={r.id} className="border-b border-gray-100">
                         <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.createdAt)}</td>
                         <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.updatedAt)}</td>
-                        <td className="py-3 px-4"><button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm">Delete</button></td>
+                        <td className="py-3 px-4 space-x-3">
+                          <button type="button" onClick={()=>{ setViewRecord(r); setShowHistory(false); }} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
+                          <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewRecord && (
+        <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">{categories.find(c=>c.key===viewRecord.category)?.title || viewRecord.category} Details</h3>
+                <p className="text-xs text-blue-100 mt-0.5">Created: {formatDate(viewRecord.createdAt)} | Updated: {formatDate(viewRecord.updatedAt)}</p>
+              </div>
+              <button type="button" onClick={()=>setViewRecord(null)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {viewRecord.data && typeof viewRecord.data === 'object' ? (
+                Object.entries(viewRecord.data).map(([k, v]) => {
+                  const fieldDef = fieldsForActive.find(f => f.key === k);
+                  const label = fieldDef?.label || k;
+                  return (
+                    <div key={k} className="border-b border-gray-100 pb-3">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</p>
+                      <p className="text-sm text-gray-900 whitespace-pre-wrap">{Array.isArray(v) ? v.join(', ') : (v || '-')}</p>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-gray-500">No details available.</p>
+              )}
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end">
+              <button type="button" onClick={()=>setViewRecord(null)} className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-medium transition-colors">Close</button>
             </div>
           </div>
         </div>

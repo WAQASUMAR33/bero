@@ -81,8 +81,11 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
   const [staff, setStaff] = useState([]);
   const [teams, setTeams] = useState([]);
 
-  // Form State
   const [formData, setFormData] = useState({});
+  const [newEvalDate, setNewEvalDate] = useState('');
+  const [newEvaluatorName, setNewEvaluatorName] = useState('');
+  const [newEvalRecord, setNewEvalRecord] = useState('');
+  const [savingEval, setSavingEval] = useState(false);
 
   useEffect(() => {
     fetchRows(activeTab);
@@ -150,8 +153,18 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
       extra: {},
       staffTeam: [],
       sendSignoffs: false,
+      evaluationDate: new Date().toISOString().split('T')[0],
+      evaluatorName: '',
+      evaluationRecord: '',
     });
     setShowModal(true);
+  };
+
+  const openView = (record) => {
+    setViewRecord(record);
+    setNewEvalDate(new Date().toISOString().split('T')[0]);
+    setNewEvaluatorName(record.conductedBy || '');
+    setNewEvalRecord('');
   };
 
   const save = async () => {
@@ -159,12 +172,13 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
     try {
       const token = localStorage.getItem('token');
 
-      // Pack custom fields into extra
+      // Pack custom fields into extra, excluding temporary evaluation inputs
       const standardKeys = [
         'lastAssessed', 'reviewFrequency', 'whatIsRisk', 'riskBeforeIntervention',
         'whoIsAtRisk', 'isHistorical', 'whatCouldHappen', 'actionToTake',
         'riskAfterControls', 'summary', 'riskLevel', 'totalScore',
-        'staffTeam', 'conductedBy', 'office', 'sendSignoffs'
+        'staffTeam', 'conductedBy', 'office', 'sendSignoffs',
+        'evaluationDate', 'evaluatorName', 'evaluationRecord'
       ];
 
       const extraData = { ...(formData.extra || {}) };
@@ -173,6 +187,18 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
           extraData[k] = formData[k];
         }
       });
+
+      // Handle initial evaluation if filled
+      const hasEval = formData.evaluationRecord?.trim() || formData.evaluatorName?.trim();
+      const initialEvaluations = hasEval ? [{
+        id: `eval_${Date.now()}`,
+        date: formData.evaluationDate || formData.lastAssessed || new Date().toISOString().split('T')[0],
+        evaluatorName: formData.evaluatorName?.trim() || formData.conductedBy || 'Staff',
+        record: formData.evaluationRecord?.trim() || '',
+        createdAt: new Date().toISOString(),
+      }] : [];
+
+      extraData.evaluations = initialEvaluations;
 
       const payload = {
         riskType: activeTab,
@@ -217,6 +243,55 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
       if (onNotification) onNotification({ show: true, message: 'Failed to save assessment.', type: 'error' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAddEvaluation = async () => {
+    if (!viewRecord) return;
+    if (!newEvalRecord.trim()) {
+      if (onNotification) onNotification({ show: true, message: 'Please enter an evaluation record.', type: 'error' });
+      return;
+    }
+    setSavingEval(true);
+    try {
+      const token = localStorage.getItem('token');
+      const existingEvaluations = Array.isArray(viewRecord.extra?.evaluations) ? viewRecord.extra.evaluations : [];
+      const newEval = {
+        id: `eval_${Date.now()}`,
+        date: newEvalDate || new Date().toISOString().split('T')[0],
+        evaluatorName: newEvaluatorName.trim() || viewRecord.conductedBy || 'Staff',
+        record: newEvalRecord.trim(),
+        createdAt: new Date().toISOString(),
+      };
+      const updatedEvaluations = [...existingEvaluations, newEval];
+      const updatedExtra = { ...(viewRecord.extra || {}), evaluations: updatedEvaluations };
+
+      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/risk-assessments`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: viewRecord.id, extra: updatedExtra })
+      });
+
+      if (res.ok) {
+        const updatedRecord = { ...viewRecord, extra: updatedExtra, updatedAt: new Date().toISOString() };
+        setViewRecord(updatedRecord);
+        setRows(prev => prev.map(r => r.id === viewRecord.id ? updatedRecord : r));
+        setNewEvalRecord('');
+        setNewEvaluatorName(viewRecord.conductedBy || '');
+        setNewEvalDate(new Date().toISOString().split('T')[0]);
+        if (onNotification) onNotification({ show: true, message: 'Evaluation added successfully.', type: 'success' });
+      } else {
+        const err = await res.json();
+        if (onNotification) onNotification({ show: true, message: err.error || 'Failed to add evaluation.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      if (onNotification) onNotification({ show: true, message: 'Failed to add evaluation.', type: 'error' });
+    } finally {
+      setSavingEval(false);
     }
   };
 
@@ -695,6 +770,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Review Frequency</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Conducted By</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Evaluations</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
@@ -716,10 +792,19 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                     <td className="py-3 px-4 text-sm text-gray-600">{r.reviewFrequency || '-'}</td>
                     <td className="py-3 px-4 text-sm text-gray-600">{r.conductedBy || '-'}</td>
                     <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
+                    <td className="py-3 px-4 text-sm">
+                      {Array.isArray(r.extra?.evaluations) && r.extra.evaluations.length > 0 ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                          {r.extra.evaluations.length} evaluation{r.extra.evaluations.length > 1 ? 's' : ''} (latest: {formatDate(r.extra.evaluations[r.extra.evaluations.length - 1].date)})
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">0 recorded</span>
+                      )}
+                    </td>
                     <td className="py-3 px-4 space-x-3">
                       <button
                         type="button"
-                        onClick={() => setViewRecord(r)}
+                        onClick={() => openView(r)}
                         className="text-[#224fa6] hover:text-blue-800 text-sm font-medium"
                       >
                         View
@@ -894,6 +979,69 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                     <option value="Yes">Yes</option>
                   </select>
                 </div>
+
+                {/* Evaluation Section at the End */}
+                <div className="md:col-span-2 pt-4 mt-2 border-t-2 border-blue-100">
+                  <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/40 border border-blue-200 rounded-xl p-5 shadow-xs">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#224fa6]"></span>
+                      <h4 className="text-base font-bold text-gray-900">Evaluation</h4>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-4">
+                      Record an evaluation for this assessment / form. All recorded evaluations remain visible permanently.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Date of Evaluation</label>
+                        <input
+                          type="date"
+                          value={formData.evaluationDate || ''}
+                          onChange={e => setFormData(prev => ({ ...prev, evaluationDate: e.target.value }))}
+                          className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Name of Person Completing</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Name of evaluator (staff / manager)"
+                            value={formData.evaluatorName || ''}
+                            onChange={e => setFormData(prev => ({ ...prev, evaluatorName: e.target.value }))}
+                            className="flex-1 text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                          />
+                          {staff.length > 0 && (
+                            <select
+                              value=""
+                              onChange={e => {
+                                if (e.target.value) setFormData(prev => ({ ...prev, evaluatorName: e.target.value }));
+                              }}
+                              className="text-xs bg-white border border-gray-300 rounded-lg px-2 py-2 text-gray-700 cursor-pointer"
+                              title="Select from staff list"
+                            >
+                              <option value="">Staff list...</option>
+                              {staff.map(s => (
+                                <option key={s.id} value={`${s.firstName} ${s.lastName}`.trim()}>
+                                  {s.firstName} {s.lastName}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Evaluation Record</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Enter evaluation record, review notes, risk mitigation efficacy, or necessary updates..."
+                        value={formData.evaluationRecord || ''}
+                        onChange={e => setFormData(prev => ({ ...prev, evaluationRecord: e.target.value }))}
+                        className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -922,7 +1070,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
       {/* History Modal */}
       {showHistory && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4 flex items-center justify-between">
               <h3 className="text-xl font-semibold">History - {activeTab}</h3>
               <button type="button" onClick={() => setShowHistory(false)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
@@ -938,20 +1086,30 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Risk Level / Score</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Assessor</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Evaluations</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rows.map(r => (
-                      <tr key={r.id} className="border-b border-gray-100">
+                      <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
                         <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.lastAssessed)}</td>
                         <td className="py-3 px-4 text-sm text-gray-900">{r.riskLevel || r.totalScore || '-'}</td>
                         <td className="py-3 px-4 text-sm text-gray-600">{r.conductedBy || '-'}</td>
                         <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
+                        <td className="py-3 px-4 text-sm">
+                          {Array.isArray(r.extra?.evaluations) && r.extra.evaluations.length > 0 ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                              {r.extra.evaluations.length} evaluation{r.extra.evaluations.length > 1 ? 's' : ''}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">0 recorded</span>
+                          )}
+                        </td>
                         <td className="py-3 px-4 space-x-3">
                           <button
                             type="button"
-                            onClick={() => { setViewRecord(r); setShowHistory(false); }}
+                            onClick={() => { openView(r); setShowHistory(false); }}
                             className="text-[#224fa6] hover:text-blue-800 text-sm font-medium"
                           >
                             View
@@ -987,53 +1145,175 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
               </div>
               <button type="button" onClick={() => setViewRecord(null)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {viewRecord.riskLevel && (
-                <div className="border-b border-gray-100 pb-3">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Risk Level / Score</p>
-                  <p className="text-sm text-gray-900 font-medium">{viewRecord.riskLevel} {viewRecord.totalScore ? `(Score: ${viewRecord.totalScore})` : ''}</p>
-                </div>
-              )}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Questionnaire / Core details */}
+              <div className="space-y-4">
+                {viewRecord.riskLevel && (
+                  <div className="border-b border-gray-100 pb-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Risk Level / Score</p>
+                    <p className="text-sm text-gray-900 font-medium">{viewRecord.riskLevel} {viewRecord.totalScore ? `(Score: ${viewRecord.totalScore})` : ''}</p>
+                  </div>
+                )}
 
-              {viewRecord.whatIsRisk && (
-                <div className="border-b border-gray-100 pb-3">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Risk / Primary Subject</p>
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRecord.whatIsRisk}</p>
-                </div>
-              )}
+                {viewRecord.whatIsRisk && (
+                  <div className="border-b border-gray-100 pb-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Risk / Primary Subject</p>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRecord.whatIsRisk}</p>
+                  </div>
+                )}
 
-              {viewRecord.actionToTake && (
-                <div className="border-b border-gray-100 pb-3">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Actions / Controls</p>
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRecord.actionToTake}</p>
-                </div>
-              )}
+                {viewRecord.actionToTake && (
+                  <div className="border-b border-gray-100 pb-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Actions / Controls</p>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRecord.actionToTake}</p>
+                  </div>
+                )}
 
-              {viewRecord.summary && (
-                <div className="border-b border-gray-100 pb-3">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Summary</p>
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRecord.summary}</p>
-                </div>
-              )}
+                {viewRecord.summary && (
+                  <div className="border-b border-gray-100 pb-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Summary</p>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRecord.summary}</p>
+                  </div>
+                )}
 
-              {/* Render all custom fields stored in extra */}
-              {viewRecord.extra && typeof viewRecord.extra === 'object' && Object.keys(viewRecord.extra).length > 0 && (
-                <div className="space-y-3 pt-2">
-                  <h4 className="text-sm font-semibold text-gray-800 border-b pb-1">Assessment Questionnaire Answers</h4>
-                  {Object.entries(viewRecord.extra).map(([k, v]) => {
-                    const fieldDef = fields.find(f => f.key === k);
-                    const label = fieldDef?.label || k;
-                    return (
-                      <div key={k} className="border-b border-gray-100 pb-3">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-                        <p className="text-sm text-gray-900 whitespace-pre-wrap">
-                          {Array.isArray(v) ? v.join(', ') : (v || '-')}
-                        </p>
+                {/* Render all custom fields stored in extra, excluding evaluations */}
+                {viewRecord.extra && typeof viewRecord.extra === 'object' && Object.keys(viewRecord.extra).length > 0 && (
+                  <div className="space-y-3 pt-2">
+                    <h4 className="text-sm font-semibold text-gray-800 border-b pb-1">Assessment Questionnaire Answers</h4>
+                    {Object.entries(viewRecord.extra)
+                      .filter(([k]) => k !== 'evaluations' && k !== 'evaluationDate' && k !== 'evaluatorName' && k !== 'evaluationRecord')
+                      .map(([k, v]) => {
+                        const fieldDef = fields.find(f => f.key === k);
+                        const label = fieldDef?.label || k;
+                        return (
+                          <div key={k} className="border-b border-gray-100 pb-3">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</p>
+                            <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                              {Array.isArray(v) ? v.join(', ') : (v || '-')}
+                            </p>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+
+              {/* Evaluations Section (All evaluations stay visible permanently) */}
+              <div className="pt-6 border-t-2 border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-3 h-3 rounded-full bg-[#224fa6]"></span>
+                    <h4 className="text-lg font-bold text-gray-900">
+                      Evaluations History ({Array.isArray(viewRecord.extra?.evaluations) ? viewRecord.extra.evaluations.length : 0})
+                    </h4>
+                  </div>
+                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">
+                    All evaluations preserved & visible
+                  </span>
+                </div>
+
+                {/* List of past evaluations */}
+                {!Array.isArray(viewRecord.extra?.evaluations) || viewRecord.extra.evaluations.length === 0 ? (
+                  <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 text-center text-sm text-gray-500 mb-6">
+                    <p className="font-medium text-gray-700">No evaluations recorded yet.</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Use the evaluation box below to record the first evaluation.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 mb-6">
+                    {viewRecord.extra.evaluations.map((ev, idx) => (
+                      <div key={ev.id || idx} className="bg-gradient-to-r from-blue-50/60 to-indigo-50/30 border border-blue-200 rounded-xl p-4 shadow-xs">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-blue-100">
+                          <div className="flex items-center space-x-2.5">
+                            <span className="px-2.5 py-0.5 rounded-md bg-[#224fa6] text-white text-xs font-bold">
+                              Evaluation #{idx + 1}
+                            </span>
+                            <span className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                              {ev.evaluatorName || 'Staff'}
+                            </span>
+                          </div>
+                          <span className="text-xs font-medium text-gray-700 flex items-center gap-1 bg-white px-2.5 py-1 rounded-md border border-gray-200 shadow-xs">
+                            <svg className="w-3.5 h-3.5 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            {formatDate(ev.date)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{ev.record}</p>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Evaluation Box */}
+                <div className="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-xs">
+                  <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Record New Evaluation
+                  </h5>
+                  <p className="text-xs text-gray-500 mb-4">Add a new evaluation review to this assessment. It will be recorded alongside existing evaluations.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Date of Evaluation *</label>
+                      <input
+                        type="date"
+                        value={newEvalDate}
+                        onChange={e => setNewEvalDate(e.target.value)}
+                        className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Name of Person Completing *</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="e.g. Registered Manager / Staff Name"
+                          value={newEvaluatorName}
+                          onChange={e => setNewEvaluatorName(e.target.value)}
+                          className="flex-1 text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                        />
+                        {staff.length > 0 && (
+                          <select
+                            value=""
+                            onChange={e => {
+                              if (e.target.value) setNewEvaluatorName(e.target.value);
+                            }}
+                            className="text-xs bg-white border border-gray-300 rounded-lg px-2 py-2 text-gray-700 cursor-pointer"
+                            title="Select from staff list"
+                          >
+                            <option value="">Staff list...</option>
+                            {staff.map(s => (
+                              <option key={s.id} value={`${s.firstName} ${s.lastName}`.trim()}>
+                                {s.firstName} {s.lastName}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Evaluation Record *</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Record progress, review notes, risk mitigation efficacy, or necessary updates..."
+                      value={newEvalRecord}
+                      onChange={e => setNewEvalRecord(e.target.value)}
+                      className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleAddEvaluation}
+                      disabled={savingEval}
+                      className="px-5 py-2.5 bg-gradient-to-r from-[#224fa6] to-[#3270e9] hover:from-[#1a3d85] hover:to-[#2859c7] text-white rounded-lg text-sm font-semibold transition-all shadow-sm disabled:opacity-60 cursor-pointer"
+                    >
+                      {savingEval ? 'Saving Evaluation...' : 'Save Evaluation'}
+                    </button>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
             <div className="p-4 border-t border-gray-200 flex justify-end">
               <button

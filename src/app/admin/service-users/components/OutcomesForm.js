@@ -59,6 +59,10 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
   const [showHistory, setShowHistory] = useState(false);
 
   const [formData, setFormData] = useState({});
+  const [newEvalDate, setNewEvalDate] = useState('');
+  const [newEvaluatorName, setNewEvaluatorName] = useState('');
+  const [newEvalRecord, setNewEvalRecord] = useState('');
+  const [savingEval, setSavingEval] = useState(false);
 
   useEffect(() => { fetchRows(active); }, [serviceSeekerId, active]);
 
@@ -74,19 +78,106 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
   };
 
   const openAdd = () => {
-    setFormData({});
+    setFormData({
+      evaluationDate: new Date().toISOString().split('T')[0],
+      evaluatorName: '',
+      evaluationRecord: '',
+    });
     setShowModal(true);
+  };
+
+  const openView = (record) => {
+    setViewRecord(record);
+    setNewEvalDate(new Date().toISOString().split('T')[0]);
+    setNewEvaluatorName('');
+    setNewEvalRecord('');
   };
 
   const save = async () => {
     setSaving(true);
     try{
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/outcomes`,{ method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` }, body: JSON.stringify({ category: active, data: formData }) });
-      if(res.ok){ await fetchRows(active); setShowModal(false); if(onNotification) onNotification({ show:true, message:'Saved.', type:'success' }); }
-      else { const err = await res.json(); if(onNotification) onNotification({ show:true, message: err.error || 'Failed to save.', type:'error' }); }
-    }catch(e){ console.error(e); if(onNotification) onNotification({ show:true, message:'Failed to save.', type:'error' }); }
+      const cleanData = { ...formData };
+      const hasEval = cleanData.evaluationRecord?.trim() || cleanData.evaluatorName?.trim();
+      const initialEvaluations = hasEval ? [{
+        id: `eval_${Date.now()}`,
+        date: cleanData.evaluationDate || new Date().toISOString().split('T')[0],
+        evaluatorName: cleanData.evaluatorName?.trim() || 'Staff',
+        record: cleanData.evaluationRecord?.trim() || '',
+        createdAt: new Date().toISOString(),
+      }] : [];
+
+      delete cleanData.evaluationDate;
+      delete cleanData.evaluatorName;
+      delete cleanData.evaluationRecord;
+
+      cleanData.evaluations = initialEvaluations;
+
+      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/outcomes`,{
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+        body: JSON.stringify({ category: active, data: cleanData })
+      });
+      if(res.ok){
+        await fetchRows(active);
+        setShowModal(false);
+        if(onNotification) onNotification({ show:true, message:'Support plan saved successfully.', type:'success' });
+      }
+      else {
+        const err = await res.json();
+        if(onNotification) onNotification({ show:true, message: err.error || 'Failed to save.', type:'error' });
+      }
+    }catch(e){
+      console.error(e);
+      if(onNotification) onNotification({ show:true, message:'Failed to save.', type:'error' });
+    }
     finally{ setSaving(false); }
+  };
+
+  const handleAddEvaluation = async () => {
+    if (!viewRecord) return;
+    if (!newEvalRecord.trim()) {
+      if (onNotification) onNotification({ show: true, message: 'Please enter an evaluation record.', type: 'error' });
+      return;
+    }
+    setSavingEval(true);
+    try {
+      const token = localStorage.getItem('token');
+      const existingEvaluations = Array.isArray(viewRecord.data?.evaluations) ? viewRecord.data.evaluations : [];
+      const newEval = {
+        id: `eval_${Date.now()}`,
+        date: newEvalDate || new Date().toISOString().split('T')[0],
+        evaluatorName: newEvaluatorName.trim() || 'Staff',
+        record: newEvalRecord.trim(),
+        createdAt: new Date().toISOString(),
+      };
+      const updatedEvaluations = [...existingEvaluations, newEval];
+      const updatedData = { ...(viewRecord.data || {}), evaluations: updatedEvaluations };
+
+      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/outcomes`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id: viewRecord.id, data: updatedData })
+      });
+
+      if (res.ok) {
+        const updatedRecord = { ...viewRecord, data: updatedData, updatedAt: new Date().toISOString() };
+        setViewRecord(updatedRecord);
+        setRows(prev => prev.map(r => r.id === viewRecord.id ? updatedRecord : r));
+        setNewEvalRecord('');
+        setNewEvaluatorName('');
+        setNewEvalDate(new Date().toISOString().split('T')[0]);
+        if (onNotification) onNotification({ show: true, message: 'Evaluation added successfully.', type: 'success' });
+      } else {
+        const err = await res.json();
+        if (onNotification) onNotification({ show: true, message: err.error || 'Failed to add evaluation.', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      if (onNotification) onNotification({ show: true, message: 'Failed to add evaluation.', type: 'error' });
+    } finally {
+      setSavingEval(false);
+    }
   };
 
   const deleteRow = async (id) => {
@@ -374,6 +465,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Updated</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Evaluations</th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
@@ -382,8 +474,17 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
                 <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
                   <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.createdAt)}</td>
                   <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.updatedAt)}</td>
+                  <td className="py-3 px-4 text-sm">
+                    {Array.isArray(r.data?.evaluations) && r.data.evaluations.length > 0 ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                        {r.data.evaluations.length} evaluation{r.data.evaluations.length > 1 ? 's' : ''} (latest: {formatDate(r.data.evaluations[r.data.evaluations.length - 1].date)})
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">0 recorded</span>
+                    )}
+                  </td>
                   <td className="py-3 px-4 space-x-3">
-                    <button type="button" onClick={()=>setViewRecord(r)} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
+                    <button type="button" onClick={()=>openView(r)} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
                     <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
                   </td>
                 </tr>
@@ -429,11 +530,55 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
                     )}
                   </div>
                 ))}
+
+                {/* Evaluation Section at the End */}
+                <div className="md:col-span-2 pt-4 mt-2 border-t-2 border-blue-100">
+                  <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/40 border border-blue-200 rounded-xl p-5 shadow-xs">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#224fa6]"></span>
+                      <h4 className="text-base font-bold text-gray-900">Evaluation</h4>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-4">
+                      Record an evaluation for this support plan. All recorded evaluations remain visible permanently.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Date of Evaluation</label>
+                        <input
+                          type="date"
+                          value={formData.evaluationDate || ''}
+                          onChange={e => setFormData(prev => ({ ...prev, evaluationDate: e.target.value }))}
+                          className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Name of Person Completing</label>
+                        <input
+                          type="text"
+                          placeholder="Name of evaluator (staff / manager)"
+                          value={formData.evaluatorName || ''}
+                          onChange={e => setFormData(prev => ({ ...prev, evaluatorName: e.target.value }))}
+                          className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Evaluation Record</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Enter evaluation record, review notes, progress toward goals, or necessary updates..."
+                        value={formData.evaluationRecord || ''}
+                        onChange={e => setFormData(prev => ({ ...prev, evaluationRecord: e.target.value }))}
+                        className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
               <button type="button" onClick={()=>setShowModal(false)} disabled={saving} className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-70">Cancel</button>
-              <button type="button" onClick={save} disabled={saving} className="px-6 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-70">{saving ? 'Saving...' : 'Save'}</button>
+              <button type="button" onClick={save} disabled={saving} className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white font-medium hover:from-[#1a3d85] hover:to-[#2859c7] disabled:opacity-70 transition-all shadow-sm">{saving ? 'Saving...' : 'Save'}</button>
             </div>
           </div>
         </div>
@@ -441,7 +586,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
 
       {showHistory && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Blue Header */}
             <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
               <div className="flex items-center justify-between">
@@ -458,16 +603,26 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Updated</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Evaluations</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rows.map(r => (
-                      <tr key={r.id} className="border-b border-gray-100">
+                      <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
                         <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.createdAt)}</td>
                         <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.updatedAt)}</td>
+                        <td className="py-3 px-4 text-sm">
+                          {Array.isArray(r.data?.evaluations) && r.data.evaluations.length > 0 ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                              {r.data.evaluations.length} evaluation{r.data.evaluations.length > 1 ? 's' : ''}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">0 recorded</span>
+                          )}
+                        </td>
                         <td className="py-3 px-4 space-x-3">
-                          <button type="button" onClick={()=>{ setViewRecord(r); setShowHistory(false); }} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
+                          <button type="button" onClick={()=>{ openView(r); setShowHistory(false); }} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
                           <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
                         </td>
                       </tr>
@@ -490,21 +645,124 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
               </div>
               <button type="button" onClick={()=>setViewRecord(null)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {viewRecord.data && typeof viewRecord.data === 'object' ? (
-                Object.entries(viewRecord.data).map(([k, v]) => {
-                  const fieldDef = fieldsForActive.find(f => f.key === k);
-                  const label = fieldDef?.label || k;
-                  return (
-                    <div key={k} className="border-b border-gray-100 pb-3">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-                      <p className="text-sm text-gray-900 whitespace-pre-wrap">{Array.isArray(v) ? v.join(', ') : (v || '-')}</p>
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Question Questionnaire Details */}
+              <div className="space-y-4">
+                {viewRecord.data && typeof viewRecord.data === 'object' ? (
+                  Object.entries(viewRecord.data)
+                    .filter(([k]) => k !== 'evaluations' && k !== 'evaluationDate' && k !== 'evaluatorName' && k !== 'evaluationRecord')
+                    .map(([k, v]) => {
+                      const fieldDef = fieldsForActive.find(f => f.key === k);
+                      const label = fieldDef?.label || k;
+                      return (
+                        <div key={k} className="border-b border-gray-100 pb-3">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</p>
+                          <p className="text-sm text-gray-900 whitespace-pre-wrap">{Array.isArray(v) ? v.join(', ') : (v || '-')}</p>
+                        </div>
+                      );
+                    })
+                ) : (
+                  <p className="text-sm text-gray-500">No details available.</p>
+                )}
+              </div>
+
+              {/* Evaluations Section (All evaluations stay visible permanently) */}
+              <div className="pt-6 border-t-2 border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-3 h-3 rounded-full bg-[#224fa6]"></span>
+                    <h4 className="text-lg font-bold text-gray-900">
+                      Evaluations History ({Array.isArray(viewRecord.data?.evaluations) ? viewRecord.data.evaluations.length : 0})
+                    </h4>
+                  </div>
+                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">
+                    All evaluations preserved & visible
+                  </span>
+                </div>
+
+                {/* List of past evaluations */}
+                {!Array.isArray(viewRecord.data?.evaluations) || viewRecord.data.evaluations.length === 0 ? (
+                  <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 text-center text-sm text-gray-500 mb-6">
+                    <p className="font-medium text-gray-700">No evaluations recorded yet.</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Use the evaluation box below to record the first evaluation.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 mb-6">
+                    {viewRecord.data.evaluations.map((ev, idx) => (
+                      <div key={ev.id || idx} className="bg-gradient-to-r from-blue-50/60 to-indigo-50/30 border border-blue-200 rounded-xl p-4 shadow-xs">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-blue-100">
+                          <div className="flex items-center space-x-2.5">
+                            <span className="px-2.5 py-0.5 rounded-md bg-[#224fa6] text-white text-xs font-bold">
+                              Evaluation #{idx + 1}
+                            </span>
+                            <span className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                              {ev.evaluatorName || 'Staff'}
+                            </span>
+                          </div>
+                          <span className="text-xs font-medium text-gray-700 flex items-center gap-1 bg-white px-2.5 py-1 rounded-md border border-gray-200 shadow-xs">
+                            <svg className="w-3.5 h-3.5 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            {formatDate(ev.date)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{ev.record}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Evaluation Box */}
+                <div className="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-xs">
+                  <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Record New Evaluation
+                  </h5>
+                  <p className="text-xs text-gray-500 mb-4">Add a new evaluation review to this support plan. It will be recorded alongside existing evaluations.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Date of Evaluation *</label>
+                      <input
+                        type="date"
+                        value={newEvalDate}
+                        onChange={e => setNewEvalDate(e.target.value)}
+                        className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                      />
                     </div>
-                  );
-                })
-              ) : (
-                <p className="text-sm text-gray-500">No details available.</p>
-              )}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Name of Person Completing *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Registered Manager / Staff Name"
+                        value={newEvaluatorName}
+                        onChange={e => setNewEvaluatorName(e.target.value)}
+                        className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Evaluation Record *</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Record progress towards outcomes, review observations, effectiveness of support plan, or any necessary updates..."
+                      value={newEvalRecord}
+                      onChange={e => setNewEvalRecord(e.target.value)}
+                      className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleAddEvaluation}
+                      disabled={savingEval}
+                      className="px-5 py-2.5 bg-gradient-to-r from-[#224fa6] to-[#3270e9] hover:from-[#1a3d85] hover:to-[#2859c7] text-white rounded-lg text-sm font-semibold transition-all shadow-sm disabled:opacity-60 cursor-pointer"
+                    >
+                      {savingEval ? 'Saving Evaluation...' : 'Save Evaluation'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="p-4 border-t border-gray-200 flex justify-end">
               <button type="button" onClick={()=>setViewRecord(null)} className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-medium transition-colors">Close</button>
@@ -515,5 +773,6 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
     </div>
   );
 }
+
 
 

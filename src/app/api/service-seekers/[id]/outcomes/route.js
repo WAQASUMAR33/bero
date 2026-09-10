@@ -75,4 +75,35 @@ export async function DELETE(request, { params }) {
   }
 }
 
+export async function PUT(request, { params }) {
+  try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+
+    const resolvedParams = await params;
+    const serviceSeekerId = parseInt(resolvedParams.id, 10);
+    if (Number.isNaN(serviceSeekerId)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+
+    const body = await request.json();
+    const id = parseInt(body.id, 10);
+    if (!id || Number.isNaN(id)) return NextResponse.json({ error: 'Invalid record ID' }, { status: 400 });
+
+    const existing = await prisma.serviceSeekerOutcome.findFirst({ where: { id, serviceSeekerId } });
+    if (!existing) return NextResponse.json({ error: 'Outcome not found' }, { status: 404 });
+
+    const updated = await prisma.serviceSeekerOutcome.update({
+      where: { id },
+      data: {
+        ...(body.category ? { category: body.category } : {}),
+        ...(body.data !== undefined ? { data: body.data } : {}),
+      },
+    });
+    return NextResponse.json(updated, { status: 200 });
+  } catch (e) {
+    console.error('PUT outcomes error:', e);
+    return NextResponse.json({ error: 'Failed to update outcome' }, { status: 500 });
+  }
+}
+
 

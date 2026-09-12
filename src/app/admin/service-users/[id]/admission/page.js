@@ -727,9 +727,9 @@ export default function AdmissionPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar user={user} />
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className="flex-1 flex flex-col lg:ml-64 min-w-0 max-w-full overflow-x-hidden">
         <Header user={user} />
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden min-w-0 max-w-full">
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>

@@ -294,6 +294,12 @@ model User {
 
   notifications            Notification[]
   pushSubscriptions        PushSubscription[]
+
+  // Quality Assurance relations
+  assignedQaAudits         QaAudit[]                    @relation("QaAuditAssignedTo")
+  conductedQaAudits        QaAuditSubmission[]          @relation("QaAuditConductedBy")
+  assignedQaActions        QaActionItem[]               @relation("QaActionItemStaff")
+  createdQaActions         QaActionItem[]               @relation("QaActionItemCreatedBy")
 }
 
 model Team {
@@ -2868,6 +2874,80 @@ model PushSubscription {
   @@unique([userId, endpointHash])
   @@index([userId])
   @@index([isActive])
+}
+
+// Quality Assurance Audits and Action Plans Models
+model QaAudit {
+  id           Int                 @id @default(autoincrement())
+  title        String              @db.VarChar(255)
+  category     String              @default("Care Quality") @db.VarChar(100)
+  frequency    String              @default("Monthly") @db.VarChar(50)
+  assignedToId Int?
+  targetScore  Float               @default(90.0)
+  description  String?             @db.Text
+  checklist    Json?
+  isActive     Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  assignedTo   User?               @relation("QaAuditAssignedTo", fields: [assignedToId], references: [id])
+  submissions  QaAuditSubmission[]
+
+  @@index([assignedToId])
+  @@index([category])
+  @@index([frequency])
+}
+
+model QaAuditSubmission {
+  id              Int      @id @default(autoincrement())
+  auditId         Int
+  auditTitle      String   @db.VarChar(255)
+  month           Int
+  year            Int
+  scorePercentage Float
+  totalItems      Int      @default(0)
+  passedItems     Int      @default(0)
+  status          String   @default("COMPLIANT") @db.VarChar(50)
+  conductedById   Int?
+  conductedAt     DateTime @default(now())
+  findings        String?  @db.Text
+  actionsRequired String?  @db.Text
+  extra           Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  audit           QaAudit  @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  conductedBy     User?    @relation("QaAuditConductedBy", fields: [conductedById], references: [id])
+
+  @@index([month, year])
+  @@index([auditId])
+  @@index([conductedById])
+}
+
+model QaActionItem {
+  id          Int       @id @default(autoincrement())
+  staffId     Int
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  priority    String    @default("MEDIUM") @db.VarChar(50)
+  status      String    @default("OPEN") @db.VarChar(50)
+  dueDate     DateTime? @db.Date
+  completedAt DateTime?
+  auditId     Int?
+  source      String    @default("Audit Finding") @db.VarChar(100)
+  notes       String?   @db.Text
+  evidenceUrl String?   @db.VarChar(500)
+  createdById Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  staff       User      @relation("QaActionItemStaff", fields: [staffId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation("QaActionItemCreatedBy", fields: [createdById], references: [id])
+
+  @@index([staffId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([createdById])
 }
 
 

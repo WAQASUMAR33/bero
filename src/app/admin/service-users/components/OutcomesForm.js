@@ -2,40 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { getEvaluationStatus, getCategoryOverallStatus } from '@/lib/evaluationStatus';
+import { SUPPORT_PLAN_CATEGORIES, getSupportPlanTitle } from '@/lib/supportPlanCategories';
 
-const categories = [
-  { key: 'ABOUT_ME', title: 'About me' },
-  { key: 'PHYSICAL_HEALTH', title: 'My Physical Health' },
-  { key: 'MENTAL_HEALTH', title: 'Mental Health' },
-  { key: 'COMMUNICATION', title: 'Communication' },
-  { key: 'ORAL_CARE', title: 'My Oral Care' },
-  { key: 'SKIN_INTEGRITY', title: 'Skin Integrity' },
-  { key: 'MEDICATION', title: 'Medication' },
-  { key: 'NUTRITION_HYDRATION', title: 'Nutrition & Hydration' },
-  { key: 'CONTINENCE_CARE', title: 'Continence Care' },
-  { key: 'MOBILITY', title: 'Mobility' },
-  { key: 'MY_NEEDS_SUPPORT', title: 'My Needs/Support' },
-  { key: 'DECISION_MAKING', title: 'Decision making' },
-  { key: 'EMOTIONAL_SUPPORT', title: 'Emotional Support' },
-  { key: 'RIGHTS_CONSENT_CAPACITY', title: 'Rights, Consent and Capacity' },
-  { key: 'MEDICAL_CONDITIONS_DIAGNOSIS', title: 'Medical Conditions and Diagnosis' },
-  { key: 'PERSONAL_CARE', title: 'Personal Care' },
-  { key: 'SLEEP', title: 'Sleep' },
-  { key: 'BREATHING', title: 'Breathing' },
-  { key: 'ALTERED_STATES_OF_CONSCIOUSNESS', title: 'Altered States of Consciousness' },
-  { key: 'LIFE_HISTORY', title: 'Life History' },
-  { key: 'RELIGION_AND_CULTURE', title: 'Religion and Culture' },
-  { key: 'SEXUALITY_AND_GENDER', title: 'Sexuality and Gender' },
-  { key: 'PSYCHOLOGICAL_MENTAL_HEALTH', title: 'Psychological & Mental Health' },
-  { key: 'POSITIVE_BEHAVIOUR_SUPPORT', title: 'Positive Behaviour Support' },
-  { key: 'PERSONAL_RELATIONSHIPS', title: 'Personal Relationships' },
-  { key: 'HOBBIES_AND_INTERESTS', title: 'Hobbies and Interests' },
-  { key: 'EDUCATION_AND_EMPLOYMENT', title: 'Education and Employment' },
-  { key: 'SMOKING', title: 'Smoking' },
-  { key: 'ALCOHOL_INTAKE', title: 'Alcohol Intake' },
-  { key: 'SUBSTANCE_MISUSE', title: 'Substance Misuse' },
-  { key: 'COMMUNICATION_RECORDS', title: 'Communication Records' },
-];
+const categories = SUPPORT_PLAN_CATEGORIES;
 
 const standardSupportPlanFields = [
   { key: 'identifiedNeeds', label: 'Identified Needs:' },
@@ -51,10 +20,13 @@ const standardSupportPlanFields = [
   { key: 'staffMemberSignature', label: 'Staff Member Signature:', type: 'text' },
 ];
 
-export default function OutcomesForm({ serviceSeekerId, onNotification }){
+export default function OutcomesForm({ serviceSeekerId, onNotification, riskAssessmentsVersion }){
   const [active, setActive] = useState('ABOUT_ME');
   const [rows, setRows] = useState([]); // history for active
   const [allOutcomes, setAllOutcomes] = useState([]); // all seeker outcomes for category status
+  const [allRiskAssessments, setAllRiskAssessments] = useState([]); // live synced risk assessments
+  const [loadingRisks, setLoadingRisks] = useState(false);
+  const [viewRiskAssessment, setViewRiskAssessment] = useState(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [categorySearch, setCategorySearch] = useState('');
   const [viewRecord, setViewRecord] = useState(null);
@@ -76,6 +48,42 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
   useEffect(() => {
     fetchAllOutcomes();
   }, [serviceSeekerId]);
+
+  useEffect(() => {
+    fetchRiskAssessments();
+  }, [serviceSeekerId, riskAssessmentsVersion]);
+
+  // Live communication listener for risk assessments updates across components
+  useEffect(() => {
+    const handleUpdated = (event) => {
+      if (!event?.detail?.serviceSeekerId || String(event.detail.serviceSeekerId) === String(serviceSeekerId)) {
+        fetchRiskAssessments();
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('bero:risk-assessments-updated', handleUpdated);
+      return () => window.removeEventListener('bero:risk-assessments-updated', handleUpdated);
+    }
+  }, [serviceSeekerId]);
+
+  const fetchRiskAssessments = async () => {
+    if (!serviceSeekerId) return;
+    setLoadingRisks(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/risk-assessments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllRiskAssessments(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error('Failed to fetch risk assessments in OutcomesForm:', e);
+    } finally {
+      setLoadingRisks(false);
+    }
+  };
 
   const fetchAllOutcomes = async () => {
     if (!serviceSeekerId) return;
@@ -469,6 +477,26 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
     });
   }, [categorySearch, statusFilter, categoryStatusMap]);
 
+  // Linked risk assessments for the currently active support plan category
+  const linkedRiskAssessments = useMemo(() => {
+    return allRiskAssessments.filter(ra => {
+      const linked = Array.isArray(ra.extra?.linkedSupportPlans) ? ra.extra.linkedSupportPlans : [];
+      return linked.includes(active);
+    });
+  }, [allRiskAssessments, active]);
+
+  // Counts of linked risk assessments per category key
+  const categoryLinkedRisksCountMap = useMemo(() => {
+    const map = {};
+    allRiskAssessments.forEach(ra => {
+      const linked = Array.isArray(ra.extra?.linkedSupportPlans) ? ra.extra.linkedSupportPlans : [];
+      linked.forEach(catKey => {
+        map[catKey] = (map[catKey] || 0) + 1;
+      });
+    });
+    return map;
+  }, [allRiskAssessments]);
+
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
       {/* Blue Header */}
@@ -564,6 +592,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
         {filteredCategories.map(c => {
           const catStatus = categoryStatusMap[c.key] || { status: 'NOT_COMPLETED', label: 'Not Started' };
           const isSelected = active === c.key;
+          const linkedCount = categoryLinkedRisksCountMap[c.key] || 0;
 
           let pillClasses = '';
           let dot = null;
@@ -596,14 +625,157 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
               key={c.key}
               type="button"
               onClick={() => setActive(c.key)}
-              title={`${c.title} • ${catStatus.label}${catStatus.sublabel ? ` (${catStatus.sublabel})` : ''}`}
+              title={`${c.title} • ${catStatus.label}${catStatus.sublabel ? ` (${catStatus.sublabel})` : ''}${linkedCount > 0 ? ` • ${linkedCount} Linked Risk Assessment(s)` : ''}`}
               className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center ${pillClasses}`}
             >
               {dot}
               <span>{c.title}</span>
+              {linkedCount > 0 && (
+                <span
+                  className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                    isSelected ? 'bg-white/30 text-white' : 'bg-purple-100 text-purple-800 border border-purple-200'
+                  }`}
+                  title={`${linkedCount} Linked Risk Assessment${linkedCount > 1 ? 's' : ''}`}
+                >
+                  🔗 {linkedCount}
+                </span>
+              )}
             </button>
           );
         })}
+      </div>
+
+      {/* Linked Risk Assessments Section (Live Synchronized) */}
+      <div className="mb-6 bg-gradient-to-br from-purple-50/70 via-indigo-50/30 to-blue-50/40 border border-purple-200 rounded-xl p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-4 border-b border-purple-100">
+          <div className="flex items-center space-x-2.5">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center text-sm shadow-xs">
+              🛡️
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-gray-900">
+                  Linked Risk Assessments
+                </h4>
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                  {linkedRiskAssessments.length}
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Live Synced
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Risk assessments linked to <strong className="text-gray-700">{categories.find(c => c.key === active)?.title}</strong>. Updates made in Risk Assessments reflect here live.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('risk-assessments-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-3 py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-xs font-semibold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+              title="Jump down to Risk Assessments section to link or manage assessments"
+            >
+              <span>➕ Link / Manage Risks</span>
+              <span>↓</span>
+            </button>
+          </div>
+        </div>
+
+        {linkedRiskAssessments.length === 0 ? (
+          <div className="bg-white/80 border border-dashed border-purple-200 rounded-lg p-5 text-center">
+            <p className="text-xs font-semibold text-gray-700 mb-1">
+              No risk assessments currently linked to {categories.find(c => c.key === active)?.title}.
+            </p>
+            <p className="text-xs text-gray-500 max-w-lg mx-auto">
+              To link a risk assessment to this support plan, scroll to the <strong>Risk Assessments</strong> section below, click Add or Edit on an assessment, and check <em>{categories.find(c => c.key === active)?.title}</em> in the <strong>Link into Support Plan(s)</strong> options.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {linkedRiskAssessments.map(ra => {
+              const raStatus = getEvaluationStatus(ra);
+              const evaluationsCount = Array.isArray(ra.extra?.evaluations) ? ra.extra.evaluations.length : 0;
+              const riskLevel = ra.riskLevel || 'Low';
+
+              let levelBadge = 'bg-blue-100 text-blue-800 border-blue-200';
+              if (riskLevel === 'High') levelBadge = 'bg-red-100 text-red-800 border-red-200';
+              else if (riskLevel === 'Medium') levelBadge = 'bg-amber-100 text-amber-800 border-amber-200';
+              else if (riskLevel === 'Very High') levelBadge = 'bg-rose-200 text-rose-900 border-rose-300';
+
+              return (
+                <div
+                  key={ra.id}
+                  className="bg-white border border-purple-100 hover:border-purple-300 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h5 className="text-xs font-bold text-gray-900 line-clamp-1" title={ra.riskType}>
+                        {ra.riskType}
+                      </h5>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${levelBadge} uppercase tracking-wider shrink-0`}>
+                        {riskLevel}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      {raStatus.status === 'GREEN' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          <span>{raStatus.label}</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800 border border-red-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                          <span>{raStatus.label}</span>
+                        </span>
+                      )}
+                      <span className="text-[10px] text-gray-400">•</span>
+                      <span className="text-[10px] text-gray-500">
+                        {formatDate(ra.lastAssessed)}
+                      </span>
+                    </div>
+
+                    {(ra.whatIsRisk || ra.summary) && (
+                      <div className="mb-2">
+                        <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Identified Risk</p>
+                        <p className="text-xs text-gray-800 line-clamp-2 mt-0.5">
+                          {ra.whatIsRisk || ra.summary}
+                        </p>
+                      </div>
+                    )}
+
+                    {ra.actionToTake && (
+                      <div className="mb-2 bg-blue-50/60 p-2 rounded-lg border border-blue-100">
+                        <p className="text-[10px] font-semibold text-[#224fa6] uppercase tracking-wider">Controls / Actions</p>
+                        <p className="text-xs text-gray-700 line-clamp-2 mt-0.5">
+                          {ra.actionToTake}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 mt-2 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <span className="text-[11px] text-gray-500">
+                      {evaluationsCount} evaluation{evaluationsCount !== 1 ? 's' : ''}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setViewRiskAssessment(ra)}
+                      className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 font-semibold rounded-lg text-xs transition-colors cursor-pointer flex items-center gap-1"
+                    >
+                      <span>🔍 View Details</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between mb-3">
@@ -897,6 +1069,53 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
                   </div>
                 );
               })()}
+              {/* Linked Risk Assessments in Support Plan view modal */}
+              {(() => {
+                const targetCategory = viewRecord.category || active;
+                const categoryRisks = allRiskAssessments.filter(ra => {
+                  const linked = Array.isArray(ra.extra?.linkedSupportPlans) ? ra.extra.linkedSupportPlans : [];
+                  return linked.includes(targetCategory);
+                });
+                return (
+                  <div className="bg-purple-50/60 border border-purple-200 rounded-xl p-4 shadow-xs">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
+                        <span>🛡️</span> Linked Risk Assessments ({categoryRisks.length})
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-white px-2 py-0.5 rounded border border-purple-200 font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Live Synced
+                      </span>
+                    </div>
+                    {categoryRisks.length > 0 ? (
+                      <div className="space-y-2">
+                        {categoryRisks.map(ra => (
+                          <div key={ra.id} className="bg-white border border-purple-100 rounded-lg p-2.5 flex items-center justify-between text-xs hover:border-purple-300 transition-colors">
+                            <div className="pr-3">
+                              <p className="font-semibold text-gray-900">{ra.riskType}</p>
+                              <p className="text-[11px] text-gray-500 mt-0.5">
+                                Risk Level: <strong className="text-gray-700">{ra.riskLevel || 'Low'}</strong> | Assessed: {formatDate(ra.lastAssessed)} | By: {ra.conductedBy || 'Staff'}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setViewRiskAssessment(ra)}
+                              className="px-2.5 py-1 bg-purple-100 hover:bg-purple-200 text-purple-900 font-semibold rounded-md text-xs transition-colors cursor-pointer shrink-0"
+                            >
+                              View Risk Details
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-purple-700/80 italic">
+                        No risk assessments currently linked to this support plan.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Question Questionnaire Details */}
               <div className="space-y-4">
                 {viewRecord.data && typeof viewRecord.data === 'object' ? (
@@ -1017,6 +1236,207 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
             </div>
             <div className="p-4 border-t border-gray-200 flex justify-end">
               <button type="button" onClick={()=>setViewRecord(null)} className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-medium transition-colors">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* View Linked Risk Assessment Modal */}
+      {viewRiskAssessment && (
+        <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-[#224fa6] text-white px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <span className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-base">
+                  🛡️
+                </span>
+                <div>
+                  <h3 className="text-xl font-semibold">{viewRiskAssessment.riskType}</h3>
+                  <p className="text-xs text-purple-100 mt-0.5">
+                    Assessed: {formatDate(viewRiskAssessment.lastAssessed)} | Assessor: {viewRiskAssessment.conductedBy || 'Staff'} | Review: {viewRiskAssessment.reviewFrequency || 'N/A'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewRiskAssessment(null)}
+                className="text-white/80 hover:text-white text-2xl leading-none transition-colors cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Status Banner */}
+              {(() => {
+                const raStatus = getEvaluationStatus(viewRiskAssessment);
+                return raStatus.status === 'RED' ? (
+                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
+                    <div className="text-red-600 text-xl leading-none mt-0.5">⚠️</div>
+                    <div className="flex-1 text-sm text-red-800">
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-red-900">Evaluation Overdue ({raStatus.sublabel})</p>
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-200 text-red-900">RED • Needs Review</span>
+                      </div>
+                      <p className="text-xs text-red-700 mt-1">
+                        Last evaluated on <strong>{formatDate(raStatus.refDate)}</strong>. Overdue for evaluation review.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
+                    <div className="text-emerald-600 text-xl leading-none mt-0.5">✅</div>
+                    <div className="flex-1 text-sm text-emerald-800">
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-emerald-900">Risk Assessment Up to Date ({raStatus.label})</p>
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-200 text-emerald-900">GREEN • Valid</span>
+                      </div>
+                      <p className="text-xs text-emerald-700 mt-1">
+                        Last evaluated on <strong>{formatDate(raStatus.refDate)}</strong>. Due: <strong>{formatDate(raStatus.dueDate)}</strong> ({raStatus.sublabel}).
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Linked Plans summary pills */}
+              <div className="bg-purple-50/60 border border-purple-200 rounded-xl p-4 shadow-xs">
+                <span className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5 mb-2">
+                  <span>📋</span> Linked into Support Plan(s):
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {Array.isArray(viewRiskAssessment.extra?.linkedSupportPlans) && viewRiskAssessment.extra.linkedSupportPlans.length > 0 ? (
+                    viewRiskAssessment.extra.linkedSupportPlans.map(key => (
+                      <span
+                        key={key}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border shadow-2xs ${
+                          key === active
+                            ? 'bg-purple-600 text-white border-purple-700 ring-2 ring-purple-300'
+                            : 'bg-white text-purple-900 border-purple-200'
+                        }`}
+                      >
+                        <span>{key === active ? '🎯 Current Plan:' : '📋'}</span>
+                        <span>{getSupportPlanTitle(key)}</span>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-500 italic">None</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Core Details */}
+              <div className="space-y-4">
+                {viewRiskAssessment.riskLevel && (
+                  <div className="border-b border-gray-100 pb-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Risk Level / Score</p>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded text-xs font-bold uppercase ${
+                        viewRiskAssessment.riskLevel === 'High' ? 'bg-red-100 text-red-800 border border-red-200' :
+                        viewRiskAssessment.riskLevel === 'Medium' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                        'bg-blue-100 text-blue-800 border border-blue-200'
+                      }`}>
+                        {viewRiskAssessment.riskLevel}
+                      </span>
+                      {viewRiskAssessment.totalScore && (
+                        <span className="text-xs text-gray-600 font-medium">Score: {viewRiskAssessment.totalScore}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {viewRiskAssessment.whatIsRisk && (
+                  <div className="border-b border-gray-100 pb-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">What is the Risk? / Primary Hazard</p>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRiskAssessment.whatIsRisk}</p>
+                  </div>
+                )}
+
+                {viewRiskAssessment.actionToTake && (
+                  <div className="border-b border-gray-100 pb-3 bg-blue-50/40 p-3 rounded-lg border border-blue-100">
+                    <p className="text-xs font-semibold text-[#224fa6] uppercase tracking-wide mb-1">Actions & Controls</p>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRiskAssessment.actionToTake}</p>
+                  </div>
+                )}
+
+                {viewRiskAssessment.summary && (
+                  <div className="border-b border-gray-100 pb-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Summary / Additional Notes</p>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{viewRiskAssessment.summary}</p>
+                  </div>
+                )}
+
+                {/* Questionnaire Answers from extra */}
+                {viewRiskAssessment.extra && typeof viewRiskAssessment.extra === 'object' && (
+                  <div className="space-y-3 pt-2">
+                    <h4 className="text-sm font-semibold text-gray-800 border-b pb-1">Assessment Answers</h4>
+                    {Object.entries(viewRiskAssessment.extra)
+                      .filter(([k]) => k !== 'evaluations' && k !== 'evaluationDate' && k !== 'evaluatorName' && k !== 'evaluationRecord' && k !== 'linkedSupportPlans')
+                      .map(([k, v]) => (
+                        <div key={k} className="border-b border-gray-100 pb-3">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                            {k.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </p>
+                          <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                            {Array.isArray(v) ? v.join(', ') : (v || '-')}
+                          </p>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Evaluations History */}
+              <div className="pt-4 border-t-2 border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#224fa6]"></span>
+                    Evaluations History ({Array.isArray(viewRiskAssessment.extra?.evaluations) ? viewRiskAssessment.extra.evaluations.length : 0})
+                  </h4>
+                </div>
+                {!Array.isArray(viewRiskAssessment.extra?.evaluations) || viewRiskAssessment.extra.evaluations.length === 0 ? (
+                  <p className="text-xs text-gray-500 italic bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200">
+                    No evaluations recorded yet for this risk assessment.
+                  </p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {viewRiskAssessment.extra.evaluations.map((ev, idx) => (
+                      <div key={ev.id || idx} className="bg-blue-50/60 border border-blue-200 rounded-xl p-3 text-xs">
+                        <div className="flex items-center justify-between border-b border-blue-100 pb-1.5 mb-1.5">
+                          <span className="font-bold text-gray-900">
+                            Evaluation #{idx + 1} - {ev.evaluatorName || 'Staff'}
+                          </span>
+                          <span className="text-gray-500">{formatDate(ev.date)}</span>
+                        </div>
+                        <p className="text-gray-800 whitespace-pre-wrap">{ev.record}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+              <button
+                type="button"
+                onClick={() => {
+                  setViewRiskAssessment(null);
+                  const el = document.getElementById('risk-assessments-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <span>🛡️ Open in Risk Assessments Section</span>
+                <span>↓</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewRiskAssessment(null)}
+                className="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

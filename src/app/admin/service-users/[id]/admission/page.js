@@ -74,6 +74,7 @@ export default function AdmissionPage() {
   const [shiftRuns, setShiftRuns] = useState([]);
   const [teams, setTeams] = useState([]);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  const [riskAssessmentsVersion, setRiskAssessmentsVersion] = useState(0);
   const [identification, setIdentification] = useState({
     nhsHscNo: '',
     chiNumber: '',
@@ -1183,12 +1184,14 @@ export default function AdmissionPage() {
           <OutcomesForm
             serviceSeekerId={serviceSeekerId}
             onNotification={setNotification}
+            riskAssessmentsVersion={riskAssessmentsVersion}
           />
 
           <RiskAssessmentsForm
             serviceSeekerId={serviceSeekerId}
             serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
             onNotification={setNotification}
+            onRiskAssessmentChange={() => setRiskAssessmentsVersion(v => v + 1)}
           />
 
           <CommunicationLogsForm

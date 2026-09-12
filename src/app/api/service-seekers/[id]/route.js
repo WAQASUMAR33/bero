@@ -157,7 +157,7 @@ export async function DELETE(request, { params }) {
     // 6. Admission, Contacts, Docs & Notes
     const profileModels = [
       'serviceSeekerAdmission', 'serviceSeekerContact', 'serviceSeekerDocument',
-      'serviceSeekerConfidentialNote', 'serviceSeekerFunding', 'serviceSeekerOtherId',
+      'serviceSeekerConfidentialNote', 'serviceSeekerCommunicationRecord', 'serviceSeekerFunding', 'serviceSeekerOtherId',
       'serviceSeekerOtherTelephone', 'serviceSeekerOtherAddress', 'serviceSeekerHealthTag'
     ];
     for (const model of profileModels) {

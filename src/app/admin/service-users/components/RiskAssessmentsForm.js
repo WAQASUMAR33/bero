@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { getEvaluationStatus, getCategoryOverallStatus } from '@/lib/evaluationStatus';
 
 const assessmentCategories = [
   { key: 'Generic Risk Assessment', title: 'Generic Risk' },
@@ -72,6 +73,8 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
   const [activeTab, setActiveTab] = useState('Generic Risk Assessment');
   const [tabSearch, setTabSearch] = useState('');
   const [rows, setRows] = useState([]);
+  const [allAssessments, setAllAssessments] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -92,9 +95,28 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
   }, [serviceSeekerId, activeTab]);
 
   useEffect(() => {
+    fetchAllAssessments();
+  }, [serviceSeekerId]);
+
+  useEffect(() => {
     fetchStaff();
     fetchTeams();
   }, []);
+
+  const fetchAllAssessments = async () => {
+    if (!serviceSeekerId) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/risk-assessments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setAllAssessments(await res.json());
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchStaff = async () => {
     try {
@@ -232,6 +254,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
 
       if (res.ok) {
         await fetchRows(activeTab);
+        await fetchAllAssessments();
         setShowModal(false);
         if (onNotification) onNotification({ show: true, message: `${activeTab} saved successfully.`, type: 'success' });
       } else {
@@ -279,6 +302,8 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
         const updatedRecord = { ...viewRecord, extra: updatedExtra, updatedAt: new Date().toISOString() };
         setViewRecord(updatedRecord);
         setRows(prev => prev.map(r => r.id === viewRecord.id ? updatedRecord : r));
+        setAllAssessments(prev => prev.map(r => r.id === viewRecord.id ? updatedRecord : r));
+        fetchAllAssessments();
         setNewEvalRecord('');
         setNewEvaluatorName(viewRecord.conductedBy || '');
         setNewEvalDate(new Date().toISOString().split('T')[0]);
@@ -306,6 +331,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
       });
       if (res.ok) {
         await fetchRows(activeTab);
+        await fetchAllAssessments();
         if (onNotification) onNotification({ show: true, message: 'Deleted.', type: 'success' });
       }
     } catch (e) {
@@ -316,10 +342,46 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
     }
   };
 
+  const assessmentRecordsMap = useMemo(() => {
+    const map = {};
+    allAssessments.forEach(item => {
+      if (!map[item.riskType]) map[item.riskType] = [];
+      map[item.riskType].push(item);
+    });
+    return map;
+  }, [allAssessments]);
+
+  const categoryStatusMap = useMemo(() => {
+    const map = {};
+    assessmentCategories.forEach(c => {
+      const catRecords = assessmentRecordsMap[c.key] || [];
+      map[c.key] = getCategoryOverallStatus(catRecords);
+    });
+    return map;
+  }, [assessmentRecordsMap]);
+
+  const statusCounts = useMemo(() => {
+    let green = 0;
+    let red = 0;
+    let notCompleted = 0;
+    assessmentCategories.forEach(c => {
+      const st = categoryStatusMap[c.key]?.status;
+      if (st === 'GREEN') green++;
+      else if (st === 'RED') red++;
+      else notCompleted++;
+    });
+    return { all: assessmentCategories.length, green, red, notCompleted };
+  }, [categoryStatusMap]);
+
   const filteredCategories = useMemo(() => {
-    if (!tabSearch.trim()) return assessmentCategories;
-    return assessmentCategories.filter(c => c.title.toLowerCase().includes(tabSearch.toLowerCase()) || c.key.toLowerCase().includes(tabSearch.toLowerCase()));
-  }, [tabSearch]);
+    return assessmentCategories.filter(c => {
+      const matchesSearch = !tabSearch.trim() || c.title.toLowerCase().includes(tabSearch.toLowerCase()) || c.key.toLowerCase().includes(tabSearch.toLowerCase());
+      if (!matchesSearch) return false;
+      if (statusFilter === 'ALL') return true;
+      const catStatus = categoryStatusMap[c.key]?.status;
+      return catStatus === statusFilter;
+    });
+  }, [tabSearch, statusFilter, categoryStatusMap]);
 
   // Dynamic field definitions for active assessment tab
   const getFieldsForActiveTab = () => {
@@ -686,7 +748,12 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
       {/* Blue Header */}
       <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Risk Assessments & Specialized Forms</h2>
+          <div>
+            <h2 className="text-xl font-semibold">Risk Assessments & Specialized Forms</h2>
+            <p className="text-xs text-blue-100 mt-0.5">
+              Completed assessments remain Green for 1 month, turning Red if not evaluated. Evaluated forms return to Green.
+            </p>
+          </div>
           <div className="flex items-center space-x-2">
             <button
               type="button"
@@ -711,44 +778,144 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
 
       <div className="p-6">
         {/* Category Search & Filter */}
-        <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
           <div className="relative max-w-xs w-full">
             <input
               type="text"
               placeholder="Search assessment forms..."
               value={tabSearch}
               onChange={e => setTabSearch(e.target.value)}
-              className="w-full text-xs px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#224fa6]"
+              className="w-full text-xs px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#224fa6]"
             />
             {tabSearch && (
               <button onClick={() => setTabSearch('')} className="absolute right-2 top-1.5 text-gray-400 hover:text-gray-600 text-xs">✕</button>
             )}
           </div>
-          <span className="text-xs text-gray-500 font-medium">Showing {filteredCategories.length} assessment types</span>
+
+          {/* Quick Status Filters */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setStatusFilter('ALL')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                statusFilter === 'ALL'
+                  ? 'bg-[#224fa6] text-white shadow-xs'
+                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              }`}
+            >
+              All ({statusCounts.all})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('GREEN')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                statusFilter === 'GREEN'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Up to Date ({statusCounts.green})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('RED')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                statusFilter === 'RED'
+                  ? 'bg-red-600 text-white shadow-xs animate-pulse'
+                  : 'bg-red-50 text-red-800 hover:bg-red-100 border border-red-300'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-red-500"></span>
+              Needs Evaluation ({statusCounts.red})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('NOT_COMPLETED')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                statusFilter === 'NOT_COMPLETED'
+                  ? 'bg-gray-700 text-white shadow-xs'
+                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+              Not Started ({statusCounts.notCompleted})
+            </button>
+          </div>
         </div>
 
         {/* Assessment Category Pill Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6 max-h-48 overflow-y-auto p-1 border border-gray-100 rounded-lg bg-gray-50/50">
-          {filteredCategories.map(c => (
-            <button
-              key={c.key}
-              type="button"
-              onClick={() => setActiveTab(c.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activeTab === c.key
-                  ? 'bg-[#224fa6] text-white shadow-sm ring-2 ring-blue-300'
-                  : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-200'
-              }`}
-            >
-              {c.title}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-2 mb-6 max-h-48 overflow-y-auto p-1.5 border border-gray-200 rounded-xl bg-gray-50/50">
+          {filteredCategories.map(c => {
+            const catStatus = categoryStatusMap[c.key] || { status: 'NOT_COMPLETED', label: 'Not Started' };
+            const isSelected = activeTab === c.key;
+
+            let pillClasses = '';
+            let dot = null;
+
+            if (catStatus.status === 'GREEN') {
+              pillClasses = isSelected
+                ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-300 font-semibold'
+                : 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100';
+              dot = (
+                <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
+              );
+            } else if (catStatus.status === 'RED') {
+              pillClasses = isSelected
+                ? 'bg-red-600 text-white shadow-md ring-2 ring-red-300 font-semibold animate-pulse'
+                : 'bg-red-50 text-red-800 border border-red-300 hover:bg-red-100 font-medium';
+              dot = (
+                <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isSelected ? 'bg-white' : 'bg-red-500 animate-ping'}`} />
+              );
+            } else {
+              pillClasses = isSelected
+                ? 'bg-[#224fa6] text-white shadow-sm ring-2 ring-blue-300 font-medium'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200';
+              dot = (
+                <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isSelected ? 'bg-white/60' : 'bg-gray-300'}`} />
+              );
+            }
+
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setActiveTab(c.key)}
+                title={`${c.title} • ${catStatus.label}${catStatus.sublabel ? ` (${catStatus.sublabel})` : ''}`}
+                className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center ${pillClasses}`}
+              >
+                {dot}
+                <span>{c.title}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-gray-800">
-            {activeTab} Records
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-semibold text-gray-800">
+              {activeTab} Records
+            </h3>
+            {categoryStatusMap[activeTab] && (
+              categoryStatusMap[activeTab].status === 'GREEN' ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>{categoryStatusMap[activeTab].label}</span>
+                  <span className="text-[10px] text-emerald-600 font-normal">({categoryStatusMap[activeTab].sublabel})</span>
+                </span>
+              ) : categoryStatusMap[activeTab].status === 'RED' ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200 animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                  <span>{categoryStatusMap[activeTab].label}</span>
+                  <span className="text-[10px] text-red-600 font-normal">({categoryStatusMap[activeTab].sublabel})</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                  Not Started
+                </span>
+              )
+            )}
+          </div>
         </div>
 
         {/* Table View */}
@@ -764,6 +931,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Last Assessed</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Type / Title</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Score / Level</th>
@@ -775,32 +943,49 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                 </tr>
               </thead>
               <tbody>
-                {rows.map(r => (
-                  <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.lastAssessed)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 font-medium">{r.riskType}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">
-                      {r.riskLevel ? (
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          r.riskLevel === 'High' ? 'bg-red-100 text-red-800' :
-                          r.riskLevel === 'Medium' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                        }`}>
-                          {r.riskLevel} {r.totalScore ? `(${r.totalScore})` : ''}
-                        </span>
-                      ) : (r.totalScore || '-')}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{r.reviewFrequency || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{r.conductedBy || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
-                    <td className="py-3 px-4 text-sm">
-                      {Array.isArray(r.extra?.evaluations) && r.extra.evaluations.length > 0 ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                          {r.extra.evaluations.length} evaluation{r.extra.evaluations.length > 1 ? 's' : ''} (latest: {formatDate(r.extra.evaluations[r.extra.evaluations.length - 1].date)})
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">0 recorded</span>
-                      )}
-                    </td>
+                {rows.map(r => {
+                  const rowStatus = getEvaluationStatus(r);
+                  return (
+                    <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
+                      <td className="py-3 px-4 text-sm">
+                        {rowStatus.status === 'GREEN' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span>{rowStatus.label}</span>
+                            <span className="text-[10px] text-emerald-600 font-normal">({rowStatus.sublabel})</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                            <span>{rowStatus.label}</span>
+                            <span className="text-[10px] text-red-600 font-normal">({rowStatus.sublabel})</span>
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.lastAssessed)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900 font-medium">{r.riskType}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">
+                        {r.riskLevel ? (
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                            r.riskLevel === 'High' ? 'bg-red-100 text-red-800' :
+                            r.riskLevel === 'Medium' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {r.riskLevel} {r.totalScore ? `(${r.totalScore})` : ''}
+                          </span>
+                        ) : (r.totalScore || '-')}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{r.reviewFrequency || '-'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{r.conductedBy || '-'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
+                      <td className="py-3 px-4 text-sm">
+                        {Array.isArray(r.extra?.evaluations) && r.extra.evaluations.length > 0 ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                            {r.extra.evaluations.length} evaluation{r.extra.evaluations.length > 1 ? 's' : ''} (latest: {formatDate(r.extra.evaluations[r.extra.evaluations.length - 1].date)})
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">0 recorded</span>
+                        )}
+                      </td>
                     <td className="py-3 px-4 space-x-3">
                       <button
                         type="button"
@@ -818,7 +1003,8 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                       </button>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>
@@ -1082,6 +1268,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Assessed</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Risk Level / Score</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Assessor</th>
@@ -1091,39 +1278,57 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map(r => (
-                      <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
-                        <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.lastAssessed)}</td>
-                        <td className="py-3 px-4 text-sm text-gray-900">{r.riskLevel || r.totalScore || '-'}</td>
-                        <td className="py-3 px-4 text-sm text-gray-600">{r.conductedBy || '-'}</td>
-                        <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
-                        <td className="py-3 px-4 text-sm">
-                          {Array.isArray(r.extra?.evaluations) && r.extra.evaluations.length > 0 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                              {r.extra.evaluations.length} evaluation{r.extra.evaluations.length > 1 ? 's' : ''}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-400">0 recorded</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 space-x-3">
-                          <button
-                            type="button"
-                            onClick={() => { openView(r); setShowHistory(false); }}
-                            className="text-[#224fa6] hover:text-blue-800 text-sm font-medium"
-                          >
-                            View
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteRow(r.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {rows.map(r => {
+                      const rowStatus = getEvaluationStatus(r);
+                      return (
+                        <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                          <td className="py-3 px-4 text-sm">
+                            {rowStatus.status === 'GREEN' ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span>{rowStatus.label}</span>
+                                <span className="text-[10px] text-emerald-600 font-normal">({rowStatus.sublabel})</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                <span>{rowStatus.label}</span>
+                                <span className="text-[10px] text-red-600 font-normal">({rowStatus.sublabel})</span>
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.lastAssessed)}</td>
+                          <td className="py-3 px-4 text-sm text-gray-900">{r.riskLevel || r.totalScore || '-'}</td>
+                          <td className="py-3 px-4 text-sm text-gray-600">{r.conductedBy || '-'}</td>
+                          <td className="py-3 px-4 text-sm text-gray-600">{formatDate(r.createdAt)}</td>
+                          <td className="py-3 px-4 text-sm">
+                            {Array.isArray(r.extra?.evaluations) && r.extra.evaluations.length > 0 ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                                {r.extra.evaluations.length} evaluation{r.extra.evaluations.length > 1 ? 's' : ''}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-400">0 recorded</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 space-x-3">
+                            <button
+                              type="button"
+                              onClick={() => { openView(r); setShowHistory(false); }}
+                              className="text-[#224fa6] hover:text-blue-800 text-sm font-medium"
+                            >
+                              View
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteRow(r.id)}
+                              className="text-red-600 hover:text-red-800 text-sm font-medium"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
@@ -1146,6 +1351,37 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
               <button type="button" onClick={() => setViewRecord(null)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Green / Red Evaluation Lifecycle Banner */}
+              {(() => {
+                const recordStatus = getEvaluationStatus(viewRecord);
+                return recordStatus.status === 'RED' ? (
+                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
+                    <div className="text-red-600 text-xl leading-none mt-0.5">⚠️</div>
+                    <div className="flex-1 text-sm text-red-800">
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-red-900">Evaluation Overdue ({recordStatus.sublabel})</p>
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-200 text-red-900">RED • Needs Review</span>
+                      </div>
+                      <p className="text-xs text-red-700 mt-1">
+                        This assessment was last evaluated/assessed on <strong>{formatDate(recordStatus.refDate)}</strong>. Risk assessments turn red after 1 month without evaluation. Please complete an evaluation below to return this form to <strong>Green</strong>.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
+                    <div className="text-emerald-600 text-xl leading-none mt-0.5">✅</div>
+                    <div className="flex-1 text-sm text-emerald-800">
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-emerald-900">Assessment Up to Date ({recordStatus.label})</p>
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-200 text-emerald-900">GREEN • Valid</span>
+                      </div>
+                      <p className="text-xs text-emerald-700 mt-1">
+                        Last evaluated/assessed on <strong>{formatDate(recordStatus.refDate)}</strong>. Next evaluation recommended on or before <strong>{formatDate(recordStatus.dueDate)}</strong> ({recordStatus.sublabel}).
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
               {/* Questionnaire / Core details */}
               <div className="space-y-4">
                 {viewRecord.riskLevel && (

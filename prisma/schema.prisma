@@ -409,6 +409,7 @@ model ServiceSeeker {
   riskAssessments           ServiceSeekerRiskAssessment[]
   safeguardingIncidents     ServiceSeekerSafeguarding[]
   feedbackForms             ServiceSeekerFeedback[]
+  communicationRecords      ServiceSeekerCommunicationRecord[]
   marReviews                ServiceSeekerMarReview[]
   alertThresholds           ServiceSeekerAlertThreshold[]
   mustAssessments           ServiceSeekerMustAssessment[]
@@ -750,6 +751,31 @@ model ServiceSeekerConfidentialNote {
   serviceSeeker ServiceSeeker @relation(fields: [serviceSeekerId], references: [id])
 
   @@index([serviceSeekerId])
+}
+
+model ServiceSeekerCommunicationRecord {
+  id                 Int           @id @default(autoincrement())
+  serviceSeekerId    Int
+  logType            String        // 'FAMILY_FRIENDS', 'PROFESSIONAL', 'DAILY_NOTES'
+  dateTime           DateTime      @default(now())
+  staffName          String?
+  contactName        String?
+  relationshipOrRole String?
+  organization       String?
+  category           String?       // Method (Phone, Visit, Email, etc.) or Shift (Morning, Afternoon, Evening, Night)
+  summary            String?       @db.Text
+  details            String?       @db.Text
+  actions            String?       @db.Text
+  attachmentUrl      String?       @db.Text
+  metadata           Json?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  // Relations
+  serviceSeeker      ServiceSeeker @relation(fields: [serviceSeekerId], references: [id], onDelete: Cascade)
+
+  @@index([serviceSeekerId])
+  @@index([logType])
 }
 
 model Funder {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { getEvaluationStatus, getCategoryOverallStatus } from '@/lib/evaluationStatus';
 
 const categories = [
   { key: 'ABOUT_ME', title: 'About me' },
@@ -53,6 +54,10 @@ const standardSupportPlanFields = [
 export default function OutcomesForm({ serviceSeekerId, onNotification }){
   const [active, setActive] = useState('ABOUT_ME');
   const [rows, setRows] = useState([]); // history for active
+  const [allOutcomes, setAllOutcomes] = useState([]); // all seeker outcomes for category status
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [categorySearch, setCategorySearch] = useState('');
+  const [viewRecord, setViewRecord] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -64,7 +69,29 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
   const [newEvalRecord, setNewEvalRecord] = useState('');
   const [savingEval, setSavingEval] = useState(false);
 
-  useEffect(() => { fetchRows(active); }, [serviceSeekerId, active]);
+  useEffect(() => { 
+    fetchRows(active); 
+  }, [serviceSeekerId, active]);
+
+  useEffect(() => {
+    fetchAllOutcomes();
+  }, [serviceSeekerId]);
+
+  const fetchAllOutcomes = async () => {
+    if (!serviceSeekerId) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/service-seekers/${serviceSeekerId}/outcomes`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllOutcomes(data || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchRows = async (category) => {
     if(!serviceSeekerId) return;
@@ -120,6 +147,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
       });
       if(res.ok){
         await fetchRows(active);
+        await fetchAllOutcomes();
         setShowModal(false);
         if(onNotification) onNotification({ show:true, message:'Support plan saved successfully.', type:'success' });
       }
@@ -164,6 +192,8 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
         const updatedRecord = { ...viewRecord, data: updatedData, updatedAt: new Date().toISOString() };
         setViewRecord(updatedRecord);
         setRows(prev => prev.map(r => r.id === viewRecord.id ? updatedRecord : r));
+        setAllOutcomes(prev => prev.map(r => r.id === viewRecord.id ? updatedRecord : r));
+        fetchAllOutcomes();
         setNewEvalRecord('');
         setNewEvaluatorName('');
         setNewEvalDate(new Date().toISOString().split('T')[0]);
@@ -186,6 +216,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
       const token = localStorage.getItem('token');
       await fetch(`/api/service-seekers/${serviceSeekerId}/outcomes?id=${id}`,{ method:'DELETE', headers:{ Authorization:`Bearer ${token}` }});
       await fetchRows(active);
+      await fetchAllOutcomes();
       if(onNotification) onNotification({ show:true, message:'Deleted.', type:'success' });
     }catch(e){ console.error(e); if(onNotification) onNotification({ show:true, message:'Failed to delete.', type:'error' }); }
     finally{ setSaving(false); }
@@ -397,20 +428,58 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
     }
   }, [active]);
 
-  const [categorySearch, setCategorySearch] = useState('');
-  const [viewRecord, setViewRecord] = useState(null);
+  const categoryRecordsMap = useMemo(() => {
+    const map = {};
+    allOutcomes.forEach(item => {
+      if (!map[item.category]) map[item.category] = [];
+      map[item.category].push(item);
+    });
+    return map;
+  }, [allOutcomes]);
+
+  const categoryStatusMap = useMemo(() => {
+    const map = {};
+    categories.forEach(c => {
+      const catRecords = categoryRecordsMap[c.key] || [];
+      map[c.key] = getCategoryOverallStatus(catRecords);
+    });
+    return map;
+  }, [categoryRecordsMap]);
+
+  const statusCounts = useMemo(() => {
+    let green = 0;
+    let red = 0;
+    let notCompleted = 0;
+    categories.forEach(c => {
+      const st = categoryStatusMap[c.key]?.status;
+      if (st === 'GREEN') green++;
+      else if (st === 'RED') red++;
+      else notCompleted++;
+    });
+    return { all: categories.length, green, red, notCompleted };
+  }, [categoryStatusMap]);
 
   const filteredCategories = useMemo(() => {
-    if (!categorySearch.trim()) return categories;
-    return categories.filter(c => c.title.toLowerCase().includes(categorySearch.toLowerCase()));
-  }, [categorySearch]);
+    return categories.filter(c => {
+      const matchesSearch = !categorySearch.trim() || c.title.toLowerCase().includes(categorySearch.toLowerCase());
+      if (!matchesSearch) return false;
+      if (statusFilter === 'ALL') return true;
+      const catStatus = categoryStatusMap[c.key]?.status;
+      return catStatus === statusFilter;
+    });
+  }, [categorySearch, statusFilter, categoryStatusMap]);
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 border-t-4 border-[#224fa6]">
       {/* Blue Header */}
       <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Support Plan</h2>
+          <div>
+            <h2 className="text-xl font-semibold">Support Plan</h2>
+            <p className="text-xs text-blue-100 mt-0.5">
+              Completed plans remain Green for 1 month, turning Red if not evaluated. Evaluated plans return to Green.
+            </p>
+          </div>
           <div className="flex items-center space-x-2">
             <button type="button" onClick={()=>setShowHistory(true)} className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm text-white font-medium transition-colors">View All</button>
             <button type="button" onClick={openAdd} className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors flex items-center space-x-2">
@@ -423,32 +492,145 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
       
       <div className="p-6">
 
-      <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      {/* Search & Status Filter Bar */}
+      <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
         <div className="relative max-w-xs w-full">
           <input
             type="text"
             placeholder="Search categories..."
             value={categorySearch}
             onChange={e => setCategorySearch(e.target.value)}
-            className="w-full text-xs px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#224fa6]"
+            className="w-full text-xs px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#224fa6]"
           />
           {categorySearch && (
             <button onClick={() => setCategorySearch('')} className="absolute right-2 top-1.5 text-gray-400 hover:text-gray-600 text-xs">✕</button>
           )}
         </div>
-        <span className="text-xs text-gray-500 font-medium">Showing {filteredCategories.length} categories</span>
+
+        {/* Quick Status Filters */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setStatusFilter('ALL')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+              statusFilter === 'ALL'
+                ? 'bg-[#224fa6] text-white shadow-xs'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+            }`}
+          >
+            All ({statusCounts.all})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('GREEN')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              statusFilter === 'GREEN'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Up to Date ({statusCounts.green})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('RED')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              statusFilter === 'RED'
+                ? 'bg-red-600 text-white shadow-xs animate-pulse'
+                : 'bg-red-50 text-red-800 hover:bg-red-100 border border-red-300'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+            Needs Evaluation ({statusCounts.red})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('NOT_COMPLETED')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              statusFilter === 'NOT_COMPLETED'
+                ? 'bg-gray-700 text-white shadow-xs'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+            Not Started ({statusCounts.notCompleted})
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6 max-h-48 overflow-y-auto p-1 border border-gray-100 rounded-lg bg-gray-50/50">
-        {filteredCategories.map(c => (
-          <button key={c.key} type="button" onClick={()=>setActive(c.key)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${active===c.key? 'bg-[#224fa6] text-white shadow-sm ring-2 ring-blue-300' : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-200'}`}>{c.title}</button>
-        ))}
+      {/* Category Pills */}
+      <div className="flex flex-wrap gap-2 mb-6 max-h-48 overflow-y-auto p-1.5 border border-gray-200 rounded-xl bg-gray-50/50">
+        {filteredCategories.map(c => {
+          const catStatus = categoryStatusMap[c.key] || { status: 'NOT_COMPLETED', label: 'Not Started' };
+          const isSelected = active === c.key;
+
+          let pillClasses = '';
+          let dot = null;
+
+          if (catStatus.status === 'GREEN') {
+            pillClasses = isSelected
+              ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-300 font-semibold'
+              : 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100';
+            dot = (
+              <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
+            );
+          } else if (catStatus.status === 'RED') {
+            pillClasses = isSelected
+              ? 'bg-red-600 text-white shadow-md ring-2 ring-red-300 font-semibold animate-pulse'
+              : 'bg-red-50 text-red-800 border border-red-300 hover:bg-red-100 font-medium';
+            dot = (
+              <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isSelected ? 'bg-white' : 'bg-red-500 animate-ping'}`} />
+            );
+          } else {
+            pillClasses = isSelected
+              ? 'bg-[#224fa6] text-white shadow-sm ring-2 ring-blue-300 font-medium'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200';
+            dot = (
+              <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isSelected ? 'bg-white/60' : 'bg-gray-300'}`} />
+            );
+          }
+
+          return (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => setActive(c.key)}
+              title={`${c.title} • ${catStatus.label}${catStatus.sublabel ? ` (${catStatus.sublabel})` : ''}`}
+              className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center ${pillClasses}`}
+            >
+              {dot}
+              <span>{c.title}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-base font-semibold text-gray-800">
-          {categories.find(c => c.key === active)?.title} Entries
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-semibold text-gray-800">
+            {categories.find(c => c.key === active)?.title} Entries
+          </h3>
+          {categoryStatusMap[active] && (
+            categoryStatusMap[active].status === 'GREEN' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>{categoryStatusMap[active].label}</span>
+                <span className="text-[10px] text-emerald-600 font-normal">({categoryStatusMap[active].sublabel})</span>
+              </span>
+            ) : categoryStatusMap[active].status === 'RED' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200 animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                <span>{categoryStatusMap[active].label}</span>
+                <span className="text-[10px] text-red-600 font-normal">({categoryStatusMap[active].sublabel})</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                Not Started
+              </span>
+            )
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -463,6 +645,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Updated</th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Evaluations</th>
@@ -470,25 +653,43 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
               </tr>
             </thead>
             <tbody>
-              {rows.map(r => (
-                <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
-                  <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.createdAt)}</td>
-                  <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.updatedAt)}</td>
-                  <td className="py-3 px-4 text-sm">
-                    {Array.isArray(r.data?.evaluations) && r.data.evaluations.length > 0 ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                        {r.data.evaluations.length} evaluation{r.data.evaluations.length > 1 ? 's' : ''} (latest: {formatDate(r.data.evaluations[r.data.evaluations.length - 1].date)})
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-400">0 recorded</span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 space-x-3">
-                    <button type="button" onClick={()=>openView(r)} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
-                    <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
-                  </td>
-                </tr>
-              ))}
+              {rows.map(r => {
+                const rowStatus = getEvaluationStatus(r);
+                return (
+                  <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors">
+                    <td className="py-3 px-4 text-sm">
+                      {rowStatus.status === 'GREEN' ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                          <span>{rowStatus.label}</span>
+                          <span className="text-[10px] text-emerald-600 font-normal">({rowStatus.sublabel})</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                          <span>{rowStatus.label}</span>
+                          <span className="text-[10px] text-red-600 font-normal">({rowStatus.sublabel})</span>
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.createdAt)}</td>
+                    <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.updatedAt)}</td>
+                    <td className="py-3 px-4 text-sm">
+                      {Array.isArray(r.data?.evaluations) && r.data.evaluations.length > 0 ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                          {r.data.evaluations.length} evaluation{r.data.evaluations.length > 1 ? 's' : ''} (latest: {formatDate(r.data.evaluations[r.data.evaluations.length - 1].date)})
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">0 recorded</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 space-x-3">
+                      <button type="button" onClick={()=>openView(r)} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
+                      <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -601,6 +802,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Created</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Updated</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Evaluations</th>
@@ -608,25 +810,43 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map(r => (
-                      <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
-                        <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.createdAt)}</td>
-                        <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.updatedAt)}</td>
-                        <td className="py-3 px-4 text-sm">
-                          {Array.isArray(r.data?.evaluations) && r.data.evaluations.length > 0 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                              {r.data.evaluations.length} evaluation{r.data.evaluations.length > 1 ? 's' : ''}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-400">0 recorded</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 space-x-3">
-                          <button type="button" onClick={()=>{ openView(r); setShowHistory(false); }} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
-                          <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
-                        </td>
-                      </tr>
-                    ))}
+                    {rows.map(r => {
+                      const rowStatus = getEvaluationStatus(r);
+                      return (
+                        <tr key={r.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                          <td className="py-3 px-4 text-sm">
+                            {rowStatus.status === 'GREEN' ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span>{rowStatus.label}</span>
+                                <span className="text-[10px] text-emerald-600 font-normal">({rowStatus.sublabel})</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                <span>{rowStatus.label}</span>
+                                <span className="text-[10px] text-red-600 font-normal">({rowStatus.sublabel})</span>
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.createdAt)}</td>
+                          <td className="py-3 px-4 text-sm text-gray-900">{formatDate(r.updatedAt)}</td>
+                          <td className="py-3 px-4 text-sm">
+                            {Array.isArray(r.data?.evaluations) && r.data.evaluations.length > 0 ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                                {r.data.evaluations.length} evaluation{r.data.evaluations.length > 1 ? 's' : ''}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-400">0 recorded</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 space-x-3">
+                            <button type="button" onClick={()=>{ openView(r); setShowHistory(false); }} className="text-[#224fa6] hover:text-blue-800 text-sm font-medium">View</button>
+                            <button type="button" onClick={()=>deleteRow(r.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
@@ -646,6 +866,37 @@ export default function OutcomesForm({ serviceSeekerId, onNotification }){
               <button type="button" onClick={()=>setViewRecord(null)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Green / Red Evaluation Lifecycle Banner */}
+              {(() => {
+                const recordStatus = getEvaluationStatus(viewRecord);
+                return recordStatus.status === 'RED' ? (
+                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
+                    <div className="text-red-600 text-xl leading-none mt-0.5">⚠️</div>
+                    <div className="flex-1 text-sm text-red-800">
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-red-900">Evaluation Overdue ({recordStatus.sublabel})</p>
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-200 text-red-900">RED • Needs Review</span>
+                      </div>
+                      <p className="text-xs text-red-700 mt-1">
+                        This support plan was last evaluated/completed on <strong>{formatDate(recordStatus.refDate)}</strong>. Support plans turn red after 1 month without evaluation. Please complete an evaluation below to return this plan to <strong>Green</strong>.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
+                    <div className="text-emerald-600 text-xl leading-none mt-0.5">✅</div>
+                    <div className="flex-1 text-sm text-emerald-800">
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-emerald-900">Support Plan Up to Date ({recordStatus.label})</p>
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-200 text-emerald-900">GREEN • Valid</span>
+                      </div>
+                      <p className="text-xs text-emerald-700 mt-1">
+                        Last evaluated/completed on <strong>{formatDate(recordStatus.refDate)}</strong>. Next evaluation recommended on or before <strong>{formatDate(recordStatus.dueDate)}</strong> ({recordStatus.sublabel}).
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
               {/* Question Questionnaire Details */}
               <div className="space-y-4">
                 {viewRecord.data && typeof viewRecord.data === 'object' ? (

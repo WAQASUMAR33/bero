@@ -24,6 +24,7 @@ import FundingForm from '../../components/FundingForm';
 import CalendarForm from '../../components/CalendarForm';
 import OutcomesForm from '../../components/OutcomesForm';
 import RiskAssessmentsForm from '../../components/RiskAssessmentsForm';
+import CommunicationLogsForm from '../../components/CommunicationLogsForm';
 import SafeguardingForm from '../../components/SafeguardingForm';
 import FeedbackForms from '../../components/FeedbackForms';
 import MarReviewsForm from '../../components/MarReviewsForm';
@@ -1185,6 +1186,12 @@ export default function AdmissionPage() {
           />
 
           <RiskAssessmentsForm
+            serviceSeekerId={serviceSeekerId}
+            serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
+            onNotification={setNotification}
+          />
+
+          <CommunicationLogsForm
             serviceSeekerId={serviceSeekerId}
             serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
             onNotification={setNotification}

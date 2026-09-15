@@ -396,6 +396,7 @@ export default function CareWorkerDashboard() {
             }
         },
         { title: 'My Tasks', icon: '📋', color: 'bg-blue-50 text-blue-600', action: () => router.push('/care-worker/tasks') },
+        { title: 'Action Plans', icon: '📝', color: 'bg-amber-50 text-amber-700', action: () => router.push('/care-worker/action-plan') },
         { title: 'My Rota', icon: '📅', color: 'bg-indigo-50 text-indigo-600', action: () => router.push('/care-worker/rota') },
         { title: 'Holidays', icon: '✈️', color: 'bg-emerald-50 text-emerald-600', action: () => router.push('/care-worker/holidays') },
         { title: 'Care Plan', icon: '📄', color: 'bg-sky-50 text-sky-600', action: () => router.push('/care-worker/care-plan') },

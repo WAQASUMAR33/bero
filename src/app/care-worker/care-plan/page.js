@@ -42,6 +42,7 @@ export default function CareWorkerCarePlanPage() {
     const [riskAssessments, setRiskAssessments] = useState([]);
     const [medicineSchedule, setMedicineSchedule] = useState([]);
     const [documents, setDocuments] = useState([]);
+    const [actionPlans, setActionPlans] = useState([]);
 
     useEffect(() => {
         findActiveShiftAndFetchData();
@@ -122,6 +123,19 @@ export default function CareWorkerCarePlanPage() {
                 setError("Failed to fetch care plan data.");
             }
 
+            // Fetch Action Plans for this specific resident
+            try {
+                const actionRes = await fetch(`/api/quality-assurance/actions?serviceSeekerId=${seekerId}`, { headers });
+                if (actionRes.ok) {
+                    const actionJson = await actionRes.json();
+                    if (actionJson.success && actionJson.data?.actions) {
+                        setActionPlans(actionJson.data.actions);
+                    }
+                }
+            } catch (actErr) {
+                console.error("Error fetching resident action plans", actErr);
+            }
+
         } catch (e) {
             console.error("Error fetching specific care plan details", e);
             setError("Network error while loading care plan.");
@@ -192,6 +206,35 @@ export default function CareWorkerCarePlanPage() {
                             </span>
                         ))}
                     </div>
+                )}
+
+                {/* Resident Action Plans */}
+                {actionPlans.length > 0 && (
+                    <SectionCard title={`Action Plans for ${seeker?.firstName || 'Resident'}`} icon="📋">
+                        <div className="space-y-3">
+                            {actionPlans.map(action => (
+                                <div key={action.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                action.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                                            }`}>
+                                                {action.status === 'COMPLETED' ? '✓ Completed' : 'Pending Action'}
+                                            </span>
+                                            <span className="text-xs font-bold text-slate-900">{action.item || action.title}</span>
+                                        </div>
+                                        <p className="text-xs text-slate-600 mt-1">{action.actionRequired || action.description}</p>
+                                    </div>
+                                    <Link
+                                        href="/care-worker/action-plan"
+                                        className="px-3.5 py-1.5 bg-[#224fa6] text-white rounded-lg text-xs font-bold text-center hover:bg-blue-800 transition-colors flex-shrink-0"
+                                    >
+                                        {action.status === 'COMPLETED' ? 'View Details' : 'Complete Action'}
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    </SectionCard>
                 )}
 
                 {/* Profile Summary */}

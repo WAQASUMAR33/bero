@@ -13,9 +13,12 @@ export default function ActionPlansManager({ user, onNotification }) {
   const [selectedActionForView, setSelectedActionForView] = useState(null);
   const [updatingStatusId, setUpdatingStatusId] = useState(null);
 
+  const [serviceSeekers, setServiceSeekers] = useState([]);
+
   // New Action Form State matching Beerusys/Action Plan.xlsx
   const [newAction, setNewAction] = useState({
     staffId: '',
+    serviceSeekerId: '',
     title: '',
     item: '',
     description: '',
@@ -49,6 +52,15 @@ export default function ActionPlansManager({ user, onNotification }) {
       } else {
         if (onNotification) onNotification({ show: true, message: result.error || 'Failed to load action plans', type: 'error' });
       }
+
+      // Fetch service seekers for resident linking
+      try {
+        const sRes = await fetch('/api/service-seekers', { headers: { Authorization: `Bearer ${token}` } });
+        if (sRes.ok) {
+          const sData = await sRes.json();
+          if (Array.isArray(sData)) setServiceSeekers(sData);
+        }
+      } catch (e) {}
     } catch (e) {
       console.error(e);
       if (onNotification) onNotification({ show: true, message: 'Network error loading action plans', type: 'error' });
@@ -90,6 +102,7 @@ export default function ActionPlansManager({ user, onNotification }) {
           source: newAction.source,
           notes: newAction.comments || newAction.notes,
           comments: newAction.comments || newAction.notes,
+          serviceSeekerId: newAction.serviceSeekerId || null,
         })
       });
       const json = await res.json();
@@ -98,6 +111,7 @@ export default function ActionPlansManager({ user, onNotification }) {
         setShowAddModal(false);
         setNewAction({
           staffId: '',
+          serviceSeekerId: '',
           title: '',
           item: '',
           description: '',
@@ -418,7 +432,14 @@ export default function ActionPlansManager({ user, onNotification }) {
 
                       <td className="py-3 px-3 max-w-xs font-bold text-gray-900">
                         <p className="line-clamp-1">{act.item || act.title}</p>
-                        <span className="text-[10px] text-gray-400 font-normal">{act.source || 'Audit'}</span>
+                        <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                          <span className="text-[10px] text-gray-400 font-normal">{act.source || 'Audit'}</span>
+                          {act.serviceSeeker && (
+                            <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                              👤 {act.serviceSeeker.firstName} {act.serviceSeeker.lastName}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       <td className="py-3 px-4 max-w-sm">
@@ -556,10 +577,26 @@ export default function ActionPlansManager({ user, onNotification }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Assigned By (Current User)</label>
-                  <div className="w-full text-xs border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 font-medium text-gray-700 truncate">
-                    👤 {user?.firstName} {user?.lastName} ({user?.role?.name || 'Manager'})
-                  </div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Link to Service User (Optional)</label>
+                  <select
+                    value={newAction.serviceSeekerId || ''}
+                    onChange={e => setNewAction(prev => ({ ...prev, serviceSeekerId: e.target.value }))}
+                    className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-white focus:ring-2 focus:ring-[#224fa6]"
+                  >
+                    <option value="">General Staff / No specific resident</option>
+                    {serviceSeekers.map(s => (
+                      <option key={s.id} value={s.id}>
+                        {s.firstName} {s.lastName} {s.address ? `(${s.address})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Assigned By (Current User)</label>
+                <div className="w-full text-xs border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 font-medium text-gray-700 truncate">
+                  👤 {user?.firstName} {user?.lastName} ({user?.role?.name || 'Manager'})
                 </div>
               </div>
 

@@ -96,6 +96,19 @@ export async function GET(request) {
       where.status = statusFilter;
     }
 
+    const serviceSeekerIdParam = searchParams.get('serviceSeekerId');
+    if (serviceSeekerIdParam && serviceSeekerIdParam !== 'all') {
+      const parsedSeekerId = parseInt(serviceSeekerIdParam, 10);
+      if (!isNaN(parsedSeekerId)) {
+        where.serviceSeekerId = parsedSeekerId;
+        // When a care worker requests actions for a specific resident during their active shift,
+        // allow them to view actions assigned for that resident
+        if (!isManagement && !isServiceLead) {
+          delete where.staffId;
+        }
+      }
+    }
+
     const actions = await prisma.qaActionItem.findMany({
       where,
       include: {
@@ -104,6 +117,9 @@ export async function GET(request) {
         },
         createdBy: {
           select: { id: true, firstName: true, lastName: true }
+        },
+        serviceSeeker: {
+          select: { id: true, firstName: true, lastName: true, address: true }
         }
       },
       orderBy: [
@@ -197,6 +213,7 @@ export async function POST(request) {
       notes,
       comments,
       auditId,
+      serviceSeekerId,
     } = body;
 
     const actionItemTitle = (item || title || '').trim();
@@ -211,6 +228,8 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: 'Please assign this action to a staff member' }, { status: 400 });
     }
 
+    const targetSeekerId = serviceSeekerId ? parseInt(serviceSeekerId, 10) : null;
+
     const newAction = await prisma.qaActionItem.create({
       data: {
         staffId: targetStaffId,
@@ -224,7 +243,9 @@ export async function POST(request) {
         dueDate: dueDate ? new Date(dueDate) : null,
         source: source || 'Audit Finding',
         notes: (comments || notes)?.trim() || null,
+        comments: (comments || notes)?.trim() || null,
         auditId: auditId ? parseInt(auditId, 10) : null,
+        serviceSeekerId: targetSeekerId && !isNaN(targetSeekerId) ? targetSeekerId : null,
         createdById: currentUser.id,
       },
       include: {
@@ -233,9 +254,34 @@ export async function POST(request) {
         },
         createdBy: {
           select: { id: true, firstName: true, lastName: true }
+        },
+        serviceSeeker: {
+          select: { id: true, firstName: true, lastName: true, address: true }
         }
       }
     });
+
+    // Automatically send notification to the assigned care worker
+    try {
+      let residentLabel = '';
+      if (newAction.serviceSeeker) {
+        residentLabel = ` regarding ${newAction.serviceSeeker.firstName} ${newAction.serviceSeeker.lastName}`;
+      }
+      const dueText = dueDate ? ` Due: ${new Date(dueDate).toLocaleDateString('en-GB')}.` : '';
+
+      await prisma.notification.create({
+        data: {
+          userId: targetStaffId,
+          title: 'New Action Plan Assigned',
+          message: `You have been assigned an action plan: "${actionItemTitle}"${residentLabel}.${dueText}`,
+          type: 'WARNING',
+          link: '/care-worker/action-plan',
+          isRead: false
+        }
+      });
+    } catch (notifError) {
+      console.error('Failed to create assignment notification:', notifError);
+    }
 
     return NextResponse.json({ success: true, data: newAction });
   } catch (error) {
@@ -254,7 +300,8 @@ export async function PUT(request) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id, status, notes, comments, priority, dueDate, title, item, description, actionRequired, staffId } = body;
+    const body = await request.json();
+    const { id, status, notes, comments, priority, dueDate, title, item, description, actionRequired, staffId, serviceSeekerId } = body;
 
     const actionId = parseInt(id, 10);
     const existing = await prisma.qaActionItem.findUnique({ where: { id: actionId } });
@@ -281,7 +328,9 @@ export async function PUT(request) {
     }
 
     if (notes !== undefined || comments !== undefined) {
-      updateData.notes = (comments !== undefined ? comments : notes);
+      const commentText = (comments !== undefined ? comments : notes);
+      updateData.notes = commentText;
+      updateData.comments = commentText;
     }
 
     if (isManagement) {
@@ -298,6 +347,9 @@ export async function PUT(request) {
         updateData.actionRequired = d;
       }
       if (staffId) updateData.staffId = parseInt(staffId, 10);
+      if (serviceSeekerId !== undefined) {
+        updateData.serviceSeekerId = serviceSeekerId ? parseInt(serviceSeekerId, 10) : null;
+      }
     }
 
     const updated = await prisma.qaActionItem.update({
@@ -309,9 +361,28 @@ export async function PUT(request) {
         },
         createdBy: {
           select: { id: true, firstName: true, lastName: true }
+        },
+        serviceSeeker: {
+          select: { id: true, firstName: true, lastName: true, address: true }
         }
       }
     });
+
+    // If completed by care worker, notify creator/manager
+    if (status === 'COMPLETED' && existing.createdById && existing.createdById !== currentUser.id) {
+      try {
+        await prisma.notification.create({
+          data: {
+            userId: existing.createdById,
+            title: 'Action Plan Completed',
+            message: `${currentUser.firstName || 'Care worker'} marked action item "${existing.title}" as completed.`,
+            type: 'SUCCESS',
+            link: '/admin/quality-assurance?tab=actions',
+            isRead: false
+          }
+        });
+      } catch (e) {}
+    }
 
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {

@@ -458,6 +458,7 @@ model ServiceSeeker {
   documents         ServiceSeekerDocument[]
   confidentialNotes ServiceSeekerConfidentialNote[]
   fundings          ServiceSeekerFunding[]
+  qaActionItems     QaActionItem[]
 }
 
 enum FuneralArrangement {
@@ -2945,15 +2946,19 @@ model QaActionItem {
   auditId        Int?
   source         String    @default("Audit Finding") @db.VarChar(100)
   notes          String?   @db.Text
+  comments       String?   @db.Text
   evidenceUrl    String?   @db.VarChar(500)
+  serviceSeekerId Int?
   createdById    Int
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  staff          User      @relation("QaActionItemStaff", fields: [staffId], references: [id], onDelete: Cascade)
-  createdBy      User      @relation("QaActionItemCreatedBy", fields: [createdById], references: [id])
+  staff          User           @relation("QaActionItemStaff", fields: [staffId], references: [id], onDelete: Cascade)
+  createdBy      User           @relation("QaActionItemCreatedBy", fields: [createdById], references: [id])
+  serviceSeeker  ServiceSeeker? @relation(fields: [serviceSeekerId], references: [id], onDelete: SetNull)
 
   @@index([staffId])
+  @@index([serviceSeekerId])
   @@index([status])
   @@index([dueDate])
   @@index([createdById])

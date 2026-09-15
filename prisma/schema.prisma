@@ -764,10 +764,10 @@ model ServiceSeekerCommunicationRecord {
   serviceSeekerId    Int
   logType            String        // 'FAMILY_FRIENDS', 'PROFESSIONAL', 'DAILY_NOTES'
   dateTime           DateTime      @default(now())
-  staffName          String?
-  contactName        String?
-  relationshipOrRole String?
-  organization       String?
+  staffName          String?       @db.VarChar(255)
+  contactName        String?       @db.VarChar(255)
+  relationshipOrRole String?       @db.VarChar(255)
+  organization       String?       @db.VarChar(255)
   category           String?       // Method (Phone, Visit, Email, etc.) or Shift (Morning, Afternoon, Evening, Night)
   summary            String?       @db.Text
   details            String?       @db.Text
@@ -2878,24 +2878,30 @@ model PushSubscription {
 
 // Quality Assurance Audits and Action Plans Models
 model QaAudit {
-  id           Int                 @id @default(autoincrement())
-  title        String              @db.VarChar(255)
-  category     String              @default("Care Quality") @db.VarChar(100)
-  frequency    String              @default("Monthly") @db.VarChar(50)
-  assignedToId Int?
-  targetScore  Float               @default(90.0)
-  description  String?             @db.Text
-  checklist    Json?
-  isActive     Boolean             @default(true)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  id            Int                 @id @default(autoincrement())
+  title         String              @db.VarChar(255)
+  category      String              @default("Care Quality") @db.VarChar(100)
+  location      String?             @default("Head Office") @db.VarChar(255)
+  frequency     String              @default("Monthly") @db.VarChar(50)
+  assignedToId  Int?
+  targetScore   Float               @default(90.0)
+  description   String?             @db.Text
+  checklist     Json?
+  nextDue       DateTime?
+  lastCompleted DateTime?
+  ragStatus     String?             @default("DUE") @db.VarChar(50) // RED, YELLOW, GREEN or OVERDUE, DUE, COMPLETED
+  comments      String?             @db.Text
+  isActive      Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 
-  assignedTo   User?               @relation("QaAuditAssignedTo", fields: [assignedToId], references: [id])
-  submissions  QaAuditSubmission[]
+  assignedTo    User?               @relation("QaAuditAssignedTo", fields: [assignedToId], references: [id])
+  submissions   QaAuditSubmission[]
 
   @@index([assignedToId])
   @@index([category])
   @@index([frequency])
+  @@index([location])
 }
 
 model QaAuditSubmission {
@@ -2925,29 +2931,58 @@ model QaAuditSubmission {
 }
 
 model QaActionItem {
-  id          Int       @id @default(autoincrement())
-  staffId     Int
-  title       String    @db.VarChar(255)
-  description String?   @db.Text
-  priority    String    @default("MEDIUM") @db.VarChar(50)
-  status      String    @default("OPEN") @db.VarChar(50)
-  dueDate     DateTime? @db.Date
-  completedAt DateTime?
-  auditId     Int?
-  source      String    @default("Audit Finding") @db.VarChar(100)
-  notes       String?   @db.Text
-  evidenceUrl String?   @db.VarChar(500)
-  createdById Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             Int       @id @default(autoincrement())
+  staffId        Int
+  title          String    @db.VarChar(255)
+  item           String?   @db.VarChar(255)
+  description    String?   @db.Text
+  actionRequired String?   @db.Text
+  dateIdentified DateTime? @default(now())
+  priority       String    @default("MEDIUM") @db.VarChar(50)
+  status         String    @default("OPEN") @db.VarChar(50)
+  dueDate        DateTime? @db.Date
+  completedAt    DateTime?
+  auditId        Int?
+  source         String    @default("Audit Finding") @db.VarChar(100)
+  notes          String?   @db.Text
+  evidenceUrl    String?   @db.VarChar(500)
+  createdById    Int
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  staff       User      @relation("QaActionItemStaff", fields: [staffId], references: [id], onDelete: Cascade)
-  createdBy   User      @relation("QaActionItemCreatedBy", fields: [createdById], references: [id])
+  staff          User      @relation("QaActionItemStaff", fields: [staffId], references: [id], onDelete: Cascade)
+  createdBy      User      @relation("QaActionItemCreatedBy", fields: [createdById], references: [id])
 
   @@index([staffId])
   @@index([status])
   @@index([dueDate])
   @@index([createdById])
 }
+
+model Enquiry {
+  id                    Int       @id @default(autoincrement())
+  property              String?   @db.VarChar(255)
+  potentialResidentName String    @db.VarChar(255)
+  dateReceived          DateTime  @default(now())
+  referralRoute         String?   @db.VarChar(255)
+  needs                 String?   @db.Text
+  hoursAllocatedPerDay  Float?    @default(0)
+  costingProposed       Float?    @default(0)
+  referer               String?   @db.VarChar(255)
+  refererContactDetails String?   @db.VarChar(255)
+  status                String    @default("LIVE") @db.VarChar(50) // LIVE, HELD, CLOSED
+  accepted              Boolean   @default(false)
+  admittedDate          DateTime?
+  serviceSeekerId       Int?
+  notes                 String?   @db.Text
+  createdById           Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([status])
+  @@index([dateReceived])
+  @@index([serviceSeekerId])
+}
+
 
 

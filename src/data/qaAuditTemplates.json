@@ -1,0 +1,4322 @@
+[
+  {
+    "title": "Support Plan Audit",
+    "category": "Care Quality",
+    "location": "Head Office",
+    "frequency": "Monthly",
+    "targetScore": 90.0,
+    "description": "Complete 10% of Service User's file per month",
+    "comments": "Complete 10% of Service User's file per month",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "Is there evidence of a robust pre-admission assessment?"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "If risks were identified at pre-admission assessment, were risk assessments in place prior to admission to the service?"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Is there a One Page Profile in place?"
+      },
+      {
+        "id": "q_4",
+        "number": "1.0",
+        "text": "Is there a support plan in place to identify needs around Rights, Consent and Capacity?"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Is there evidence that the Service User has been involved in the support plan?"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Is there evidence of an OPG100 search?"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Are OPG100 search results evidenced in the support plan?"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "If an LPA is in place, is there clear evidence of input in the relevant support plans?"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "If an advocate is required, is there evidence that this a referral has been made if one is not already in place?"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Is there evidence of how much financial support the service user needs and how and who provides this to them?"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Are there financial forms in place to evidence who is responsbible for all financial aspects? (Rent, Service Charges, Bills, Personal Effects, Personal Allowance etc)"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Is there evidence of what consent has been given in terms of information sharing?"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Is the service user's social worker details recorded in the support plan?"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Are there best interest forms in place where ever a service user is queried to lack capacity for individual areas?"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "If court of protection have been involved, is there evidence of the outcomes of this and is this reflected in the support plan?"
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "If the service user is deemed to lack capacity in any area, following a best interests decision, has a DoLS been applied for?"
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Are DoLS results clearly documented?"
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "If conditions have been applied, is there evidence that these are incorporated into the support plan?"
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "If conditions have been applied, is there evidence that these are monitored at least once a month?"
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "If there are restrictive Practices in place, is there a support plan in place to evidence this?"
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "If restrictive practices are in place, is there evidence in place to outline the purpose, when to be utilised, how to be utilised and the least restrictive route?"
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_24",
+        "number": "2.0",
+        "text": "Is there a support plan in place to identify needs around Medication?"
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Has an assessment been carried out to assess the Service User's suitability to self medicate?"
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "If the service user self medicates, is there a lockable cupboard available to them?"
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "If the service user self medicates, is there evidence that these are checked weekly at a minimum (dependant on risk assessment)?"
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "If the service user self medicates, is there evidence that a risk assessment is in place and incorporated into the support plan?"
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Is there evidence of the level of support that the service user requires around medication adminstration and management?"
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Is there a record of any allergies or adverse reactions to medication?"
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Is the service User's GP details included in the support plan?"
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Is there details of any other healthcare professionals or services involved in the service users care, including contact details and out of hours contacts?"
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Is the service user's preferred way of taking medicatiosn recorded?"
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Is there an upto date list of the service users current medications and what each medication is prescribed for?"
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "If the service user is prescribed PRN medications, are there clear directions of when and why these are to be administered?"
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "If the service user is on covert medications, are there clear directives around this?"
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "If the service user is prescribed topical medications, is there a TMAR in place?"
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "If the service user is prescribed CD's, is there a clear protocol outlined in the support plan?"
+      },
+      {
+        "id": "q_39",
+        "number": "39.0",
+        "text": "Is there evidence that the service user has had their medications reviewed in the last 6 months?"
+      },
+      {
+        "id": "q_40",
+        "number": "40.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_41",
+        "number": "3.0",
+        "text": "Is there a support plan in place to identify needs around Medical Diagnoses?"
+      },
+      {
+        "id": "q_42",
+        "number": "42.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_43",
+        "number": "43.0",
+        "text": "Has a transfer of care been obtained from the GP?"
+      },
+      {
+        "id": "q_44",
+        "number": "44.0",
+        "text": "Is there a clear medical history available and any current medical conditions are documented?"
+      },
+      {
+        "id": "q_45",
+        "number": "45.0",
+        "text": "Does the support plan outline all current medical conditions and how they are being managed?"
+      },
+      {
+        "id": "q_46",
+        "number": "46.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_47",
+        "number": "4.0",
+        "text": "Is there a support plan in place to identify the needs around mobility?"
+      },
+      {
+        "id": "q_48",
+        "number": "48.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_49",
+        "number": "49.0",
+        "text": "Is there evidence that any risks have been identified and clearly reflected in the support plan?"
+      },
+      {
+        "id": "q_50",
+        "number": "50.0",
+        "text": "If any adaptive equipment is required, is there evidence that this is in place?"
+      },
+      {
+        "id": "q_51",
+        "number": "51.0",
+        "text": "If any adaptive equipment is required, is there clear directive on how this is to be used, how many staff are required to support etc?"
+      },
+      {
+        "id": "q_52",
+        "number": "52.0",
+        "text": "If the service user has pain that impacts mobility, is there directive in the support plan on the best way to minimise this?"
+      },
+      {
+        "id": "q_53",
+        "number": "53.0",
+        "text": "If mobility is affected by environment, is this clearly planned for?"
+      },
+      {
+        "id": "q_54",
+        "number": "54.0",
+        "text": "Does the support plan identify how many staff are required for all movements and mobility?"
+      },
+      {
+        "id": "q_55",
+        "number": "55.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_56",
+        "number": "5.0",
+        "text": "Is there a support plan in place to identify needs around Fluid and Nutrition?"
+      },
+      {
+        "id": "q_57",
+        "number": "57.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_58",
+        "number": "58.0",
+        "text": "Are any allergies or intollerances clearly identified?"
+      },
+      {
+        "id": "q_59",
+        "number": "59.0",
+        "text": "Are the service users likes and dislikes included in the support plan?"
+      },
+      {
+        "id": "q_60",
+        "number": "60.0",
+        "text": "Is the support plan clear on the capabilities of the service user in regards to preparing meals, snack and drinks?"
+      },
+      {
+        "id": "q_61",
+        "number": "61.0",
+        "text": "If the service user has any eating disorders, is there clear guidance on how this is monitored an managed and any external professionals involved?"
+      },
+      {
+        "id": "q_62",
+        "number": "62.0",
+        "text": "Are risk assessments in place for using cookers, microwaves and kettles?"
+      },
+      {
+        "id": "q_63",
+        "number": "63.0",
+        "text": "If there are any choke risks, are these risk assessed and incorporated into the support plan?"
+      },
+      {
+        "id": "q_64",
+        "number": "64.0",
+        "text": "If a modified diet or fluid intake is required, are there clear IDDSI guidelines in place and SALT input?"
+      },
+      {
+        "id": "q_65",
+        "number": "65.0",
+        "text": "Is there a plan around who completes shopping and when this is done?"
+      },
+      {
+        "id": "q_66",
+        "number": "66.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_67",
+        "number": "6.0",
+        "text": "Is there a support plan in place to identify needs around Communication"
+      },
+      {
+        "id": "q_68",
+        "number": "68.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_69",
+        "number": "69.0",
+        "text": "Is the service user's preferred method of communication recorded?"
+      },
+      {
+        "id": "q_70",
+        "number": "70.0",
+        "text": "Are the service user's levels of communication recorded and explained?"
+      },
+      {
+        "id": "q_71",
+        "number": "71.0",
+        "text": "Is there clear direction on how to ensure effective communication?"
+      },
+      {
+        "id": "q_72",
+        "number": "72.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_73",
+        "number": "7.0",
+        "text": "Is there a support plan in place to identify needs around Continence?"
+      },
+      {
+        "id": "q_74",
+        "number": "74.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_75",
+        "number": "75.0",
+        "text": "If the service user is taking any medications that affect elimination, is this clearly outlined? (opiates, diuretics, laxatives etc)"
+      },
+      {
+        "id": "q_76",
+        "number": "76.0",
+        "text": "If the service user requires any assistance with continence care, is this clearly documented?"
+      },
+      {
+        "id": "q_77",
+        "number": "77.0",
+        "text": "Is the gender preference of the support worker documented?"
+      },
+      {
+        "id": "q_78",
+        "number": "78.0",
+        "text": "If a Radar Key is required in public spaces, is this doumented as to where it is kept?"
+      },
+      {
+        "id": "q_79",
+        "number": "79.0",
+        "text": "If the service user has, or is prone to, any conditions or illness that affect elimination, is there a clear plan around the management of this?"
+      },
+      {
+        "id": "q_80",
+        "number": "80.0",
+        "text": "Does the plan outline how privacy and dignity will be respected?"
+      },
+      {
+        "id": "q_81",
+        "number": "81.0",
+        "text": "If any continence devices are required (body  worn pads, stoma bags, catheters, convene's etc) is the support plan clear on how/when these are used, how much assistance is required and the type that is used?"
+      },
+      {
+        "id": "q_82",
+        "number": "82.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_83",
+        "number": "8.0",
+        "text": "Is there a support plan in place to identify needs around Personal Care?"
+      },
+      {
+        "id": "q_84",
+        "number": "84.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_85",
+        "number": "85.0",
+        "text": "Are the service user's preferences made clear around frequency of bathing/showering?"
+      },
+      {
+        "id": "q_86",
+        "number": "86.0",
+        "text": "Is the level of support needed from support staff made clear?"
+      },
+      {
+        "id": "q_87",
+        "number": "87.0",
+        "text": "If assistance is required with cleansing and dressing, is the gender preference of the service user's support worker documented?"
+      },
+      {
+        "id": "q_88",
+        "number": "88.0",
+        "text": "Does the support plan identify who is responsible for ensuring the service user has enough toiletries?"
+      },
+      {
+        "id": "q_89",
+        "number": "89.0",
+        "text": "Does the support plan outline the service user's needs around changing clothing and how much assistance, if any, is needed?"
+      },
+      {
+        "id": "q_90",
+        "number": "90.0",
+        "text": "Is there a plan around laundering clothing and ensuring the service user has clean clothes available?"
+      },
+      {
+        "id": "q_91",
+        "number": "91.0",
+        "text": "Does the support plan identify who is responsible for new clothing when required?"
+      },
+      {
+        "id": "q_92",
+        "number": "92.0",
+        "text": "Is there evidence that the service user's oral health needs are addressed and planned for, including regular dental appointments?"
+      },
+      {
+        "id": "q_93",
+        "number": "93.0",
+        "text": "Does the support plan outline how privacy and dignity are to be protected?"
+      },
+      {
+        "id": "q_94",
+        "number": "94.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_95",
+        "number": "9.0",
+        "text": "Is there a support plan in place to identify needs around Skin Integrity?"
+      },
+      {
+        "id": "q_96",
+        "number": "96.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_97",
+        "number": "97.0",
+        "text": "Is there a body map oin place in the support plan?"
+      },
+      {
+        "id": "q_98",
+        "number": "98.0",
+        "text": "Is there a WATERLOW in place in the support plan and the results reflected in the support plan?"
+      },
+      {
+        "id": "q_99",
+        "number": "99.0",
+        "text": "If any pressure relieving equipment is required, is there documentation of whom provides this and the serial number of the equpment?"
+      },
+      {
+        "id": "q_100",
+        "number": "100.0",
+        "text": "If the service user has any conditions, or takes any medications, that affect skin integrity, are these recorded in the support plan, along with direction on how to manage this?"
+      },
+      {
+        "id": "q_101",
+        "number": "101.0",
+        "text": "If the service user is prescribed any topical medications, are these recorded in the support plan?"
+      },
+      {
+        "id": "q_102",
+        "number": "102.0",
+        "text": "If the service user has a history of self harm, is there a plan around how any cuts etc are to be addressed?"
+      },
+      {
+        "id": "q_103",
+        "number": "103.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_104",
+        "number": "10.0",
+        "text": "Is there a support plan in place to identify needs around Sleep?"
+      },
+      {
+        "id": "q_105",
+        "number": "105.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_106",
+        "number": "106.0",
+        "text": "Does the support plan evidence how much, if any, support is needed through the night?"
+      },
+      {
+        "id": "q_107",
+        "number": "107.0",
+        "text": "Does the support plan identified the service users preferences around waking and sleeping times?"
+      },
+      {
+        "id": "q_108",
+        "number": "108.0",
+        "text": "Are the service users preferences around bedroom conditions recorded?"
+      },
+      {
+        "id": "q_109",
+        "number": "109.0",
+        "text": "If the service user is prescribed sedative medications, is this identified in the support plan?"
+      },
+      {
+        "id": "q_110",
+        "number": "110.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_111",
+        "number": "11.0",
+        "text": "Is there a support plan in place to identify needs around Breathing?"
+      },
+      {
+        "id": "q_112",
+        "number": "112.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_113",
+        "number": "113.0",
+        "text": "If the service user has any condition that affects breathing (Asthma, COPD, AF etc) is there a clear plan around any treatment that is required and the management of this?"
+      },
+      {
+        "id": "q_114",
+        "number": "114.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_115",
+        "number": "12.0",
+        "text": "Is there a support plan in place to identify needs around Altered States of Conciousness?"
+      },
+      {
+        "id": "q_116",
+        "number": "116.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_117",
+        "number": "117.0",
+        "text": "If there are any history of altered states of consciousness, is this recorded, along with a clear support plan?"
+      },
+      {
+        "id": "q_118",
+        "number": "118.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_119",
+        "number": "13.0",
+        "text": "Is there a support plan in place to identify needs around Life History?"
+      },
+      {
+        "id": "q_120",
+        "number": "120.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_121",
+        "number": "121.0",
+        "text": "Is there evidence to show that the life story has been put together with the service user and includes family and friend input where appropriate?"
+      },
+      {
+        "id": "q_122",
+        "number": "122.0",
+        "text": "Does the support plan outline how life history is reflected into current views and needs?"
+      },
+      {
+        "id": "q_123",
+        "number": "123.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_124",
+        "number": "14.0",
+        "text": "Is there a support plan in place to identify needs around Religion and Culture?"
+      },
+      {
+        "id": "q_125",
+        "number": "125.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_126",
+        "number": "126.0",
+        "text": "Are the service user's religious views clear?"
+      },
+      {
+        "id": "q_127",
+        "number": "127.0",
+        "text": "Are the service user's spitual needs clear?"
+      },
+      {
+        "id": "q_128",
+        "number": "128.0",
+        "text": "Is the plan reflective of any practices of the service user and how these are to be supported?"
+      },
+      {
+        "id": "q_129",
+        "number": "129.0",
+        "text": "Is the Cultural aspect clear and reflected in the support plan?"
+      },
+      {
+        "id": "q_130",
+        "number": "130.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_131",
+        "number": "15.0",
+        "text": "Is there a support plan in place to identify needs around Sexuality?"
+      },
+      {
+        "id": "q_132",
+        "number": "132.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_133",
+        "number": "133.0",
+        "text": "Are the service user's preferred pronouns recorded and known by staff members?"
+      },
+      {
+        "id": "q_134",
+        "number": "134.0",
+        "text": "Is the service usuers sexual orientation recorded?"
+      },
+      {
+        "id": "q_135",
+        "number": "135.0",
+        "text": "Is the service users level of understanding around consent well documented?"
+      },
+      {
+        "id": "q_136",
+        "number": "136.0",
+        "text": "If the service user inappropriately self gratifies, is there guidance around discreet redirection?"
+      },
+      {
+        "id": "q_137",
+        "number": "137.0",
+        "text": "Is there clear outlines on how privacy and dignity are met?"
+      },
+      {
+        "id": "q_138",
+        "number": "138.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_139",
+        "number": "17.0",
+        "text": "Is there a support plan in place to identify needs around Psychological and Mental Health?"
+      },
+      {
+        "id": "q_140",
+        "number": "140.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_141",
+        "number": "141.0",
+        "text": "Are any conditions and/or diagnoses clearly identified in the support plan?"
+      },
+      {
+        "id": "q_142",
+        "number": "142.0",
+        "text": "Does the support plan explain how any mental helath or psychological conditions impact on the service user's needs and identities?"
+      },
+      {
+        "id": "q_143",
+        "number": "143.0",
+        "text": "Are any medications prescribed clearly documented with how they work and what they are for?"
+      },
+      {
+        "id": "q_144",
+        "number": "144.0",
+        "text": "Is it clear how to identify when the service user needs increased support around their mental or psychological health needs and what that looks like for the service user?"
+      },
+      {
+        "id": "q_145",
+        "number": "145.0",
+        "text": "Are known triggers included in the support plan?"
+      },
+      {
+        "id": "q_146",
+        "number": "146.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_147",
+        "number": "18.0",
+        "text": "Is there a support plan in place to identify needs around Positive Behaviour Support?"
+      },
+      {
+        "id": "q_148",
+        "number": "148.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_149",
+        "number": "149.0",
+        "text": "Is the support plan based around pre-emptive support rather than reactive?"
+      },
+      {
+        "id": "q_150",
+        "number": "150.0",
+        "text": "Are known triggers included and guidance around minimising triggers?"
+      },
+      {
+        "id": "q_151",
+        "number": "151.0",
+        "text": "Are clear de-escalation techniques included in the support plan?"
+      },
+      {
+        "id": "q_152",
+        "number": "152.0",
+        "text": "Is there an escalation plan in place to ensure that the correct steps are taken at the correct times?"
+      },
+      {
+        "id": "q_153",
+        "number": "153.0",
+        "text": "Does the support plan show least restrictive options?"
+      },
+      {
+        "id": "q_154",
+        "number": "154.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_155",
+        "number": "19.0",
+        "text": "Is there a support plan in place to identify needs around Personal Relationships?"
+      },
+      {
+        "id": "q_156",
+        "number": "156.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_157",
+        "number": "157.0",
+        "text": "Does the support plan identify who is important to the service user?"
+      },
+      {
+        "id": "q_158",
+        "number": "158.0",
+        "text": "Does the support plan outline negative realtionships that the service user may have?"
+      },
+      {
+        "id": "q_159",
+        "number": "159.0",
+        "text": "Does the support plan identify how to build positive relationships?"
+      },
+      {
+        "id": "q_160",
+        "number": "160.0",
+        "text": "Does the support plan identify where relationships may be chosen, despite being unhealthy?"
+      },
+      {
+        "id": "q_161",
+        "number": "161.0",
+        "text": "Does the support plan identify how to build peer relationships?"
+      },
+      {
+        "id": "q_162",
+        "number": "162.0",
+        "text": "Does the support plan outline how to support the service user if relationships break down?"
+      },
+      {
+        "id": "q_163",
+        "number": "163.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_164",
+        "number": "20.0",
+        "text": "Is there a support plan in place to identify needs around Hobbies and Interests?"
+      },
+      {
+        "id": "q_165",
+        "number": "165.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_166",
+        "number": "166.0",
+        "text": "Is there evidence to support the service user with maintaining and building upon hobbies and interests?"
+      },
+      {
+        "id": "q_167",
+        "number": "167.0",
+        "text": "Does the support plan identify known past and current hobbies and interests and how to facilitate these?"
+      },
+      {
+        "id": "q_168",
+        "number": "168.0",
+        "text": "Does the support plan identify how to engage the service user during periods of apathy?"
+      },
+      {
+        "id": "q_169",
+        "number": "169.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_170",
+        "number": "21.0",
+        "text": "Is there a support plan in place to identify needs around Education and Employment?"
+      },
+      {
+        "id": "q_171",
+        "number": "171.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_172",
+        "number": "172.0",
+        "text": "Does the support plan identify what, if any, education or employment the service user wishes to achieve?"
+      },
+      {
+        "id": "q_173",
+        "number": "173.0",
+        "text": "Is there evidence that there is a plan on how to support the person to attend work or education and what that would look like?"
+      },
+      {
+        "id": "q_174",
+        "number": "174.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_175",
+        "number": "22.0",
+        "text": "Is there a support plan in place to identify needs around Smoking?"
+      },
+      {
+        "id": "q_176",
+        "number": "176.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_177",
+        "number": "177.0",
+        "text": "If the service user smokes, is there a robust risk assessment around this and the results reflected in the support plan?"
+      },
+      {
+        "id": "q_178",
+        "number": "178.0",
+        "text": "Is there evidence that there is an approved location for the service user to smoke or vape?"
+      },
+      {
+        "id": "q_179",
+        "number": "179.0",
+        "text": "If the service user wishes to quit, is there evidence of referral to a smoking cessation service?"
+      },
+      {
+        "id": "q_180",
+        "number": "180.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_181",
+        "number": "23.0",
+        "text": "Is there a support plan in place to identify needs around Alcohol Intake?"
+      },
+      {
+        "id": "q_182",
+        "number": "182.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_183",
+        "number": "183.0",
+        "text": "Are there robust risk assessments in place that identify any risk associated with alcohol consumption and are the results reflected in the support plan?"
+      },
+      {
+        "id": "q_184",
+        "number": "184.0",
+        "text": "Is there evidence that support services have been contacted where appropriate?"
+      },
+      {
+        "id": "q_185",
+        "number": "185.0",
+        "text": "Is there a clear plan in place of how to support the ervice user should they be under the influence, in withdrawal or tempted to relapse?"
+      },
+      {
+        "id": "q_186",
+        "number": "186.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_187",
+        "number": "24.0",
+        "text": "Is there a support plan in place to identify needs around Substance Misuse?"
+      },
+      {
+        "id": "q_188",
+        "number": "188.0",
+        "text": "Is there evidence that goals have been identified and how these can be achieved?"
+      },
+      {
+        "id": "q_189",
+        "number": "189.0",
+        "text": "Is there a known history outlined, including what substances have been taken, how they were acquired, what impact this has on the service user etc?"
+      },
+      {
+        "id": "q_190",
+        "number": "190.0",
+        "text": "Is there a full and robust risk assessment in pace and the results reflected in the support plan?"
+      },
+      {
+        "id": "q_191",
+        "number": "191.0",
+        "text": "Is there evidence of referrals to outreach programmes?"
+      },
+      {
+        "id": "q_192",
+        "number": "192.0",
+        "text": "Are the legal ramifications reflected in the support plan?"
+      },
+      {
+        "id": "q_193",
+        "number": "193.0",
+        "text": "Is there a clear plan on what steps to take to support the service user should they be under the influence, withdrawing or tempted to relapse?"
+      },
+      {
+        "id": "q_194",
+        "number": "194.0",
+        "text": "Is there evidence that the support plan is evaluated at least once a month or if there are changes?"
+      },
+      {
+        "id": "q_195",
+        "number": "25.0",
+        "text": "Are there records in place and completed for all communications made with healthcare professionals and proffessional visits?"
+      },
+      {
+        "id": "q_196",
+        "number": "26.0",
+        "text": "Are there records in place and completed for all communications made with family and friends and their visits?"
+      },
+      {
+        "id": "q_197",
+        "number": "27.0",
+        "text": "Is there a protocol in place for any emergency situations such as PEEPS, Risk of Absconding, Hospital Admissions, Detainment etc."
+      }
+    ]
+  },
+  {
+    "title": "Medication Administration Audit",
+    "category": "Clinical and Medicines",
+    "location": "All Locations",
+    "frequency": "Monthly",
+    "targetScore": 95.0,
+    "description": "Review MAR charts, storage, records",
+    "comments": "Review MAR charts, storage, records",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "A current Medication Policy is in place and reviewed within the last 12 months."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Staff have access to the Medication Policy and understand it."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "There is a clear procedure for ordering, receiving, administering, and disposing of medication."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "PRN protocols are in place, up to date, and person‑specific."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "MAR charts are fully completed with no unexplained gaps."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "MAR charts include allergies, GP details, and medication changes."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Handwritten MAR entries are double‑signed and dated."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "PRN administration is recorded with reason and outcome."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "MAR charts match the medication currently held in the service. (check the physical medications against the balance on the MAR)"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Medication is ordered in a timely manner to avoid running out."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Medication received is checked against the order and MAR chart."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Any discrepancies are reported and recorded."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Medication is stored securely in a locked cupboard or cabinet."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Controlled Drugs (CDs) are stored in a compliant CD cabinet."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Room and fridge temperatures are recorded daily and within safe ranges."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Keys for medication storage are held only by authorised staff."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Staff follow the 5/7 Rights of Medication Administration."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Staff wash hands and follow IPC procedures before administering medication."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Medication is administered at the correct time and dose."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Staff ensure the person has taken the medication before signing."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Covert medication is only used with proper authorisation and documentation."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "CD register is completed accurately and balances match stock."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Two staff sign for administration of CDs."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "CD audits are completed weekly or as per policy."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Medication errors are reported immediately and recorded."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Investigations are completed and learning outcomes documented."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Staff receive feedback and retraining where required."
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Medication for disposal is stored securely until collection."
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Returns are recorded and signed by staff."
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Controlled Drugs disposal follows legal requirements."
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "All staff administering medication have up‑to‑date medication training."
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Staff have completed competency assessments."
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Agency staff are not permitted to administer medication unless authorised."
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Support plans include clear medication needs and preferences."
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Capacity assessments are completed for medication decisions where required."
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Best‑interest decisions are documented if the person lacks capacity."
+      }
+    ]
+  },
+  {
+    "title": "72-Hour Admission Audit",
+    "category": "Admissions and Transitions",
+    "location": "All Locations",
+    "frequency": "Ad Hoc",
+    "targetScore": 90.0,
+    "description": "Complete within 72 hours of admission",
+    "comments": "Complete within 72 hours of admission",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "Is the Pen Picture in the Service User's File?"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Is the pre-admission assessment completed and in the Service User's File?"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Is there a funding agreement in place from the local authority?"
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Have they been issued with and signed the tenancy agreement?"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Has the Service Charge agreement been issued and signed?"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Is there clear documentation on who is responsible for rent?"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Is there clear documentation on who is responsible for service charges?"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Are staff assigned to the Service User based on Personality and Suitability?"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Has the Service User been given the staff profiles?"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Has the Service User been issued with the House Rules?"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Has the property been checked prior to admission for safety?"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Is the fire system in place?"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Is the property fully furnished to the suitable level?"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Has an inventory been carried out prior to the Service User moving in?"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Is the keybox in place?"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Is there a rota in place for at least 2 weeks?"
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Has the manager visited to introduce themself?"
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Has the Service Lead introduced themselves?"
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Has the Service User been given a list of contacts?"
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Has there been introductions made to other residents of the house?"
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Has appropriate calls been made to inform family etc of Service User's arrival?"
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Has a change of GP been completed?"
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Has a change of Dentist been completed?"
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Has a change of address been made to any benefits the service user claims?"
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Has housing benefit been applied for?"
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Is there a One Page Profile completed for the Service User?"
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Have all staff members assigned to the Service user read the one page profile?"
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Are all risk assessments completed and available to staff?"
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Is there a support plan in place that clearly outlines the Service User's NEEDS?"
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Is there a support plan in place that clearly outlines the Service User's PREFERENCES?"
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Is there clear evidence that the Service User has been involved in their Support Plan?"
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Is there enough food for at least a week available to the Service User?"
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Does the Service User have access to toiletries and towels?"
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Has the Service User been encouraged to access the community?"
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Has the transition been successful?"
+      }
+    ]
+  },
+  {
+    "title": "Infection Prevention and Control (IPC) Audit",
+    "category": "Clinical Governance",
+    "location": "All Locations",
+    "frequency": "Bi-Monthly",
+    "targetScore": 95.0,
+    "description": "PPE, hand hygiene, cleanliness",
+    "comments": "PPE, hand hygiene, cleanliness",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "IPC policy is in place, up to date, and accessible to staff."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Staff have signed to confirm they have read and understood IPC policies."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "IPC risk assessments are completed and reviewed regularly."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Incident reporting procedures for infection-related events are in place."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Cleaning schedules and checklists are documented and completed daily."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "All staff have completed mandatory IPC training within the last 12 months."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Staff demonstrate correct hand hygiene technique."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Staff understand when and how to use PPE."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Staff know how to report infection concerns or symptoms."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Handwashing facilities are available, clean, and accessible."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Liquid soap and disposable paper towels are available at all sinks."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Alcohol-based hand gel is available in key areas."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Hand hygiene posters are displayed."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Staff wash hands before/after personal care tasks."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Adequate PPE stock is available (gloves, aprons, masks if required)."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "PPE is stored correctly and not left in communal areas."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Staff use PPE appropriately for personal care tasks."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Staff dispose of PPE safely after single use."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Cleaning schedules are followed and signed daily."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Communal areas are visibly clean and free from clutter."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "High‑touch surfaces are cleaned at least twice daily."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Approved cleaning products are used correctly."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Waste bins are clean, foot‑operated, and emptied daily."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Laundry is handled and stored in line with IPC guidance."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Clinical waste is segregated correctly (if applicable)."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Waste bags are tied securely and disposed of appropriately."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Sharps bins (if used) are available and not overfilled."
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Waste storage areas are clean and secure."
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Residents have individual care plans including infection risks."
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Symptoms of infection are monitored and recorded."
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Isolation procedures are understood and followed when required."
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Vaccination status (flu, COVID‑19) is recorded where appropriate"
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Reusable equipment and medical devices are cleaned between uses."
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Cleaning logs for equipment and medical devices are maintained."
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Single‑use items are disposed of after one use."
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Mobility aids are clean and well maintained."
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Kitchen areas are clean and free from contamination risks."
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "Food is stored correctly and within date."
+      },
+      {
+        "id": "q_39",
+        "number": "39.0",
+        "text": "Staff follow hand hygiene before food preparation."
+      },
+      {
+        "id": "q_40",
+        "number": "40.0",
+        "text": "Cleaning schedules for kitchen appliances are completed."
+      },
+      {
+        "id": "q_41",
+        "number": "41.0",
+        "text": "Water temperatures are monitored and recorded."
+      },
+      {
+        "id": "q_42",
+        "number": "42.0",
+        "text": "Shower heads are descaled regularly."
+      },
+      {
+        "id": "q_43",
+        "number": "43.0",
+        "text": "Any dead‑legs or unused outlets are flushed weekly."
+      },
+      {
+        "id": "q_44",
+        "number": "44.0",
+        "text": "No signs of pests in the property."
+      },
+      {
+        "id": "q_45",
+        "number": "45.0",
+        "text": "Pest control contract is in place (if required)."
+      },
+      {
+        "id": "q_46",
+        "number": "46.0",
+        "text": "External waste areas are tidy and secure."
+      }
+    ]
+  },
+  {
+    "title": "First Impressions and Environment Audit",
+    "category": "Safety and Environment",
+    "location": "All Locations",
+    "frequency": "Monthly",
+    "targetScore": 90.0,
+    "description": "External and entrance presentation",
+    "comments": "External and entrance presentation",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "From the front of the property - Is it welcoming?"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Is the front garden tidy and free of litter?"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Is the front garden free from weeds?"
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Has the path been jetwashed?"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Are there flowers/ornaments?"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Is the front door clean and in good repair?"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Are any car parking spaces clear and well marked?"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Is the property clean throughout?"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Is the property tidy throughout?"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Is all decorating and paintwork in good repair?"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Is there evidence of personalisation throughout?"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Is the property free from any malodor?"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Is the property in good repair?"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Are communal areas bright and airy?"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Is all furniture clean and in good condition?"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Are high places dust and cobweb free?"
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Are all surfaces clean?"
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Are bathrooms clean and tidy?"
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Are all bathroom fixtures in good repair?"
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Are there toilet rolls, hand towels and soap available?"
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Is all flooring throughout clean and in good repair?"
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Are staff areas locked?"
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Is the noise level comfortable?"
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Is lighting throughout appropriate?"
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Is the rear garden/yard well maintained?"
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Is the rear area free from weeds?"
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Is there somewhere identified for service users to smoke or vape outside?"
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Is all of the outside free from cigarette ends?"
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Are all outdoor areas free from rubbish / debris / litter?"
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Are all fences and walls in good condition?"
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Is the outdoor space calming?"
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Is the outside space accessible?"
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Were staff members friendly?"
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Did staff members request you to sign in?"
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Did staff members engage with service users?"
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Would you be happy for one of your loved ones to live at the property?"
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Did the house and grounds appear safe?"
+      }
+    ]
+  },
+  {
+    "title": "Staff Files and Compliance Audit",
+    "category": "HR and Workforce",
+    "location": "Head Office",
+    "frequency": "Monthly",
+    "targetScore": 90.0,
+    "description": "Complete 10% of Staff's file per month",
+    "comments": "Complete 10% of Staff's file per month",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "Application form fully completed and signed"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Full set of Interview notes are available"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Offer letter copy in file"
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Full employment history provided with gaps explained"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Two verified references on file (including most recent employer)"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Right to Work documentation verified and recorded"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "DBS check completed and in date"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "DBS risk assessment completed if applicable"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Proof of identity on file"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Proof of address on file"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Induction training completed"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Signed contract of employment on file"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Job description signed and dated"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Confidentiality agreement signed"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Code of Conduct signed"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Disciplinary & grievance procedures provided"
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Staff handbook issued and acknowledged"
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "48 hour opt out issued and signed"
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Supervision meetings up to date"
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Probationary review outcome completed"
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Annual appraisal completed"
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Performance concerns documented and actioned"
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Observations of practice completed (e.g., meds competency)"
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Occupational health questionnaire completed"
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Risk assessments completed (e.g., pregnancy, health conditions)"
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Lone working agreement signed (if applicable)"
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Driving licence and insurance checked (if staff transport service users)"
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "GDPR / Data Protection declaration signed"
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Social media policy acknowledged"
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Whistleblowing policy acknowledged"
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Conflict of interest declaration completed"
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Medication competency assessment completed"
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Positive behaviour support training completed (if applicable)"
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Specialist training completed (e.g., epilepsy, PEG, diabetes)"
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Has e-learning log in and password has been issued and acknowledged"
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Equal Opportunity Form has been issued"
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Flexible Working Requests have been considered and outcomes documented (if applicable)"
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "Risk assessments are in place for all areas where information is lacking and is unable to be attained"
+      }
+    ]
+  },
+  {
+    "title": "GDPR and Data Protection Audit",
+    "category": "Governance and Compliance",
+    "location": "Head Office",
+    "frequency": "Bi-Monthly",
+    "targetScore": 90.0,
+    "description": "Data security, consent, storage",
+    "comments": "Data security, consent, storage",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "A named Data Protection Lead is in place."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Staff understand GDPR principles and responsibilities."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "A GDPR policy is in place and reviewed annually."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Data Protection Impact Assessments (DPIAs) are completed where required."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Records of Processing Activities (ROPA) are maintained."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Legal basis for processing personal data is documented."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Consent forms are used where required and stored securely."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Service Users are informed how their data is used (privacy notice)."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Consent can be withdrawn easily and is recorded."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Only necessary data is collected for supported‑living purposes."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Service Users records are accurate and updated regularly."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Old or unnecessary data is deleted securely."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Personal data is stored securely (locked cabinets / encrypted systems)."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Access to Service User data is restricted to authorised staff only."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Passwords meet organisational security standards."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Staff use secure email when sharing personal information."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Devices used for work are password‑protected and encrypted."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Data‑sharing agreements are in place with third parties (e.g., local authorities, health services)."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Only necessary information is shared externally."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Service Users are informed when their data is shared."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Third‑party systems meet GDPR requirements."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "A SAR process is in place and staff know how to follow it."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "SARs are logged and responded to within 30 days."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Identity verification is completed before releasing information."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Only relevant information is provided in SAR responses."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "A data‑breach policy is in place."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Staff know how to report a data breach."
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Breaches are logged and investigated."
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Serious breaches are reported to the ICO within 72 hours."
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "A retention schedule is in place and followed."
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Paper records are shredded securely when no longer needed."
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Digital files are deleted securely and not left on devices."
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "All staff receive GDPR training on induction."
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Annual refresher training is completed."
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Staff understand confidentiality and data‑handling expectations."
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Service User care/support plans are stored securely."
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Sensitive data (health, safeguarding, behaviour) is restricted to authorised staff."
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "Staff avoid discussing Service User information in communal areas."
+      },
+      {
+        "id": "q_39",
+        "number": "39.0",
+        "text": "Visitors and contractors do not have access to personal data."
+      }
+    ]
+  },
+  {
+    "title": "Safeguarding Audit",
+    "category": "Governance and Compliance",
+    "location": "Head Office",
+    "frequency": "Monthly",
+    "targetScore": 95.0,
+    "description": "Safeguarding records, referrals, training",
+    "comments": "Safeguarding records, referrals, training",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "Safeguarding Policy is up-to-date and compliant with local authority multi-agency procedures."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "All staff have completed mandatory Safeguarding Adults Level 2/3 training within the last 12 months."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Safeguarding lead contact details and whistleblowing procedure are visibly displayed in all services."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "All safeguarding concerns and alerts are logged immediately in the central safeguarding tracker."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "CQC statutory notifications (Regulation 18) submitted within 24 hours for all reportable incidents."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Root cause analysis (RCA) and internal investigations completed for all closed safeguarding cases."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Service user risk assessments and care plans updated following safeguarding investigations."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Lessons learned from safeguarding reviews are disseminated to all support workers during team meetings."
+      }
+    ]
+  },
+  {
+    "title": "CQC Fundamental Standards Audit",
+    "category": "Quality and Compliance",
+    "location": "Head Office",
+    "frequency": "Monthly",
+    "targetScore": 90.0,
+    "description": "KLOE alignment and CQC evidence",
+    "comments": "KLOE alignment and CQC evidence",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "The manager is registered with CQC"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "There is an NI registered with CQC"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "The registered manager is aware of the single assessment framework"
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "The company uses 'I' and 'We' statements to meet compliance"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "All staff are aware of how to raise concerns with CQC"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "All service users are aware of how to raise concerns with CQC (easy read documents available)"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "All staff are aware of who CQC are, what their purpose is and would be ready for an unannounced inspection?"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Are all safeguarding incidents reviewed to determine if a CQC notification is required?"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Have all allegations of abuse been notified to CQC without delay?"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Are safeguarding notifications logged and tracked?"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Are staff aware of when safeguarding must be reported to CQC?"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Are all serious injuries assessed for CQC notification requirements?"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Have all serious injuries (fractures, head injuries, hospital treatment) been notified?"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Are incident forms completed and reviewed by management?"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Is there evidence of follow‑up actions after serious injury notifications?"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Are all deaths of service users reported to CQC within required timescales?"
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Is there a clear process for reporting expected and unexpected deaths?"
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Are death notifications logged and stored securely?"
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Are DoLS applications and authorisations monitored?"
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Are all granted DoLS authorisations notified to CQC within 7 days?"
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Are rejected DoLS applications notified to CQC?"
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Are staff aware of DoLS notification requirements?"
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Are all incidents involving police reviewed for CQC notification requirements?"
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Have all police‑related incidents been notified to CQC without delay?"
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Are missing person incidents recorded and notified appropriately?"
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Are fires, floods, or major property damage reported to CQC?"
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Are outbreaks of infectious disease notified to CQC?"
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Are medication errors resulting in harm notified?"
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Are serious incidents logged and reviewed for learning?"
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Has the Registered Manager’s absence (28+ days) been notified?"
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Has the return of the Registered Manager been notified?"
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Are changes to the Registered Manager reported promptly?"
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Are changes to the provider address or contact details notified?"
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Are changes to the Nominated Individual notified?"
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Are changes to regulated activities reported to CQC?"
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Are changes to company directors notified within required timescales?"
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Is there a central CQC notification log?"
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "Are all notifications stored with evidence and outcomes?"
+      },
+      {
+        "id": "q_39",
+        "number": "39.0",
+        "text": "Are notifications reviewed in governance meetings?"
+      },
+      {
+        "id": "q_40",
+        "number": "40.0",
+        "text": "Are staff trained on what requires a CQC notification?"
+      }
+    ]
+  },
+  {
+    "title": "Dignity in Care Audit",
+    "category": "Care Quality",
+    "location": "All Locations",
+    "frequency": "Monthly",
+    "targetScore": 90.0,
+    "description": "Privacy, choice, dignity observations",
+    "comments": "Privacy, choice, dignity observations",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "Do staff speak to you politely and with respect?"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Do staff listen to you and take you seriously?"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Do staff explain things in a way you understand?"
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Do staff knock before entering your room?"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Are you able to have private time when you want it?"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Is your personal information kept private?"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Are you supported to make your own choices?"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Do staff encourage you to do things for yourself?"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Do you choose what you wear, eat, and do each day?"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Do staff support you with personal care in a respectful way?"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Do staff check with you before helping with personal care?"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Do you feel safe when staff support you?"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Are you able to take part in activities you enjoy?"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Do staff help you stay connected with family, friends, or important people?"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Are you included in decisions about your home and daily routine?"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Does your home feel clean, safe, and comfortable?"
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Do you have your own space that feels private and respected?"
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Do staff treat you kindly and with patience?"
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Do staff understand your needs and preferences?"
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Do you feel comfortable raising concerns or complaints?"
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Do you feel treated with dignity in this service?"
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Are you happy living here?"
+      }
+    ]
+  },
+  {
+    "title": "Subject Access Request Audit",
+    "category": "Governance and Compliance",
+    "location": "Head Office",
+    "frequency": "Quarterly",
+    "targetScore": 90.0,
+    "description": "SAR compliance and response timings",
+    "comments": "SAR compliance and response timings",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "All SARs received this month were logged in the SAR register"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "All SARs were acknowledged within required timescales."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Identity verification was completed for all requesters."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Legal authority/consent was obtained for representative requests."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "All SARs due this month were completed within the one‑month deadline."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Extensions (if used) were justified and communicated properly."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "No overdue SARs remain outstanding from previous months."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "All relevant systems were checked for each SAR (care notes, tenancy files, emails, etc.)."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Staff involved in data handling were informed of SARs promptly."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "CCTV requests (if applicable) were processed correctly."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "All data was collected and reviewed within expected timeframes."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Third‑party information was redacted appropriately."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Safeguarding‑sensitive information was reviewed by management."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Exemptions (if used) were applied correctly and documented."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Final SAR packs were checked for accuracy and completeness."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "All SAR responses were sent securely (encrypted email or sealed post)."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Responses were clear, accessible, and easy for the individual to understand."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Explanations were provided for any withheld information."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Individuals were informed of their right to complain to the ICO."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "All SAR documentation was stored securely."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "The SAR register is up to date and accurate."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Any learning or issues from this month were recorded and actioned."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Staff training needs identified and logged."
+      }
+    ]
+  },
+  {
+    "title": "Hand Wash Competency Audit",
+    "category": "Clinical Governance",
+    "location": "Rotates",
+    "frequency": "Quarterly",
+    "targetScore": 95.0,
+    "description": "All staff completed annually",
+    "comments": "All staff completed annually",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "No wrist jewellery worn (except plain band if permitted)"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Nails are short, clean, and free from polish/gel/acrylics"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "No cuts or skin breaks visible (or covered appropriately)"
+      },
+      {
+        "id": "q_4",
+        "number": "When Hand Hygiene Should Occur (5 Moments)",
+        "text": "Before touching a patient"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Before clean/aseptic procedures"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "After body fluid exposure risk"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "After touching a patient"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "After touching patient surroundings"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Applies sufficient amount of product"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Rubs hands for recommended duration (20–30 seconds)"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Covers all hand surfaces (palms, backs, between fingers, thumbs, fingertips, wrists)"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Allows hands to dry fully before touching anything"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Gloves used appropriately (not as a substitute for hand hygiene)"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Soap dispenser full and functioning"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Paper towels available"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Alcohol gel available at point of care"
+      }
+    ]
+  },
+  {
+    "title": "Fire Safety Audit",
+    "category": "Safety and Environment",
+    "location": "All Locations",
+    "frequency": "Monthly",
+    "targetScore": 95.0,
+    "description": "Alarms, escapes, drills, extinguishers",
+    "comments": "Alarms, escapes, drills, extinguishers",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "A current Fire Safety Policy is in place and accessible to staff."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Fire Risk Assessment (FRA) is completed, in date, and reviewed annually."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "All actions from the latest FRA have been completed or are in progress."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Personal Emergency Evacuation Plans (PEEPs) are completed for all service users."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Staff have signed to confirm they have read fire safety procedures."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "All staff have completed fire safety training within the last 12 months."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Staff understand evacuation procedures and assembly points."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Staff know how to raise the alarm in the event of a fire."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Fire drills are completed at least twice per year."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Records of fire drills are maintained."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Smoke alarms and heat detectors are installed in required areas."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Fire alarm system is tested weekly and recorded."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Any faults are reported and resolved promptly."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Alarm sounders are audible throughout the property."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Fire extinguishers are present, accessible, and appropriate for the environment."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Fire extinguishers are serviced annually."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Fire blankets are available in kitchen areas."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Staff understand when NOT to use firefighting equipment (evacuate first)."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Emergency lighting is installed in required areas."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Monthly emergency lighting tests are completed and recorded."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Annual full-duration test is completed and recorded."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Escape routes are clear, unobstructed, and free from hazards."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Fire doors are in good condition and close fully."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Fire doors are not wedged or propped open."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Fire exit signage is visible and compliant."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Emergency evacuation maps are displayed."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Cooking appliances are clean and well maintained."
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Staff follow safe cooking practices."
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "No flammable items are stored near heat sources."
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Extractor fans and filters are cleaned regularly."
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Portable Appliance Testing (PAT) is up to date."
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Sockets and switches are in good condition."
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "No overloaded sockets or extension leads are in use."
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Electrical cupboards are locked and labelled."
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Smoking risk assessments are completed for relevant service users."
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Designated smoking areas are safe and well maintained."
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Oxygen equipment is stored and used safely."
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "Staff understand fire risks associated with oxygen use."
+      },
+      {
+        "id": "q_39",
+        "number": "39.0",
+        "text": "Service users understand fire evacuation procedures (where possible)."
+      },
+      {
+        "id": "q_40",
+        "number": "40.0",
+        "text": "Service users who require support during evacuation are clearly identified."
+      },
+      {
+        "id": "q_41",
+        "number": "41.0",
+        "text": "PEEPs reflect current mobility and support needs."
+      },
+      {
+        "id": "q_42",
+        "number": "42.0",
+        "text": "Fire logbook is up to date."
+      },
+      {
+        "id": "q_43",
+        "number": "43.0",
+        "text": "Records of alarm tests, emergency lighting tests, and drills are complete."
+      },
+      {
+        "id": "q_44",
+        "number": "44.0",
+        "text": "Maintenance certificates (extinguishers, alarms, lighting) are stored securely."
+      }
+    ]
+  },
+  {
+    "title": "Accidents, Incidents and Near Misses Audit",
+    "category": "Governance and Compliance",
+    "location": "Head Office",
+    "frequency": "Monthly",
+    "targetScore": 90.0,
+    "description": "RCA, trends, lessons learned",
+    "comments": "RCA, trends, lessons learned",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "All accidents, incidents, and near misses are recorded on the organisation’s approved reporting form."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Reports are completed within the required timescale (e.g., within 24 hours)."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "All sections of the report are fully completed and legible."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Incident logs are stored securely and in line with GDPR requirements."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Incident trends are reviewed monthly by management."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Staff ensured the immediate safety of the individual(s) involved."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "First aid was provided where required."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Emergency services were contacted when appropriate."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "The environment was made safe following the incident (e.g., hazards removed)."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Any equipment involved was taken out of use and checked."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "The on‑call manager or senior was notified within required timescales."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Family/next of kin were informed where appropriate."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Social worker/care coordinator was notified if required."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "RIDDOR reporting was completed where applicable."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Safeguarding referrals were made when necessary."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "A full investigation was completed for all reportable incidents."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Root cause analysis was carried out where appropriate."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Witness statements were collected when relevant."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Lessons learned were identified and documented."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Actions were assigned to responsible persons with deadlines."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Actions were completed and evidenced."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Staff followed the correct procedures during the incident."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Staff involved had up‑to‑date mandatory training (e.g., first aid, PBS, manual handling)."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Staff debriefs were completed following serious incidents."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Additional training or supervision was provided where needed."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "The individual received appropriate emotional support after the incident."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Care plans and risk assessments were reviewed and updated."
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Positive Behaviour Support (PBS) plans were updated if relevant."
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Communication needs were considered (e.g., easy‑read explanations)."
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "The environment was assessed for hazards following the incident."
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Any faulty equipment was reported and repaired/replaced."
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Health & safety checks were completed following the incident."
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Preventative measures were put in place to reduce recurrence."
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Incident data is reviewed in team meetings."
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Trends are analysed (e.g., time of day, location, staff involved)."
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Management reviews ensure compliance with policies."
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Incident outcomes inform service improvement plans."
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "Policies and procedures are up to date and accessible to staff."
+      }
+    ]
+  },
+  {
+    "title": "Complaints and Compliments Audit",
+    "category": "Quality and Compliance",
+    "location": "Head Office",
+    "frequency": "Bi-Annual",
+    "targetScore": 90.0,
+    "description": "Investigation, responses, improvements",
+    "comments": "Investigation, responses, improvements",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "A current Complaints & Compliments Policy is in place and reviewed within the last 12 months."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "The policy meets CQC requirements and reflects Regulation 16 (Receiving and acting on complaints)."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Staff are aware of the policy and know how to access it."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "The policy clearly outlines response timescales and escalation routes."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Information on how to make a complaint is available to tenants in an accessible format (easy read, large print, etc.)."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Service users are informed of their right to give feedback, compliments, or complaints during induction."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Advocacy support information is available and offered where appropriate."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Complaints can be made verbally, in writing, or via a representative."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "A central complaints log is maintained and up to date."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "All complaints are recorded with dates, details, actions taken, and outcomes."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Compliments are logged and shared with staff teams."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Records are stored securely and in line with GDPR requirements."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Complaints are acknowledged within the required timescale."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Investigations are completed promptly and thoroughly."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Service users receive clear written responses outlining findings and outcomes."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Evidence of follow‑up actions is documented."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Service users are informed of escalation routes (e.g., Local Authority, Ombudsman, CQC)."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Complaints are reviewed for patterns or recurring issues."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Lessons learned are shared with staff teams."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Improvements or corrective actions are implemented and monitored."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Compliments are used to recognise good practice and improve service quality."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Staff receive training on handling complaints and feedback."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Staff understand how to support service users to raise concerns safely."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Training records confirm staff competency."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Service users feel comfortable raising concerns without fear of negative consequences."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Service users report that complaints are handled fairly and respectfully."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Service users know how to give compliments or positive feedback."
+      }
+    ]
+  },
+  {
+    "title": "RIDDOR Compliance Audit",
+    "category": "Governance and Compliance",
+    "location": "Head Office",
+    "frequency": "Quarterly",
+    "targetScore": 90.0,
+    "description": "Statutory notifications and follow-up",
+    "comments": "Statutory notifications and follow-up",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "A clear RIDDOR policy is in place and accessible to all staff."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Staff understand what types of incidents must be reported under RIDDOR."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Staff know how to access the RIDDOR reporting system (HSE online form)."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "A named person is responsible for RIDDOR reporting within the service."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "All accidents, incidents, and near misses are recorded internally."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Staff can identify when an incident meets RIDDOR criteria (e.g., fractures, loss of consciousness, occupational diseases)."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Staff understand the difference between a RIDDOR-reportable injury and a non-reportable injury."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Any injury resulting in over 7 days’ absence is flagged for RIDDOR consideration."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Any specified injuries (fractures, amputations, serious burns, etc.) are escalated immediately."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Dangerous occurrences (e.g., equipment failure, fire, gas leak) are reviewed for RIDDOR relevance."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Any death of a service user or staff member related to work activity is escalated immediately."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Falls involving service users are reviewed to determine if they meet RIDDOR criteria."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Incidents involving medication errors are assessed for RIDDOR relevance (e.g., hospitalisation)."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Violence or aggression incidents are reviewed for potential RIDDOR reporting (e.g., staff injury)."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Manual handling injuries are assessed for RIDDOR reporting."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "RIDDOR reports are submitted within the required timeframe (usually 10 days)."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Copies of submitted RIDDOR reports are stored securely."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Senior management are notified when a RIDDOR report is submitted."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Families/advocates are informed where appropriate."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "A full investigation is completed for all RIDDOR-reportable incidents."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Lessons learned are documented and shared with staff."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Risk assessments are updated following any RIDDOR incident."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Staff receive refresher training if required."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "All incident records are kept for the required retention period."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Evidence (witness statements, photos, medical notes) is stored securely."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "RIDDOR logs are reviewed regularly for patterns or trends."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Managers review RIDDOR compliance at least annually."
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "RIDDOR performance is discussed in team meetings."
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "The service has a clear escalation process for serious incidents."
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "The service can demonstrate compliance during external audits or inspections."
+      }
+    ]
+  },
+  {
+    "title": "MCA and DoLS Audit",
+    "category": "Care Quality",
+    "location": "Head Office",
+    "frequency": "Bi-Monthly",
+    "targetScore": 90.0,
+    "description": "Mental Capacity Assessments and Best Interest",
+    "comments": "Mental Capacity Assessments and Best Interest",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "Capacity assessments have been completed for all service users where required."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Assessments follow the MCA 5‑stage test for all relevant decisions."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Staff have made documented efforts to support service users to make their own decisions."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "All assessments are dated, signed, and stored appropriately for each service user."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Capacity assessments are reviewed for all service users when circumstances change."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Best‑interest decision forms are completed for all service users who lack capacity."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Best‑interest decisions reflect each service user’s wishes, feelings, beliefs, and values."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Families, advocates, or those important to service users are consulted where appropriate."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "The least restrictive option is documented for each service user."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Best‑interest decisions are reviewed regularly for all relevant service users."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "All service users who require an IMCA have been referred appropriately."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Advocacy referrals and involvement are documented for all relevant service users."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Restrictions for all service users are clearly documented in their support plans."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Restrictions in place for service users are proportionate and the least restrictive option."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Staff understand what constitutes a deprivation of liberty across the service."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Restrictions for all service users are reviewed regularly."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Potential deprivations of liberty have been identified for all relevant service users."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Court of Protection applications have been submitted where required for service users."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Evidence supporting applications is complete and up to date for each service user."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Any Court of Protection conditions are monitored and complied with for all relevant service users."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Support plans reflect each service user’s capacity for relevant decision areas."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Support plans include least‑restrictive strategies for all service users."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Risk assessments consider capacity and restrictions for each service user."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "MCA and DoLS/CoP documents are stored correctly for all service users."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Documents are dated, signed, and version‑controlled across all files."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Staff can locate MCA/DoLS documentation for any service user when required."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "All staff have completed MCA & DoLS/LPS training within required timeframes."
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Staff can explain the principles of the MCA as they apply to multiple service users."
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Staff understand what constitutes a deprivation of liberty across the service."
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Staff know how to escalate concerns about restrictive practices affecting any service user."
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Regular MCA/DoLS audits are completed across the service."
+      }
+    ]
+  },
+  {
+    "title": "Service Checks Audit",
+    "category": "Care Quality",
+    "location": "All Locations",
+    "frequency": "Monthly",
+    "targetScore": 90.0,
+    "description": "Routine quality service checks",
+    "comments": "Routine quality service checks",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "Was there a sign in book available by the door?"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Is it clean and tidy throughout?"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Is it clean and tidy outside?"
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Is the service user(s) clothing clean and appropriate?"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Is the service user(s) personal hygiene of a good standard?"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Is the service user(s) happy with the support they are receiving?"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Any concerns raised by any service users have been documented and will be acted upon?"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Are staff members dressed appropriately?"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Are staff members happy in their job?"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Any concerns raised by staff members have been documented and will be acted upon?"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Are all appliances in good working order?"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Are any concerns with the property documented and will be acted upon?"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Are staff areas secured?"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Are staff areas clean and tidy?"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Is GDPR being followed?"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Are all chemicals stored as per COSHH guidelines?"
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Is there at least a week's supply of meals and snacks available to the service user?"
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Is there evidence that the service user is being encouraged to plan, cook and eat healthy, nutritious meals?"
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Are service user's bedroom clean and tidy?"
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Is there evidence of bedding being changed regularly?"
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Are cleaning records up to date?"
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Is there a supply of clean towels and bedding?"
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Is the property free from malodor?"
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Is the property smoke free?"
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Are you confident that the house is safe?"
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Are you confident that the support delivered is effective?"
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Are you confident that the support delivered is responsive?"
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Are you confident that the service is well led?"
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Are you confident that the service is caring?"
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Would you be happy toplace your loved one into this house?"
+      }
+    ]
+  },
+  {
+    "title": "Financial Management Audit",
+    "category": "Governance and Compliance",
+    "location": "Head Office",
+    "frequency": "Monthly",
+    "targetScore": 95.0,
+    "description": "Service user money, receipts, transactions",
+    "comments": "Service user money, receipts, transactions",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "A financial policy is in place, up to date, and accessible to staff."
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Staff have signed to confirm they understand financial procedures."
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Financial risk assessments are completed and reviewed regularly."
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "There is a clear process for reporting financial concerns or irregularities."
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Service users’ financial rights and responsibilities are clearly documented."
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Each service user has an individual financial support plan."
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Consent is recorded for any staff involvement in managing finances."
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Service users are supported to access and manage their own money where possible."
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Financial capacity assessments are completed where required."
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Best‑interest decisions are documented when applicable."
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Cash handling procedures are followed consistently."
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "All transactions are recorded accurately and promptly."
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Receipts are obtained for all purchases."
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Cash balances match recorded amounts."
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Two‑person verification is used for cash counts where required."
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Service users’ bank details are stored securely."
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Staff do not hold service users’ bank cards unless authorised."
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "PINs or passwords are never known or stored by staff."
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Bank statements are reviewed regularly for accuracy."
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Any discrepancies are reported and investigated promptly."
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Service users receive all benefits they are entitled to."
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Benefit changes are monitored and acted upon promptly."
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Income is recorded accurately and stored securely."
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Staff support service users to report changes in circumstances."
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Rent and service‑charge records are accurate and up to date."
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Service users understand their rent and charges (where possible)."
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Arrears are monitored and actioned promptly."
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Utility bills are monitored and paid on time."
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Any financial hardship is documented and escalated appropriately."
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Purchases are made in line with support plans and budgets."
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Large or unusual purchases are authorised and documented."
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Staff do not use personal money for service‑user purchases."
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Service users are supported to make informed spending decisions."
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Financial logs are completed clearly and without gaps."
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Records are stored securely and meet GDPR requirements."
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Audit trails are complete and easy to follow."
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Old records are archived in line with retention policies."
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "Staff understand how to identify financial abuse."
+      },
+      {
+        "id": "q_39",
+        "number": "39.0",
+        "text": "Any concerns are reported through safeguarding procedures."
+      },
+      {
+        "id": "q_40",
+        "number": "40.0",
+        "text": "Service users are protected from financial exploitation."
+      },
+      {
+        "id": "q_41",
+        "number": "41.0",
+        "text": "Staff do not borrow money from or lend money to service users."
+      }
+    ]
+  },
+  {
+    "title": "COSHH Audit",
+    "category": "Safety and Environment",
+    "location": "All Locations",
+    "frequency": "Monthly",
+    "targetScore": 90.0,
+    "description": "Chemical safety data sheets, storage, PPE",
+    "comments": "Chemical safety data sheets, storage, PPE",
+    "checklist": [
+      {
+        "id": "q_1",
+        "number": "1.0",
+        "text": "Is there an up‑to‑date COSHH policy in place?"
+      },
+      {
+        "id": "q_2",
+        "number": "2.0",
+        "text": "Is the COSHH policy accessible to all staff?"
+      },
+      {
+        "id": "q_3",
+        "number": "3.0",
+        "text": "Have all staff received COSHH awareness training?"
+      },
+      {
+        "id": "q_4",
+        "number": "4.0",
+        "text": "Are refresher training sessions completed annually?"
+      },
+      {
+        "id": "q_5",
+        "number": "5.0",
+        "text": "Is there a complete and current list of all hazardous substances on site?"
+      },
+      {
+        "id": "q_6",
+        "number": "6.0",
+        "text": "Are all substances stored in their original containers?"
+      },
+      {
+        "id": "q_7",
+        "number": "7.0",
+        "text": "Are all containers clearly labelled and legible?"
+      },
+      {
+        "id": "q_8",
+        "number": "8.0",
+        "text": "Are any expired or unnecessary substances removed promptly?"
+      },
+      {
+        "id": "q_9",
+        "number": "9.0",
+        "text": "Are Safety Data Sheets available for every hazardous substance?"
+      },
+      {
+        "id": "q_10",
+        "number": "10.0",
+        "text": "Are Safety Data Sheets stored in an accessible location for staff?"
+      },
+      {
+        "id": "q_11",
+        "number": "11.0",
+        "text": "Are Safety Data Sheets reviewed annually or when products change?"
+      },
+      {
+        "id": "q_12",
+        "number": "12.0",
+        "text": "Are COSHH risk assessments completed for all hazardous substances?"
+      },
+      {
+        "id": "q_13",
+        "number": "13.0",
+        "text": "Are risk assessments reviewed annually or after an incident?"
+      },
+      {
+        "id": "q_14",
+        "number": "14.0",
+        "text": "Do risk assessments identify exposure routes (skin, inhalation, ingestion)?"
+      },
+      {
+        "id": "q_15",
+        "number": "15.0",
+        "text": "Do risk assessments include control measures and PPE requirements?"
+      },
+      {
+        "id": "q_16",
+        "number": "16.0",
+        "text": "Are hazardous substances stored securely and away from service users?"
+      },
+      {
+        "id": "q_17",
+        "number": "17.0",
+        "text": "Are cleaning chemicals stored in a locked cupboard?"
+      },
+      {
+        "id": "q_18",
+        "number": "18.0",
+        "text": "Are flammable substances stored appropriately?"
+      },
+      {
+        "id": "q_19",
+        "number": "19.0",
+        "text": "Are incompatible substances stored separately?"
+      },
+      {
+        "id": "q_20",
+        "number": "20.0",
+        "text": "Are staff following manufacturer instructions when using chemicals?"
+      },
+      {
+        "id": "q_21",
+        "number": "21.0",
+        "text": "Are dilution ratios followed correctly?"
+      },
+      {
+        "id": "q_22",
+        "number": "22.0",
+        "text": "Are substances only used for their intended purpose?"
+      },
+      {
+        "id": "q_23",
+        "number": "23.0",
+        "text": "Are service users prevented from accessing hazardous substances during use?"
+      },
+      {
+        "id": "q_24",
+        "number": "24.0",
+        "text": "Is appropriate PPE available for all tasks involving hazardous substances?"
+      },
+      {
+        "id": "q_25",
+        "number": "25.0",
+        "text": "Is PPE in good condition and replaced when needed?"
+      },
+      {
+        "id": "q_26",
+        "number": "26.0",
+        "text": "Are staff trained in correct PPE use?"
+      },
+      {
+        "id": "q_27",
+        "number": "27.0",
+        "text": "Is PPE stored hygienically and correctly?"
+      },
+      {
+        "id": "q_28",
+        "number": "28.0",
+        "text": "Are spill kits available and accessible?"
+      },
+      {
+        "id": "q_29",
+        "number": "29.0",
+        "text": "Are staff trained in spill response procedures?"
+      },
+      {
+        "id": "q_30",
+        "number": "30.0",
+        "text": "Are emergency contact numbers displayed clearly?"
+      },
+      {
+        "id": "q_31",
+        "number": "31.0",
+        "text": "Are first aid kits available and fully stocked?"
+      },
+      {
+        "id": "q_32",
+        "number": "32.0",
+        "text": "Are hazardous waste materials disposed of correctly?"
+      },
+      {
+        "id": "q_33",
+        "number": "33.0",
+        "text": "Are clinical waste bins available where required?"
+      },
+      {
+        "id": "q_34",
+        "number": "34.0",
+        "text": "Are waste containers labelled and used appropriately?"
+      },
+      {
+        "id": "q_35",
+        "number": "35.0",
+        "text": "Are service users protected from exposure to hazardous substances?"
+      },
+      {
+        "id": "q_36",
+        "number": "36.0",
+        "text": "Are risk assessments in place for service users with specific vulnerabilities (e.g., cognitive impairment)?"
+      },
+      {
+        "id": "q_37",
+        "number": "37.0",
+        "text": "Are staff aware of individual service user risks relating to chemicals?"
+      },
+      {
+        "id": "q_38",
+        "number": "38.0",
+        "text": "Are COSHH records maintained and up to date?"
+      },
+      {
+        "id": "q_39",
+        "number": "39.0",
+        "text": "Are incident reports completed for any chemical-related accidents?"
+      },
+      {
+        "id": "q_40",
+        "number": "40.0",
+        "text": "Are corrective actions documented and followed up?"
+      },
+      {
+        "id": "q_41",
+        "number": "41.0",
+        "text": "Are there any outstanding actions from previous audits?"
+      },
+      {
+        "id": "q_42",
+        "number": "42.0",
+        "text": "Have all actions been completed within agreed timescales?"
+      }
+    ]
+  }
+]

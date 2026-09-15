@@ -11,8 +11,21 @@ function checkIsManagement(user) {
     roleName === 'MANAGER' ||
     roleName === 'REGISTERED_MANAGER' ||
     roleName === 'CARE_COORDINATOR' ||
+    roleName === 'HR' ||
+    roleName === 'DIRECTOR' ||
     hasPermission(user, 'quality-assurance.manage') ||
     hasPermission(user, 'users.manage')
+  );
+}
+
+function checkIsServiceLead(user) {
+  if (!user) return false;
+  const roleName = (user.role?.name || '').toUpperCase();
+  return (
+    roleName === 'SERVICE_LEAD' ||
+    roleName === 'TEAM_LEAD' ||
+    roleName === 'SENIOR_CARE_WORKER' ||
+    roleName === 'FIELD_SUPERVISOR'
   );
 }
 
@@ -24,11 +37,12 @@ export async function GET(request) {
     }
 
     const isManagement = checkIsManagement(currentUser);
+    const isServiceLead = !isManagement && checkIsServiceLead(currentUser);
     const { searchParams } = new URL(request.url);
     const requestedStaffId = searchParams.get('staffId');
     const statusFilter = searchParams.get('status');
 
-    // Fetch all active staff users for the Staff Action Plan overview
+    // Fetch active staff users for the Staff Action Plan overview
     const staffList = await prisma.user.findMany({
       where: { status: 'CURRENT' },
       select: {
@@ -46,16 +60,36 @@ export async function GET(request) {
     });
 
     // Determine query filter based on role and parameters
-    const where = {};
+    // Note in Beerusys/Action Plan.xlsx:
+    // Support workers: only see their own actions
+    // Service leads: see their own actions + the staff they line manage (e.g. team members or support workers)
+    // Managers: see all actions
+    let where = {};
 
-    if (!isManagement) {
-      // Non-management staff only ever see their own assigned actions
-      where.staffId = currentUser.id;
-    } else {
-      // Management can view all, or filter by specific staffId
+    if (isManagement) {
       if (requestedStaffId && requestedStaffId !== 'all') {
         where.staffId = parseInt(requestedStaffId, 10);
       }
+    } else if (isServiceLead) {
+      // Find staff in the same team, or support workers
+      const managedStaffIds = staffList
+        .filter(s => (currentUser.teamId && s.team?.id === currentUser.teamId) || s.role?.name === 'SUPPORT_WORKER' || s.role?.name === 'CARE_WORKER')
+        .map(s => s.id);
+      managedStaffIds.push(currentUser.id);
+
+      if (requestedStaffId && requestedStaffId !== 'all') {
+        const targetId = parseInt(requestedStaffId, 10);
+        if (managedStaffIds.includes(targetId)) {
+          where.staffId = targetId;
+        } else {
+          where.staffId = currentUser.id;
+        }
+      } else {
+        where.staffId = { in: managedStaffIds };
+      }
+    } else {
+      // Non-management support worker only ever sees their own actions
+      where.staffId = currentUser.id;
     }
 
     if (statusFilter && statusFilter !== 'all') {
@@ -153,19 +187,26 @@ export async function POST(request) {
     const {
       staffId,
       title,
+      item,
       description,
+      actionRequired,
+      dateIdentified,
       priority = 'MEDIUM',
       dueDate,
       source = 'Audit Finding',
       notes,
+      comments,
       auditId,
     } = body;
 
-    if (!title?.trim()) {
-      return NextResponse.json({ success: false, error: 'Action title is required' }, { status: 400 });
+    const actionItemTitle = (item || title || '').trim();
+    const actionRequiredText = (actionRequired || description || '').trim();
+
+    if (!actionItemTitle) {
+      return NextResponse.json({ success: false, error: 'Item / Action title is required' }, { status: 400 });
     }
 
-    const targetStaffId = parseInt(staffId, 10);
+    const targetStaffId = parseInt(staffId || body.assignedToId, 10);
     if (!targetStaffId) {
       return NextResponse.json({ success: false, error: 'Please assign this action to a staff member' }, { status: 400 });
     }
@@ -173,13 +214,16 @@ export async function POST(request) {
     const newAction = await prisma.qaActionItem.create({
       data: {
         staffId: targetStaffId,
-        title: title.trim(),
-        description: description?.trim() || null,
+        title: actionItemTitle,
+        item: actionItemTitle,
+        description: actionRequiredText || null,
+        actionRequired: actionRequiredText || null,
+        dateIdentified: dateIdentified ? new Date(dateIdentified) : new Date(),
         priority: priority || 'MEDIUM',
         status: 'OPEN',
         dueDate: dueDate ? new Date(dueDate) : null,
         source: source || 'Audit Finding',
-        notes: notes?.trim() || null,
+        notes: (comments || notes)?.trim() || null,
         auditId: auditId ? parseInt(auditId, 10) : null,
         createdById: currentUser.id,
       },
@@ -210,8 +254,7 @@ export async function PUT(request) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { id, status, notes, priority, dueDate, title, description, staffId } = body;
+    const { id, status, notes, comments, priority, dueDate, title, item, description, actionRequired, staffId } = body;
 
     const actionId = parseInt(id, 10);
     const existing = await prisma.qaActionItem.findUnique({ where: { id: actionId } });
@@ -237,13 +280,23 @@ export async function PUT(request) {
       }
     }
 
-    if (notes !== undefined) updateData.notes = notes;
+    if (notes !== undefined || comments !== undefined) {
+      updateData.notes = (comments !== undefined ? comments : notes);
+    }
 
     if (isManagement) {
       if (priority) updateData.priority = priority;
       if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
-      if (title) updateData.title = title.trim();
-      if (description !== undefined) updateData.description = description;
+      if (title || item) {
+        const t = (item || title).trim();
+        updateData.title = t;
+        updateData.item = t;
+      }
+      if (description !== undefined || actionRequired !== undefined) {
+        const d = actionRequired !== undefined ? actionRequired : description;
+        updateData.description = d;
+        updateData.actionRequired = d;
+      }
       if (staffId) updateData.staffId = parseInt(staffId, 10);
     }
 

@@ -69,6 +69,72 @@ const DEFAULT_AUDITS = [
   }
 ];
 
+import fs from 'fs';
+import path from 'path';
+
+function loadAuditTemplates() {
+  try {
+    const filePath = path.join(process.cwd(), 'src/data/qaAuditTemplates.json');
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      return JSON.parse(raw);
+    }
+  } catch (e) {
+    console.error('Error loading audit templates:', e);
+  }
+  return DEFAULT_AUDITS;
+}
+
+function calculateNextDueDate(frequency, fromDate = new Date()) {
+  const next = new Date(fromDate);
+  const freq = (frequency || '').toLowerCase();
+  if (freq.includes('monthly') && !freq.includes('bi')) {
+    next.setMonth(next.getMonth() + 1);
+  } else if (freq.includes('bi-monthly')) {
+    next.setMonth(next.getMonth() + 2);
+  } else if (freq.includes('quarterly')) {
+    next.setMonth(next.getMonth() + 3);
+  } else if (freq.includes('bi-annual') || freq.includes('half')) {
+    next.setMonth(next.getMonth() + 6);
+  } else if (freq.includes('annual')) {
+    next.setFullYear(next.getFullYear() + 1);
+  } else {
+    next.setMonth(next.getMonth() + 1);
+  }
+  return next;
+}
+
+function computeRagStatus(audit, latestSubmission) {
+  const now = new Date();
+  // If submitted within the current cycle (last 30 days for monthly)
+  if (latestSubmission && audit.lastCompleted) {
+    const daysSince = (now - new Date(audit.lastCompleted)) / (1000 * 60 * 60 * 24);
+    const freq = (audit.frequency || '').toLowerCase();
+    let cycleDays = 30;
+    if (freq.includes('bi-monthly')) cycleDays = 60;
+    else if (freq.includes('quarterly')) cycleDays = 90;
+    else if (freq.includes('bi-annual')) cycleDays = 180;
+    else if (freq.includes('annual')) cycleDays = 365;
+
+    if (daysSince <= cycleDays) {
+      return 'GREEN'; // Completed
+    }
+  }
+
+  if (audit.nextDue) {
+    const dueDate = new Date(audit.nextDue);
+    if (dueDate < now) {
+      return 'RED'; // Overdue
+    }
+    const daysUntilDue = (dueDate - now) / (1000 * 60 * 60 * 24);
+    if (daysUntilDue <= 14) {
+      return 'YELLOW'; // Due soon
+    }
+  }
+
+  return 'YELLOW';
+}
+
 export async function GET(request) {
   try {
     const currentUser = await getCurrentUser(request);
@@ -76,57 +142,74 @@ export async function GET(request) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if initial audits need seeding
+    // Seed audits from templates if none or fewer than 10 configured
     const auditCount = await prisma.qaAudit.count();
-    if (auditCount === 0) {
-      for (const item of DEFAULT_AUDITS) {
-        const createdAudit = await prisma.qaAudit.create({
-          data: {
-            title: item.title,
-            category: item.category,
-            frequency: item.frequency,
-            targetScore: item.targetScore,
-            description: item.description,
-            checklist: item.checklist,
-            assignedToId: currentUser.id,
-          }
+    if (auditCount < 10) {
+      const templates = loadAuditTemplates();
+      for (const item of templates) {
+        const existing = await prisma.qaAudit.findFirst({
+          where: { title: item.title }
         });
-
-        // Seed sample historical submissions for previous 3 months to provide immediate trend tracking
-        const now = new Date();
-        for (let i = 2; i >= 0; i--) {
-          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const m = d.getMonth() + 1;
-          const y = d.getFullYear();
-          // Generate realistic scores between 86% and 98%
-          const base = 88 + (Math.floor(Math.random() * 10));
-          const score = Math.min(100, Math.max(75, base + (2 - i) * 2));
-          await prisma.qaAuditSubmission.create({
+        if (!existing) {
+          const nextDueDate = calculateNextDueDate(item.frequency);
+          const createdAudit = await prisma.qaAudit.create({
             data: {
-              auditId: createdAudit.id,
-              auditTitle: createdAudit.title,
-              month: m,
-              year: y,
-              scorePercentage: score,
-              totalItems: 10,
-              passedItems: Math.round((score / 100) * 10),
-              status: score >= createdAudit.targetScore ? 'COMPLIANT' : 'NEEDS_IMPROVEMENT',
-              conductedById: currentUser.id,
-              conductedAt: new Date(y, m - 1, 15, 10, 0, 0),
-              findings: `Regular ${createdAudit.frequency.toLowerCase()} audit conducted for ${d.toLocaleString('default', { month: 'long' })} ${y}. Overall compliance standard met.`,
-              actionsRequired: score < createdAudit.targetScore ? 'Action plan generated for areas scoring below target threshold.' : 'No immediate remedial actions required.',
+              title: item.title,
+              category: item.category,
+              location: item.location || 'Head Office',
+              frequency: item.frequency || 'Monthly',
+              targetScore: item.targetScore || 90.0,
+              description: item.description || item.comments || '',
+              comments: item.comments || '',
+              checklist: item.checklist || [],
+              assignedToId: currentUser.id,
+              nextDue: nextDueDate,
+              ragStatus: 'DUE'
             }
           });
+
+          // Seed sample historical submissions for previous 2 months to provide immediate trends
+          const now = new Date();
+          for (let i = 2; i >= 1; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const m = d.getMonth() + 1;
+            const y = d.getFullYear();
+            const score = Math.round(88 + Math.random() * 10);
+            const checklistLen = Array.isArray(item.checklist) && item.checklist.length > 0 ? item.checklist.length : 10;
+            const passed = Math.round((score / 100) * checklistLen);
+            await prisma.qaAuditSubmission.create({
+              data: {
+                auditId: createdAudit.id,
+                auditTitle: createdAudit.title,
+                month: m,
+                year: y,
+                scorePercentage: score,
+                totalItems: checklistLen,
+                passedItems: passed,
+                status: score >= createdAudit.targetScore ? 'COMPLIANT' : 'NEEDS_IMPROVEMENT',
+                conductedById: currentUser.id,
+                conductedAt: new Date(y, m - 1, 15, 10, 0, 0),
+                findings: `Scheduled ${createdAudit.frequency.toLowerCase()} audit conducted for ${d.toLocaleString('default', { month: 'long' })} ${y}.`,
+                actionsRequired: score < createdAudit.targetScore ? 'Action plan items created for missed questions.' : 'No immediate remedial action required.',
+              }
+            });
+          }
         }
       }
     }
 
     const { searchParams } = new URL(request.url);
     const selectedYear = parseInt(searchParams.get('year') || String(new Date().getFullYear()), 10);
+    const locationFilter = searchParams.get('location');
 
     // Fetch all active audits
-    const audits = await prisma.qaAudit.findMany({
-      where: { isActive: true },
+    const whereAudit = { isActive: true };
+    if (locationFilter && locationFilter !== 'all') {
+      whereAudit.location = locationFilter;
+    }
+
+    const rawAudits = await prisma.qaAudit.findMany({
+      where: whereAudit,
       include: {
         assignedTo: {
           select: { id: true, firstName: true, lastName: true, email: true }
@@ -141,7 +224,21 @@ export async function GET(request) {
           }
         }
       },
-      orderBy: { title: 'asc' }
+      orderBy: [
+        { category: 'asc' },
+        { title: 'asc' }
+      ]
+    });
+
+    // Compute dynamic RAG status for each audit
+    const audits = rawAudits.map(audit => {
+      const latestSub = audit.submissions?.[0] || null;
+      const ragStatus = computeRagStatus(audit, latestSub);
+      return {
+        ...audit,
+        ragStatus,
+        lastScore: latestSub ? latestSub.scorePercentage : null,
+      };
     });
 
     // Fetch all submissions for the selected year and the previous year for historical tracking
@@ -281,24 +378,94 @@ export async function POST(request) {
         }
       });
 
-      return NextResponse.json({ success: true, data: submission });
+      // Auto re-assign: schedule next due date according to frequency and update audit completion record
+      const nextDue = calculateNextDueDate(audit.frequency, new Date());
+      await prisma.qaAudit.update({
+        where: { id: audit.id },
+        data: {
+          lastCompleted: new Date(),
+          nextDue,
+          ragStatus: 'GREEN'
+        }
+      });
+
+      // Extract failed checklist questions so UI can prompt adding them to the Action Plan
+      const failedQuestions = [];
+      if (checklistResults && typeof checklistResults === 'object') {
+        Object.entries(checklistResults).forEach(([qId, val]) => {
+          if (val && (val.passed === false || val === false || (typeof val === 'object' && val.score === 0))) {
+            failedQuestions.push({
+              id: qId,
+              number: val.number || '',
+              text: val.text || (typeof val === 'string' ? val : `Audit item ${qId}`),
+              comment: val.comment || val.comments || '',
+            });
+          }
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: submission,
+        nextDue,
+        failedQuestions
+      });
     }
 
-    // 2. Create a new audit template
+    // 2. Re-assign or reschedule an audit
+    if (actionType === 'REASSIGN_AUDIT') {
+      const { auditId, assignedToId, nextDue, location, frequency } = body;
+      if (!auditId) {
+        return NextResponse.json({ success: false, error: 'Audit ID is required' }, { status: 400 });
+      }
+
+      const updateData = {};
+      if (assignedToId !== undefined) {
+        updateData.assignedToId = assignedToId ? parseInt(assignedToId, 10) : null;
+      }
+      if (nextDue) {
+        updateData.nextDue = new Date(nextDue);
+      }
+      if (location) {
+        updateData.location = location;
+      }
+      if (frequency) {
+        updateData.frequency = frequency;
+      }
+
+      const updated = await prisma.qaAudit.update({
+        where: { id: parseInt(auditId, 10) },
+        data: updateData,
+        include: {
+          assignedTo: {
+            select: { id: true, firstName: true, lastName: true, email: true }
+          }
+        }
+      });
+
+      return NextResponse.json({ success: true, data: updated });
+    }
+
+    // 3. Create a new audit template
     if (actionType === 'CREATE_AUDIT') {
-      const { title, category, frequency, targetScore, description, assignedToId, checklist } = body;
+      const { title, category, location, frequency, targetScore, description, assignedToId, checklist, comments } = body;
       if (!title?.trim()) {
         return NextResponse.json({ success: false, error: 'Audit title is required' }, { status: 400 });
       }
 
+      const nextDue = calculateNextDueDate(frequency || 'Monthly');
       const newAudit = await prisma.qaAudit.create({
         data: {
           title: title.trim(),
           category: category || 'Care Quality',
+          location: location || 'Head Office',
           frequency: frequency || 'Monthly',
           targetScore: parseFloat(targetScore) || 90.0,
           description: description || '',
+          comments: comments || '',
           assignedToId: assignedToId ? parseInt(assignedToId, 10) : null,
+          nextDue,
+          ragStatus: 'DUE',
           checklist: checklist || [],
         }
       });

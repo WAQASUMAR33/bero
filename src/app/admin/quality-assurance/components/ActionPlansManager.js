@@ -13,15 +13,19 @@ export default function ActionPlansManager({ user, onNotification }) {
   const [selectedActionForView, setSelectedActionForView] = useState(null);
   const [updatingStatusId, setUpdatingStatusId] = useState(null);
 
-  // New Action Form State
+  // New Action Form State matching Beerusys/Action Plan.xlsx
   const [newAction, setNewAction] = useState({
     staffId: '',
     title: '',
+    item: '',
     description: '',
+    actionRequired: '',
+    dateIdentified: new Date().toISOString().split('T')[0],
     priority: 'MEDIUM',
     dueDate: '',
     source: 'Audit Finding',
     notes: '',
+    comments: '',
   });
 
   useEffect(() => {
@@ -54,8 +58,10 @@ export default function ActionPlansManager({ user, onNotification }) {
   };
 
   const handleCreateAction = async () => {
-    if (!newAction.title.trim()) {
-      if (onNotification) onNotification({ show: true, message: 'Action title is required', type: 'error' });
+    const actionItem = (newAction.item || newAction.title || '').trim();
+    const actionReq = (newAction.actionRequired || newAction.description || '').trim();
+    if (!actionItem) {
+      if (onNotification) onNotification({ show: true, message: 'Action Item is required', type: 'error' });
       return;
     }
     if (!newAction.staffId) {
@@ -72,7 +78,19 @@ export default function ActionPlansManager({ user, onNotification }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(newAction)
+        body: JSON.stringify({
+          staffId: newAction.staffId,
+          title: actionItem,
+          item: actionItem,
+          description: actionReq,
+          actionRequired: actionReq,
+          dateIdentified: newAction.dateIdentified,
+          priority: newAction.priority,
+          dueDate: newAction.dueDate,
+          source: newAction.source,
+          notes: newAction.comments || newAction.notes,
+          comments: newAction.comments || newAction.notes,
+        })
       });
       const json = await res.json();
       if (json.success) {
@@ -81,11 +99,15 @@ export default function ActionPlansManager({ user, onNotification }) {
         setNewAction({
           staffId: '',
           title: '',
+          item: '',
           description: '',
+          actionRequired: '',
+          dateIdentified: new Date().toISOString().split('T')[0],
           priority: 'MEDIUM',
           dueDate: '',
           source: 'Audit Finding',
           notes: '',
+          comments: '',
         });
         await fetchActionPlans();
       } else {
@@ -97,6 +119,10 @@ export default function ActionPlansManager({ user, onNotification }) {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handlePrintActionPlan = () => {
+    window.print();
   };
 
   const handleUpdateStatus = async (actionId, newStatus) => {
@@ -364,52 +390,56 @@ export default function ActionPlansManager({ user, onNotification }) {
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50/70 text-gray-700 font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4">Action & Details</th>
-                  {isManagement && <th className="py-3 px-4">Assigned Staff</th>}
-                  <th className="py-3 px-4">Priority</th>
-                  <th className="py-3 px-4">Due Date</th>
-                  <th className="py-3 px-4">Source</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-3">Date Identified</th>
+                  <th className="py-3 px-3">Item</th>
+                  <th className="py-3 px-4">Action Required</th>
+                  {isManagement && <th className="py-3 px-3">Assigned To</th>}
+                  <th className="py-3 px-3">Assigned By</th>
+                  <th className="py-3 px-3">Due Date</th>
+                  <th className="py-3 px-3">Progress</th>
+                  <th className="py-3 px-3">Comments</th>
+                  <th className="py-3 px-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {actions.map(act => {
-                  let priorityBadge = 'bg-blue-50 text-blue-700 border-blue-200';
-                  if (act.priority === 'HIGH') priorityBadge = 'bg-amber-50 text-amber-700 border-amber-200';
-                  else if (act.priority === 'URGENT') priorityBadge = 'bg-red-50 text-red-700 border-red-200 font-bold';
+                  let statusBadge = 'bg-blue-100 text-blue-800 border-blue-200';
+                  if (act.status === 'IN_PROGRESS') statusBadge = 'bg-amber-100 text-amber-800 border-amber-200';
+                  else if (act.status === 'COMPLETED') statusBadge = 'bg-emerald-100 text-emerald-800 border-emerald-200';
 
-                  let statusBadge = 'bg-blue-100 text-blue-800';
-                  if (act.status === 'IN_PROGRESS') statusBadge = 'bg-amber-100 text-amber-800';
-                  else if (act.status === 'COMPLETED') statusBadge = 'bg-emerald-100 text-emerald-800';
+                  const dateId = act.dateIdentified || act.createdAt;
+                  const formattedDateId = dateId ? new Date(dateId).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
 
                   return (
                     <tr key={act.id} className="hover:bg-blue-50/20 transition-colors">
+                      <td className="py-3 px-3 whitespace-nowrap font-medium text-gray-600">
+                        {formattedDateId}
+                      </td>
+
+                      <td className="py-3 px-3 max-w-xs font-bold text-gray-900">
+                        <p className="line-clamp-1">{act.item || act.title}</p>
+                        <span className="text-[10px] text-gray-400 font-normal">{act.source || 'Audit'}</span>
+                      </td>
+
                       <td className="py-3 px-4 max-w-sm">
-                        <p className="font-bold text-gray-900 text-sm">{act.title}</p>
-                        {act.description && (
-                          <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{act.description}</p>
-                        )}
-                        {act.notes && (
-                          <p className="text-[11px] text-gray-400 italic line-clamp-1 mt-0.5">Note: {act.notes}</p>
-                        )}
+                        <p className="text-gray-700 line-clamp-2 leading-relaxed">
+                          {act.actionRequired || act.description || 'No detailed action specified'}
+                        </p>
                       </td>
 
                       {isManagement && (
-                        <td className="py-3 px-4 whitespace-nowrap">
+                        <td className="py-3 px-3 whitespace-nowrap">
                           <span className="font-semibold text-gray-800">
                             {act.staff ? `${act.staff.firstName} ${act.staff.lastName}` : 'Unassigned'}
                           </span>
                         </td>
                       )}
 
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-semibold border ${priorityBadge}`}>
-                          {act.priority}
-                        </span>
+                      <td className="py-3 px-3 whitespace-nowrap text-gray-600 font-medium">
+                        {act.createdBy ? `${act.createdBy.firstName} ${act.createdBy.lastName}` : 'Management'}
                       </td>
 
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3 px-3 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <span className={act.isOverdue ? 'text-red-600 font-bold' : 'text-gray-700 font-medium'}>
                             {formatDate(act.dueDate)}
@@ -422,16 +452,12 @@ export default function ActionPlansManager({ user, onNotification }) {
                         </div>
                       </td>
 
-                      <td className="py-3 px-4 whitespace-nowrap text-gray-500 text-[11px]">
-                        {act.source}
-                      </td>
-
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3 px-3 whitespace-nowrap">
                         <select
                           value={act.status}
                           disabled={updatingStatusId === act.id}
                           onChange={e => handleUpdateStatus(act.id, e.target.value)}
-                          className={`text-xs font-semibold px-2 py-1 rounded-lg border cursor-pointer ${statusBadge}`}
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-lg border cursor-pointer ${statusBadge}`}
                         >
                           <option value="OPEN">Open</option>
                           <option value="IN_PROGRESS">In Progress</option>
@@ -439,7 +465,13 @@ export default function ActionPlansManager({ user, onNotification }) {
                         </select>
                       </td>
 
-                      <td className="py-3 px-4 text-right space-x-2 whitespace-nowrap">
+                      <td className="py-3 px-3 max-w-xs">
+                        <p className="text-[11px] text-gray-500 italic line-clamp-2">
+                          {act.notes || '—'}
+                        </p>
+                      </td>
+
+                      <td className="py-3 px-3 text-right space-x-2 whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => setSelectedActionForView(act)}
@@ -485,34 +517,73 @@ export default function ActionPlansManager({ user, onNotification }) {
             </div>
 
             <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Date Identified *</label>
+                  <input
+                    type="date"
+                    value={newAction.dateIdentified}
+                    onChange={e => setNewAction(prev => ({ ...prev, dateIdentified: e.target.value }))}
+                    className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Item / Area *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Medication, Care Plan, Hand Hygiene"
+                    value={newAction.item || newAction.title}
+                    onChange={e => setNewAction(prev => ({ ...prev, item: e.target.value, title: e.target.value }))}
+                    className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Assigned To (Staff Member) *</label>
+                  <select
+                    value={newAction.staffId}
+                    onChange={e => setNewAction(prev => ({ ...prev, staffId: e.target.value }))}
+                    className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-white focus:ring-2 focus:ring-[#224fa6]"
+                  >
+                    <option value="">Select Staff Member...</option>
+                    {staffList.map(s => (
+                      <option key={s.id} value={s.id}>
+                        {s.firstName} {s.lastName} ({s.role?.name || 'Staff'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Assigned By (Current User)</label>
+                  <div className="w-full text-xs border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 font-medium text-gray-700 truncate">
+                    👤 {user?.firstName} {user?.lastName} ({user?.role?.name || 'Manager'})
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Action Title *</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Complete topical MAR chart refresher training"
-                  value={newAction.title}
-                  onChange={e => setNewAction(prev => ({ ...prev, title: e.target.value }))}
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Action Required *</label>
+                <textarea
+                  rows={3}
+                  placeholder="Outline the specific remediation steps required to complete this action..."
+                  value={newAction.actionRequired || newAction.description}
+                  onChange={e => setNewAction(prev => ({ ...prev, actionRequired: e.target.value, description: e.target.value }))}
                   className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6]"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Assign to Staff Member *</label>
-                <select
-                  value={newAction.staffId}
-                  onChange={e => setNewAction(prev => ({ ...prev, staffId: e.target.value }))}
-                  className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-white focus:ring-2 focus:ring-[#224fa6]"
-                >
-                  <option value="">Select Staff Member...</option>
-                  {staffList.map(s => (
-                    <option key={s.id} value={s.id}>
-                      {s.firstName} {s.lastName} ({s.role?.name || 'Staff'})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Target Due Date</label>
+                  <input
+                    type="date"
+                    value={newAction.dueDate}
+                    onChange={e => setNewAction(prev => ({ ...prev, dueDate: e.target.value }))}
+                    className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6]"
+                  />
+                </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Priority</label>
                   <select
@@ -526,52 +597,15 @@ export default function ActionPlansManager({ user, onNotification }) {
                     <option value="URGENT">Urgent</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Target Due Date</label>
-                  <input
-                    type="date"
-                    value={newAction.dueDate}
-                    onChange={e => setNewAction(prev => ({ ...prev, dueDate: e.target.value }))}
-                    className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
-                  >
-                  </input>
-                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Source / Origin</label>
-                <select
-                  value={newAction.source}
-                  onChange={e => setNewAction(prev => ({ ...prev, source: e.target.value }))}
-                  className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-white"
-                >
-                  <option value="Audit Finding">Audit Finding</option>
-                  <option value="Supervision & Appraisal">Supervision & Appraisal</option>
-                  <option value="Spot Check Observation">Spot Check Observation</option>
-                  <option value="Incident Remediation">Incident Remediation</option>
-                  <option value="Compliance Review">Compliance Review</option>
-                  <option value="Management Directive">Management Directive</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Action Description & Instructions</label>
-                <textarea
-                  rows={3}
-                  placeholder="Outline the specific steps required to complete this action..."
-                  value={newAction.description}
-                  onChange={e => setNewAction(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Progress Notes</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Comments / Notes</label>
                 <textarea
                   rows={2}
-                  placeholder="Initial notes or guidance for the staff member..."
-                  value={newAction.notes}
-                  onChange={e => setNewAction(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Additional guidance, observations, or follow-up notes..."
+                  value={newAction.comments || newAction.notes}
+                  onChange={e => setNewAction(prev => ({ ...prev, comments: e.target.value, notes: e.target.value }))}
                   className="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6]"
                 />
               </div>

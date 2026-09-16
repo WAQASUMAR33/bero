@@ -28,6 +28,10 @@ export default function EnquiriesPage() {
   const [selectedEnquiryForConvert, setSelectedEnquiryForConvert] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [convertOptions, setConvertOptions] = useState({
+    title: 'Client',
+    status: 'PRE_ADMISSION',
+  });
 
   // Form state for creating or editing enquiry
   const [formData, setFormData] = useState({
@@ -169,7 +173,10 @@ export default function EnquiriesPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ status: 'PRE_ADMISSION' })
+        body: JSON.stringify({
+          title: convertOptions.title || 'Client',
+          status: convertOptions.status || 'PRE_ADMISSION'
+        })
       });
       const json = await res.json();
       if (json.success) {
@@ -302,7 +309,7 @@ export default function EnquiriesPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex text-gray-900">
       <Sidebar user={user} />
       <div className="flex-1 flex flex-col lg:ml-64">
         <Header user={user} />
@@ -561,8 +568,11 @@ export default function EnquiriesPage() {
                             {!enq.serviceSeekerId && (
                               <button
                                 type="button"
-                                onClick={() => setSelectedEnquiryForConvert(enq)}
-                                title="1-Click Convert to Service User"
+                                onClick={() => {
+                                  setSelectedEnquiryForConvert(enq);
+                                  setConvertOptions({ title: 'Client', status: 'PRE_ADMISSION' });
+                                }}
+                                title="Convert to Service User"
                                 className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-[10px] shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1"
                               >
                                 <span>⚡</span>
@@ -598,7 +608,7 @@ export default function EnquiriesPage() {
           {/* New / Edit Enquiry Modal */}
           {showAddModal && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+              <div className="bg-white text-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
                 <div className="bg-gradient-to-r from-[#224fa6] to-indigo-700 text-white px-6 py-4 flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-bold">
@@ -770,24 +780,96 @@ export default function EnquiriesPage() {
             </div>
           )}
 
-          {/* 1-Click Convert Confirmation Modal */}
+          {/* Convert to Service User Form Modal */}
           {selectedEnquiryForConvert && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
-                <div className="p-6 text-center">
-                  <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                    ⚡
+              <div className="bg-white text-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-gray-100">
+                <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-6 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-base">⚡</span>
+                    <div>
+                      <h3 className="text-base font-bold text-white leading-tight">Convert to Service User</h3>
+                      <p className="text-xs text-emerald-100">Create new client record from enquiry</p>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">Convert to Service User</h3>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Are you sure you want to convert <strong className="text-gray-900">{selectedEnquiryForConvert.potentialResidentName}</strong> directly into a Service User?
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEnquiryForConvert(null)}
+                    className="text-white/80 hover:text-white text-2xl leading-none cursor-pointer"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="p-6">
+                  <p className="text-xs text-gray-600">
+                    Are you sure you want to convert <strong className="text-gray-900 font-bold">{selectedEnquiryForConvert.potentialResidentName}</strong> directly into a Service User?
                   </p>
 
-                  <div className="mt-4 p-3 bg-gray-50 rounded-xl text-left text-xs space-y-1.5 border border-gray-200">
-                    <p><strong>Property:</strong> {selectedEnquiryForConvert.property || 'Default'}</p>
-                    <p><strong>Hours / Day:</strong> {selectedEnquiryForConvert.hoursAllocatedPerDay || 0} hrs</p>
-                    <p><strong>Status:</strong> New Service User created in <em>PRE_ADMISSION</em> status.</p>
+                  <div className="mt-4 p-3.5 bg-gray-50 rounded-xl text-left text-xs space-y-2 border border-gray-200 text-gray-800">
+                    <div className="flex justify-between items-center py-0.5 border-b border-gray-200">
+                      <span className="font-semibold text-gray-600">Candidate Name:</span>
+                      <span className="font-bold text-gray-900">{selectedEnquiryForConvert.potentialResidentName}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-0.5 border-b border-gray-200">
+                      <span className="font-semibold text-gray-600">Property / Location:</span>
+                      <span className="font-bold text-gray-900">{selectedEnquiryForConvert.property || 'Default / Not Assigned'}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-0.5 border-b border-gray-200">
+                      <span className="font-semibold text-gray-600">Hours Allocated / Day:</span>
+                      <span className="font-bold text-gray-900">{selectedEnquiryForConvert.hoursAllocatedPerDay ? `${selectedEnquiryForConvert.hoursAllocatedPerDay} hrs` : '0 hrs'}</span>
+                    </div>
+                    {selectedEnquiryForConvert.referralRoute && (
+                      <div className="flex justify-between items-center py-0.5 border-b border-gray-200">
+                        <span className="font-semibold text-gray-600">Referral Route:</span>
+                        <span className="font-medium text-gray-800">{selectedEnquiryForConvert.referralRoute}</span>
+                      </div>
+                    )}
+                    {selectedEnquiryForConvert.costingProposed && (
+                      <div className="flex justify-between items-center py-0.5 border-b border-gray-200">
+                        <span className="font-semibold text-gray-600">Proposed Costing:</span>
+                        <span className="font-bold text-gray-900">£{selectedEnquiryForConvert.costingProposed}/wk</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center py-0.5">
+                      <span className="font-semibold text-gray-600">Referrer:</span>
+                      <span className="font-medium text-gray-800">{selectedEnquiryForConvert.referer || 'N/A'}</span>
+                    </div>
                   </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-left">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Title</label>
+                      <select
+                        value={convertOptions.title}
+                        onChange={e => setConvertOptions(prev => ({ ...prev, title: e.target.value }))}
+                        className="w-full text-xs border border-gray-300 rounded-lg px-2.5 py-2 text-gray-900 bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
+                      >
+                        <option value="Client">Client</option>
+                        <option value="Mr">Mr</option>
+                        <option value="Mrs">Mrs</option>
+                        <option value="Ms">Ms</option>
+                        <option value="Miss">Miss</option>
+                        <option value="Dr">Dr</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Initial Status</label>
+                      <select
+                        value={convertOptions.status}
+                        onChange={e => setConvertOptions(prev => ({ ...prev, status: e.target.value }))}
+                        className="w-full text-xs border border-gray-300 rounded-lg px-2.5 py-2 text-gray-900 bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
+                      >
+                        <option value="PRE_ADMISSION">PRE_ADMISSION</option>
+                        <option value="LIVE">LIVE</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-gray-500 mt-3 text-left">
+                    ℹ️ This will create a Service User record, archive this enquiry, and generate initial admission & notes entries.
+                  </p>
                 </div>
 
                 <div className="p-4 border-t border-gray-200 flex justify-end gap-2 bg-gray-50">
@@ -802,9 +884,10 @@ export default function EnquiriesPage() {
                     type="button"
                     onClick={handleConvertToServiceUser}
                     disabled={converting}
-                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5"
                   >
-                    {converting ? 'Converting...' : 'Confirm Conversion'}
+                    <span>⚡</span>
+                    <span>{converting ? 'Converting...' : 'Confirm Conversion'}</span>
                   </button>
                 </div>
               </div>

@@ -2989,5 +2989,119 @@ model Enquiry {
   @@index([serviceSeekerId])
 }
 
+model CqcNotificationTracker {
+  id                      Int       @id @default(autoincrement())
+  incidentDate            DateTime? @db.Date
+  notificationType        String    @db.VarChar(150)
+  location                String?   @db.VarChar(255)
+  serviceUserInitials     String?   @db.VarChar(100)
+  dateSent                DateTime? @db.Date
+  reportedBy              String?   @db.VarChar(255)
+  companyNotificationId   String?   @db.VarChar(100)
+  cqcNotificationNumber   String?   @db.VarChar(100)
+  details                 String?   @db.Text
+  actionsTaken            String?   @db.Text
+  outcome                 String?   @db.Text
+  rcaCompleted            Boolean   @default(false)
+  safeguardingNotified    Boolean   @default(false)
+  investigationCompleted  Boolean   @default(false)
+  lessonsLearntCompleted  Boolean   @default(false)
+  localAuthority          String?   @db.VarChar(255)
+  comments                String?   @db.Text
+  status                  String    @default("OPEN") @db.VarChar(50) // OPEN, UNDER_REVIEW, CLOSED
+  dateClosed              DateTime? @db.Date
+  createdById             Int?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([status])
+  @@index([incidentDate])
+  @@index([location])
+}
+
+model SafeguardingTracker {
+  id                      Int       @id @default(autoincrement())
+  incidentDate            DateTime? @db.Date
+  serviceUser             String?   @db.VarChar(255)
+  location                String?   @db.VarChar(255) // House
+  dateReported            DateTime? @db.Date
+  localAuthority          String?   @db.VarChar(255)
+  reportedBy              String?   @db.VarChar(255)
+  details                 String?   @db.Text
+  actionsTaken            String?   @db.Text
+  outcome                 String?   @db.Text
+  rcaCompleted            Boolean   @default(false)
+  investigationCompleted  Boolean   @default(false)
+  lessonsLearntCompleted  Boolean   @default(false)
+  comments                String?   @db.Text
+  status                  String    @default("OPEN") @db.VarChar(50) // OPEN, INVESTIGATING, CLOSED
+  dateClosed              DateTime? @db.Date
+  createdById             Int?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([status])
+  @@index([incidentDate])
+  @@index([location])
+}
+
+model RiddorTracker {
+  id                      Int       @id @default(autoincrement())
+  incidentDate            DateTime? @db.Date
+  affectedPersonType      String?   @db.VarChar(100) // Staff, Service User, Visitor, Contractor
+  affectedPersonName      String?   @db.VarChar(255)
+  location                String?   @db.VarChar(255)
+  dateReported            DateTime? @db.Date
+  reportedBy              String?   @db.VarChar(255)
+  hseReferenceNumber      String?   @db.VarChar(100)
+  details                 String?   @db.Text
+  actionsTaken            String?   @db.Text
+  outcome                 String?   @db.Text
+  rcaCompleted            Boolean   @default(false)
+  cqcNotified             Boolean   @default(false)
+  safeguardingNotified    Boolean   @default(false)
+  ipcNotified             Boolean   @default(false)
+  investigationCompleted  Boolean   @default(false)
+  lessonsLearntCompleted  Boolean   @default(false)
+  comments                String?   @db.Text
+  status                  String    @default("OPEN") @db.VarChar(50) // OPEN, REPORTED_TO_HSE, CLOSED
+  dateClosed              DateTime? @db.Date
+  createdById             Int?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([status])
+  @@index([incidentDate])
+  @@index([location])
+}
+
+model SarTracker {
+  id                      Int       @id @default(autoincrement())
+  dateReceived            DateTime? @db.Date
+  dateAcknowledged        DateTime? @db.Date
+  dueDate                 DateTime? @db.Date
+  receivedFrom            String?   @db.VarChar(255)
+  subjectName             String?   @db.VarChar(255) // Who is it Regarding
+  informationRequested    String?   @db.Text
+  formatReceived          String?   @db.VarChar(100) // Email, Letter, Verbal, Portal
+  formatRequested         String?   @db.VarChar(100) // Electronic (PDF), Hardcopy, Secure Transfer
+  purpose                 String?   @db.Text
+  requestGranted          String    @default("PENDING") @db.VarChar(50) // PENDING, YES, NO, PARTIAL
+  outcomeReason           String?   @db.Text
+  dateInformationSent     DateTime? @db.Date
+  handledBy               String?   @db.VarChar(255)
+  comments                String?   @db.Text
+  status                  String    @default("OPEN") @db.VarChar(50) // OPEN, IN_PROGRESS, COMPLETED, REJECTED
+  dateClosed              DateTime? @db.Date
+  createdById             Int?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([status])
+  @@index([dateReceived])
+  @@index([dueDate])
+}
+
+
 
 

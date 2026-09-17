@@ -67,6 +67,7 @@ export function getAllUserPermissions(user) {
       'cqc-inspection.view',
       'quality-assurance.view',
       'enquiries.view',
+      'governance.view',
       'handovers.view',
       'maintenance.view',
       'profile.view',

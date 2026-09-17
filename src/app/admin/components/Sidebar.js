@@ -242,6 +242,49 @@ export default function Sidebar({ user }) {
       hasArrow: false,
     },
     {
+      id: 'governance',
+      name: 'Governance & Trackers',
+      permission: 'governance.view',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      hasArrow: true,
+      subItems: [
+        {
+          id: 'governance-hub',
+          name: 'All Trackers Hub',
+          permission: 'governance.view',
+          path: '/admin/governance',
+        },
+        {
+          id: 'cqc-tracker',
+          name: 'CQC Notifications',
+          permission: 'governance.view',
+          path: '/admin/governance/cqc-notifications',
+        },
+        {
+          id: 'safeguarding-tracker',
+          name: 'Safeguarding Tracker',
+          permission: 'governance.view',
+          path: '/admin/governance/safeguarding',
+        },
+        {
+          id: 'riddor-tracker',
+          name: 'RIDDOR Tracker',
+          permission: 'governance.view',
+          path: '/admin/governance/riddor',
+        },
+        {
+          id: 'sar-tracker',
+          name: 'SAR Tracker',
+          permission: 'governance.view',
+          path: '/admin/governance/subject-access-requests',
+        },
+      ],
+    },
+    {
       id: 'holidays',
       name: 'Holidays',
       permission: 'holidays.manage',

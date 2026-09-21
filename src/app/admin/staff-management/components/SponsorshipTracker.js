@@ -17,10 +17,13 @@ export default function SponsorshipTracker({ currentUser, onViewStaff }) {
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const res = await fetch('/api/users?status=all', { headers });
+      const res = await fetch('/api/users?status=CURRENT', { headers });
       if (res.ok) {
         const data = await res.json();
-        setStaff(data);
+        const activeOnly = (Array.isArray(data) ? data : []).filter(
+          s => (s.status || 'CURRENT').toUpperCase() === 'CURRENT'
+        );
+        setStaff(activeOnly);
       }
     } catch (err) {
       console.error('Error fetching staff for sponsorship tracker:', err);
@@ -103,6 +106,7 @@ export default function SponsorshipTracker({ currentUser, onViewStaff }) {
   });
 
   const filteredStaff = staff.filter(s => {
+    if ((s.status || 'CURRENT').toUpperCase() !== 'CURRENT') return false;
     const name = `${s.firstName || ''} ${s.lastName || ''}`.toLowerCase();
     const matchesSearch = name.includes(searchTerm.toLowerCase()) || (s.shareCode && s.shareCode.toLowerCase().includes(searchTerm.toLowerCase()));
     

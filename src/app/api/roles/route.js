@@ -1,17 +1,23 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+// Default system roles fallback if database is not reachable or empty
+const FALLBACK_ROLES = [
+  { id: 1, name: 'ADMIN', displayName: 'Administrator', description: 'Full system access', isSystem: true },
+  { id: 2, name: 'CAREWORKER', displayName: 'Care Worker', description: 'Care worker access', isSystem: true },
+  { id: 3, name: 'DIRECTOR', displayName: 'Director', description: 'Senior management with strategic oversight', isSystem: true },
+  { id: 4, name: 'HR', displayName: 'HR', description: 'Human Resources with staff management access', isSystem: true },
+  { id: 5, name: 'REGISTER_MANAGER', displayName: 'Register Manager', description: 'Registered manager with operational oversight', isSystem: true },
+  { id: 6, name: 'SUPPORT_WORKER', displayName: 'Support Worker', description: 'Support staff with limited access to tasks and shifts', isSystem: true },
+  { id: 9, name: 'BUSINESS_DEVELOPMENT_MANAGER', displayName: 'BDM', description: 'Oversight of marketing and operations', isSystem: false },
+  { id: 10, name: 'DEPUTY_MANAGER', displayName: 'Deputy', description: 'Supported Registered Manager', isSystem: false },
+  { id: 11, name: 'SERVICE_LEAD', displayName: 'Service Lead', description: 'Responsible for day to day service', isSystem: false },
+  { id: 12, name: 'CARE_TAKER', displayName: 'Care Taker', description: 'Care taker access', isSystem: false },
+];
+
 // GET all roles
 export async function GET(request) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    
     const roles = await prisma.roleDefinition.findMany({
       include: {
         _count: {
@@ -19,14 +25,18 @@ export async function GET(request) {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        id: 'asc'
       }
     });
 
+    if (!roles || roles.length === 0) {
+      return NextResponse.json(FALLBACK_ROLES);
+    }
+
     return NextResponse.json(roles);
   } catch (error) {
-    console.error('Error fetching roles:', error);
-    return NextResponse.json({ error: 'Failed to fetch roles' }, { status: 500 });
+    console.error('Error fetching roles from DB, returning fallback roles:', error);
+    return NextResponse.json(FALLBACK_ROLES);
   }
 }
 

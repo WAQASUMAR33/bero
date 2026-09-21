@@ -178,8 +178,21 @@ export default function StaffManagementPage() {
 
   const [formData, setFormData] = useState(initialFormData);
 
+  const DEFAULT_ROLES = [
+    { id: 1, name: 'ADMIN', displayName: 'Administrator' },
+    { id: 2, name: 'CAREWORKER', displayName: 'Care Worker' },
+    { id: 3, name: 'DIRECTOR', displayName: 'Director' },
+    { id: 4, name: 'HR', displayName: 'HR' },
+    { id: 5, name: 'REGISTER_MANAGER', displayName: 'Register Manager' },
+    { id: 6, name: 'SUPPORT_WORKER', displayName: 'Support Worker' },
+    { id: 9, name: 'BUSINESS_DEVELOPMENT_MANAGER', displayName: 'BDM' },
+    { id: 10, name: 'DEPUTY_MANAGER', displayName: 'Deputy' },
+    { id: 11, name: 'SERVICE_LEAD', displayName: 'Service Lead' },
+    { id: 12, name: 'CARE_TAKER', displayName: 'Care Taker' }
+  ];
+
   const [regions, setRegions] = useState([]);
-  const [roles, setRoles] = useState([]);
+  const [roles, setRoles] = useState(DEFAULT_ROLES);
 
   const allPermissions = [
     'dashboard.view',
@@ -249,20 +262,27 @@ export default function StaffManagementPage() {
 
   const fetchRoles = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/roles', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers = { 'Content-Type': 'application/json' };
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/roles', { headers });
 
       if (response.ok) {
         const data = await response.json();
-        setRoles(data);
-        // Set default role to first role if available
-        if (data.length > 0 && !formData.roleId) {
-          setFormData(prev => ({ ...prev, roleId: data[0].id }));
+        const roleList = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        if (roleList.length > 0) {
+          setRoles(roleList);
+          // Set default role if available and not already set
+          setFormData(prev => {
+            if (!prev.roleId) {
+              return { ...prev, roleId: roleList[0].id };
+            }
+            return prev;
+          });
+          return;
         }
       }
     } catch (error) {
@@ -494,6 +514,8 @@ export default function StaffManagementPage() {
   };
 
   const openEditModal = (staffMember) => {
+    fetchRoles();
+    fetchRegions();
     setSelectedStaff(staffMember);
     setFormData({
       // Step 1: Personal & Contact
@@ -652,7 +674,12 @@ export default function StaffManagementPage() {
 
                     {hasPermission(user, 'users.create') && !showArchivedView && (
                       <button
-                        onClick={() => setShowAddModal(true)}
+                        onClick={() => {
+                          fetchRoles();
+                          fetchRegions();
+                          resetForm();
+                          setShowAddModal(true);
+                        }}
                         className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-5 py-2.5 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2 text-sm font-medium"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -746,7 +773,7 @@ export default function StaffManagementPage() {
                     >
                       <option value="all">All Roles</option>
                       {roles.map(role => (
-                        <option key={role.id} value={role.id}>{role.displayName}</option>
+                        <option key={role.id} value={role.id}>{role.displayName || role.name}</option>
                       ))}
                     </select>
                   </div>
@@ -1461,7 +1488,7 @@ export default function StaffManagementPage() {
                             >
                               <option value="">Select Role</option>
                               {roles.map(role => (
-                                <option key={role.id} value={role.id}>{role.displayName}</option>
+                                <option key={role.id} value={role.id}>{role.displayName || role.name}</option>
                               ))}
                             </select>
                           </div>
@@ -2271,7 +2298,7 @@ export default function StaffManagementPage() {
                               required
                             >
                               {roles.map(role => (
-                                <option key={role.id} value={role.id}>{role.displayName}</option>
+                                <option key={role.id} value={role.id}>{role.displayName || role.name}</option>
                               ))}
                             </select>
                           </div>

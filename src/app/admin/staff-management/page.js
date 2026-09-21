@@ -291,6 +291,32 @@ export default function StaffManagementPage() {
   };
 
   const nextStep = () => {
+    if (currentStep === 1) {
+      if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
+        showNotification('Please enter both First Name and Last Name.', 'error');
+        return;
+      }
+      if (!formData.email?.trim()) {
+        showNotification('Please enter a valid Email Address.', 'error');
+        return;
+      }
+      if (!formData.password) {
+        showNotification('Please provide a Password for the staff account.', 'error');
+        return;
+      }
+      if (!formData.phoneNo?.trim()) {
+        showNotification('Please provide Phone Number 1.', 'error');
+        return;
+      }
+    }
+
+    if (currentStep === 2) {
+      if (!formData.roleId) {
+        showNotification('Please select a Role for the staff member.', 'error');
+        return;
+      }
+    }
+
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
@@ -305,18 +331,20 @@ export default function StaffManagementPage() {
   const fetchStaff = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/users?status=all', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers = { 'Content-Type': 'application/json' };
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/users?status=all', { headers });
 
       if (response.ok) {
         const data = await response.json();
-        // Show all users
         setStaff(data);
+      } else if (response.status === 401) {
+        showNotification('Session expired. Please log in again.', 'error');
+        setTimeout(() => router.push('/login'), 1500);
       }
     } catch (error) {
       console.error('Error fetching staff:', error);
@@ -327,55 +355,126 @@ export default function StaffManagementPage() {
   };
 
   const handleAddStaff = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+
+    // Final checks
+    if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
+      showNotification('First Name and Last Name are required (Step 1).', 'error');
+      setCurrentStep(1);
+      return;
+    }
+    if (!formData.email?.trim()) {
+      showNotification('Email Address is required (Step 1).', 'error');
+      setCurrentStep(1);
+      return;
+    }
+    if (!formData.password) {
+      showNotification('Password is required (Step 1).', 'error');
+      setCurrentStep(1);
+      return;
+    }
+    if (!formData.phoneNo?.trim()) {
+      showNotification('Phone Number 1 is required (Step 1).', 'error');
+      setCurrentStep(1);
+      return;
+    }
+    if (!formData.roleId) {
+      showNotification('Role is required (Step 2).', 'error');
+      setCurrentStep(2);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token || token === 'null' || token === 'undefined') {
+        showNotification('Your session has expired. Please log in again to continue.', 'error');
+        setIsSubmitting(false);
+        setTimeout(() => router.push('/login'), 1500);
+        return;
+      }
+
+      const cleanEmail = formData.email.trim().toLowerCase();
+      const cleanUsername = formData.username?.trim() || cleanEmail.split('@')[0];
+
+      const payload = {
+        ...formData,
+        email: cleanEmail,
+        username: cleanUsername,
+        roleId: formData.roleId ? parseInt(formData.roleId) : null,
+        regionId: formData.regionId ? parseInt(formData.regionId) : null,
+        contractedHours: (formData.contractedHours !== '' && formData.contractedHours !== null && formData.contractedHours !== undefined)
+          ? parseInt(formData.contractedHours)
+          : null
+      };
+
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...formData,
-          contractedHours: formData.contractedHours ? parseInt(formData.contractedHours) : null
-        })
+        body: JSON.stringify(payload)
       });
+
+      const data = await response.json().catch(() => null);
 
       if (response.ok) {
         setShowAddModal(false);
         resetForm();
         setCurrentStep(1);
         fetchStaff();
-        showNotification('User added successfully!', 'success');
+        showNotification('Staff member created successfully!', 'success');
       } else {
-        showNotification('Error adding user. Please try again.', 'error');
+        if (response.status === 401) {
+          showNotification('Session expired or unauthorized. Please log in again.', 'error');
+          setTimeout(() => router.push('/login'), 1500);
+        } else {
+          const errorMsg = data?.error || data?.message || 'Failed to create staff member. Please check required fields.';
+          showNotification(errorMsg, 'error');
+        }
       }
     } catch (error) {
       console.error('Error adding staff:', error);
-      showNotification('Error adding staff member. Please try again.', 'error');
+      showNotification(error?.message || 'Error adding staff member. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleEditStaff = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+    if (!selectedStaff) return;
+
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token || token === 'null' || token === 'undefined') {
+        showNotification('Your session has expired. Please log in again.', 'error');
+        setIsSubmitting(false);
+        setTimeout(() => router.push('/login'), 1500);
+        return;
+      }
+
+      const payload = {
+        ...formData,
+        roleId: formData.roleId ? parseInt(formData.roleId) : null,
+        regionId: formData.regionId ? parseInt(formData.regionId) : null,
+        contractedHours: (formData.contractedHours !== '' && formData.contractedHours !== null && formData.contractedHours !== undefined)
+          ? parseInt(formData.contractedHours)
+          : null
+      };
+
       const response = await fetch(`/api/users/${selectedStaff.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...formData,
-          contractedHours: formData.contractedHours ? parseInt(formData.contractedHours) : null
-        })
+        body: JSON.stringify(payload)
       });
+
+      const data = await response.json().catch(() => null);
 
       if (response.ok) {
         setShowEditModal(false);
@@ -383,11 +482,17 @@ export default function StaffManagementPage() {
         fetchStaff();
         showNotification('User updated successfully!', 'success');
       } else {
-        showNotification('Error updating user. Please try again.', 'error');
+        if (response.status === 401) {
+          showNotification('Session expired or unauthorized. Please log in again.', 'error');
+          setTimeout(() => router.push('/login'), 1500);
+        } else {
+          const errorMsg = data?.error || data?.message || 'Error updating user. Please try again.';
+          showNotification(errorMsg, 'error');
+        }
       }
     } catch (error) {
       console.error('Error updating staff:', error);
-      showNotification('Error updating staff member. Please try again.', 'error');
+      showNotification(error?.message || 'Error updating staff member. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }

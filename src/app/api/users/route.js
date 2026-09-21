@@ -65,17 +65,42 @@ export async function GET(request) {
   }
 }
 
+// Safe parsing utilities
+const parseDate = (val) => {
+  if (!val || val === '' || val === 'null' || val === 'undefined') return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const parseInteger = (val) => {
+  if (val === undefined || val === null || val === '') return null;
+  const num = parseInt(val, 10);
+  return isNaN(num) ? null : num;
+};
+
+const parseFloatNumber = (val) => {
+  if (val === undefined || val === null || val === '') return null;
+  if (typeof val === 'string') {
+    const cleaned = val.replace(/[^0-9.-]+/g, '');
+    if (!cleaned) return null;
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  }
+  const num = parseFloat(val);
+  return isNaN(num) ? null : num;
+};
+
 // POST /api/users - Create a new user
 export async function POST(request) {
   try {
     const currentUser = await getCurrentUser(request);
 
     if (!currentUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized: Session expired or invalid. Please log in again.' }, { status: 401 });
     }
 
     if (!hasPermission(currentUser, 'users.create')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden: You do not have permission to add new staff members.' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -134,77 +159,114 @@ export async function POST(request) {
       businessInsurance
     } = body;
 
-    // Convert string IDs to integers
-    const roleId = roleIdStr ? parseInt(roleIdStr) : null;
-    const regionId = regionIdStr ? parseInt(regionIdStr) : null;
+    // Convert and derive username if missing
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    let cleanUsername = username ? username.trim() : '';
+    if (!cleanUsername && cleanEmail) {
+      cleanUsername = cleanEmail.split('@')[0];
+    }
+
+    const roleId = parseInteger(roleIdStr);
+    const regionId = parseInteger(regionIdStr);
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !username || !password || !phoneNo || !roleId) {
+    const missingFields = [];
+    if (!firstName?.trim()) missingFields.push('First Name');
+    if (!lastName?.trim()) missingFields.push('Last Name');
+    if (!cleanEmail) missingFields.push('Email');
+    if (!password) missingFields.push('Password');
+    if (!phoneNo?.trim()) missingFields.push('Phone Number');
+    if (!roleId) missingFields.push('Role');
+
+    if (missingFields.length > 0) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: `Missing required field(s): ${missingFields.join(', ')}` },
         { status: 400 }
       );
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email },
-          { username }
-        ]
-      }
+    // Check if user already exists by email
+    const existingEmail = await prisma.user.findFirst({
+      where: { email: cleanEmail }
     });
 
-    if (existingUser) {
+    if (existingEmail) {
       return NextResponse.json(
-        { error: 'User with this email or username already exists' },
+        { error: `A staff member with email "${cleanEmail}" already exists.` },
         { status: 400 }
       );
+    }
+
+    // Check if username exists; if so, make it unique
+    let finalUsername = cleanUsername;
+    const existingUsername = await prisma.user.findFirst({
+      where: { username: finalUsername }
+    });
+    if (existingUsername) {
+      finalUsername = `${cleanUsername}_${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+
+    // Employee number uniqueness check
+    const cleanEmployeeNumber = employeeNumber && employeeNumber.trim() !== '' ? employeeNumber.trim() : null;
+    if (cleanEmployeeNumber) {
+      const existingEmp = await prisma.user.findUnique({
+        where: { employeeNumber: cleanEmployeeNumber }
+      });
+      if (existingEmp) {
+        return NextResponse.json(
+          { error: `Employee number "${cleanEmployeeNumber}" is already in use by another staff member.` },
+          { status: 400 }
+        );
+      }
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Deduplicate permissions
+    const uniquePermissions = Array.isArray(permissions)
+      ? [...new Set(permissions.filter(p => typeof p === 'string' && p.trim() !== ''))]
+      : [];
+
     // Create user
     const user = await prisma.user.create({
       data: {
-        firstName,
-        lastName,
-        email,
-        username,
-        phoneNo,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: cleanEmail,
+        username: finalUsername,
+        phoneNo: phoneNo.trim(),
         roleId,
-        status,
+        status: (status === 'ARCHIVED' || status === 'CURRENT') ? status : 'CURRENT',
         password: hashedPassword,
         isEmailVerified: true,
         profilePic: profilePic || null,
-        employeeNumber: employeeNumber || null,
-        startDate: startDate ? new Date(startDate) : null,
-        leaveDate: leaveDate ? new Date(leaveDate) : null,
-        regionId: regionId || null,
+        employeeNumber: cleanEmployeeNumber,
+        startDate: parseDate(startDate),
+        leaveDate: parseDate(leaveDate),
+        regionId,
         emergencyName: emergencyName || null,
         emergencyContact: emergencyContact || null,
         postalCode: postalCode || null,
-        contractedHours: contractedHours !== undefined && contractedHours !== '' && contractedHours !== null ? parseInt(contractedHours) : null,
+        contractedHours: parseInteger(contractedHours),
         niNumber: niNumber || null,
         // Sheet 1: Personal & Contact
-        dob: dob ? new Date(dob) : null,
+        dob: parseDate(dob),
         secondaryPhone: secondaryPhone || null,
         consentToEmail: Boolean(consentToEmail),
         address: address || null,
         // Sheet 1: Employment & Compensation
         reasonForLeaving: reasonForLeaving || null,
-        rateOfPay: rateOfPay !== undefined && rateOfPay !== '' && rateOfPay !== null ? parseFloat(rateOfPay) : null,
+        rateOfPay: parseFloatNumber(rateOfPay),
         sleepingNights: Boolean(sleepingNights),
-        costForSleepingNights: costForSleepingNights !== undefined && costForSleepingNights !== '' && costForSleepingNights !== null ? parseFloat(costForSleepingNights) : null,
-        salary: salary !== undefined && salary !== '' && salary !== null ? parseFloat(salary) : null,
+        costForSleepingNights: parseFloatNumber(costForSleepingNights),
+        salary: parseFloatNumber(salary),
         // Sheet 1: Compliance & Right to Work
-        dbsDate: dbsDate ? new Date(dbsDate) : null,
+        dbsDate: parseDate(dbsDate),
         dbsUpdateCode: dbsUpdateCode || null,
         sponsorshipStatus: sponsorshipStatus || null,
         shareCode: shareCode || null,
-        visaExpiryDate: visaExpiryDate ? new Date(visaExpiryDate) : null,
+        visaExpiryDate: parseDate(visaExpiryDate),
         // Sheet 1: Next of Kin & Medical
         nokRelationship: nokRelationship || null,
         allergyStatus: allergyStatus || null,
@@ -222,7 +284,7 @@ export async function POST(request) {
         carInsuranceVerified: Boolean(carInsuranceVerified),
         businessInsurance: Boolean(businessInsurance),
         permissions: {
-          create: permissions.map(permission => ({
+          create: uniquePermissions.map(permission => ({
             key: permission
           }))
         }
@@ -267,8 +329,24 @@ export async function POST(request) {
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
     console.error('Error creating user:', error);
+
+    if (error.code === 'P2002') {
+      const field = error.meta?.target || 'a unique field';
+      return NextResponse.json(
+        { error: `Conflict: ${field} already exists.` },
+        { status: 409 }
+      );
+    }
+
+    if (error.code === 'P2003') {
+      return NextResponse.json(
+        { error: 'Invalid reference for Role or Region. Please re-select the options.' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Failed to create staff member. Please check all fields and try again.' },
       { status: 500 }
     );
   }

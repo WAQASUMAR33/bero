@@ -48,17 +48,42 @@ export async function GET(request, { params }) {
   }
 }
 
+// Safe parsing utilities
+const parseDate = (val) => {
+  if (!val || val === '' || val === 'null' || val === 'undefined') return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const parseInteger = (val) => {
+  if (val === undefined || val === null || val === '') return null;
+  const num = parseInt(val, 10);
+  return isNaN(num) ? null : num;
+};
+
+const parseFloatNumber = (val) => {
+  if (val === undefined || val === null || val === '') return null;
+  if (typeof val === 'string') {
+    const cleaned = val.replace(/[^0-9.-]+/g, '');
+    if (!cleaned) return null;
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  }
+  const num = parseFloat(val);
+  return isNaN(num) ? null : num;
+};
+
 // PUT /api/users/[id] - Update a specific user
 export async function PUT(request, { params }) {
   try {
     const currentUser = await getCurrentUser(request);
 
     if (!currentUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized: Session expired. Please log in again.' }, { status: 401 });
     }
 
     if (!hasPermission(currentUser, 'users.update')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden: You do not have permission to update staff.' }, { status: 403 });
     }
 
     const { id } = await params;
@@ -171,43 +196,43 @@ export async function PUT(request, { params }) {
     // Prepare update data - only include fields that are provided (partial update)
     const updateData = {};
 
-    if (firstName !== undefined) updateData.firstName = firstName;
-    if (lastName !== undefined) updateData.lastName = lastName;
-    if (email !== undefined) updateData.email = email;
-    if (username !== undefined) updateData.username = username;
-    if (phoneNo !== undefined) updateData.phoneNo = phoneNo;
-    if (roleId !== undefined) updateData.roleId = parseInt(roleId);
-    if (status !== undefined) updateData.status = status;
-    if (employeeNumber !== undefined) updateData.employeeNumber = employeeNumber || null;
-    if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
-    if (leaveDate !== undefined) updateData.leaveDate = leaveDate ? new Date(leaveDate) : null;
-    if (regionId !== undefined) updateData.regionId = regionId ? parseInt(regionId) : null;
+    if (firstName !== undefined) updateData.firstName = firstName.trim();
+    if (lastName !== undefined) updateData.lastName = lastName.trim();
+    if (email !== undefined) updateData.email = email.trim().toLowerCase();
+    if (username !== undefined) updateData.username = username.trim();
+    if (phoneNo !== undefined) updateData.phoneNo = phoneNo.trim();
+    if (roleId !== undefined) updateData.roleId = parseInteger(roleId);
+    if (status !== undefined) updateData.status = (status === 'ARCHIVED' || status === 'CURRENT') ? status : 'CURRENT';
+    if (employeeNumber !== undefined) updateData.employeeNumber = (employeeNumber && employeeNumber.trim() !== '') ? employeeNumber.trim() : null;
+    if (startDate !== undefined) updateData.startDate = parseDate(startDate);
+    if (leaveDate !== undefined) updateData.leaveDate = parseDate(leaveDate);
+    if (regionId !== undefined) updateData.regionId = parseInteger(regionId);
     if (emergencyName !== undefined) updateData.emergencyName = emergencyName || null;
     if (emergencyContact !== undefined) updateData.emergencyContact = emergencyContact || null;
     if (postalCode !== undefined) updateData.postalCode = postalCode || null;
-    if (contractedHours !== undefined) updateData.contractedHours = (contractedHours !== '' && contractedHours !== null) ? parseInt(contractedHours) : null;
+    if (contractedHours !== undefined) updateData.contractedHours = parseInteger(contractedHours);
     if (niNumber !== undefined) updateData.niNumber = niNumber || null;
     if (profilePic !== undefined) updateData.profilePic = profilePic || null;
 
     // Sheet 1: Personal & Contact
-    if (dob !== undefined) updateData.dob = dob ? new Date(dob) : null;
+    if (dob !== undefined) updateData.dob = parseDate(dob);
     if (secondaryPhone !== undefined) updateData.secondaryPhone = secondaryPhone || null;
     if (consentToEmail !== undefined) updateData.consentToEmail = Boolean(consentToEmail);
     if (address !== undefined) updateData.address = address || null;
 
     // Sheet 1: Employment & Compensation
     if (reasonForLeaving !== undefined) updateData.reasonForLeaving = reasonForLeaving || null;
-    if (rateOfPay !== undefined) updateData.rateOfPay = (rateOfPay !== '' && rateOfPay !== null) ? parseFloat(rateOfPay) : null;
+    if (rateOfPay !== undefined) updateData.rateOfPay = parseFloatNumber(rateOfPay);
     if (sleepingNights !== undefined) updateData.sleepingNights = Boolean(sleepingNights);
-    if (costForSleepingNights !== undefined) updateData.costForSleepingNights = (costForSleepingNights !== '' && costForSleepingNights !== null) ? parseFloat(costForSleepingNights) : null;
-    if (salary !== undefined) updateData.salary = (salary !== '' && salary !== null) ? parseFloat(salary) : null;
+    if (costForSleepingNights !== undefined) updateData.costForSleepingNights = parseFloatNumber(costForSleepingNights);
+    if (salary !== undefined) updateData.salary = parseFloatNumber(salary);
 
     // Sheet 1: Compliance & Right to Work
-    if (dbsDate !== undefined) updateData.dbsDate = dbsDate ? new Date(dbsDate) : null;
+    if (dbsDate !== undefined) updateData.dbsDate = parseDate(dbsDate);
     if (dbsUpdateCode !== undefined) updateData.dbsUpdateCode = dbsUpdateCode || null;
     if (sponsorshipStatus !== undefined) updateData.sponsorshipStatus = sponsorshipStatus || null;
     if (shareCode !== undefined) updateData.shareCode = shareCode || null;
-    if (visaExpiryDate !== undefined) updateData.visaExpiryDate = visaExpiryDate ? new Date(visaExpiryDate) : null;
+    if (visaExpiryDate !== undefined) updateData.visaExpiryDate = parseDate(visaExpiryDate);
 
     // Sheet 1: Next of Kin & Medical
     if (nokRelationship !== undefined) updateData.nokRelationship = nokRelationship || null;
@@ -243,41 +268,48 @@ export async function PUT(request, { params }) {
     });
 
     // Update permissions if provided
-    if (permissions.length >= 0) {
-      // Delete existing permissions
+    if (permissions && Array.isArray(permissions)) {
+      const uniquePermissions = [...new Set(permissions.filter(p => typeof p === 'string' && p.trim() !== ''))];
       await prisma.userPermission.deleteMany({
         where: { userId }
       });
 
-      // Create new permissions
-      await prisma.userPermission.createMany({
-        data: permissions.map(permission => ({
-          userId,
-          key: permission
-        }))
-      });
-
-      // Fetch updated user with permissions
-      const updatedUser = await prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          region: true,
-          permissions: true,
-        }
-      });
-
-      // Remove password from response
-      const { password: _, ...userWithoutPassword } = updatedUser;
-      return NextResponse.json(userWithoutPassword);
+      if (uniquePermissions.length > 0) {
+        await prisma.userPermission.createMany({
+          data: uniquePermissions.map(permission => ({
+            userId,
+            key: permission
+          })),
+          skipDuplicates: true
+        });
+      }
     }
 
+    // Fetch updated user with region and permissions
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        region: true,
+        permissions: true,
+      }
+    });
+
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = updatedUser || user;
     return NextResponse.json(userWithoutPassword);
   } catch (error) {
     console.error('Error updating user:', error);
+
+    if (error.code === 'P2002') {
+      const field = error.meta?.target || 'a unique field';
+      return NextResponse.json(
+        { error: `Conflict: ${field} already exists on another user.` },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Failed to update user' },
       { status: 500 }
     );
   }

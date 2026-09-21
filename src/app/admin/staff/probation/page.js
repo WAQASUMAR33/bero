@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import ProbationTracker from '../../staff-management/components/ProbationTracker';
+import StaffNavTabs from '../../staff-management/components/StaffNavTabs';
 import StaffFileModal from '../../components/StaffFileModal';
 
 export default function ProbationPage() {
@@ -30,6 +31,7 @@ export default function ProbationPage() {
         <Header user={user} />
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto space-y-6">
+            <StaffNavTabs activeTab="probation" />
             <ProbationTracker
               currentUser={user}
               onViewStaff={(staffId) => setViewStaffId(staffId)}

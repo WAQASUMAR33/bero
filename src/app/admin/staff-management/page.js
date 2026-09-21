@@ -13,6 +13,7 @@ import AppraisalsTracker from './components/AppraisalsTracker';
 import ProbationTracker from './components/ProbationTracker';
 import SponsorshipTracker from './components/SponsorshipTracker';
 import PdpTracker from './components/PdpTracker';
+import StaffNavTabs from './components/StaffNavTabs';
 import { hasPermission, isManager } from '@/lib/permissions';
 
 export default function StaffManagementPage() {
@@ -251,10 +252,31 @@ export default function StaffManagementPage() {
       fetchStaff();
       fetchRegions();
       fetchRoles();
+
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        if (tab && ['staff', 'supervisions', 'appraisals', 'probation', 'sponsorship', 'pdp'].includes(tab)) {
+          setMainActiveTab(tab);
+        }
+      }
     } else {
       router.push('/login');
     }
   }, [router]);
+
+  const handleTabChange = (tabId) => {
+    setMainActiveTab(tabId);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (tabId === 'staff') {
+        url.searchParams.delete('tab');
+      } else {
+        url.searchParams.set('tab', tabId);
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
 
   const fetchRegions = async () => {
     try {
@@ -744,28 +766,10 @@ export default function StaffManagementPage() {
           ) : (
             <>
               {/* TOP NAVIGATION TABS FOR STAFF & TRACKERS */}
-              <div className="mb-6 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                {[
-                  { id: 'staff', label: '👥 Staff Overview' },
-                  { id: 'supervisions', label: '📋 Supervisions' },
-                  { id: 'appraisals', label: '🎯 Appraisals' },
-                  { id: 'probation', label: '⏳ Probation Reviews' },
-                  { id: 'sponsorship', label: '🌐 Sponsorship & Compliance' },
-                  { id: 'pdp', label: '📈 PDP Goals' }
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setMainActiveTab(tab.id)}
-                    className={`px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-2 ${
-                      mainActiveTab === tab.id
-                        ? 'bg-[#224fa6] text-white shadow-md'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
-              </div>
+              <StaffNavTabs
+                activeTab={mainActiveTab}
+                onTabChange={handleTabChange}
+              />
 
               {mainActiveTab === 'supervisions' && (
                 <SupervisionsTracker currentUser={user} onViewStaff={id => setViewStaffId(id)} />

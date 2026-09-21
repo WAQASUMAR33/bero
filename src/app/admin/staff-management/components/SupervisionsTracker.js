@@ -33,7 +33,7 @@ export default function SupervisionsTracker({ currentUser, onViewStaff }) {
 
       const [supervisionsRes, staffRes] = await Promise.all([
         fetch('/api/staff/supervisions', { headers }),
-        fetch('/api/users?status=all', { headers })
+        fetch('/api/users?status=CURRENT', { headers })
       ]);
 
       if (supervisionsRes.ok) {
@@ -43,8 +43,11 @@ export default function SupervisionsTracker({ currentUser, onViewStaff }) {
 
       if (staffRes.ok) {
         const staffData = await staffRes.json();
-        setAllStaff(staffData);
-        if (staffData.length > 0) setSelectedStaffId(staffData[0].id.toString());
+        const activeStaffOnly = (Array.isArray(staffData) ? staffData : []).filter(
+          member => (member.status || 'CURRENT').toUpperCase() === 'CURRENT'
+        );
+        setAllStaff(activeStaffOnly);
+        if (activeStaffOnly.length > 0) setSelectedStaffId(activeStaffOnly[0].id.toString());
       }
     } catch (err) {
       console.error('Error loading supervisions data:', err);
@@ -325,13 +328,17 @@ export default function SupervisionsTracker({ currentUser, onViewStaff }) {
                   required
                   value={selectedStaffId}
                   onChange={e => setSelectedStaffId(e.target.value)}
-                  className="w-full p-2.5 border rounded-lg"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent outline-none bg-white text-gray-900"
                 >
-                  {allStaff.map(member => (
-                    <option key={member.id} value={member.id}>
-                      {member.firstName} {member.lastName} ({member.role?.displayName || member.role?.name || 'Staff'})
-                    </option>
-                  ))}
+                  {allStaff.length === 0 ? (
+                    <option value="" disabled>No active staff members found</option>
+                  ) : (
+                    allStaff.map(member => (
+                      <option key={member.id} value={member.id}>
+                        {member.firstName} {member.lastName} ({member.role?.displayName || member.role?.name || 'Staff'})
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">

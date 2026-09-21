@@ -98,7 +98,40 @@ export async function POST(request) {
       postalCode,
       contractedHours,
       niNumber,
-      profilePic
+      profilePic,
+      // Sheet 1: Personal & Contact
+      dob,
+      secondaryPhone,
+      consentToEmail,
+      address,
+      // Sheet 1: Employment & Compensation
+      reasonForLeaving,
+      rateOfPay,
+      sleepingNights,
+      costForSleepingNights,
+      salary,
+      // Sheet 1: Compliance & Right to Work
+      dbsDate,
+      dbsUpdateCode,
+      sponsorshipStatus,
+      shareCode,
+      visaExpiryDate,
+      // Sheet 1: Next of Kin & Medical
+      nokRelationship,
+      allergyStatus,
+      allergies,
+      vaccinationStatus,
+      paysForPrescriptions,
+      gpDetails,
+      // Sheet 2: Staff Driving Details
+      drivingLicenceValid,
+      ownCar,
+      carMake,
+      carModel,
+      carColour,
+      carRegistration,
+      carInsuranceVerified,
+      businessInsurance
     } = body;
 
     // Convert string IDs to integers
@@ -153,8 +186,41 @@ export async function POST(request) {
         emergencyName: emergencyName || null,
         emergencyContact: emergencyContact || null,
         postalCode: postalCode || null,
-        contractedHours: contractedHours || null,
+        contractedHours: contractedHours !== undefined && contractedHours !== '' && contractedHours !== null ? parseInt(contractedHours) : null,
         niNumber: niNumber || null,
+        // Sheet 1: Personal & Contact
+        dob: dob ? new Date(dob) : null,
+        secondaryPhone: secondaryPhone || null,
+        consentToEmail: Boolean(consentToEmail),
+        address: address || null,
+        // Sheet 1: Employment & Compensation
+        reasonForLeaving: reasonForLeaving || null,
+        rateOfPay: rateOfPay !== undefined && rateOfPay !== '' && rateOfPay !== null ? parseFloat(rateOfPay) : null,
+        sleepingNights: Boolean(sleepingNights),
+        costForSleepingNights: costForSleepingNights !== undefined && costForSleepingNights !== '' && costForSleepingNights !== null ? parseFloat(costForSleepingNights) : null,
+        salary: salary !== undefined && salary !== '' && salary !== null ? parseFloat(salary) : null,
+        // Sheet 1: Compliance & Right to Work
+        dbsDate: dbsDate ? new Date(dbsDate) : null,
+        dbsUpdateCode: dbsUpdateCode || null,
+        sponsorshipStatus: sponsorshipStatus || null,
+        shareCode: shareCode || null,
+        visaExpiryDate: visaExpiryDate ? new Date(visaExpiryDate) : null,
+        // Sheet 1: Next of Kin & Medical
+        nokRelationship: nokRelationship || null,
+        allergyStatus: allergyStatus || null,
+        allergies: allergies || null,
+        vaccinationStatus: vaccinationStatus || null,
+        paysForPrescriptions: Boolean(paysForPrescriptions),
+        gpDetails: gpDetails || null,
+        // Sheet 2: Staff Driving Details
+        drivingLicenceValid: Boolean(drivingLicenceValid),
+        ownCar: Boolean(ownCar),
+        carMake: carMake || null,
+        carModel: carModel || null,
+        carColour: carColour || null,
+        carRegistration: carRegistration || null,
+        carInsuranceVerified: Boolean(carInsuranceVerified),
+        businessInsurance: Boolean(businessInsurance),
         permissions: {
           create: permissions.map(permission => ({
             key: permission

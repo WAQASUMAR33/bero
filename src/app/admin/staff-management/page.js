@@ -20,6 +20,8 @@ export default function StaffManagementPage() {
   const [filterRole, setFilterRole] = useState('all');
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [currentStep, setCurrentStep] = useState(1);
+  const [activeTableView, setActiveTableView] = useState('overview'); // 'overview' | 'driving' | 'compliance'
+  const [editActiveTab, setEditActiveTab] = useState('personal'); // 'personal' | 'employment' | 'compliance' | 'driving' | 'health' | 'permissions'
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -29,30 +31,152 @@ export default function StaffManagementPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
-    // Step 1: Basic Info
+  // Compliance Status Helpers
+  const getDbsStatus = (dateStr) => {
+    if (!dateStr) return { status: 'none', label: 'Not Set', color: 'gray', badge: 'bg-gray-100 text-gray-600 border-gray-200' };
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return { status: 'none', label: 'Invalid Date', color: 'gray', badge: 'bg-gray-100 text-gray-600 border-gray-200' };
+    
+    // DBS checks expire 3 years from check date
+    const expiry = new Date(date);
+    expiry.setFullYear(expiry.getFullYear() + 3);
+    
+    // 6 months before expiry
+    const warningDate = new Date(expiry);
+    warningDate.setMonth(warningDate.getMonth() - 6);
+    
+    const now = new Date();
+    
+    if (now >= expiry) {
+      return { 
+        status: 'expired', 
+        label: 'Expired (3+ Yrs)', 
+        color: 'red', 
+        badge: 'bg-red-50 text-red-700 border-red-200 ring-1 ring-red-200 font-semibold',
+        expiryDate: expiry.toLocaleDateString()
+      };
+    }
+    if (now >= warningDate) {
+      return { 
+        status: 'expiring', 
+        label: 'Expires in < 6 Mos', 
+        color: 'amber', 
+        badge: 'bg-amber-50 text-amber-700 border-amber-200 ring-1 ring-amber-200 font-semibold',
+        expiryDate: expiry.toLocaleDateString()
+      };
+    }
+    return { 
+      status: 'valid', 
+      label: 'In Date', 
+      color: 'green', 
+      badge: 'bg-green-50 text-green-700 border-green-200 ring-1 ring-green-200 font-semibold',
+      expiryDate: expiry.toLocaleDateString()
+    };
+  };
+
+  const getVisaStatus = (dateStr, sponsorship) => {
+    if (!dateStr) {
+      if (['British Citizen', 'Irish Citizen', 'Settled Status (ILR)'].includes(sponsorship)) {
+        return { status: 'na', label: 'Not Required', color: 'gray', badge: 'bg-gray-100 text-gray-500 border-gray-200' };
+      }
+      return { status: 'none', label: 'Not Set', color: 'gray', badge: 'bg-gray-100 text-gray-500 border-gray-200' };
+    }
+    const expiry = new Date(dateStr);
+    if (isNaN(expiry.getTime())) return { status: 'none', label: 'Invalid Date', color: 'gray', badge: 'bg-gray-100 text-gray-500 border-gray-200' };
+    
+    // 3 months before expiry
+    const warningDate = new Date(expiry);
+    warningDate.setMonth(warningDate.getMonth() - 3);
+    
+    const now = new Date();
+    
+    if (now >= expiry) {
+      return { 
+        status: 'expired', 
+        label: 'Expired', 
+        color: 'red', 
+        badge: 'bg-red-50 text-red-700 border-red-200 ring-1 ring-red-200 font-semibold',
+        expiryDate: expiry.toLocaleDateString()
+      };
+    }
+    if (now >= warningDate) {
+      return { 
+        status: 'expiring', 
+        label: 'Expires in < 3 Mos', 
+        color: 'amber', 
+        badge: 'bg-amber-50 text-amber-700 border-amber-200 ring-1 ring-amber-200 font-semibold',
+        expiryDate: expiry.toLocaleDateString()
+      };
+    }
+    return { 
+      status: 'valid', 
+      label: 'In Date', 
+      color: 'green', 
+      badge: 'bg-green-50 text-green-700 border-green-200 ring-1 ring-green-200 font-semibold',
+      expiryDate: expiry.toLocaleDateString()
+    };
+  };
+
+  const initialFormData = {
+    // Step 1: Personal & Contact Info
     email: '',
     username: '',
     firstName: '',
     lastName: '',
     password: '',
     phoneNo: '',
-    roleId: '',
+    secondaryPhone: '',
+    consentToEmail: false,
+    dob: '',
+    address: '',
+    postalCode: '',
+    niNumber: '',
     profilePic: '',
-    // Step 2: Employment Details
+
+    // Step 2: Employment & Compensation
     employeeNumber: '',
+    roleId: '',
+    regionId: '',
+    status: 'CURRENT',
     startDate: '',
     leaveDate: '',
-    regionId: '',
-    // Step 3: Emergency & Additional Info
-    emergencyName: '',
-    emergencyContact: '',
-    postalCode: '',
+    reasonForLeaving: '',
     contractedHours: '',
-    status: 'CURRENT',
-    niNumber: '',
+    rateOfPay: '',
+    salary: '',
+    sleepingNights: false,
+    costForSleepingNights: '',
+
+    // Step 3: Compliance & Right to Work
+    dbsDate: '',
+    dbsUpdateCode: '',
+    sponsorshipStatus: '',
+    shareCode: '',
+    visaExpiryDate: '',
+
+    // Step 4: Driving Details
+    drivingLicenceValid: false,
+    ownCar: false,
+    carMake: '',
+    carModel: '',
+    carColour: '',
+    carRegistration: '',
+    carInsuranceVerified: false,
+    businessInsurance: false,
+
+    // Step 5: Next of Kin, Health & Access
+    emergencyName: '',
+    nokRelationship: '',
+    emergencyContact: '',
+    gpDetails: '',
+    allergyStatus: 'None',
+    allergies: '',
+    vaccinationStatus: '',
+    paysForPrescriptions: false,
     permissions: []
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const [regions, setRegions] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -147,7 +271,7 @@ export default function StaffManagementPage() {
   };
 
   const nextStep = () => {
-    if (currentStep < 3) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -348,55 +472,88 @@ export default function StaffManagementPage() {
     }
   };
 
+  const formatDateForInput = (d) => {
+    if (!d) return '';
+    try {
+      const parsed = new Date(d);
+      if (isNaN(parsed.getTime())) return '';
+      return parsed.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
+
   const resetForm = () => {
     setFormData({
-      email: '',
-      username: '',
-      firstName: '',
-      lastName: '',
-      password: '',
-      phoneNo: '',
-      roleId: roles.length > 0 ? roles[0].id : '',
-      profilePic: '',
-      employeeNumber: '',
-      startDate: '',
-      leaveDate: '',
-      regionId: '',
-      emergencyName: '',
-      emergencyContact: '',
-      postalCode: '',
-      contractedHours: '',
-      status: 'CURRENT',
-      niNumber: '',
-      permissions: []
+      ...initialFormData,
+      roleId: roles.length > 0 ? roles[0].id : ''
     });
     setSelectedStaff(null);
     setCurrentStep(1);
+    setEditActiveTab('personal');
   };
 
   const openEditModal = (staffMember) => {
     setSelectedStaff(staffMember);
     setFormData({
+      // Step 1: Personal & Contact
       email: staffMember.email || '',
       username: staffMember.username || '',
       firstName: staffMember.firstName || '',
       lastName: staffMember.lastName || '',
       password: '',
       phoneNo: staffMember.phoneNo || '',
-      roleId: staffMember.roleId || (roles.length > 0 ? roles[0].id : ''),
-      profilePic: staffMember.profilePic || '',
-      employeeNumber: staffMember.employeeNumber || '',
-      startDate: staffMember.startDate ? new Date(staffMember.startDate).toISOString().split('T')[0] : '',
-      leaveDate: staffMember.leaveDate ? new Date(staffMember.leaveDate).toISOString().split('T')[0] : '',
-      regionId: staffMember.regionId || '',
-      emergencyName: staffMember.emergencyName || '',
-      emergencyContact: staffMember.emergencyContact || '',
+      secondaryPhone: staffMember.secondaryPhone || '',
+      consentToEmail: Boolean(staffMember.consentToEmail),
+      dob: formatDateForInput(staffMember.dob),
+      address: staffMember.address || '',
       postalCode: staffMember.postalCode || '',
-      contractedHours: staffMember.contractedHours?.toString() || '',
-      status: staffMember.status || 'CURRENT',
       niNumber: staffMember.niNumber || '',
+      profilePic: staffMember.profilePic || '',
+
+      // Step 2: Employment & Compensation
+      roleId: staffMember.roleId || (roles.length > 0 ? roles[0].id : ''),
+      employeeNumber: staffMember.employeeNumber || '',
+      regionId: staffMember.regionId || '',
+      status: staffMember.status || 'CURRENT',
+      startDate: formatDateForInput(staffMember.startDate),
+      leaveDate: formatDateForInput(staffMember.leaveDate),
+      reasonForLeaving: staffMember.reasonForLeaving || '',
+      contractedHours: staffMember.contractedHours?.toString() || '',
+      rateOfPay: staffMember.rateOfPay?.toString() || '',
+      salary: staffMember.salary?.toString() || '',
+      sleepingNights: Boolean(staffMember.sleepingNights),
+      costForSleepingNights: staffMember.costForSleepingNights?.toString() || '',
+
+      // Step 3: Compliance & Right to Work
+      dbsDate: formatDateForInput(staffMember.dbsDate),
+      dbsUpdateCode: staffMember.dbsUpdateCode || '',
+      sponsorshipStatus: staffMember.sponsorshipStatus || '',
+      shareCode: staffMember.shareCode || '',
+      visaExpiryDate: formatDateForInput(staffMember.visaExpiryDate),
+
+      // Step 4: Driving Details
+      drivingLicenceValid: Boolean(staffMember.drivingLicenceValid),
+      ownCar: Boolean(staffMember.ownCar),
+      carMake: staffMember.carMake || '',
+      carModel: staffMember.carModel || '',
+      carColour: staffMember.carColour || '',
+      carRegistration: staffMember.carRegistration || '',
+      carInsuranceVerified: Boolean(staffMember.carInsuranceVerified),
+      businessInsurance: Boolean(staffMember.businessInsurance),
+
+      // Step 5: Next of Kin, Health & Access
+      emergencyName: staffMember.emergencyName || '',
+      nokRelationship: staffMember.nokRelationship || '',
+      emergencyContact: staffMember.emergencyContact || '',
+      gpDetails: staffMember.gpDetails || '',
+      allergyStatus: staffMember.allergyStatus || 'None',
+      allergies: staffMember.allergies || '',
+      vaccinationStatus: staffMember.vaccinationStatus || '',
+      paysForPrescriptions: Boolean(staffMember.paysForPrescriptions),
       permissions: staffMember.permissions?.map(p => p.key) || []
     });
+    setEditActiveTab('personal');
     setShowEditModal(true);
   };
 
@@ -596,6 +753,63 @@ export default function StaffManagementPage() {
                 </div>
               </div>
 
+              {/* View Switcher Tabs */}
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div className="flex items-center space-x-2 bg-gray-100 p-1.5 rounded-xl border border-gray-200">
+                  <button
+                    onClick={() => setActiveTableView('overview')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      activeTableView === 'overview'
+                        ? 'bg-[#224fa6] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                    }`}
+                  >
+                    <span>📋 Overview</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTableView('driving')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      activeTableView === 'driving'
+                        ? 'bg-[#224fa6] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                    }`}
+                  >
+                    <span>🚗 Driving Details</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTableView === 'driving' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                      {displayedStaff.filter(s => s.drivingLicenceValid || s.ownCar).length}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTableView('compliance')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      activeTableView === 'compliance'
+                        ? 'bg-[#224fa6] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                    }`}
+                  >
+                    <span>🛡️ Compliance & Visas</span>
+                    {displayedStaff.filter(s => {
+                      const dbs = getDbsStatus(s.dbsDate);
+                      const visa = getVisaStatus(s.visaExpiryDate, s.sponsorshipStatus);
+                      return dbs.status === 'expired' || dbs.status === 'expiring' || visa.status === 'expired' || visa.status === 'expiring';
+                    }).length > 0 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500 text-white font-bold animate-pulse">
+                        {displayedStaff.filter(s => {
+                          const dbs = getDbsStatus(s.dbsDate);
+                          const visa = getVisaStatus(s.visaExpiryDate, s.sponsorshipStatus);
+                          return dbs.status === 'expired' || dbs.status === 'expiring' || visa.status === 'expired' || visa.status === 'expiring';
+                        }).length} Alert
+                      </span>
+                    )}
+                  </button>
+                </div>
+                <div className="text-xs text-gray-500 flex items-center space-x-3">
+                  <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block mr-1"></span> In Date</span>
+                  <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block mr-1"></span> Expiring Soon</span>
+                  <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block mr-1"></span> Expired</span>
+                </div>
+              </div>
+
               {/* Staff Table */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -603,17 +817,41 @@ export default function StaffManagementPage() {
                     <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                       <tr>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Staff Member</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Permissions</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created</th>
+                        {activeTableView === 'overview' && (
+                          <>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role & Region</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">DBS Status</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Right to Work / Visa</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Driver?</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                          </>
+                        )}
+                        {activeTableView === 'driving' && (
+                          <>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Valid Licence</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Owns Car</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Vehicle Details</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Registration</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Car Insurance</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Business Cover</th>
+                          </>
+                        )}
+                        {activeTableView === 'compliance' && (
+                          <>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">DBS Check & Expiry</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">DBS Update Code</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Sponsorship Status</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Share Code</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Visa Expiry Status</th>
+                          </>
+                        )}
                         <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {filteredStaff.length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                          <td colSpan={activeTableView === 'overview' ? 7 : activeTableView === 'driving' ? 8 : 7} className="px-6 py-12 text-center text-gray-500">
                             <div className="flex flex-col items-center justify-center">
                               <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
@@ -630,120 +868,296 @@ export default function StaffManagementPage() {
                           </td>
                         </tr>
                       ) : (
-                        filteredStaff.map((member) => (
-                        <tr key={member.id} className="hover:bg-gray-50 transition-colors duration-200">
-                          <td className="px-6 py-5 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-12 w-12">
-                                <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center shadow-lg">
-                                  <span className="text-white font-semibold text-sm">
-                                    {member.firstName?.[0]}{member.lastName?.[0]}
-                                  </span>
+                        filteredStaff.map((member) => {
+                          const dbs = getDbsStatus(member.dbsDate);
+                          const visa = getVisaStatus(member.visaExpiryDate, member.sponsorshipStatus);
+
+                          return (
+                            <tr key={member.id} className="hover:bg-gray-50 transition-colors duration-200">
+                              {/* Common Staff Column */}
+                              <td className="px-6 py-5 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="flex-shrink-0 h-12 w-12">
+                                    {member.profilePic ? (
+                                      <img src={member.profilePic} alt="" className="h-12 w-12 rounded-full object-cover shadow-sm border border-gray-200" />
+                                    ) : (
+                                      <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#224fa6] to-[#3270e9] flex items-center justify-center shadow-md">
+                                        <span className="text-white font-semibold text-sm">
+                                          {member.firstName?.[0]}{member.lastName?.[0]}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-semibold text-gray-900">
+                                      {member.firstName} {member.lastName}
+                                    </div>
+                                    <div className="text-xs text-gray-500">{member.email}</div>
+                                    {member.phoneNo && <div className="text-xs text-gray-400">{member.phoneNo}</div>}
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-semibold text-gray-900">
-                                  {member.firstName} {member.lastName}
-                                </div>
-                                <div className="text-sm text-gray-500">{member.email}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(member.role?.name)}`}>
-                              {member.role?.displayName || 'N/A'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(member.status)}`}>
-                              {member.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{member.permissions?.length || 0} permissions</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(member.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-2">
-                              {showArchivedView ? (
+                              </td>
+
+                              {/* OVERVIEW VIEW */}
+                              {activeTableView === 'overview' && (
                                 <>
-                                  {hasPermission(user, 'users.update') && (
-                                    <button
-                                      onClick={() => handleRestoreStaff(member)}
-                                      className="p-2 text-green-600 hover:text-white hover:bg-green-600 rounded-lg transition-all duration-200 hover:shadow-md"
-                                      title="Restore to Active Staff"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                      </svg>
-                                    </button>
-                                  )}
-                                  {hasPermission(user, 'users.update') && (
-                                    <button
-                                      onClick={() => openEditModal(member)}
-                                      className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
-                                      title="Edit User"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                      </svg>
-                                    </button>
-                                  )}
-                                  {hasPermission(user, 'users.delete') && (
-                                    <button
-                                      onClick={() => handleDeleteClick(member)}
-                                      className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
-                                      title="Delete User Permanently"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                      </svg>
-                                    </button>
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  {hasPermission(user, 'users.update') && (
-                                    <button
-                                      onClick={() => openEditModal(member)}
-                                      className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
-                                      title="Edit User"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                      </svg>
-                                    </button>
-                                  )}
-                                  {hasPermission(user, 'users.update') && (
-                                    <button
-                                      onClick={() => handleArchiveClick(member)}
-                                      className="p-2 text-amber-600 hover:text-white hover:bg-amber-600 rounded-lg transition-all duration-200 hover:shadow-md"
-                                      title="Archive Staff"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                      </svg>
-                                    </button>
-                                  )}
-                                  {hasPermission(user, 'users.delete') && (
-                                    <button
-                                      onClick={() => handleDeleteClick(member)}
-                                      className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
-                                      title="Delete User"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                      </svg>
-                                    </button>
-                                  )}
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex flex-col space-y-1">
+                                      <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full w-max ${getRoleBadgeColor(member.role?.name)}`}>
+                                        {member.role?.displayName || 'N/A'}
+                                      </span>
+                                      {member.region?.title && (
+                                        <span className="text-xs text-gray-500 font-medium">📍 {member.region.title}</span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex flex-col">
+                                      <span className={`inline-flex items-center px-2.5 py-1 text-xs rounded-lg border w-max ${dbs.badge}`}>
+                                        <span className={`w-2 h-2 rounded-full mr-1.5 ${
+                                          dbs.color === 'green' ? 'bg-green-500' : dbs.color === 'amber' ? 'bg-amber-500' : dbs.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
+                                        }`}></span>
+                                        {dbs.label}
+                                      </span>
+                                      {member.dbsDate && (
+                                        <span className="text-[11px] text-gray-400 mt-0.5">Checked: {new Date(member.dbsDate).toLocaleDateString()}</span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex flex-col">
+                                      <span className={`inline-flex items-center px-2.5 py-1 text-xs rounded-lg border w-max ${visa.badge}`}>
+                                        <span className={`w-2 h-2 rounded-full mr-1.5 ${
+                                          visa.color === 'green' ? 'bg-green-500' : visa.color === 'amber' ? 'bg-amber-500' : visa.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
+                                        }`}></span>
+                                        {visa.label}
+                                      </span>
+                                      {member.sponsorshipStatus && (
+                                        <span className="text-[11px] text-gray-500 mt-0.5">{member.sponsorshipStatus}</span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    {member.drivingLicenceValid || member.ownCar ? (
+                                      <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                                        🚗 {member.ownCar ? 'Has Car' : 'Licence Only'}
+                                      </span>
+                                    ) : (
+                                      <span className="text-xs text-gray-400 font-medium">Non-driver</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(member.status)}`}>
+                                      {member.status}
+                                    </span>
+                                  </td>
                                 </>
                               )}
-                            </div>
-                          </td>
-                        </tr>
-                        ))
+
+                              {/* DRIVING VIEW */}
+                              {activeTableView === 'driving' && (
+                                <>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg border ${
+                                      member.drivingLicenceValid 
+                                        ? 'bg-green-50 text-green-700 border-green-200' 
+                                        : 'bg-gray-100 text-gray-600 border-gray-200'
+                                    }`}>
+                                      {member.drivingLicenceValid ? '✓ Valid' : '✗ None'}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg border ${
+                                      member.ownCar 
+                                        ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                                        : 'bg-gray-100 text-gray-600 border-gray-200'
+                                    }`}>
+                                      {member.ownCar ? '✓ Yes' : '✗ No'}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {member.carMake || member.carModel ? (
+                                      <div>
+                                        <div className="font-medium text-gray-900">{member.carMake} {member.carModel}</div>
+                                        {member.carColour && <div className="text-xs text-gray-500">Colour: {member.carColour}</div>}
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-gray-400">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    {member.carRegistration ? (
+                                      <span className="inline-flex items-center px-2.5 py-1 text-xs font-bold font-mono tracking-wider rounded border border-amber-300 bg-amber-100 text-gray-900 shadow-sm">
+                                        {member.carRegistration}
+                                      </span>
+                                    ) : (
+                                      <span className="text-xs text-gray-400">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg border ${
+                                      member.carInsuranceVerified 
+                                        ? 'bg-green-50 text-green-700 border-green-200' 
+                                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                                    }`}>
+                                      {member.carInsuranceVerified ? '✓ Verified' : '⚠ Pending'}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg border ${
+                                      member.businessInsurance 
+                                        ? 'bg-green-50 text-green-700 border-green-200' 
+                                        : 'bg-gray-100 text-gray-600 border-gray-200'
+                                    }`}>
+                                      {member.businessInsurance ? '✓ Business Class' : '✗ Standard'}
+                                    </span>
+                                  </td>
+                                </>
+                              )}
+
+                              {/* COMPLIANCE VIEW */}
+                              {activeTableView === 'compliance' && (
+                                <>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex flex-col">
+                                      <span className={`inline-flex items-center px-2.5 py-1 text-xs rounded-lg border w-max ${dbs.badge}`}>
+                                        <span className={`w-2 h-2 rounded-full mr-1.5 ${
+                                          dbs.color === 'green' ? 'bg-green-500' : dbs.color === 'amber' ? 'bg-amber-500' : dbs.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
+                                        }`}></span>
+                                        {dbs.label}
+                                      </span>
+                                      {member.dbsDate && (
+                                        <span className="text-[11px] text-gray-500 mt-1">
+                                          Date: {new Date(member.dbsDate).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                      {dbs.expiryDate && (
+                                        <span className="text-[11px] text-gray-400">
+                                          Due: {dbs.expiryDate}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    {member.dbsUpdateCode ? (
+                                      <span className="font-mono text-xs bg-gray-100 px-2.5 py-1 rounded border border-gray-200 text-gray-800">
+                                        {member.dbsUpdateCode}
+                                      </span>
+                                    ) : (
+                                      <span className="text-xs text-gray-400">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    {member.sponsorshipStatus || <span className="text-xs text-gray-400">—</span>}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    {member.shareCode ? (
+                                      <span className="font-mono text-xs bg-blue-50 px-2.5 py-1 rounded border border-blue-200 text-blue-900 font-semibold">
+                                        {member.shareCode}
+                                      </span>
+                                    ) : (
+                                      <span className="text-xs text-gray-400">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex flex-col">
+                                      <span className={`inline-flex items-center px-2.5 py-1 text-xs rounded-lg border w-max ${visa.badge}`}>
+                                        <span className={`w-2 h-2 rounded-full mr-1.5 ${
+                                          visa.color === 'green' ? 'bg-green-500' : visa.color === 'amber' ? 'bg-amber-500' : visa.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
+                                        }`}></span>
+                                        {visa.label}
+                                      </span>
+                                      {member.visaExpiryDate && (
+                                        <span className="text-[11px] text-gray-500 mt-1">
+                                          Expires: {new Date(member.visaExpiryDate).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                </>
+                              )}
+
+                              {/* Common Actions Column */}
+                              <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end space-x-2">
+                                  {showArchivedView ? (
+                                    <>
+                                      {hasPermission(user, 'users.update') && (
+                                        <button
+                                          onClick={() => handleRestoreStaff(member)}
+                                          className="p-2 text-green-600 hover:text-white hover:bg-green-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                          title="Restore to Active Staff"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                      {hasPermission(user, 'users.update') && (
+                                        <button
+                                          onClick={() => openEditModal(member)}
+                                          className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
+                                          title="Edit User"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                      {hasPermission(user, 'users.delete') && (
+                                        <button
+                                          onClick={() => handleDeleteClick(member)}
+                                          className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                          title="Delete User Permanently"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <>
+                                      {hasPermission(user, 'users.update') && (
+                                        <button
+                                          onClick={() => openEditModal(member)}
+                                          className="p-2 text-[#224fa6] hover:text-white hover:bg-[#224fa6] rounded-lg transition-all duration-200 hover:shadow-md"
+                                          title="Edit User"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                      {hasPermission(user, 'users.update') && (
+                                        <button
+                                          onClick={() => handleArchiveClick(member)}
+                                          className="p-2 text-amber-600 hover:text-white hover:bg-amber-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                          title="Archive Staff"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                      {hasPermission(user, 'users.delete') && (
+                                        <button
+                                          onClick={() => handleDeleteClick(member)}
+                                          className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                          title="Delete User"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>
@@ -755,12 +1169,12 @@ export default function StaffManagementPage() {
           {/* Add Staff Modal */}
           {showAddModal && (
             <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-              <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+              <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900">Add New User</h3>
-                      <p className="text-sm text-gray-600 mt-1">Create a new user account with role and permissions</p>
+                      <h3 className="text-2xl font-bold text-gray-900">Add New Staff Member</h3>
+                      <p className="text-sm text-gray-600 mt-1">Complete employment, compliance, and driving information</p>
                     </div>
                     <button
                       onClick={() => { setShowAddModal(false); resetForm(); }}
@@ -772,114 +1186,139 @@ export default function StaffManagementPage() {
                     </button>
                   </div>
 
-                  {/* Progress Indicator */}
+                  {/* Progress Stepper */}
                   <div className="mb-8">
                     <div className="flex items-center justify-between">
-                      {[1, 2, 3].map((step) => (
-                        <div key={step} className="flex items-center flex-1">
-                          <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${currentStep >= step
-                            ? 'border-[#224fa6] bg-[#224fa6] text-white'
-                            : 'border-gray-300 bg-white text-gray-400'
+                      {[
+                        { num: 1, label: 'Personal & Contact' },
+                        { num: 2, label: 'Employment & Pay' },
+                        { num: 3, label: 'Compliance & DBS' },
+                        { num: 4, label: 'Driving & Vehicle' },
+                        { num: 5, label: 'Health & Access' }
+                      ].map((step, idx) => (
+                        <div key={step.num} className="flex items-center flex-1 last:flex-none">
+                          <div className="flex flex-col items-center">
+                            <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                              currentStep >= step.num
+                                ? 'border-[#224fa6] bg-[#224fa6] text-white shadow-md'
+                                : 'border-gray-300 bg-white text-gray-400'
                             }`}>
-                            {currentStep > step ? (
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            ) : (
-                              <span className="font-semibold">{step}</span>
-                            )}
+                              {currentStep > step.num ? (
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              ) : (
+                                <span className="font-semibold text-sm">{step.num}</span>
+                              )}
+                            </div>
+                            <span className={`text-[11px] font-medium mt-1 text-center hidden sm:block ${
+                              currentStep >= step.num ? 'text-[#224fa6] font-semibold' : 'text-gray-400'
+                            }`}>
+                              {step.label}
+                            </span>
                           </div>
-                          {step < 3 && (
-                            <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${currentStep > step ? 'bg-[#224fa6]' : 'bg-gray-300'
-                              }`}></div>
+                          {idx < 4 && (
+                            <div className={`flex-1 h-0.5 mx-2 -mt-4 transition-all duration-300 ${
+                              currentStep > step.num ? 'bg-[#224fa6]' : 'bg-gray-200'
+                            }`}></div>
                           )}
                         </div>
                       ))}
-                    </div>
-                    <div className="flex justify-between mt-3">
-                      <p className={`text-xs font-medium ${currentStep >= 1 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Basic Info</p>
-                      <p className={`text-xs font-medium ${currentStep >= 2 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Employment Details</p>
-                      <p className={`text-xs font-medium ${currentStep >= 3 ? 'text-[#224fa6]' : 'text-gray-400'}`}>Emergency & Additional</p>
                     </div>
                   </div>
 
                   <form onSubmit={(e) => {
                     e.preventDefault();
-                    if (currentStep < 3) {
+                    if (currentStep < 5) {
                       nextStep();
                     } else {
                       handleAddStaff(e);
                     }
                   }} className="space-y-6">
 
-                    {/* Step 1: Basic Info */}
+                    {/* STEP 1: Personal & Contact Info */}
                     {currentStep === 1 && (
                       <div className="space-y-4">
-                        {/* Profile Photo Section - Prominent at top */}
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
-                          <div className="flex items-start space-x-4 sm:space-x-6">
-                            {/* Photo Preview */}
+                        {/* Profile Photo */}
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-5 border border-blue-200">
+                          <div className="flex items-start space-x-4">
                             <div className="flex-shrink-0">
                               {formData.profilePic ? (
-                                <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden border-4 border-white shadow-lg">
-                                  <img src={formData.profilePic} alt="Profile Preview" className="w-full h-full object-cover" />
+                                <div className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-white shadow-md">
+                                  <img src={formData.profilePic} alt="Profile" className="w-full h-full object-cover" />
                                   <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, profilePic: '' })}
-                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md"
-                                    title="Remove photo"
+                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                                   >
-                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                   </button>
                                 </div>
                               ) : (
-                                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-gradient-to-br from-[#224fa6] to-[#3270e9] flex items-center justify-center border-4 border-white shadow-lg">
-                                  <svg className="w-12 h-12 sm:w-16 sm:h-16 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-[#224fa6] to-[#3270e9] flex items-center justify-center border-2 border-white shadow-md">
+                                  <svg className="w-12 h-12 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                   </svg>
                                 </div>
                               )}
                             </div>
-
-                            {/* Upload Section */}
                             <div className="flex-1 min-w-0">
-                              <label className="block text-base font-semibold text-gray-900 mb-2 sm:mb-3">
-                                Profile Photo
-                              </label>
-                              <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                                Upload a profile photo for this staff member. This will help identify them in the system.
-                              </p>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">Profile Photo</label>
                               <FileUpload
                                 accept="image/*"
-                                label="📷 Upload Photo"
+                                label="Upload Photo"
                                 onUploadComplete={(fileUrl) => {
                                   setFormData({ ...formData, profilePic: fileUrl });
                                   showNotification('Photo uploaded successfully!', 'success');
                                 }}
-                                onError={(error) => {
-                                  showNotification(`Photo upload failed: ${error}`, 'error');
-                                }}
+                                onError={(error) => showNotification(`Photo upload failed: ${error}`, 'error')}
                                 className="mb-2"
                               />
-                              {formData.profilePic && (
-                                <div className="mt-2 sm:mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
-                                  <p className="text-xs text-green-700 flex items-center">
-                                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    Photo uploaded successfully
-                                  </p>
-                                </div>
-                              )}
                             </div>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Names & DOB */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">First Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.firstName}
+                              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="John"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Last Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.lastName}
+                              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="Smith"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Date of Birth (DOB)</label>
+                            <input
+                              type="date"
+                              value={formData.dob}
+                              onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Email & Username & Password */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address *</label>
                             <input
                               type="email"
                               required
@@ -889,61 +1328,34 @@ export default function StaffManagementPage() {
                                 const username = email.split('@')[0];
                                 setFormData({ ...formData, email, username });
                               }}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="user@example.com"
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="staff@example.com"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Username (Auto-generated)</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Username (System)</label>
                             <input
                               type="text"
                               value={formData.username}
                               readOnly
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
-                              placeholder="Auto-generated from email"
-                            />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
-                            <input
-                              type="text"
-                              required
-                              value={formData.firstName}
-                              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="First name"
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
-                            <input
-                              type="text"
-                              required
-                              value={formData.lastName}
-                              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="Last name"
-                            />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Password *</label>
                             <div className="relative">
                               <input
-                                type={showPassword ? "text" : "password"}
+                                type={showPassword ? 'text' : 'password'}
                                 required
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 pr-10"
-                                placeholder="Enter secure password"
+                                className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                                placeholder="••••••••"
                               />
                               <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                               >
                                 {showPassword ? (
                                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -958,55 +1370,107 @@ export default function StaffManagementPage() {
                               </button>
                             </div>
                           </div>
+                        </div>
+
+                        {/* Phone 1, Phone 2, NI Number */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number 1 *</label>
                             <input
                               type="tel"
                               required
                               value={formData.phoneNo}
                               onChange={(e) => setFormData({ ...formData, phoneNo: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="+44 123 456 7890"
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="+44 7123 456789"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number 2 (Secondary)</label>
+                            <input
+                              type="tel"
+                              value={formData.secondaryPhone}
+                              onChange={(e) => setFormData({ ...formData, secondaryPhone: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="+44 7987 654321"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">NI Number</label>
+                            <input
+                              type="text"
+                              value={formData.niNumber}
+                              onChange={(e) => setFormData({ ...formData, niNumber: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="QQ 12 34 56 A"
                             />
                           </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Role *</label>
-                          <select
-                            value={formData.roleId}
-                            onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
-                            required
-                          >
-                            <option value="">Select Role</option>
-                            {roles.map(role => (
-                              <option key={role.id} value={role.id}>{role.displayName}</option>
-                            ))}
-                          </select>
+
+                        {/* Address & Postal Code */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Full Street Address</label>
+                            <input
+                              type="text"
+                              value={formData.address}
+                              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="123 High Street, Flat 4B"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Postal Code</label>
+                            <input
+                              type="text"
+                              value={formData.postalCode}
+                              onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="SW1A 1AA"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Consent to Email */}
+                        <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            id="consentToEmail"
+                            checked={formData.consentToEmail}
+                            onChange={(e) => setFormData({ ...formData, consentToEmail: e.target.checked })}
+                            className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                          />
+                          <label htmlFor="consentToEmail" className="text-sm font-medium text-gray-700 cursor-pointer">
+                            Consent to receive emails and electronic notifications
+                          </label>
                         </div>
                       </div>
                     )}
 
-                    {/* Step 2: Employment Details */}
+                    {/* STEP 2: Employment & Pay */}
                     {currentStep === 2 && (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Employee Number</label>
-                            <input
-                              type="text"
-                              value={formData.employeeNumber}
-                              onChange={(e) => setFormData({ ...formData, employeeNumber: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="EMP-001"
-                            />
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Role *</label>
+                            <select
+                              value={formData.roleId}
+                              onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              required
+                            >
+                              <option value="">Select Role</option>
+                              {roles.map(role => (
+                                <option key={role.id} value={role.id}>{role.displayName}</option>
+                              ))}
+                            </select>
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Region</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Region</label>
                             <select
                               value={formData.regionId}
                               onChange={(e) => setFormData({ ...formData, regionId: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
                             >
                               <option value="">Select Region</option>
                               {regions.map(region => (
@@ -1014,114 +1478,533 @@ export default function StaffManagementPage() {
                               ))}
                             </select>
                           </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Employee Number</label>
+                            <input
+                              type="text"
+                              value={formData.employeeNumber}
+                              onChange={(e) => setFormData({ ...formData, employeeNumber: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="EMP-001"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Start Date</label>
                             <input
                               type="date"
                               value={formData.startDate}
                               onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Leave Date</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">End Date (Leave Date)</label>
                             <input
                               type="date"
                               value={formData.leaveDate}
                               onChange={(e) => setFormData({ ...formData, leaveDate: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 3: Emergency & Additional Info */}
-                    {currentStep === 3 && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Name</label>
-                            <input
-                              type="text"
-                              value={formData.emergencyName}
-                              onChange={(e) => setFormData({ ...formData, emergencyName: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="Emergency contact name"
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Number</label>
-                            <input
-                              type="tel"
-                              value={formData.emergencyContact}
-                              onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="+44 123 456 7890"
-                            />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
-                            <input
-                              type="text"
-                              value={formData.postalCode}
-                              onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="SW1A 1AA"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Contracted Hours</label>
-                            <input
-                              type="number"
-                              value={formData.contractedHours}
-                              onChange={(e) => setFormData({ ...formData, contractedHours: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                              placeholder="40"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Status *</label>
                             <select
                               value={formData.status}
                               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
                             >
                               <option value="CURRENT">Current</option>
                               <option value="ARCHIVED">Archived</option>
                             </select>
                           </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">NI Number</label>
-                          <input
-                            type="text"
-                            value={formData.niNumber}
-                            onChange={(e) => setFormData({ ...formData, niNumber: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500"
-                            placeholder="AB123456C"
-                          />
+
+                        {formData.leaveDate && (
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Reason for Leaving</label>
+                            <textarea
+                              rows={2}
+                              value={formData.reasonForLeaving}
+                              onChange={(e) => setFormData({ ...formData, reasonForLeaving: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="Details regarding resignation, end of contract, etc."
+                            />
+                          </div>
+                        )}
+
+                        {/* Pay & Hours */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Contracted Hours PW</label>
+                            <input
+                              type="number"
+                              value={formData.contractedHours}
+                              onChange={(e) => setFormData({ ...formData, contractedHours: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="37.5"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Rate of Pay (£ / hr)</label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={formData.rateOfPay}
+                                onChange={(e) => setFormData({ ...formData, rateOfPay: e.target.value })}
+                                className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                                placeholder="12.50"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Annual Salary (£)</label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={formData.salary}
+                                onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
+                                className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                                placeholder="26000"
+                              />
+                            </div>
+                          </div>
                         </div>
-                        {/* Hide permissions for Care Workers & Support Workers as they have all permissions by default */
-                          !['CAREWORKER', 'SUPPORT_WORKER'].includes(roles.find(r => r.id == formData.roleId)?.name) && (
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
-                              <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">
-                                <PermissionMatrix
-                                  selectedPermissions={formData.permissions}
-                                  onChange={(newPermissions) => setFormData({ ...formData, permissions: newPermissions })}
+
+                        {/* Sleeping Nights */}
+                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="checkbox"
+                              id="sleepingNights"
+                              checked={formData.sleepingNights}
+                              onChange={(e) => setFormData({ ...formData, sleepingNights: e.target.checked })}
+                              className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                            />
+                            <label htmlFor="sleepingNights" className="text-sm font-semibold text-gray-900 cursor-pointer">
+                              Available / Eligible for Sleeping Night Shifts (SN)
+                            </label>
+                          </div>
+                          {formData.sleepingNights && (
+                            <div className="max-w-xs pt-1">
+                              <label className="block text-xs font-semibold text-gray-700 mb-1">Cost for Sleeping Night (£ / shift)</label>
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={formData.costForSleepingNights}
+                                  onChange={(e) => setFormData({ ...formData, costForSleepingNights: e.target.value })}
+                                  className="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                                  placeholder="80.00"
                                 />
                               </div>
                             </div>
                           )}
+                        </div>
                       </div>
                     )}
 
-                    {/* Navigation Buttons */}
+                    {/* STEP 3: Compliance & Right to Work */}
+                    {currentStep === 3 && (
+                      <div className="space-y-6">
+                        {/* DBS Section */}
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <div className="flex items-center justify-between border-b pb-3">
+                            <h4 className="text-base font-bold text-gray-900 flex items-center space-x-2">
+                              <span>🛡️ DBS (Disclosure & Barring Service)</span>
+                            </h4>
+                            <span className="text-xs text-gray-500">Valid for 3 years</span>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">DBS Check Date</label>
+                              <input
+                                type="date"
+                                value={formData.dbsDate}
+                                onChange={(e) => setFormData({ ...formData, dbsDate: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">DBS Update Service Code</label>
+                              <input
+                                type="text"
+                                value={formData.dbsUpdateCode}
+                                onChange={(e) => setFormData({ ...formData, dbsUpdateCode: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 font-mono"
+                                placeholder="C123456789"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Live DBS Status Indicator */}
+                          {(() => {
+                            const dbs = getDbsStatus(formData.dbsDate);
+                            return (
+                              <div className={`p-3 rounded-xl border flex items-center justify-between text-xs ${
+                                dbs.color === 'green' ? 'bg-green-50 text-green-800 border-green-200' :
+                                dbs.color === 'amber' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                dbs.color === 'red' ? 'bg-red-50 text-red-800 border-red-200' :
+                                'bg-gray-50 text-gray-600 border-gray-200'
+                              }`}>
+                                <div className="flex items-center space-x-2">
+                                  <span className={`w-2.5 h-2.5 rounded-full ${
+                                    dbs.color === 'green' ? 'bg-green-500' :
+                                    dbs.color === 'amber' ? 'bg-amber-500' :
+                                    dbs.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
+                                  }`}></span>
+                                  <span className="font-bold">DBS Status: {dbs.label}</span>
+                                </div>
+                                <div>
+                                  {dbs.expiryDate ? (
+                                    <span>Renewal Due: <strong className="font-semibold">{dbs.expiryDate}</strong></span>
+                                  ) : (
+                                    <span>Set DBS Date to calculate expiry status</span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Right to Work & Visa Section */}
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <div className="flex items-center justify-between border-b pb-3">
+                            <h4 className="text-base font-bold text-gray-900 flex items-center space-x-2">
+                              <span>🛂 Right to Work & Visa Status</span>
+                            </h4>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Sponsorship Status</label>
+                              <select
+                                value={formData.sponsorshipStatus}
+                                onChange={(e) => setFormData({ ...formData, sponsorshipStatus: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              >
+                                <option value="">Select Status</option>
+                                <option value="British Citizen">British Citizen</option>
+                                <option value="Irish Citizen">Irish Citizen</option>
+                                <option value="Settled Status (ILR)">Settled Status (ILR)</option>
+                                <option value="Pre-Settled Status">Pre-Settled Status</option>
+                                <option value="Skilled Worker Visa">Skilled Worker Visa</option>
+                                <option value="Health & Care Worker Visa">Health & Care Worker Visa</option>
+                                <option value="Student Visa">Student Visa</option>
+                                <option value="Graduate Visa">Graduate Visa</option>
+                                <option value="Family / Spouse Visa">Family / Spouse Visa</option>
+                                <option value="Other">Other</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Right to Work Share Code</label>
+                              <input
+                                type="text"
+                                value={formData.shareCode}
+                                onChange={(e) => setFormData({ ...formData, shareCode: e.target.value.toUpperCase() })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 font-mono font-semibold"
+                                placeholder="W12 345 67X"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Visa Expiry Date</label>
+                              <input
+                                type="date"
+                                value={formData.visaExpiryDate}
+                                onChange={(e) => setFormData({ ...formData, visaExpiryDate: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Live Visa Status Indicator */}
+                          {(() => {
+                            const visa = getVisaStatus(formData.visaExpiryDate, formData.sponsorshipStatus);
+                            return (
+                              <div className={`p-3 rounded-xl border flex items-center justify-between text-xs ${
+                                visa.color === 'green' ? 'bg-green-50 text-green-800 border-green-200' :
+                                visa.color === 'amber' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                visa.color === 'red' ? 'bg-red-50 text-red-800 border-red-200' :
+                                'bg-gray-50 text-gray-600 border-gray-200'
+                              }`}>
+                                <div className="flex items-center space-x-2">
+                                  <span className={`w-2.5 h-2.5 rounded-full ${
+                                    visa.color === 'green' ? 'bg-green-500' :
+                                    visa.color === 'amber' ? 'bg-amber-500' :
+                                    visa.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
+                                  }`}></span>
+                                  <span className="font-bold">Visa Status: {visa.label}</span>
+                                </div>
+                                <div>
+                                  {formData.visaExpiryDate ? (
+                                    <span>Expiry: <strong className="font-semibold">{new Date(formData.visaExpiryDate).toLocaleDateString()}</strong></span>
+                                  ) : (
+                                    <span>Alerts trigger 3 months prior to expiry</span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STEP 4: Driving & Vehicle Details (Sheet 2) */}
+                    {currentStep === 4 && (
+                      <div className="space-y-6">
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <div className="border-b pb-3">
+                            <h4 className="text-base font-bold text-gray-900">🚗 Driving Eligibility & Vehicle Information</h4>
+                            <p className="text-xs text-gray-500 mt-0.5">Capture driver licence status and vehicle details for community care runs</p>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-sm text-gray-900">Valid Driving Licence</p>
+                                <p className="text-xs text-gray-500">Staff holds a valid UK/EU licence</p>
+                              </div>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.drivingLicenceValid}
+                                  onChange={(e) => setFormData({ ...formData, drivingLicenceValid: e.target.checked })}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#224fa6]"></div>
+                              </label>
+                            </div>
+
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-sm text-gray-900">Own A Car</p>
+                                <p className="text-xs text-gray-500">Staff has access to their own vehicle</p>
+                              </div>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.ownCar}
+                                  onChange={(e) => setFormData({ ...formData, ownCar: e.target.checked })}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#224fa6]"></div>
+                              </label>
+                            </div>
+                          </div>
+
+                          {/* Vehicle Details */}
+                          {formData.ownCar && (
+                            <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-4 animate-in fade-in">
+                              <h5 className="text-xs font-bold text-[#224fa6] uppercase tracking-wider">Vehicle Specifications</h5>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Make of Car</label>
+                                  <input
+                                    type="text"
+                                    value={formData.carMake}
+                                    onChange={(e) => setFormData({ ...formData, carMake: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 text-sm"
+                                    placeholder="e.g. Ford"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Model of Car</label>
+                                  <input
+                                    type="text"
+                                    value={formData.carModel}
+                                    onChange={(e) => setFormData({ ...formData, carModel: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 text-sm"
+                                    placeholder="e.g. Fiesta"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Colour of Car</label>
+                                  <input
+                                    type="text"
+                                    value={formData.carColour}
+                                    onChange={(e) => setFormData({ ...formData, carColour: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 text-sm"
+                                    placeholder="e.g. Silver"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Car Registration</label>
+                                  <input
+                                    type="text"
+                                    value={formData.carRegistration}
+                                    onChange={(e) => setFormData({ ...formData, carRegistration: e.target.value.toUpperCase() })}
+                                    className="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-lg focus:ring-2 focus:ring-[#224fa6] text-gray-900 font-mono font-bold text-sm tracking-wider"
+                                    placeholder="AB12 CDE"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Insurance Toggles */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-sm text-gray-900">Car Insurance Verified</p>
+                                <p className="text-xs text-gray-500">Valid MOT and insurance document inspected</p>
+                              </div>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.carInsuranceVerified}
+                                  onChange={(e) => setFormData({ ...formData, carInsuranceVerified: e.target.checked })}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#224fa6]"></div>
+                              </label>
+                            </div>
+
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-sm text-gray-900">Business Insurance Cover</p>
+                                <p className="text-xs text-gray-500">Includes Class 1 Business use for care duties</p>
+                              </div>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.businessInsurance}
+                                  onChange={(e) => setFormData({ ...formData, businessInsurance: e.target.checked })}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#224fa6]"></div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STEP 5: Emergency, Health & Permissions */}
+                    {currentStep === 5 && (
+                      <div className="space-y-6">
+                        {/* Next of Kin / Emergency Contact */}
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">Emergency Contact (Next of Kin)</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">NOK Name</label>
+                              <input
+                                type="text"
+                                value={formData.emergencyName}
+                                onChange={(e) => setFormData({ ...formData, emergencyName: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                                placeholder="Jane Doe"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">NOK Relationship</label>
+                              <input
+                                type="text"
+                                value={formData.nokRelationship}
+                                onChange={(e) => setFormData({ ...formData, nokRelationship: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                                placeholder="Spouse / Parent / Partner"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">NOK Phone Number</label>
+                              <input
+                                type="tel"
+                                value={formData.emergencyContact}
+                                onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                                placeholder="+44 7123 456789"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* GP & Health Info */}
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">Health, GP & Prescriptions</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">GP Details (Surgery & Doctor)</label>
+                              <textarea
+                                rows={2}
+                                value={formData.gpDetails}
+                                onChange={(e) => setFormData({ ...formData, gpDetails: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 text-sm"
+                                placeholder="Practice name, address, contact phone"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Vaccination Status</label>
+                              <input
+                                type="text"
+                                value={formData.vaccinationStatus}
+                                onChange={(e) => setFormData({ ...formData, vaccinationStatus: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 text-sm"
+                                placeholder="e.g. Fully Vaccinated, Covid & Flu up to date"
+                              />
+                              <div className="mt-3 flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id="paysForPrescriptions"
+                                  checked={formData.paysForPrescriptions}
+                                  onChange={(e) => setFormData({ ...formData, paysForPrescriptions: e.target.checked })}
+                                  className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                                />
+                                <label htmlFor="paysForPrescriptions" className="text-xs font-semibold text-gray-700 cursor-pointer">
+                                  Pays for Prescriptions (Px's)
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Allergies */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Allergy Status</label>
+                              <select
+                                value={formData.allergyStatus}
+                                onChange={(e) => setFormData({ ...formData, allergyStatus: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              >
+                                <option value="None">None Known</option>
+                                <option value="Has Known Allergies">Has Known Allergies</option>
+                              </select>
+                            </div>
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Allergies Description</label>
+                              <input
+                                type="text"
+                                value={formData.allergies}
+                                onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 text-sm"
+                                placeholder="e.g. Penicillin, Peanuts, Latex"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* System Permissions */}
+                        {!['CAREWORKER', 'SUPPORT_WORKER'].includes(roles.find(r => r.id == formData.roleId)?.name) && (
+                          <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-3">
+                            <h4 className="text-base font-bold text-gray-900 border-b pb-2">System Permissions</h4>
+                            <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">
+                              <PermissionMatrix
+                                selectedPermissions={formData.permissions}
+                                onChange={(newPermissions) => setFormData({ ...formData, permissions: newPermissions })}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Step Navigation Buttons */}
                     <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                       <button
                         type="button"
@@ -1142,10 +2025,10 @@ export default function StaffManagementPage() {
                         )}
                         <button
                           type="submit"
-                          disabled={isSubmitting && currentStep === 3}
+                          disabled={isSubmitting && currentStep === 5}
                           className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {currentStep === 3 ? (isSubmitting ? 'Creating...' : 'Create User') : 'Next'}
+                          {currentStep === 5 ? (isSubmitting ? 'Creating Staff Member...' : 'Create Staff Member') : 'Next'}
                         </button>
                       </div>
                     </div>
@@ -1158,12 +2041,14 @@ export default function StaffManagementPage() {
           {/* Edit Staff Modal */}
           {showEditModal && (
             <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-              <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+              <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 max-w-5xl w-full max-h-[95vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
                 <div className="p-8">
-                  <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900">Edit User</h3>
-                      <p className="text-sm text-gray-600 mt-1">Update user information and permissions</p>
+                      <h3 className="text-2xl font-bold text-gray-900">Edit Staff Member</h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Editing: <span className="font-semibold text-gray-900">{selectedStaff?.firstName} {selectedStaff?.lastName}</span>
+                      </p>
                     </div>
                     <button
                       onClick={() => setShowEditModal(false)}
@@ -1175,177 +2060,682 @@ export default function StaffManagementPage() {
                     </button>
                   </div>
 
-                  <form onSubmit={handleEditStaff} className="space-y-4">
-                    {/* Profile Photo Section */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
-                      <div className="flex items-start space-x-4 sm:space-x-6">
-                        {/* Photo Preview */}
-                        <div className="flex-shrink-0">
-                          {formData.profilePic ? (
-                            <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden border-4 border-white shadow-lg">
-                              <img src={formData.profilePic} alt="Profile Preview" className="w-full h-full object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => setFormData({ ...formData, profilePic: '' })}
-                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md"
-                                title="Remove photo"
-                              >
-                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-gradient-to-br from-[#224fa6] to-[#3270e9] flex items-center justify-center border-4 border-white shadow-lg">
-                              <svg className="w-12 h-12 sm:w-16 sm:h-16 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                            </div>
-                          )}
+                  {/* Edit Section Tabs */}
+                  <div className="flex flex-wrap gap-2 border-b border-gray-200 mb-6 pb-2">
+                    {[
+                      { id: 'personal', label: '👤 Personal & Contact' },
+                      { id: 'employment', label: '💼 Employment & Pay' },
+                      { id: 'compliance', label: '🛡️ Compliance & DBS' },
+                      { id: 'driving', label: '🚗 Driving Details' },
+                      { id: 'health', label: '🏥 Health & Emergency' },
+                      { id: 'permissions', label: '🔑 Permissions' }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setEditActiveTab(tab.id)}
+                        className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all duration-200 ${
+                          editActiveTab === tab.id
+                            ? 'bg-[#224fa6] text-white shadow-md'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <form onSubmit={handleEditStaff} className="space-y-6">
+
+                    {/* EDIT TAB 1: Personal & Contact */}
+                    {editActiveTab === 'personal' && (
+                      <div className="space-y-4">
+                        {/* Profile Photo */}
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 flex items-start space-x-4">
+                          <div className="flex-shrink-0">
+                            {formData.profilePic ? (
+                              <div className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-white shadow-md">
+                                <img src={formData.profilePic} alt="Profile" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setFormData({ ...formData, profilePic: '' })}
+                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="w-20 h-20 rounded-xl bg-[#224fa6] flex items-center justify-center text-white font-bold text-lg">
+                                {formData.firstName?.[0]}{formData.lastName?.[0]}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-sm font-semibold text-gray-900 mb-1">Update Profile Photo</label>
+                            <FileUpload
+                              accept="image/*"
+                              label="Upload New Photo"
+                              onUploadComplete={(fileUrl) => {
+                                setFormData({ ...formData, profilePic: fileUrl });
+                                showNotification('Photo updated successfully!', 'success');
+                              }}
+                              onError={(error) => showNotification(`Photo upload failed: ${error}`, 'error')}
+                            />
+                          </div>
                         </div>
 
-                        {/* Upload Section */}
-                        <div className="flex-1 min-w-0">
-                          <label className="block text-base font-semibold text-gray-900 mb-2 sm:mb-3">
-                            Profile Photo
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">First Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.firstName}
+                              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Last Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.lastName}
+                              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Date of Birth (DOB)</label>
+                            <input
+                              type="date"
+                              value={formData.dob}
+                              onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Email *</label>
+                            <input
+                              type="email"
+                              required
+                              value={formData.email}
+                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Username *</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.username}
+                              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">New Password (leave blank to keep)</label>
+                            <input
+                              type="password"
+                              value={formData.password}
+                              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              placeholder="••••••••"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number 1 *</label>
+                            <input
+                              type="tel"
+                              required
+                              value={formData.phoneNo}
+                              onChange={(e) => setFormData({ ...formData, phoneNo: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number 2</label>
+                            <input
+                              type="tel"
+                              value={formData.secondaryPhone}
+                              onChange={(e) => setFormData({ ...formData, secondaryPhone: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">NI Number</label>
+                            <input
+                              type="text"
+                              value={formData.niNumber}
+                              onChange={(e) => setFormData({ ...formData, niNumber: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Address</label>
+                            <input
+                              type="text"
+                              value={formData.address}
+                              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Postal Code</label>
+                            <input
+                              type="text"
+                              value={formData.postalCode}
+                              onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            id="editConsentToEmail"
+                            checked={formData.consentToEmail}
+                            onChange={(e) => setFormData({ ...formData, consentToEmail: e.target.checked })}
+                            className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                          />
+                          <label htmlFor="editConsentToEmail" className="text-sm font-medium text-gray-700 cursor-pointer">
+                            Consent to receive emails and electronic notifications
                           </label>
-                          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                            Upload or update the profile photo for this staff member.
-                          </p>
-                          <FileUpload
-                            accept="image/*"
-                            label="📷 Upload Photo"
-                            onUploadComplete={(fileUrl) => {
-                              setFormData({ ...formData, profilePic: fileUrl });
-                              showNotification('Photo uploaded successfully!', 'success');
-                            }}
-                            onError={(error) => {
-                              showNotification(`Photo upload failed: ${error}`, 'error');
-                            }}
-                            className="mb-2"
-                          />
-                          {formData.profilePic && (
-                            <div className="mt-2 sm:mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
-                              <p className="text-xs text-green-700 flex items-center">
-                                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                Photo uploaded successfully
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.firstName}
-                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.lastName}
-                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                        <input
-                          type="email"
-                          required
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.username}
-                          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                        <input
-                          type="tel"
-                          value={formData.phoneNo}
-                          onChange={(e) => setFormData({ ...formData, phoneNo: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">New Password (optional)</label>
-                        <input
-                          type="password"
-                          value={formData.password}
-                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all duration-200"
-                          placeholder="Leave empty to keep current password"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
-                        <select
-                          value={formData.roleId}
-                          onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
-                          required
-                        >
-                          <option value="">Select Role</option>
-                          {roles.map(role => (
-                            <option key={role.id} value={role.id}>{role.displayName}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                        <select
-                          value={formData.status}
-                          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900 transition-all duration-200"
-                        >
-                          <option value="CURRENT">Current</option>
-                          <option value="ARCHIVED">Archived</option>
-                          <option value="FORMER">Former</option>
-                          <option value="PENDING">Pending</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Hide permissions for Care Workers & Support Workers as they have all permissions by default */}
-                    {!['CAREWORKER', 'SUPPORT_WORKER'].includes(roles.find(r => r.id == formData.roleId)?.name) && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">Permissions</label>
-                        <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">
-                          <PermissionMatrix
-                            selectedPermissions={formData.permissions}
-                            onChange={(newPermissions) => setFormData({ ...formData, permissions: newPermissions })}
-                          />
                         </div>
                       </div>
                     )}
 
+                    {/* EDIT TAB 2: Employment & Pay */}
+                    {editActiveTab === 'employment' && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Role</label>
+                            <select
+                              value={formData.roleId}
+                              onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              required
+                            >
+                              {roles.map(role => (
+                                <option key={role.id} value={role.id}>{role.displayName}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Region</label>
+                            <select
+                              value={formData.regionId}
+                              onChange={(e) => setFormData({ ...formData, regionId: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            >
+                              <option value="">Select Region</option>
+                              {regions.map(region => (
+                                <option key={region.id} value={region.id}>{region.title}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Status</label>
+                            <select
+                              value={formData.status}
+                              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            >
+                              <option value="CURRENT">Current</option>
+                              <option value="ARCHIVED">Archived</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Employee Number</label>
+                            <input
+                              type="text"
+                              value={formData.employeeNumber}
+                              onChange={(e) => setFormData({ ...formData, employeeNumber: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Start Date</label>
+                            <input
+                              type="date"
+                              value={formData.startDate}
+                              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">End Date (Leave Date)</label>
+                            <input
+                              type="date"
+                              value={formData.leaveDate}
+                              onChange={(e) => setFormData({ ...formData, leaveDate: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Reason for Leaving</label>
+                          <textarea
+                            rows={2}
+                            value={formData.reasonForLeaving}
+                            onChange={(e) => setFormData({ ...formData, reasonForLeaving: e.target.value })}
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            placeholder="Reason for leaving if applicable"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Contracted Hours PW</label>
+                            <input
+                              type="number"
+                              value={formData.contractedHours}
+                              onChange={(e) => setFormData({ ...formData, contractedHours: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Rate of Pay (£ / hr)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={formData.rateOfPay}
+                              onChange={(e) => setFormData({ ...formData, rateOfPay: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Annual Salary (£)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={formData.salary}
+                              onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
+                              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="checkbox"
+                              id="editSleepingNights"
+                              checked={formData.sleepingNights}
+                              onChange={(e) => setFormData({ ...formData, sleepingNights: e.target.checked })}
+                              className="w-4 h-4 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                            />
+                            <label htmlFor="editSleepingNights" className="text-sm font-semibold text-gray-900 cursor-pointer">
+                              Eligible for Sleeping Night Shifts (SN)
+                            </label>
+                          </div>
+                          {formData.sleepingNights && (
+                            <div className="max-w-xs">
+                              <label className="block text-xs font-semibold text-gray-700 mb-1">Cost for SN (£ / shift)</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={formData.costForSleepingNights}
+                                onChange={(e) => setFormData({ ...formData, costForSleepingNights: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* EDIT TAB 3: Compliance & DBS */}
+                    {editActiveTab === 'compliance' && (
+                      <div className="space-y-4">
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">🛡️ DBS Information</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">DBS Check Date</label>
+                              <input
+                                type="date"
+                                value={formData.dbsDate}
+                                onChange={(e) => setFormData({ ...formData, dbsDate: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">DBS Update Code</label>
+                              <input
+                                type="text"
+                                value={formData.dbsUpdateCode}
+                                onChange={(e) => setFormData({ ...formData, dbsUpdateCode: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 font-mono"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Live DBS Indicator */}
+                          {(() => {
+                            const dbs = getDbsStatus(formData.dbsDate);
+                            return (
+                              <div className={`p-3 rounded-xl border flex items-center justify-between text-xs ${
+                                dbs.color === 'green' ? 'bg-green-50 text-green-800 border-green-200' :
+                                dbs.color === 'amber' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                dbs.color === 'red' ? 'bg-red-50 text-red-800 border-red-200' :
+                                'bg-gray-50 text-gray-600 border-gray-200'
+                              }`}>
+                                <span className="font-bold">Status: {dbs.label}</span>
+                                {dbs.expiryDate && <span>3-Year Expiry Date: {dbs.expiryDate}</span>}
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">🛂 Right to Work & Visas</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Sponsorship Status</label>
+                              <select
+                                value={formData.sponsorshipStatus}
+                                onChange={(e) => setFormData({ ...formData, sponsorshipStatus: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              >
+                                <option value="">Select Status</option>
+                                <option value="British Citizen">British Citizen</option>
+                                <option value="Irish Citizen">Irish Citizen</option>
+                                <option value="Settled Status (ILR)">Settled Status (ILR)</option>
+                                <option value="Pre-Settled Status">Pre-Settled Status</option>
+                                <option value="Skilled Worker Visa">Skilled Worker Visa</option>
+                                <option value="Health & Care Worker Visa">Health & Care Worker Visa</option>
+                                <option value="Student Visa">Student Visa</option>
+                                <option value="Graduate Visa">Graduate Visa</option>
+                                <option value="Family / Spouse Visa">Family / Spouse Visa</option>
+                                <option value="Other">Other</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Share Code</label>
+                              <input
+                                type="text"
+                                value={formData.shareCode}
+                                onChange={(e) => setFormData({ ...formData, shareCode: e.target.value.toUpperCase() })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900 font-mono font-semibold"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Visa Expiry Date</label>
+                              <input
+                                type="date"
+                                value={formData.visaExpiryDate}
+                                onChange={(e) => setFormData({ ...formData, visaExpiryDate: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#224fa6] bg-white text-gray-900"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Live Visa Indicator */}
+                          {(() => {
+                            const visa = getVisaStatus(formData.visaExpiryDate, formData.sponsorshipStatus);
+                            return (
+                              <div className={`p-3 rounded-xl border flex items-center justify-between text-xs ${
+                                visa.color === 'green' ? 'bg-green-50 text-green-800 border-green-200' :
+                                visa.color === 'amber' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                visa.color === 'red' ? 'bg-red-50 text-red-800 border-red-200' :
+                                'bg-gray-50 text-gray-600 border-gray-200'
+                              }`}>
+                                <span className="font-bold">Status: {visa.label}</span>
+                                {formData.visaExpiryDate && <span>Expiry Date: {new Date(formData.visaExpiryDate).toLocaleDateString()}</span>}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* EDIT TAB 4: Driving Details */}
+                    {editActiveTab === 'driving' && (
+                      <div className="space-y-4">
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">🚗 Driving & Vehicle Information</h4>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-sm text-gray-900">Valid Driving Licence</p>
+                                <p className="text-xs text-gray-500">Holds a valid UK/EU licence</p>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={formData.drivingLicenceValid}
+                                onChange={(e) => setFormData({ ...formData, drivingLicenceValid: e.target.checked })}
+                                className="w-5 h-5 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                              />
+                            </div>
+
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-sm text-gray-900">Own A Car</p>
+                                <p className="text-xs text-gray-500">Access to own vehicle</p>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={formData.ownCar}
+                                onChange={(e) => setFormData({ ...formData, ownCar: e.target.checked })}
+                                className="w-5 h-5 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                              />
+                            </div>
+                          </div>
+
+                          {formData.ownCar && (
+                            <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-3">
+                              <h5 className="text-xs font-bold text-[#224fa6] uppercase tracking-wider">Vehicle Details</h5>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Make</label>
+                                  <input
+                                    type="text"
+                                    value={formData.carMake}
+                                    onChange={(e) => setFormData({ ...formData, carMake: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Model</label>
+                                  <input
+                                    type="text"
+                                    value={formData.carModel}
+                                    onChange={(e) => setFormData({ ...formData, carModel: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Colour</label>
+                                  <input
+                                    type="text"
+                                    value={formData.carColour}
+                                    onChange={(e) => setFormData({ ...formData, carColour: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Registration</label>
+                                  <input
+                                    type="text"
+                                    value={formData.carRegistration}
+                                    onChange={(e) => setFormData({ ...formData, carRegistration: e.target.value.toUpperCase() })}
+                                    className="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-lg text-sm font-mono font-bold"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-sm text-gray-900">Car Insurance Verified</p>
+                                <p className="text-xs text-gray-500">Insurance certificate verified</p>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={formData.carInsuranceVerified}
+                                onChange={(e) => setFormData({ ...formData, carInsuranceVerified: e.target.checked })}
+                                className="w-5 h-5 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                              />
+                            </div>
+
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-sm text-gray-900">Business Insurance Cover</p>
+                                <p className="text-xs text-gray-500">Business class use covered</p>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={formData.businessInsurance}
+                                onChange={(e) => setFormData({ ...formData, businessInsurance: e.target.checked })}
+                                className="w-5 h-5 text-[#224fa6] rounded focus:ring-[#224fa6]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* EDIT TAB 5: Health & Emergency */}
+                    {editActiveTab === 'health' && (
+                      <div className="space-y-4">
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">Next of Kin / Emergency Contact</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">NOK Name</label>
+                              <input
+                                type="text"
+                                value={formData.emergencyName}
+                                onChange={(e) => setFormData({ ...formData, emergencyName: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">NOK Relationship</label>
+                              <input
+                                type="text"
+                                value={formData.nokRelationship}
+                                onChange={(e) => setFormData({ ...formData, nokRelationship: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">NOK Phone Number</label>
+                              <input
+                                type="tel"
+                                value={formData.emergencyContact}
+                                onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">GP Details & Medical</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">GP Practice & Doctor</label>
+                              <textarea
+                                rows={2}
+                                value={formData.gpDetails}
+                                onChange={(e) => setFormData({ ...formData, gpDetails: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-white text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Vaccination Status</label>
+                              <input
+                                type="text"
+                                value={formData.vaccinationStatus}
+                                onChange={(e) => setFormData({ ...formData, vaccinationStatus: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm"
+                              />
+                              <div className="mt-3 flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id="editPaysForPrescriptions"
+                                  checked={formData.paysForPrescriptions}
+                                  onChange={(e) => setFormData({ ...formData, paysForPrescriptions: e.target.checked })}
+                                  className="w-4 h-4 text-[#224fa6] rounded"
+                                />
+                                <label htmlFor="editPaysForPrescriptions" className="text-xs font-semibold text-gray-700 cursor-pointer">
+                                  Pays for Prescriptions (Px's)
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Allergy Status</label>
+                              <select
+                                value={formData.allergyStatus}
+                                onChange={(e) => setFormData({ ...formData, allergyStatus: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white"
+                              >
+                                <option value="None">None Known</option>
+                                <option value="Has Known Allergies">Has Known Allergies</option>
+                              </select>
+                            </div>
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-semibold text-gray-700 mb-1">Allergies Description</label>
+                              <input
+                                type="text"
+                                value={formData.allergies}
+                                onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* EDIT TAB 6: Permissions */}
+                    {editActiveTab === 'permissions' && (
+                      <div className="space-y-4">
+                        {!['CAREWORKER', 'SUPPORT_WORKER'].includes(roles.find(r => r.id == formData.roleId)?.name) ? (
+                          <div className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
+                            <h4 className="text-sm font-bold text-gray-900 mb-3">Adjust Assigned Permissions</h4>
+                            <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">
+                              <PermissionMatrix
+                                selectedPermissions={formData.permissions}
+                                onChange={(newPermissions) => setFormData({ ...formData, permissions: newPermissions })}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
+                            Care Workers and Support Workers are assigned all standard frontline permissions by default.
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Submit Actions */}
                     <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
                       <button
                         type="button"
@@ -1359,7 +2749,7 @@ export default function StaffManagementPage() {
                         disabled={isSubmitting}
                         className="px-8 py-3 bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isSubmitting ? 'Updating...' : 'Update User'}
+                        {isSubmitting ? 'Updating...' : 'Update Staff Member'}
                       </button>
                     </div>
                   </form>

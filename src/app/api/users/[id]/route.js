@@ -83,7 +83,40 @@ export async function PUT(request, { params }) {
       postalCode,
       contractedHours,
       niNumber,
-      profilePic
+      profilePic,
+      // Sheet 1: Personal & Contact
+      dob,
+      secondaryPhone,
+      consentToEmail,
+      address,
+      // Sheet 1: Employment & Compensation
+      reasonForLeaving,
+      rateOfPay,
+      sleepingNights,
+      costForSleepingNights,
+      salary,
+      // Sheet 1: Compliance & Right to Work
+      dbsDate,
+      dbsUpdateCode,
+      sponsorshipStatus,
+      shareCode,
+      visaExpiryDate,
+      // Sheet 1: Next of Kin & Medical
+      nokRelationship,
+      allergyStatus,
+      allergies,
+      vaccinationStatus,
+      paysForPrescriptions,
+      gpDetails,
+      // Sheet 2: Staff Driving Details
+      drivingLicenceValid,
+      ownCar,
+      carMake,
+      carModel,
+      carColour,
+      carRegistration,
+      carInsuranceVerified,
+      businessInsurance
     } = body;
 
     // Check if user exists
@@ -143,18 +176,56 @@ export async function PUT(request, { params }) {
     if (email !== undefined) updateData.email = email;
     if (username !== undefined) updateData.username = username;
     if (phoneNo !== undefined) updateData.phoneNo = phoneNo;
-    if (roleId !== undefined) updateData.roleId = roleId;
+    if (roleId !== undefined) updateData.roleId = parseInt(roleId);
     if (status !== undefined) updateData.status = status;
     if (employeeNumber !== undefined) updateData.employeeNumber = employeeNumber || null;
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
     if (leaveDate !== undefined) updateData.leaveDate = leaveDate ? new Date(leaveDate) : null;
-    if (regionId !== undefined) updateData.regionId = regionId || null;
+    if (regionId !== undefined) updateData.regionId = regionId ? parseInt(regionId) : null;
     if (emergencyName !== undefined) updateData.emergencyName = emergencyName || null;
     if (emergencyContact !== undefined) updateData.emergencyContact = emergencyContact || null;
     if (postalCode !== undefined) updateData.postalCode = postalCode || null;
-    if (contractedHours !== undefined) updateData.contractedHours = contractedHours || null;
+    if (contractedHours !== undefined) updateData.contractedHours = (contractedHours !== '' && contractedHours !== null) ? parseInt(contractedHours) : null;
     if (niNumber !== undefined) updateData.niNumber = niNumber || null;
     if (profilePic !== undefined) updateData.profilePic = profilePic || null;
+
+    // Sheet 1: Personal & Contact
+    if (dob !== undefined) updateData.dob = dob ? new Date(dob) : null;
+    if (secondaryPhone !== undefined) updateData.secondaryPhone = secondaryPhone || null;
+    if (consentToEmail !== undefined) updateData.consentToEmail = Boolean(consentToEmail);
+    if (address !== undefined) updateData.address = address || null;
+
+    // Sheet 1: Employment & Compensation
+    if (reasonForLeaving !== undefined) updateData.reasonForLeaving = reasonForLeaving || null;
+    if (rateOfPay !== undefined) updateData.rateOfPay = (rateOfPay !== '' && rateOfPay !== null) ? parseFloat(rateOfPay) : null;
+    if (sleepingNights !== undefined) updateData.sleepingNights = Boolean(sleepingNights);
+    if (costForSleepingNights !== undefined) updateData.costForSleepingNights = (costForSleepingNights !== '' && costForSleepingNights !== null) ? parseFloat(costForSleepingNights) : null;
+    if (salary !== undefined) updateData.salary = (salary !== '' && salary !== null) ? parseFloat(salary) : null;
+
+    // Sheet 1: Compliance & Right to Work
+    if (dbsDate !== undefined) updateData.dbsDate = dbsDate ? new Date(dbsDate) : null;
+    if (dbsUpdateCode !== undefined) updateData.dbsUpdateCode = dbsUpdateCode || null;
+    if (sponsorshipStatus !== undefined) updateData.sponsorshipStatus = sponsorshipStatus || null;
+    if (shareCode !== undefined) updateData.shareCode = shareCode || null;
+    if (visaExpiryDate !== undefined) updateData.visaExpiryDate = visaExpiryDate ? new Date(visaExpiryDate) : null;
+
+    // Sheet 1: Next of Kin & Medical
+    if (nokRelationship !== undefined) updateData.nokRelationship = nokRelationship || null;
+    if (allergyStatus !== undefined) updateData.allergyStatus = allergyStatus || null;
+    if (allergies !== undefined) updateData.allergies = allergies || null;
+    if (vaccinationStatus !== undefined) updateData.vaccinationStatus = vaccinationStatus || null;
+    if (paysForPrescriptions !== undefined) updateData.paysForPrescriptions = Boolean(paysForPrescriptions);
+    if (gpDetails !== undefined) updateData.gpDetails = gpDetails || null;
+
+    // Sheet 2: Staff Driving Details
+    if (drivingLicenceValid !== undefined) updateData.drivingLicenceValid = Boolean(drivingLicenceValid);
+    if (ownCar !== undefined) updateData.ownCar = Boolean(ownCar);
+    if (carMake !== undefined) updateData.carMake = carMake || null;
+    if (carModel !== undefined) updateData.carModel = carModel || null;
+    if (carColour !== undefined) updateData.carColour = carColour || null;
+    if (carRegistration !== undefined) updateData.carRegistration = carRegistration || null;
+    if (carInsuranceVerified !== undefined) updateData.carInsuranceVerified = Boolean(carInsuranceVerified);
+    if (businessInsurance !== undefined) updateData.businessInsurance = Boolean(businessInsurance);
 
     // Only hash and update password if provided
     if (password && password.trim() !== '') {

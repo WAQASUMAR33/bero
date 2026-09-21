@@ -220,6 +220,21 @@ model User {
   carInsuranceVerified     Boolean?           @default(false)
   businessInsurance        Boolean?           @default(false)
 
+  // Additional Sponsorship & Compliance Details
+  cosNumber                String?
+  visaType                 String?
+  passportNumber           String?
+  sponsorshipNotes         String?            @db.Text
+
+  // Staff Management Trackers Relations
+  supervisions             StaffSupervision[] @relation("UserSupervisions")
+  supervisedSessions       StaffSupervision[] @relation("SupervisorSupervisions")
+  appraisals               StaffAppraisal[]   @relation("UserAppraisals")
+  conductedAppraisals      StaffAppraisal[]   @relation("AppraiserAppraisals")
+  probations               StaffProbation[]   @relation("UserProbations")
+  reviewedProbations       StaffProbation[]   @relation("ReviewerProbations")
+  pdps                     StaffPdp[]         @relation("UserPdps")
+
   // Relations
   role          RoleDefinition @relation(fields: [roleId], references: [id])
   region        Region?        @relation(fields: [regionId], references: [id])
@@ -3140,6 +3155,91 @@ model SarTracker {
   @@index([dueDate])
 }
 
+// ==========================================
+// STAFF SUPERVISIONS, APPRAISALS & TRACKERS
+// ==========================================
 
+model StaffSupervision {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  user            User      @relation("UserSupervisions", fields: [userId], references: [id], onDelete: Cascade)
+  supervisorId    Int?
+  supervisor      User?     @relation("SupervisorSupervisions", fields: [supervisorId], references: [id], onDelete: SetNull)
+  supervisionDate DateTime  @db.Date
+  nextDueDate     DateTime? @db.Date
+  status          String    @default("COMPLETED") @db.VarChar(50) // COMPLETED, SCHEDULED, OVERDUE, CANCELLED
+  type            String?   @db.VarChar(100) // 1-to-1, Regular, Annual, Probationary, Ad-hoc
+  discussionNotes String?   @db.Text
+  actionAgreed    String?   @db.Text
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
+  @@index([userId])
+  @@index([supervisorId])
+  @@index([nextDueDate])
+  @@index([status])
+}
 
+model StaffAppraisal {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  user              User      @relation("UserAppraisals", fields: [userId], references: [id], onDelete: Cascade)
+  appraiserId       Int?
+  appraiser         User?     @relation("AppraiserAppraisals", fields: [appraiserId], references: [id], onDelete: SetNull)
+  lastAppraisalDate DateTime? @db.Date
+  dueDate           DateTime  @db.Date
+  status            String    @default("PENDING") @db.VarChar(50) // UP_TO_DATE, DUE_SOON, OVERDUE, COMPLETED, PENDING
+  rating            String?   @db.VarChar(50) // Outstanding, Exceeds Expectations, Meets Expectations, Needs Improvement
+  feedback          String?   @db.Text
+  goals             String?   @db.Text
+  notes             String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([appraiserId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model StaffProbation {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  user          User      @relation("UserProbations", fields: [userId], references: [id], onDelete: Cascade)
+  reviewerId    Int?
+  reviewer      User?     @relation("ReviewerProbations", fields: [reviewerId], references: [id], onDelete: SetNull)
+  startDate     DateTime? @db.Date
+  dueDate       DateTime  @db.Date // Date Appraisal Due / Review Due
+  reviewDate    DateTime? @db.Date
+  status        String    @default("UNDER_PROBATION") @db.VarChar(50) // UNDER_PROBATION, DUE_SOON, OVERDUE, PASSED, EXTENDED, FAILED
+  outcome       String?   @db.VarChar(100) // Passed, Extended (e.g. 3 months), Terminated, In Progress
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([reviewerId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model StaffPdp {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  user              User      @relation("UserPdps", fields: [userId], references: [id], onDelete: Cascade)
+  dateIdentified    DateTime? @db.Date
+  routeIdentified   String?   @db.VarChar(255) // Supervision, Appraisal, Induction, Training, Incident, Audit
+  area              String    @db.VarChar(255) // Area of development (Medication, Health & Safety, Communication, etc.)
+  personResponsible String?   @db.VarChar(255) // Person responsible / Mentor
+  targetDate        DateTime? @db.Date
+  completionDate    DateTime? @db.Date
+  progress          String    @default("NOT_STARTED") @db.VarChar(50) // NOT_STARTED, IN_PROGRESS, COMPLETED, OVERDUE
+  notes             String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([targetDate])
+  @@index([progress])
+}

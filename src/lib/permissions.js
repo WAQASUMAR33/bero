@@ -93,16 +93,74 @@ export function getAllUserPermissions(user) {
   return expandPermissions(allPermissions);
 }
 
+export const MANAGER_ROLES = [
+  'ADMIN',
+  'DIRECTOR',
+  'HR',
+  'REGISTER_MANAGER',
+  'DEPUTY_MANAGER',
+  'BUSINESS_DEVELOPMENT_MANAGER',
+  'SERVICE_LEAD'
+];
+
+/**
+ * Checks if a user has managerial privileges
+ */
+export function isManager(user) {
+  if (!user) return false;
+  if (user?.role?.name && MANAGER_ROLES.includes(user.role.name)) {
+    return true;
+  }
+  const allPermissions = getAllUserPermissions(user);
+  return (
+    allPermissions.includes('users.manage') ||
+    allPermissions.includes('staff.manage') ||
+    allPermissions.includes('users.view_all')
+  );
+}
+
+/**
+ * Determines whether a user can access a specific staff member's file:
+ * Managers can access all; staff can only access their own.
+ */
+export function canAccessStaffMember(currentUser, targetUserId) {
+  if (!currentUser) return false;
+  if (isManager(currentUser)) return true;
+  const currentId = currentUser.id || currentUser.userId;
+  return Number(currentId) === Number(targetUserId);
+}
+
 /**
  * Checks if user has a specific permission
  */
 export function hasPermission(user, permission) {
   if (!user) return false;
 
-  // Admin and Care Workers always have all permissions for workflow continuity
-  const trustedRoles = ['ADMIN', 'CAREWORKER', 'SUPPORT_WORKER'];
-  if (user?.role?.name && trustedRoles.includes(user.role.name)) {
+  // Super Admin always has full access
+  if (user?.role?.name === 'ADMIN') {
     return true;
+  }
+
+  // Managerial staff permissions
+  const managerOnlyPermissions = [
+    'users.create',
+    'users.update',
+    'users.delete',
+    'users.manage',
+    'staff.manage',
+    'roles.manage'
+  ];
+
+  if (managerOnlyPermissions.includes(permission)) {
+    return isManager(user);
+  }
+
+  // Care Workers & Support Workers have workflow operational permissions for care tasks & shifts
+  const operationalRoles = ['CAREWORKER', 'SUPPORT_WORKER'];
+  if (user?.role?.name && operationalRoles.includes(user.role.name)) {
+    if (!permission.startsWith('users.') && !permission.startsWith('roles.') && !permission.startsWith('staff.')) {
+      return true;
+    }
   }
 
   const allPermissions = getAllUserPermissions(user);
@@ -115,12 +173,10 @@ export function hasPermission(user, permission) {
 export function hasAnyPermission(user, permissions) {
   if (!user || !Array.isArray(permissions)) return false;
 
-  const trustedRoles = ['ADMIN', 'CAREWORKER', 'SUPPORT_WORKER'];
-  if (user?.role?.name && trustedRoles.includes(user.role.name)) {
+  if (user?.role?.name === 'ADMIN') {
     return true;
   }
 
-  const allPermissions = getAllUserPermissions(user);
-  return permissions.some(permission => allPermissions.includes(permission));
+  return permissions.some(permission => hasPermission(user, permission));
 }
 

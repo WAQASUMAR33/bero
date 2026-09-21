@@ -7,12 +7,20 @@ import Header from '../components/Header';
 import Notification from '../components/Notification';
 import FileUpload from '../components/FileUpload';
 import PermissionMatrix from '../components/PermissionMatrix';
-import { hasPermission } from '@/lib/permissions';
+import StaffFileModal from '../components/StaffFileModal';
+import SupervisionsTracker from './components/SupervisionsTracker';
+import AppraisalsTracker from './components/AppraisalsTracker';
+import ProbationTracker from './components/ProbationTracker';
+import SponsorshipTracker from './components/SponsorshipTracker';
+import PdpTracker from './components/PdpTracker';
+import { hasPermission, isManager } from '@/lib/permissions';
 
 export default function StaffManagementPage() {
   const [user, setUser] = useState(null);
   const [staff, setStaff] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewStaffId, setViewStaffId] = useState(null);
+  const [mainActiveTab, setMainActiveTab] = useState('staff'); // 'staff' | 'supervisions' | 'appraisals' | 'probation' | 'sponsorship' | 'pdp'
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
@@ -735,9 +743,51 @@ export default function StaffManagementPage() {
             </div>
           ) : (
             <>
-              {/* Header */}
-              <div className="mb-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* TOP NAVIGATION TABS FOR STAFF & TRACKERS */}
+              <div className="mb-6 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                {[
+                  { id: 'staff', label: '👥 Staff Overview' },
+                  { id: 'supervisions', label: '📋 Supervisions' },
+                  { id: 'appraisals', label: '🎯 Appraisals' },
+                  { id: 'probation', label: '⏳ Probation Reviews' },
+                  { id: 'sponsorship', label: '🌐 Sponsorship & Compliance' },
+                  { id: 'pdp', label: '📈 PDP Goals' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setMainActiveTab(tab.id)}
+                    className={`px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-2 ${
+                      mainActiveTab === tab.id
+                        ? 'bg-[#224fa6] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {mainActiveTab === 'supervisions' && (
+                <SupervisionsTracker currentUser={user} onViewStaff={id => setViewStaffId(id)} />
+              )}
+              {mainActiveTab === 'appraisals' && (
+                <AppraisalsTracker currentUser={user} onViewStaff={id => setViewStaffId(id)} />
+              )}
+              {mainActiveTab === 'probation' && (
+                <ProbationTracker currentUser={user} onViewStaff={id => setViewStaffId(id)} />
+              )}
+              {mainActiveTab === 'sponsorship' && (
+                <SponsorshipTracker currentUser={user} onViewStaff={id => setViewStaffId(id)} />
+              )}
+              {mainActiveTab === 'pdp' && (
+                <PdpTracker currentUser={user} onViewStaff={id => setViewStaffId(id)} />
+              )}
+
+              {mainActiveTab === 'staff' && (
+                <>
+                  {/* Header */}
+                  <div className="mb-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center space-x-3">
                       <h1 className="text-3xl font-bold text-gray-900">
@@ -1212,6 +1262,18 @@ export default function StaffManagementPage() {
                               {/* Common Actions Column */}
                               <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
                                 <div className="flex items-center justify-end space-x-2">
+                                  {/* View Staff File Action Button */}
+                                  <button
+                                    onClick={() => setViewStaffId(member.id)}
+                                    className="p-2 text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                                    title="View Staff File"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                  </button>
+
                                   {showArchivedView ? (
                                     <>
                                       {hasPermission(user, 'users.update') && (
@@ -1295,6 +1357,8 @@ export default function StaffManagementPage() {
                   </table>
                 </div>
               </div>
+                </>
+              )}
             </>
           )}
 
@@ -2969,6 +3033,16 @@ export default function StaffManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Staff File Modal */}
+      <StaffFileModal
+        staffId={viewStaffId}
+        isOpen={Boolean(viewStaffId)}
+        onClose={() => setViewStaffId(null)}
+        currentUser={user}
+        onEditClick={(member) => openEditModal(member)}
+        onDataUpdated={fetchStaff}
+      />
 
       {/* Notification Component */}
       <Notification

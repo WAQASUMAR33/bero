@@ -166,7 +166,7 @@ export default function Sidebar({ user }) {
     {
       id: 'staff',
       name: 'Staff',
-      permission: 'staff.manage',
+      permission: 'users.view',
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
@@ -177,8 +177,38 @@ export default function Sidebar({ user }) {
         {
           id: 'staff-management',
           name: 'Staff Management',
-          permission: 'staff.manage',
+          permission: 'users.view',
           path: '/admin/staff-management',
+        },
+        {
+          id: 'staff-supervisions',
+          name: 'Supervisions',
+          permission: 'users.view',
+          path: '/admin/staff/supervisions',
+        },
+        {
+          id: 'staff-appraisals',
+          name: 'Appraisals',
+          permission: 'users.view',
+          path: '/admin/staff/appraisals',
+        },
+        {
+          id: 'staff-probation',
+          name: 'Probation Reviews',
+          permission: 'users.view',
+          path: '/admin/staff/probation',
+        },
+        {
+          id: 'staff-sponsorship',
+          name: 'Sponsorship & Visa',
+          permission: 'users.view',
+          path: '/admin/staff/sponsorship',
+        },
+        {
+          id: 'staff-pdp',
+          name: 'PDP Tracker',
+          permission: 'users.view',
+          path: '/admin/staff/pdp',
         },
         {
           id: 'teams',

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { hasPermission } from '@/lib/permissions';
+import { isManager, hasPermission } from '@/lib/permissions';
 
 // GET /api/users - Fetch all users
 export async function GET(request) {
@@ -22,13 +22,20 @@ export async function GET(request) {
     const includeArchived = searchParams.get('includeArchived');
 
     const where = {};
-    if ((statusParam && statusParam.toLowerCase() === 'all') || includeArchived === 'true') {
-      // Return all users
-    } else if (statusParam && statusParam.toUpperCase() === 'ARCHIVED') {
-      where.status = 'ARCHIVED';
+    const isManagerUser = isManager(currentUser);
+
+    if (!isManagerUser) {
+      // Non-managers can ONLY access their own staff record
+      where.id = currentUser.id;
     } else {
-      // Default: only CURRENT users across the system (shifts, rota, calendar, etc.)
-      where.status = 'CURRENT';
+      if ((statusParam && statusParam.toLowerCase() === 'all') || includeArchived === 'true') {
+        // Return all users
+      } else if (statusParam && statusParam.toUpperCase() === 'ARCHIVED') {
+        where.status = 'ARCHIVED';
+      } else {
+        // Default: only CURRENT users across the system (shifts, rota, calendar, etc.)
+        where.status = 'CURRENT';
+      }
     }
 
     const users = await prisma.user.findMany({
@@ -37,6 +44,31 @@ export async function GET(request) {
         region: true,
         role: true,
         permissions: true,
+        supervisions: {
+          orderBy: { supervisionDate: 'desc' },
+          take: 5,
+          include: {
+            supervisor: { select: { id: true, firstName: true, lastName: true } }
+          }
+        },
+        appraisals: {
+          orderBy: { dueDate: 'desc' },
+          take: 5,
+          include: {
+            appraiser: { select: { id: true, firstName: true, lastName: true } }
+          }
+        },
+        probations: {
+          orderBy: { dueDate: 'desc' },
+          take: 5,
+          include: {
+            reviewer: { select: { id: true, firstName: true, lastName: true } }
+          }
+        },
+        pdps: {
+          orderBy: { createdAt: 'desc' },
+          take: 5
+        },
         team: {
           select: {
             id: true,

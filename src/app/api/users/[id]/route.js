@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { hasPermission } from '@/lib/permissions';
+import { isManager, canAccessStaffMember, hasPermission } from '@/lib/permissions';
 
 // GET /api/users/[id] - Get a specific user
 export async function GET(request, { params }) {
@@ -13,18 +13,56 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!hasPermission(currentUser, 'users.view')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const { id } = await params;
     const userId = parseInt(id);
+
+    // Permissions check: Managers can access all, staff can only access their own
+    if (!canAccessStaffMember(currentUser, userId)) {
+      return NextResponse.json(
+        { error: 'Forbidden: You do not have permission to view this staff file. Managers can access all; staff can only access their own.' },
+        { status: 403 }
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
         region: true,
+        role: true,
         permissions: true,
+        team: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        supervisions: {
+          orderBy: { supervisionDate: 'desc' },
+          include: {
+            supervisor: {
+              select: { id: true, firstName: true, lastName: true, role: true }
+            }
+          }
+        },
+        appraisals: {
+          orderBy: { dueDate: 'desc' },
+          include: {
+            appraiser: {
+              select: { id: true, firstName: true, lastName: true, role: true }
+            }
+          }
+        },
+        probations: {
+          orderBy: { dueDate: 'desc' },
+          include: {
+            reviewer: {
+              select: { id: true, firstName: true, lastName: true, role: true }
+            }
+          }
+        },
+        pdps: {
+          orderBy: { createdAt: 'desc' }
+        }
       }
     });
 
@@ -82,12 +120,16 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized: Session expired. Please log in again.' }, { status: 401 });
     }
 
-    if (!hasPermission(currentUser, 'users.update')) {
-      return NextResponse.json({ error: 'Forbidden: You do not have permission to update staff.' }, { status: 403 });
-    }
-
     const { id } = await params;
     const userId = parseInt(id);
+
+    const isManagerUser = isManager(currentUser);
+    const isSelf = Number(currentUser.id) === Number(userId);
+
+    if (!isManagerUser && !isSelf) {
+      return NextResponse.json({ error: 'Forbidden: You do not have permission to update other staff members.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       firstName,
@@ -126,6 +168,10 @@ export async function PUT(request, { params }) {
       sponsorshipStatus,
       shareCode,
       visaExpiryDate,
+      cosNumber,
+      visaType,
+      passportNumber,
+      sponsorshipNotes,
       // Sheet 1: Next of Kin & Medical
       nokRelationship,
       allergyStatus,
@@ -233,6 +279,10 @@ export async function PUT(request, { params }) {
     if (sponsorshipStatus !== undefined) updateData.sponsorshipStatus = sponsorshipStatus || null;
     if (shareCode !== undefined) updateData.shareCode = shareCode || null;
     if (visaExpiryDate !== undefined) updateData.visaExpiryDate = parseDate(visaExpiryDate);
+    if (cosNumber !== undefined) updateData.cosNumber = cosNumber || null;
+    if (visaType !== undefined) updateData.visaType = visaType || null;
+    if (passportNumber !== undefined) updateData.passportNumber = passportNumber || null;
+    if (sponsorshipNotes !== undefined) updateData.sponsorshipNotes = sponsorshipNotes || null;
 
     // Sheet 1: Next of Kin & Medical
     if (nokRelationship !== undefined) updateData.nokRelationship = nokRelationship || null;

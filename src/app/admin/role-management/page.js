@@ -64,6 +64,8 @@ export default function RoleManagementPage() {
     { key: 'incidents.manage', label: 'Manage Incidents', category: 'Compliance' },
     { key: 'investigations.manage', label: 'Manage Investigations', category: 'Compliance' },
     { key: 'investigations.view', label: 'View Investigations', category: 'Compliance' },
+    { key: 'kpi.manage', label: 'Manage KPI & Evaluations', category: 'Compliance' },
+    { key: 'kpi.view', label: 'View KPI & Evaluations', category: 'Compliance' },
     { key: 'enquiries.manage', label: 'Manage Enquiries', category: 'Service' },
     { key: 'enquiries.view', label: 'View Enquiries', category: 'Service' }
   ];

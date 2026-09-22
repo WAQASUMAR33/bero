@@ -335,6 +335,49 @@ export default function Sidebar({ user }) {
       hasArrow: false,
     },
     {
+      id: 'kpi',
+      name: 'KPI & Evaluations',
+      permission: 'kpi.view',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      ),
+      hasArrow: true,
+      subItems: [
+        {
+          id: 'all-kpis',
+          name: 'KPI Dashboard',
+          permission: 'kpi.view',
+          path: '/admin/kpi',
+        },
+        {
+          id: 'kpi-monthly-evaluations',
+          name: 'Monthly Evaluations',
+          permission: 'kpi.view',
+          path: '/admin/kpi?tab=monthly',
+        },
+        {
+          id: 'kpi-action-plan',
+          name: 'Action Plan Tracker',
+          permission: 'kpi.view',
+          path: '/admin/kpi?tab=action-plan',
+        },
+        {
+          id: 'kpi-data-collation',
+          name: 'Data Collation Hub',
+          permission: 'kpi.view',
+          path: '/admin/kpi?tab=collation',
+        },
+        {
+          id: 'kpi-performance-analytics',
+          name: 'Performance Trends',
+          permission: 'kpi.view',
+          path: '/admin/kpi?tab=analytics',
+        },
+      ],
+    },
+    {
       id: 'governance',
       name: 'Governance & Trackers',
       permission: 'governance.view',

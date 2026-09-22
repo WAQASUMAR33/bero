@@ -68,6 +68,7 @@ export function getAllUserPermissions(user) {
       'quality-assurance.view',
       'enquiries.view',
       'investigations.view',
+      'kpi.view',
       'governance.view',
       'handovers.view',
       'maintenance.view',

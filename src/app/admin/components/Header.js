@@ -25,6 +25,7 @@ const PAGE_TITLES = {
   '/admin/policy-procedures': 'Policies & Procedures',
   '/admin/enquiries': 'Enquiries & Referrals',
   '/admin/investigations': 'Internal Investigations & Audits',
+  '/admin/kpi': 'Key Performance Indicators (KPI) & Monthly Evaluations',
   '/admin/quality-assurance': 'Feedback Monitoring',
   '/admin/maintenance': 'Maintenance Issues',
   '/admin/emergency-reports': 'Emergency Reports',

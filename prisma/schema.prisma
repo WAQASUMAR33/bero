@@ -3266,3 +3266,75 @@ model StaffPdp {
   @@index([targetDate])
   @@index([progress])
 }
+
+//
+// KPI (Key Performance Indicators) & Monthly Evaluation Models
+//
+
+model KpiMonthlyEvaluation {
+  id              Int                 @id @default(autoincrement())
+  monthYear       String              @db.VarChar(50) // e.g. "July 2026", "August 2026"
+  periodCode      String              @unique @db.VarChar(20) // e.g. "2026-07", "2026-08"
+  evaluationDate  DateTime?           @db.Date
+  evaluatedBy     String?             @db.VarChar(255) // Lead reviewer / Registered Manager
+  evaluatorRole   String?             @db.VarChar(100) // Role
+  status          String              @default("DRAFT") @db.VarChar(50) // DRAFT, IN_REVIEW, COMPLETED, APPROVED
+  overallRating   String?             @db.VarChar(50) // Outstanding, Good, Requires Improvement, Inadequate
+  summaryNotes    String?             @db.Text
+  createdById     Int?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  items           KpiEvaluationItem[]
+
+  @@index([periodCode])
+  @@index([status])
+  @@index([evaluationDate])
+}
+
+model KpiEvaluationItem {
+  id                    Int                  @id @default(autoincrement())
+  evaluationId          Int
+  evaluation            KpiMonthlyEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  area                  String               @db.VarChar(150) // Occupancy, Live Enquiries, Safeguardings, CQC Notifications, RIDDOR Reports, Accidents, Incidents, Near Misses, Complaints, Compliments, P&L, Sickness, Other
+  data                  String?              @db.VarChar(255) // Collated metric / count / value
+  numericValue          Float?               // For numerical aggregation and trending
+  rationalle            String?              @db.Text         // Rationale / analysis of the figures
+  actionsRequired       String?              @db.Text         // Actions required
+  addedToActionPlan     Boolean              @default(false)  // Added to Action Plan flag
+  actionPlanStatus      String?              @default("N/A") @db.VarChar(50) // N/A, PENDING, IN_PROGRESS, RESOLVED
+  actionPlanId          Int?                 // Optional linked action plan item
+  actionPlanItem        KpiActionPlanItem?   @relation(fields: [actionPlanId], references: [id], onDelete: SetNull)
+  sortOrder             Int                  @default(0)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@index([evaluationId])
+  @@index([area])
+  @@index([addedToActionPlan])
+  @@index([actionPlanId])
+}
+
+model KpiActionPlanItem {
+  id                    Int                 @id @default(autoincrement())
+  title                 String              @db.VarChar(255)
+  area                  String              @db.VarChar(150)
+  sourceMonth           String?             @db.VarChar(50) // e.g. "July 2026"
+  description           String              @db.Text
+  actionRequired        String?             @db.Text
+  assignedTo            String?             @db.VarChar(255) // Person responsible
+  priority              String              @default("MEDIUM") @db.VarChar(50) // LOW, MEDIUM, HIGH, CRITICAL
+  targetDate            DateTime?           @db.Date
+  completionDate        DateTime?           @db.Date
+  status                String              @default("OPEN") @db.VarChar(50) // OPEN, IN_PROGRESS, COMPLETED, OVERDUE
+  progressNotes         String?             @db.Text
+  evaluationItems       KpiEvaluationItem[]
+  createdById           Int?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([area])
+  @@index([status])
+  @@index([priority])
+  @@index([targetDate])
+}

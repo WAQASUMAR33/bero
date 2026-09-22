@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { 
-  FileSearch, 
+  FileText, 
   Activity, 
   PauseCircle, 
   CheckCircle2, 
@@ -17,21 +17,18 @@ import {
   Building2, 
   Calendar, 
   Clock, 
-  FileText, 
   CheckCheck, 
   Edit3, 
   Trash2, 
   UserCheck, 
-  HelpCircle,
-  ExternalLink,
-  ChevronRight
+  Users
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import Notification from '../../components/Notification';
-import InvestigationNavTabs from './InvestigationNavTabs';
+import EnquiryNavTabs from './EnquiryNavTabs';
 
-export default function InvestigationManager({ title = 'Investigations & Referrals' }) {
+export default function EnquiryManager({ title = 'Enquiries & Referrals Management' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
@@ -56,7 +53,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
     status: 'PRE_ADMISSION',
   });
 
-  // Form state matching Excel columns
+  // Form state matching Excel columns from Enquiry Tracker.xlsx
   const [formData, setFormData] = useState({
     id: null,
     property: '',
@@ -131,11 +128,11 @@ export default function InvestigationManager({ title = 'Investigations & Referra
         setCounts(result.data.counts || { live: 0, held: 0, closed: 0, total: 0 });
         setProperties(result.data.properties || []);
       } else {
-        showNotification(result.error || 'Failed to fetch records', 'error');
+        showNotification(result.error || 'Failed to fetch enquiries', 'error');
       }
     } catch (e) {
       console.error(e);
-      showNotification('Error loading records', 'error');
+      showNotification('Error loading enquiries', 'error');
     } finally {
       setLoading(false);
     }
@@ -165,16 +162,16 @@ export default function InvestigationManager({ title = 'Investigations & Referra
 
       const json = await res.json();
       if (json.success) {
-        showNotification(isEditing ? 'Case record updated successfully' : 'New investigation case created', 'success');
+        showNotification(isEditing ? 'Enquiry updated successfully' : 'New enquiry created successfully', 'success');
         setShowAddModal(false);
         resetForm();
         fetchRecords();
       } else {
-        showNotification(json.error || 'Failed to save record', 'error');
+        showNotification(json.error || 'Failed to save enquiry', 'error');
       }
     } catch (e) {
       console.error(e);
-      showNotification('Error saving case record', 'error');
+      showNotification('Error saving enquiry record', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -226,7 +223,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
         setSelectedRecordForConvert(null);
         fetchRecords();
       } else {
-        showNotification(json.error || 'Failed to convert case', 'error');
+        showNotification(json.error || 'Failed to convert enquiry', 'error');
       }
     } catch (e) {
       console.error(e);
@@ -237,7 +234,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
   };
 
   const handleDeleteRecord = async (id) => {
-    if (!confirm('Are you sure you want to delete this case record? This action cannot be undone.')) return;
+    if (!confirm('Are you sure you want to delete this enquiry record? This action cannot be undone.')) return;
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`/api/enquiries/${id}`, {
@@ -246,7 +243,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
       });
       const json = await res.json();
       if (json.success) {
-        showNotification('Case record deleted', 'success');
+        showNotification('Enquiry record deleted', 'success');
         fetchRecords();
       } else {
         showNotification(json.error || 'Failed to delete record', 'error');
@@ -301,7 +298,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
       const doc = new jsPDF('l', 'mm', 'a4');
       doc.setFontSize(16);
       doc.setTextColor(34, 79, 166);
-      doc.text(`Investigations & Enquiries Report (${activeTab} Pipeline)`, 14, 15);
+      doc.text(`Enquiries & Referrals Report (${activeTab} Pipeline)`, 14, 15);
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
       doc.text(`Exported: ${new Date().toLocaleDateString('en-GB')} | Total Records: ${filteredRecords.length}`, 14, 22);
@@ -327,7 +324,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
         headStyles: { fillColor: [34, 79, 166], textColor: 255, fontStyle: 'bold' }
       });
 
-      doc.save(`Investigations_Report_${activeTab}_${Date.now()}.pdf`);
+      doc.save(`Enquiries_Report_${activeTab}_${Date.now()}.pdf`);
       showNotification('Report exported to PDF successfully', 'success');
     } catch (err) {
       console.error(err);
@@ -365,14 +362,14 @@ export default function InvestigationManager({ title = 'Investigations & Referra
               <div>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#224fa6] text-white flex items-center justify-center shadow-sm">
-                    <FileSearch className="w-5 h-5" />
+                    <Users className="w-5 h-5" />
                   </div>
                   <div>
                     <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
                       {title}
                     </h1>
                     <p className="text-gray-500 text-xs sm:text-sm mt-0.5">
-                      Intake investigation tracker, active referral pipelines, property assessments, and service user admission workflow.
+                      Intake referral tracker, live and held candidate pipelines, care assessments, and admission workflow.
                     </p>
                   </div>
                 </div>
@@ -393,14 +390,14 @@ export default function InvestigationManager({ title = 'Investigations & Referra
                   className="px-4 py-2.5 bg-[#224fa6] hover:bg-[#1a3d82] text-white rounded-xl text-xs font-bold shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Plus className="w-4 h-4 text-white" />
-                  <span>New Case</span>
+                  <span>New Enquiry</span>
                 </button>
               </div>
             </div>
 
             {/* Sub-Navigation Tabs */}
             <div className="mt-6">
-              <InvestigationNavTabs
+              <EnquiryNavTabs
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 counts={counts}
@@ -412,7 +409,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
             <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Live Active Cases</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Live Active Enquiries</span>
                 <p className="text-2xl font-black text-gray-900 mt-1">{counts.live}</p>
                 <span className="text-[11px] text-gray-400">Under active evaluation</span>
               </div>
@@ -436,7 +433,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">Closed & Admitted</span>
                 <p className="text-2xl font-black text-gray-900 mt-1">{counts.closed}</p>
-                <span className="text-[11px] text-gray-400">Converted or resolved</span>
+                <span className="text-[11px] text-gray-400">Converted to Service Users</span>
               </div>
               <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
                 <CheckCircle2 className="w-5 h-5" />
@@ -445,9 +442,9 @@ export default function InvestigationManager({ title = 'Investigations & Referra
 
             <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Total Registered</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Total Enquiries</span>
                 <p className="text-2xl font-black text-gray-900 mt-1">{counts.total}</p>
-                <span className="text-[11px] text-gray-400">Lifetime volume logged</span>
+                <span className="text-[11px] text-gray-400">Lifetime referrals logged</span>
               </div>
               <div className="w-11 h-11 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-200">
                 <FileText className="w-5 h-5" />
@@ -493,21 +490,21 @@ export default function InvestigationManager({ title = 'Investigations & Referra
             </div>
           </div>
 
-          {/* Cases Data Table matching Enquiry Tracker.xlsx */}
+          {/* Enquiries Data Table matching Enquiry Tracker.xlsx */}
           <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
             {loading ? (
               <div className="py-20 text-center">
                 <div className="inline-block w-8 h-8 border-3 border-[#224fa6] border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-xs text-gray-500 mt-2 font-medium">Loading case records...</p>
+                <p className="text-xs text-gray-500 mt-2 font-medium">Loading enquiry records...</p>
               </div>
             ) : filteredRecords.length === 0 ? (
               <div className="text-center py-20 px-4">
                 <div className="w-12 h-12 rounded-2xl bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
-                  <FileSearch className="w-6 h-6" />
+                  <FileText className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-800 mt-3">No investigation records found</h3>
+                <h3 className="text-sm font-bold text-gray-800 mt-3">No enquiry records found</h3>
                 <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
-                  There are no referrals or cases matching the selected filter ({activeTab}). Click "New Case" to register an enquiry.
+                  There are no referrals matching the selected filter ({activeTab}). Click "New Enquiry" to log a referral.
                 </p>
               </div>
             ) : (
@@ -660,18 +657,18 @@ export default function InvestigationManager({ title = 'Investigations & Referra
             )}
           </div>
 
-          {/* New / Edit Case Modal */}
+          {/* New / Edit Enquiry Modal */}
           {showAddModal && (
             <div className="fixed inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center z-50 p-4">
               <div className="bg-white text-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-gray-100">
                 <div className="bg-[#224fa6] text-white px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <FileSearch className="w-5 h-5 text-white/90" />
+                    <FileText className="w-5 h-5 text-white/90" />
                     <div>
                       <h3 className="text-base font-bold text-white">
-                        {formData.id ? 'Edit Investigation Record' : 'Register New Investigation / Referral'}
+                        {formData.id ? 'Edit Referral Enquiry' : 'Log New Referral Enquiry'}
                       </h3>
-                      <p className="text-xs text-blue-100">Captures intake criteria conforming to Enquiry Tracker</p>
+                      <p className="text-xs text-blue-100">Captures intake criteria according to Enquiry Tracker</p>
                     </div>
                   </div>
                   <button
@@ -831,10 +828,10 @@ export default function InvestigationManager({ title = 'Investigations & Referra
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Rationale, Comments & Next Actions</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Rationale, Comments & Progression Notes</label>
                     <textarea
                       rows={2}
-                      placeholder="Assessment findings, funding approvals, manager notes, follow-up dates..."
+                      placeholder="Assessment findings, funding approvals, manager observations, follow-up dates..."
                       value={formData.notes}
                       onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                       className="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6]"
@@ -856,7 +853,7 @@ export default function InvestigationManager({ title = 'Investigations & Referra
                     disabled={submitting}
                     className="px-5 py-2 bg-[#224fa6] hover:bg-[#1a3d82] text-white rounded-xl text-xs font-semibold shadow-xs disabled:opacity-50 cursor-pointer"
                   >
-                    {submitting ? 'Saving...' : formData.id ? 'Update Record' : 'Save Record'}
+                    {submitting ? 'Saving...' : formData.id ? 'Update Enquiry' : 'Save Enquiry'}
                   </button>
                 </div>
               </div>

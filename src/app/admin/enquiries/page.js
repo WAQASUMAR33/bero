@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import InvestigationManager from '../investigations/components/InvestigationManager';
+import EnquiryManager from './components/EnquiryManager';
 
 export default function EnquiriesPage() {
   return (
@@ -10,7 +10,7 @@ export default function EnquiriesPage() {
         <div className="w-8 h-8 border-3 border-[#224fa6] border-t-transparent rounded-full animate-spin"></div>
       </div>
     }>
-      <InvestigationManager title="Enquiries & Referrals Management" />
+      <EnquiryManager title="Enquiries & Referrals Management" />
     </Suspense>
   );
 }

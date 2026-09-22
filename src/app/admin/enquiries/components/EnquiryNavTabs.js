@@ -3,13 +3,13 @@
 import { Layers, Activity, PauseCircle, CheckCircle2 } from 'lucide-react';
 
 const TABS = [
-  { id: 'ALL', label: 'All Cases', icon: Layers },
+  { id: 'ALL', label: 'All Enquiries', icon: Layers },
   { id: 'LIVE', label: 'Live Pipeline', icon: Activity, countKey: 'live' },
   { id: 'HELD', label: 'Held / Pending', icon: PauseCircle, countKey: 'held' },
   { id: 'CLOSED', label: 'Closed & Admitted', icon: CheckCircle2, countKey: 'closed' }
 ];
 
-export default function InvestigationNavTabs({ activeTab, onTabChange, counts = {} }) {
+export default function EnquiryNavTabs({ activeTab, onTabChange, counts = {} }) {
   return (
     <div className="mb-6 bg-white p-1.5 sm:p-2 rounded-2xl border border-gray-200/90 shadow-xs w-full">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 w-full">

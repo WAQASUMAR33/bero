@@ -22,6 +22,7 @@ const APP_PAGES = [
   { name: 'CQC Staff Overworked', path: '/admin/cqc-inspection/staff-overworked', description: 'Monitor overworked staff hours', keywords: ['overworked', 'overtime', 'fatigue', 'cqc'] },
   { name: 'Policy & Procedures', path: '/admin/policy-procedures', description: 'Company policies and signatures', keywords: ['policies', 'policy', 'procedures', 'documents', 'sign'] },
   { name: 'Enquiries', path: '/admin/enquiries', description: 'Intake referrals, property enquiries, and prospective resident pipeline', keywords: ['enquiries', 'referrals', 'intake', 'pipeline', 'tracker', 'admissions', 'residents'] },
+  { name: 'Investigations', path: '/admin/investigations', description: 'Internal incident, accident, safeguarding, and complaint investigations', keywords: ['investigations', 'investigation', 'incident', 'accident', 'complaint', 'safeguarding', 'audit', 'lessons learnt'] },
   { name: 'Feedback Monitoring', path: '/admin/quality-assurance', description: 'Feedback, complaints, and suggestions', keywords: ['feedback monitoring', 'quality assurance', 'qa', 'feedback', 'complaints', 'suggestions', 'compliments'] },
   { name: 'Maintenance Issues', path: '/admin/maintenance', description: 'Property and equipment maintenance tickets', keywords: ['maintenance', 'repairs', 'issues', 'facilities'] },
   { name: 'Emergency Reports', path: '/admin/emergency-reports', description: 'View logged emergency alerts', keywords: ['emergency', 'panic', 'alerts', 'sos'] },

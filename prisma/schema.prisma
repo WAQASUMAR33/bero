@@ -3042,6 +3042,29 @@ model Enquiry {
   @@index([serviceSeekerId])
 }
 
+model InvestigationTracker {
+  id                          Int       @id @default(autoincrement())
+  dateOfIncident              DateTime? @db.Date
+  dateInvestigationCommenced  DateTime? @db.Date
+  personsInvolved             String?   @db.VarChar(255)
+  areaBeingInvestigated       String?   @db.VarChar(150) // Accident, Incident, Complaint, Concern, Safeguarding, CQC, Grievance, Other
+  briefOverview               String?   @db.Text
+  actionsTaken                String?   @db.Text
+  outcome                     String?   @db.Text
+  progress                    String    @default("Not Started") @db.VarChar(50) // Not Started, In Progress, Completed
+  dateCompleted               DateTime? @db.Date
+  lessonsLearnt               String?   @default("N/A") @db.VarChar(50) // Yes, No, N/A
+  comments                    String?   @db.Text
+  createdById                 Int?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+
+  @@index([progress])
+  @@index([dateOfIncident])
+  @@index([areaBeingInvestigated])
+}
+
+
 model CqcNotificationTracker {
   id                      Int       @id @default(autoincrement())
   incidentDate            DateTime? @db.Date

@@ -24,6 +24,7 @@ const PAGE_TITLES = {
   '/admin/cqc-inspection/staff-overworked': 'CQC Staff Overworked',
   '/admin/policy-procedures': 'Policies & Procedures',
   '/admin/enquiries': 'Enquiries & Referrals',
+  '/admin/investigations': 'Internal Investigations & Audits',
   '/admin/quality-assurance': 'Feedback Monitoring',
   '/admin/maintenance': 'Maintenance Issues',
   '/admin/emergency-reports': 'Emergency Reports',

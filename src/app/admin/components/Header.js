@@ -23,6 +23,8 @@ const PAGE_TITLES = {
   '/admin/cqc-inspection/late-arrivals': 'CQC Late Arrivals',
   '/admin/cqc-inspection/staff-overworked': 'CQC Staff Overworked',
   '/admin/policy-procedures': 'Policies & Procedures',
+  '/admin/investigations': 'Investigations & Referrals',
+  '/admin/enquiries': 'Investigations & Referrals',
   '/admin/quality-assurance': 'Feedback Monitoring',
   '/admin/maintenance': 'Maintenance Issues',
   '/admin/emergency-reports': 'Emergency Reports',

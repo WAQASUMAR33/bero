@@ -22,7 +22,8 @@ import {
   RotateCcw,
   Check,
   Building2,
-  FileCheck
+  FileCheck,
+  TrendingUp
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
@@ -417,6 +418,14 @@ export default function InvestigationManager({ title = 'Internal Investigations 
               </div>
 
               <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => router.push('/admin/kpi')}
+                  className="px-4 py-2.5 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-900 rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <TrendingUp className="w-4 h-4 text-[#224fa6]" />
+                  <span>KPI & Evaluations</span>
+                </button>
                 <button
                   type="button"
                   onClick={handleExportPDF}

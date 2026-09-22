@@ -61,7 +61,11 @@ export default function RoleManagementPage() {
     { key: 'profile.view', label: 'View Profile', category: 'General' },
     { key: 'agenda.manage', label: 'Agenda', category: 'General' },
     { key: 'setup.manage', label: 'Setup', category: 'Settings' },
-    { key: 'incidents.manage', label: 'Manage Incidents', category: 'Compliance' }
+    { key: 'incidents.manage', label: 'Manage Incidents', category: 'Compliance' },
+    { key: 'investigations.manage', label: 'Manage Investigations', category: 'Compliance' },
+    { key: 'investigations.view', label: 'View Investigations', category: 'Compliance' },
+    { key: 'enquiries.manage', label: 'Manage Enquiries', category: 'Service' },
+    { key: 'enquiries.view', label: 'View Enquiries', category: 'Service' }
   ];
 
   // Group permissions by category

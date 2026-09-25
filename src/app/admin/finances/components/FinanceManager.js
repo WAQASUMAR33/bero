@@ -108,16 +108,24 @@ export default function FinanceManager({ title = 'Finances & P&L Statement' }) {
     },
   ];
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-[#224fa6] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex text-gray-900">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar user={user} />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col lg:ml-64">
         <Header user={user} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <main className="flex-1 p-4 lg:p-6 overflow-auto space-y-6">
           {/* Top Banner */}
           <div className="bg-gradient-to-r from-[#173a7a] via-[#224fa6] to-[#3270e9] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
             <div className="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>

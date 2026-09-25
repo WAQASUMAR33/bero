@@ -49,27 +49,33 @@ export default function WageManager({ title = 'Wages & Timesheets Oversight' }) 
 
   // Load user
   useEffect(() => {
-    const fetchUser = async () => {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    
+    if (storedUser) {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          router.push('/login');
-          return;
-        }
-        const res = await fetch('/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
-        } else {
-          router.push('/login');
-        }
+        setCurrentUser(JSON.parse(storedUser));
       } catch (err) {
-        console.error(err);
+        console.error('Failed to parse stored user:', err);
       }
-    };
-    fetchUser();
+    } else if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    if (token) {
+      fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.user) {
+            setCurrentUser(data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+        })
+        .catch(err => console.error('Error verifying user session:', err));
+    }
   }, [router]);
 
   useEffect(() => {

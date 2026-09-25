@@ -1,6 +1,6 @@
-import { Plus, Users, User, X } from 'lucide-react';
 'use client';
 
+import { Plus, Users, User, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function ActionPlansManager({ user, onNotification }) {

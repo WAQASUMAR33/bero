@@ -113,16 +113,34 @@ export async function POST(request) {
       notes
     } = body;
 
-    if (!userId || !dueDate) {
-      return NextResponse.json({ error: 'Staff member (userId) and Review Due Date are required.' }, { status: 400 });
+    if (!userId) {
+      return NextResponse.json({ error: 'Staff member (userId) is required.' }, { status: 400 });
+    }
+
+    let parsedStartDate = parseDate(startDate);
+    let parsedDueDate = parseDate(dueDate);
+
+    // If startDate not provided, fetch user's startDate
+    if (!parsedStartDate) {
+      const u = await prisma.user.findUnique({
+        where: { id: parseInt(userId) },
+        select: { startDate: true }
+      });
+      parsedStartDate = u?.startDate || new Date();
+    }
+
+    // Auto-calculate standard 6-month probation review due date if omitted
+    if (!parsedDueDate) {
+      parsedDueDate = new Date(parsedStartDate);
+      parsedDueDate.setMonth(parsedDueDate.getMonth() + 6);
     }
 
     const probation = await prisma.staffProbation.create({
       data: {
         userId: parseInt(userId),
         reviewerId: reviewerId ? parseInt(reviewerId) : currentUser.id,
-        startDate: parseDate(startDate),
-        dueDate: parseDate(dueDate),
+        startDate: parsedStartDate,
+        dueDate: parsedDueDate,
         reviewDate: parseDate(reviewDate),
         status: status || 'UNDER_PROBATION',
         outcome: outcome || null,

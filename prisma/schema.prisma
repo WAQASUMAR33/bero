@@ -234,6 +234,10 @@ model User {
   probations               StaffProbation[]   @relation("UserProbations")
   reviewedProbations       StaffProbation[]   @relation("ReviewerProbations")
   pdps                     StaffPdp[]         @relation("UserPdps")
+  wages                    WageRecord[]       @relation("UserWages")
+  wageManualEntries        WageManualEntry[]  @relation("UserWageManualEntries")
+  wageAmendments           WageAmendmentRequest[] @relation("UserWageAmendments")
+  reviewedWageAmendments   WageAmendmentRequest[] @relation("ManagerWageAmendments")
 
   // Relations
   role          RoleDefinition @relation(fields: [roleId], references: [id])
@@ -512,6 +516,9 @@ model ServiceSeeker {
   confidentialNotes ServiceSeekerConfidentialNote[]
   fundings          ServiceSeekerFunding[]
   qaActionItems     QaActionItem[]
+  financialProfile  ServiceUserFinancialProfile?
+  weeklyFinancialLedgers ServiceUserWeeklyLedger[]
+  financialTransactions  FinancialTransaction[]
 }
 
 enum FuneralArrangement {
@@ -3338,3 +3345,213 @@ model KpiActionPlanItem {
   @@index([priority])
   @@index([targetDate])
 }
+
+//
+// Finances & P&L Models (matching sheets/Finances/P&L - Beerusys.xlsx & Service User Finances.xlsx)
+//
+
+model PnlMonthlyRecord {
+  id              Int       @id @default(autoincrement())
+  year            Int       // e.g. 2026, 2027
+  month           Int       // 1 to 12
+  monthName       String    @db.VarChar(50) // e.g. "January 2026"
+  periodCode      String    @unique @db.VarChar(20) // e.g. "2026-01", "2026-02"
+
+  // Outgoings
+  rent            Float     @default(0)
+  gas             Float     @default(0)
+  electricity     Float     @default(0)
+  water           Float     @default(0)
+  councilTax      Float     @default(0)
+  tvLicence       Float     @default(0)
+  internet        Float     @default(0)
+  furnishings     Float     @default(0)
+  maintenance     Float     @default(0)
+  insurance       Float     @default(0)
+  wages           Float     @default(0)
+  other           Float     @default(0)
+  totalOutgoings  Float     @default(0)
+
+  // Incoming
+  fees            Float     @default(0)
+  utilities       Float     @default(0)
+  rentPayments    Float     @default(0)
+  totalIncoming   Float     @default(0)
+
+  // Profitability
+  ebitdarm        Float     @default(0) // totalIncoming - totalOutgoings
+
+  notes           String?   @db.Text
+  updatedById     Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([year])
+  @@index([periodCode])
+}
+
+model ServiceUserFinancialProfile {
+  id                            Int                       @id @default(autoincrement())
+  serviceSeekerId               Int                       @unique
+  serviceSeeker                 ServiceSeeker             @relation(fields: [serviceSeekerId], references: [id], onDelete: Cascade)
+
+  // Header Details
+  property                      String?                   @db.VarChar(255)
+  movedInDate                   DateTime?                 @db.Date
+  rentAmount                    Float?                    @default(0)
+  rentPaymentResponsibility     String?                   @db.VarChar(150) // e.g. "Housing Benefit", "Council", "Self", "Family"
+  utilitiesPerWeek              Float?                    @default(0)
+  utilitiesPaymentResponsibility String?                  @db.VarChar(150) // e.g. "Service User", "Council", "Included"
+
+  supportHoursPerDay            Float?                    @default(0)
+  costPerHour                   Float?                    @default(0)
+  costPerWeek                   Float?                    @default(0)
+  sleepingNight                 Boolean                   @default(false)
+  costPerNight                  Float?                    @default(0)
+  nightCostPerWeek              Float?                    @default(0)
+  supportPaymentResponsibility  String?                   @db.VarChar(150) // e.g. "Local Authority", "ICB / NHS", "Direct Payment"
+
+  // Balances Carried Forward
+  rentCarriedForward            Float                     @default(0)
+  utilitiesCarriedForward       Float                     @default(0)
+  supportCarriedForward         Float                     @default(0)
+
+  comments                      String?                   @db.Text
+  createdAt                     DateTime                  @default(now())
+  updatedAt                     DateTime                  @updatedAt
+
+  weeklyLedgers                 ServiceUserWeeklyLedger[]
+
+  @@index([serviceSeekerId])
+}
+
+model ServiceUserWeeklyLedger {
+  id              Int                         @id @default(autoincrement())
+  profileId       Int
+  profile         ServiceUserFinancialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  serviceSeekerId Int
+  serviceSeeker   ServiceSeeker               @relation(fields: [serviceSeekerId], references: [id], onDelete: Cascade)
+
+  year            Int                         // e.g. 2026
+  weekNumber      Int                         // 1 to 52
+  monthName       String                      @db.VarChar(50) // "January", "February", etc.
+  weekStartDate   DateTime                    @db.Date // Date of Monday for that week
+
+  // Support Hours
+  supportDue      Float                       @default(0)
+  supportPaid     Float                       @default(0)
+
+  // Utilities
+  utilitiesDue    Float                       @default(0)
+  utilitiesPaid   Float                       @default(0)
+
+  // Rent
+  rentDue         Float                       @default(0)
+  rentPaid        Float                       @default(0)
+
+  notes           String?                     @db.VarChar(255)
+  paymentMethod   String?                     @db.VarChar(100)
+  paymentReference String?                    @db.VarChar(100)
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+
+  @@unique([profileId, year, weekNumber])
+  @@index([serviceSeekerId, year])
+  @@index([weekStartDate])
+}
+
+//
+// Manual Financial Input & Transactions (pulls through to P&L and Service User Finances)
+//
+model FinancialTransaction {
+  id                Int            @id @default(autoincrement())
+  type              String         // "INCOMING" or "OUTGOING"
+  category          String         // e.g. "SERVICE_USER_FEES", "SERVICE_USER_RENT", "SERVICE_USER_UTILITIES", "ELECTRICITY", "GAS", "WATER", "COUNCIL_TAX", "TV_LICENCE", "INTERNET", "FURNISHINGS", "MAINTENANCE", "INSURANCE", "WAGES", "RENT", "OTHER"
+  categoryLabel     String         // e.g. "Service User - Fees", "Rosewood House - Electricity Bill"
+  date              DateTime       @db.Date
+  amount            Float
+  houseName         String?        @db.VarChar(150) // Property / House name e.g. "Rosewood House"
+  serviceSeekerId   Int?
+  serviceSeeker     ServiceSeeker? @relation(fields: [serviceSeekerId], references: [id], onDelete: SetNull)
+  description       String?        @db.Text
+  paymentMethod     String?        @db.VarChar(100) // Bank Transfer, Direct Debit, Card, Cash
+  reference         String?        @db.VarChar(150)
+  createdById       Int?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([date])
+  @@index([type])
+  @@index([category])
+  @@index([serviceSeekerId])
+}
+
+//
+// Wages Management & Clock-In-Out Integration (Point 9)
+//
+model WageRecord {
+  id                  Int                    @id @default(autoincrement())
+  userId              Int
+  user                User                   @relation("UserWages", fields: [userId], references: [id], onDelete: Cascade)
+  payPeriodStart      DateTime               @db.Date
+  payPeriodEnd        DateTime               @db.Date
+  regularHours        Float                  @default(0)
+  standbyHours        Float                  @default(0)
+  sleepingNightShifts Int                    @default(0)
+  hourlyRate          Float                  @default(0)
+  sleepingNightRate   Float                  @default(0)
+  grossPay            Float                  @default(0)
+  manualAdjustments   Float                  @default(0)
+  netPay              Float                  @default(0)
+  status              String                 @default("DRAFT") // DRAFT, APPROVED, PAID
+  notes               String?                @db.Text
+  createdById         Int?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  amendmentRequests   WageAmendmentRequest[]
+
+  @@unique([userId, payPeriodStart, payPeriodEnd])
+  @@index([userId])
+  @@index([payPeriodStart, payPeriodEnd])
+}
+
+model WageManualEntry {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  user            User      @relation("UserWageManualEntries", fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime  @db.Date
+  entryType       String    // "BONUS", "OVERTIME", "HOLIDAY_PAY", "MILEAGE", "EXPENSE", "DEDUCTION", "HOURS_ADJUSTMENT"
+  hours           Float?    @default(0)
+  amount          Float     @default(0)
+  description     String    @db.Text
+  createdById     Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([date])
+}
+
+model WageAmendmentRequest {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  user            User        @relation("UserWageAmendments", fields: [userId], references: [id], onDelete: Cascade)
+  wageRecordId    Int?
+  wageRecord      WageRecord? @relation(fields: [wageRecordId], references: [id], onDelete: SetNull)
+  shiftDate       DateTime?   @db.Date
+  requestedHours  Float?
+  requestedAmount Float?
+  reason          String      @db.Text
+  status          String      @default("PENDING") // PENDING, APPROVED, REJECTED
+  managerNotes    String?     @db.Text
+  reviewedById    Int?
+  reviewedBy      User?       @relation("ManagerWageAmendments", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt      DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+

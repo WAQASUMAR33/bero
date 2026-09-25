@@ -39,6 +39,8 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
   const [newEvalDate, setNewEvalDate] = useState('');
   const [newEvaluatorName, setNewEvaluatorName] = useState('');
   const [newEvalRecord, setNewEvalRecord] = useState('');
+  const [newServiceUserOption, setNewServiceUserOption] = useState(''); // 'READ' | 'DO_NOT_WISH' | ''
+  const [newServiceUserViews, setNewServiceUserViews] = useState('');
   const [savingEval, setSavingEval] = useState(false);
 
   useEffect(() => { 
@@ -117,6 +119,8 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
       evaluationDate: new Date().toISOString().split('T')[0],
       evaluatorName: '',
       evaluationRecord: '',
+      serviceUserOption: '',
+      serviceUserViews: '',
     });
     setShowModal(true);
   };
@@ -126,6 +130,8 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
     setNewEvalDate(new Date().toISOString().split('T')[0]);
     setNewEvaluatorName('');
     setNewEvalRecord('');
+    setNewServiceUserOption('');
+    setNewServiceUserViews('');
   };
 
   const save = async () => {
@@ -133,18 +139,26 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
     try{
       const token = localStorage.getItem('token');
       const cleanData = { ...formData };
-      const hasEval = cleanData.evaluationRecord?.trim() || cleanData.evaluatorName?.trim();
+      const hasEval = cleanData.evaluationRecord?.trim() || cleanData.evaluatorName?.trim() || cleanData.serviceUserViews?.trim() || cleanData.serviceUserOption;
+      const planTitle = `${getSupportPlanTitle(active)} Support Plan`;
       const initialEvaluations = hasEval ? [{
         id: `eval_${Date.now()}`,
         date: cleanData.evaluationDate || new Date().toISOString().split('T')[0],
         evaluatorName: cleanData.evaluatorName?.trim() || 'Staff',
         record: cleanData.evaluationRecord?.trim() || '',
+        serviceUserOption: cleanData.serviceUserOption || null,
+        serviceUserRead: cleanData.serviceUserOption === 'READ',
+        serviceUserDoNotWish: cleanData.serviceUserOption === 'DO_NOT_WISH',
+        serviceUserViews: cleanData.serviceUserViews?.trim() || '',
+        planOrAssessmentName: planTitle,
         createdAt: new Date().toISOString(),
       }] : [];
 
       delete cleanData.evaluationDate;
       delete cleanData.evaluatorName;
       delete cleanData.evaluationRecord;
+      delete cleanData.serviceUserOption;
+      delete cleanData.serviceUserViews;
 
       cleanData.evaluations = initialEvaluations;
 
@@ -173,18 +187,24 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
   const handleAddEvaluation = async () => {
     if (!viewRecord) return;
     if (!newEvalRecord.trim()) {
-      if (onNotification) onNotification({ show: true, message: 'Please enter an evaluation record.', type: 'error' });
+      if (onNotification) onNotification({ show: true, message: 'Please enter a staff evaluation record.', type: 'error' });
       return;
     }
     setSavingEval(true);
     try {
       const token = localStorage.getItem('token');
       const existingEvaluations = Array.isArray(viewRecord.data?.evaluations) ? viewRecord.data.evaluations : [];
+      const planTitle = `${getSupportPlanTitle(viewRecord.category || active)} Support Plan`;
       const newEval = {
         id: `eval_${Date.now()}`,
         date: newEvalDate || new Date().toISOString().split('T')[0],
         evaluatorName: newEvaluatorName.trim() || 'Staff',
         record: newEvalRecord.trim(),
+        serviceUserOption: newServiceUserOption || null,
+        serviceUserRead: newServiceUserOption === 'READ',
+        serviceUserDoNotWish: newServiceUserOption === 'DO_NOT_WISH',
+        serviceUserViews: newServiceUserViews.trim(),
+        planOrAssessmentName: planTitle,
         createdAt: new Date().toISOString(),
       };
       const updatedEvaluations = [...existingEvaluations, newEval];
@@ -204,6 +224,8 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
         fetchAllOutcomes();
         setNewEvalRecord('');
         setNewEvaluatorName('');
+        setNewServiceUserOption('');
+        setNewServiceUserViews('');
         setNewEvalDate(new Date().toISOString().split('T')[0]);
         if (onNotification) onNotification({ show: true, message: 'Evaluation added successfully.', type: 'success' });
       } else {
@@ -905,14 +927,15 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                 ))}
 
                 {/* Evaluation Section at the End */}
-                <div className="md:col-span-2 pt-4 mt-2 border-t-2 border-blue-100">
+                <div className="md:col-span-2 pt-4 mt-2 border-t-2 border-blue-100 space-y-4">
+                  {/* Section 1: Staff Evaluation */}
                   <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/40 border border-blue-200 rounded-xl p-5 shadow-xs">
                     <div className="flex items-center space-x-2 mb-1">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#224fa6]"></span>
-                      <h4 className="text-base font-bold text-gray-900">Evaluation</h4>
+                      <h4 className="text-base font-bold text-gray-900">Staff Evaluation</h4>
                     </div>
                     <p className="text-xs text-gray-600 mb-4">
-                      Record an evaluation for this support plan. All recorded evaluations remain visible permanently.
+                      Record the staff member's evaluation review for this support plan.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                       <div>
@@ -925,7 +948,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-1">Name of Person Completing</label>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Staff Member Completing Evaluation</label>
                         <input
                           type="text"
                           placeholder="Name of evaluator (staff / manager)"
@@ -936,13 +959,71 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Evaluation Record</label>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Staff Evaluation Record</label>
                       <textarea
                         rows={3}
-                        placeholder="Enter evaluation record, review notes, progress toward goals, or necessary updates..."
+                        placeholder="Enter staff evaluation record, review notes, progress toward goals, or necessary updates..."
                         value={formData.evaluationRecord || ''}
                         onChange={e => setFormData(prev => ({ ...prev, evaluationRecord: e.target.value }))}
                         className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 2: Service User Evaluation */}
+                  <div className="bg-gradient-to-br from-amber-50/70 to-orange-50/40 border border-amber-200 rounded-xl p-5 shadow-xs">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+                      <h4 className="text-base font-bold text-gray-900">Service User Evaluation</h4>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-4">
+                      Record the service user's participation, choices, and views regarding this evaluation.
+                    </p>
+
+                    {/* Tick boxes */}
+                    <div className="bg-white rounded-lg p-3.5 border border-amber-200/80 mb-4 space-y-2.5">
+                      <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={formData.serviceUserOption === 'READ'}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            serviceUserOption: e.target.checked ? 'READ' : ''
+                          }))}
+                          className="mt-0.5 w-4 h-4 rounded text-[#224fa6] border-gray-300 focus:ring-[#224fa6]"
+                        />
+                        <span className="text-xs font-medium text-gray-800">
+                          I have read the <strong className="text-gray-900">{getSupportPlanTitle(active)} Support Plan</strong>
+                        </span>
+                      </label>
+                      <div className="flex items-center gap-2 pl-6">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">— OR —</span>
+                      </div>
+                      <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={formData.serviceUserOption === 'DO_NOT_WISH'}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            serviceUserOption: e.target.checked ? 'DO_NOT_WISH' : ''
+                          }))}
+                          className="mt-0.5 w-4 h-4 rounded text-amber-600 border-gray-300 focus:ring-amber-500"
+                        />
+                        <span className="text-xs font-medium text-gray-800">
+                          I do not wish to be involved in this evaluation
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Box for Service User views */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Service User's Views</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Record service user's views, comments, feelings, or choices regarding this evaluation..."
+                        value={formData.serviceUserViews || ''}
+                        onChange={e => setFormData(prev => ({ ...prev, serviceUserViews: e.target.value }))}
+                        className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
@@ -1120,7 +1201,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
               <div className="space-y-4">
                 {viewRecord.data && typeof viewRecord.data === 'object' ? (
                   Object.entries(viewRecord.data)
-                    .filter(([k]) => k !== 'evaluations' && k !== 'evaluationDate' && k !== 'evaluatorName' && k !== 'evaluationRecord')
+                    .filter(([k]) => k !== 'evaluations' && k !== 'evaluationDate' && k !== 'evaluatorName' && k !== 'evaluationRecord' && k !== 'serviceUserOption' && k !== 'serviceUserViews')
                     .map(([k, v]) => {
                       const fieldDef = fieldsForActive.find(f => f.key === k);
                       const label = fieldDef?.label || k;
@@ -1158,70 +1239,183 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                   </div>
                 ) : (
                   <div className="space-y-3 mb-6">
-                    {viewRecord.data.evaluations.map((ev, idx) => (
-                      <div key={ev.id || idx} className="bg-gradient-to-r from-blue-50/60 to-indigo-50/30 border border-blue-200 rounded-xl p-4 shadow-xs">
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-blue-100">
-                          <div className="flex items-center space-x-2.5">
+                    {viewRecord.data.evaluations.map((ev, idx) => {
+                      const itemPlanName = ev.planOrAssessmentName || `${getSupportPlanTitle(viewRecord.category || active)} Support Plan`;
+                      return (
+                        <div key={ev.id || idx} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xs">
+                          {/* Evaluation Card Header */}
+                          <div className="bg-gradient-to-r from-slate-100 to-gray-100 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-200">
                             <span className="px-2.5 py-0.5 rounded-md bg-[#224fa6] text-white text-xs font-bold">
                               Evaluation #{idx + 1}
                             </span>
-                            <span className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
-                              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                              {ev.evaluatorName || 'Staff'}
+                            <span className="text-xs font-medium text-gray-700 flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                              Recorded: {formatDate(ev.date)}
                             </span>
                           </div>
-                          <span className="text-xs font-medium text-gray-700 flex items-center gap-1 bg-white px-2.5 py-1 rounded-md border border-gray-200 shadow-xs">
-                            <svg className="w-3.5 h-3.5 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            {formatDate(ev.date)}
-                          </span>
+
+                          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Part 1: Staff Evaluation */}
+                            <div className="bg-blue-50/50 rounded-xl p-3.5 border border-blue-100 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between pb-2 mb-2 border-b border-blue-100">
+                                  <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5 uppercase tracking-wide">
+                                    <span>👤</span> Staff Evaluation
+                                  </span>
+                                  <span className="text-xs text-gray-700 font-semibold bg-white px-2 py-0.5 rounded border border-blue-200">
+                                    {ev.evaluatorName || 'Staff'}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed">
+                                  {ev.record || '—'}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Part 2: Service User Evaluation */}
+                            <div className="bg-amber-50/50 rounded-xl p-3.5 border border-amber-100 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between pb-2 mb-2 border-b border-amber-100">
+                                  <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wide">
+                                    <span>🤝</span> Service User Evaluation
+                                  </span>
+                                </div>
+                                {/* Participation status */}
+                                <div className="mb-2">
+                                  {ev.serviceUserOption === 'READ' || ev.serviceUserRead ? (
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                      <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                      I have read the {itemPlanName}
+                                    </span>
+                                  ) : ev.serviceUserOption === 'DO_NOT_WISH' || ev.serviceUserDoNotWish ? (
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                                      <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                                      I do not wish to be involved in this evaluation
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center text-[11px] text-gray-500 italic">
+                                      No participation selection recorded
+                                    </span>
+                                  )}
+                                </div>
+                                {/* Views */}
+                                <div>
+                                  <span className="text-[11px] font-semibold text-gray-600 block mb-0.5">Service User's Views:</span>
+                                  <p className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed bg-white/70 p-2 rounded-lg border border-amber-100/80">
+                                    {ev.serviceUserViews || <span className="italic text-gray-400">No views recorded</span>}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{ev.record}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
                 {/* Add Evaluation Box */}
-                <div className="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-xs">
-                  <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-1.5">
-                    <svg className="w-4 h-4 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Record New Evaluation
-                  </h5>
-                  <p className="text-xs text-gray-500 mb-4">Add a new evaluation review to this support plan. It will be recorded alongside existing evaluations.</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Date of Evaluation *</label>
-                      <input
-                        type="date"
-                        value={newEvalDate}
-                        onChange={e => setNewEvalDate(e.target.value)}
-                        className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
-                      />
+                <div className="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-xs space-y-4">
+                  <div>
+                    <h5 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                      <svg className="w-4 h-4 text-[#224fa6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Record New Evaluation
+                    </h5>
+                    <p className="text-xs text-gray-500 mt-0.5">Add a new evaluation review to this support plan. It will be recorded alongside existing evaluations.</p>
+                  </div>
+
+                  {/* Section 1: Staff Evaluation */}
+                  <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2 h-2 rounded-full bg-[#224fa6]"></span>
+                      <h6 className="text-xs font-bold text-blue-900 uppercase tracking-wide">Staff Evaluation</h6>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Date of Evaluation *</label>
+                        <input
+                          type="date"
+                          value={newEvalDate}
+                          onChange={e => setNewEvalDate(e.target.value)}
+                          className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Staff Member Completing *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Registered Manager / Staff Name"
+                          value={newEvaluatorName}
+                          onChange={e => setNewEvaluatorName(e.target.value)}
+                          className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Name of Person Completing *</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Registered Manager / Staff Name"
-                        value={newEvaluatorName}
-                        onChange={e => setNewEvaluatorName(e.target.value)}
-                        className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Staff Evaluation Record *</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Record staff evaluation notes, progress towards outcomes, review observations, or necessary updates..."
+                        value={newEvalRecord}
+                        onChange={e => setNewEvalRecord(e.target.value)}
+                        className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
-                  <div className="mb-3">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Evaluation Record *</label>
-                    <textarea
-                      rows={3}
-                      placeholder="Record progress towards outcomes, review observations, effectiveness of support plan, or any necessary updates..."
-                      value={newEvalRecord}
-                      onChange={e => setNewEvalRecord(e.target.value)}
-                      className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:ring-2 focus:ring-[#224fa6] focus:border-transparent transition-all"
-                    />
+
+                  {/* Section 2: Service User Evaluation */}
+                  <div className="bg-amber-50/50 border border-amber-200 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-600"></span>
+                      <h6 className="text-xs font-bold text-amber-900 uppercase tracking-wide">Service User Evaluation</h6>
+                    </div>
+                    <p className="text-[11px] text-gray-600">Record service user involvement, acknowledgement, and feedback for this evaluation.</p>
+
+                    {/* Tick Boxes */}
+                    <div className="bg-white rounded-lg p-3 border border-amber-200/80 space-y-2.5">
+                      <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={newServiceUserOption === 'READ'}
+                          onChange={(e) => setNewServiceUserOption(e.target.checked ? 'READ' : '')}
+                          className="mt-0.5 w-4 h-4 rounded text-[#224fa6] border-gray-300 focus:ring-[#224fa6]"
+                        />
+                        <span className="text-xs font-medium text-gray-800">
+                          I have read the <strong className="text-gray-900">{getSupportPlanTitle(viewRecord.category || active)} Support Plan</strong>
+                        </span>
+                      </label>
+                      <div className="flex items-center gap-2 pl-6">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">— OR —</span>
+                      </div>
+                      <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={newServiceUserOption === 'DO_NOT_WISH'}
+                          onChange={(e) => setNewServiceUserOption(e.target.checked ? 'DO_NOT_WISH' : '')}
+                          className="mt-0.5 w-4 h-4 rounded text-amber-600 border-gray-300 focus:ring-amber-500"
+                        />
+                        <span className="text-xs font-medium text-gray-800">
+                          I do not wish to be involved in this evaluation
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Box for Service User views */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Service User's Views</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Record service user's views, comments, feelings, or choices regarding this evaluation..."
+                        value={newServiceUserViews}
+                        onChange={e => setNewServiceUserViews(e.target.value)}
+                        className="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                      />
+                    </div>
                   </div>
-                  <div className="flex justify-end">
+
+                  <div className="flex justify-end pt-1">
                     <button
                       type="button"
                       onClick={handleAddEvaluation}

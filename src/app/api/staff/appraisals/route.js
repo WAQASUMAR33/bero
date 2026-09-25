@@ -112,16 +112,26 @@ export async function POST(request) {
       notes
     } = body;
 
-    if (!userId || !dueDate) {
-      return NextResponse.json({ error: 'Staff member (userId) and Due Date are required.' }, { status: 400 });
+    if (!userId) {
+      return NextResponse.json({ error: 'Staff member (userId) is required.' }, { status: 400 });
+    }
+
+    const parsedLastAppraisalDate = parseDate(lastAppraisalDate);
+    let parsedDueDate = parseDate(dueDate);
+
+    // Auto-calculate annual appraisal due date (1 year) if omitted
+    if (!parsedDueDate) {
+      const baseDate = parsedLastAppraisalDate || new Date();
+      parsedDueDate = new Date(baseDate);
+      parsedDueDate.setFullYear(parsedDueDate.getFullYear() + 1);
     }
 
     const appraisal = await prisma.staffAppraisal.create({
       data: {
         userId: parseInt(userId),
         appraiserId: appraiserId ? parseInt(appraiserId) : currentUser.id,
-        lastAppraisalDate: parseDate(lastAppraisalDate),
-        dueDate: parseDate(dueDate),
+        lastAppraisalDate: parsedLastAppraisalDate,
+        dueDate: parsedDueDate,
         status: status || 'PENDING',
         rating: rating || null,
         feedback: feedback || null,

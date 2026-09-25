@@ -150,7 +150,10 @@ export function hasPermission(user, permission) {
     'users.delete',
     'users.manage',
     'staff.manage',
-    'roles.manage'
+    'roles.manage',
+    'wages.manage',
+    'wages.view_all',
+    'finance.manage'
   ];
 
   if (managerOnlyPermissions.includes(permission)) {

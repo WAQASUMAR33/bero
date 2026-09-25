@@ -2,13 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import StaffFileModal from '@/app/admin/components/StaffFileModal';
 
 export default function ProfilePage() {
     const fileInputRef = useRef(null);
+    const router = useRouter();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [uploading, setUploading] = useState(false);
+    const [showStaffFileModal, setShowStaffFileModal] = useState(false);
 
     useEffect(() => {
         fetchProfile();
@@ -220,6 +224,37 @@ export default function ProfilePage() {
                 </div>
             </div>
 
+            {/* Staff File & Compliance Actions Card */}
+            <div className="bg-gradient-to-r from-[#1a3a75] to-[#224fa6] rounded-2xl shadow-sm p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                        <span>📋</span> My Official Staff File & Records
+                    </h3>
+                    <p className="text-blue-100 text-xs mt-1 max-w-xl">
+                        View your full employment records including DBS & Compliance, Supervisions, Appraisals, Probation, Sponsorship status, Driving information, PDPs, and Wage statements.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                        onClick={() => setShowStaffFileModal(true)}
+                        className="px-4 py-2.5 bg-white text-[#1a3a75] hover:bg-blue-50 font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span>View Staff File</span>
+                    </button>
+                    <Link
+                        href="/care-worker/wages"
+                        className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition-all flex items-center gap-2"
+                    >
+                        <span>💰</span>
+                        <span>My Wages</span>
+                    </Link>
+                </div>
+            </div>
+
             {/* Emergency Contact */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -236,6 +271,17 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </div>
+
+            {/* Complete Staff File Modal (Read-only for care worker) */}
+            {showStaffFileModal && (
+                <StaffFileModal
+                    isOpen={showStaffFileModal}
+                    onClose={() => setShowStaffFileModal(false)}
+                    staffId={user.id}
+                    currentUser={user}
+                    onDataUpdated={fetchProfile}
+                />
+            )}
         </div>
     );
 }

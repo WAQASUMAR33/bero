@@ -117,12 +117,21 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Staff member (userId) and Supervision Date are required.' }, { status: 400 });
     }
 
+    const parsedSupervisionDate = parseDate(supervisionDate);
+    let parsedNextDueDate = parseDate(nextDueDate);
+
+    // Auto-calculate standard 8-week (56-day) supervision cycle if nextDueDate is omitted
+    if (!parsedNextDueDate && parsedSupervisionDate) {
+      parsedNextDueDate = new Date(parsedSupervisionDate);
+      parsedNextDueDate.setDate(parsedNextDueDate.getDate() + 56);
+    }
+
     const supervision = await prisma.staffSupervision.create({
       data: {
         userId: parseInt(userId),
         supervisorId: supervisorId ? parseInt(supervisorId) : currentUser.id,
-        supervisionDate: parseDate(supervisionDate),
-        nextDueDate: parseDate(nextDueDate),
+        supervisionDate: parsedSupervisionDate,
+        nextDueDate: parsedNextDueDate,
         status: status || 'COMPLETED',
         type: type || 'Regular',
         discussionNotes: discussionNotes || null,

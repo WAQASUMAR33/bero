@@ -71,12 +71,20 @@ export async function GET(request) {
   }
 }
 
-// POST /api/staff/pdps
+// POST /api/staff/pdps - Only management can create PDPs
 export async function POST(request) {
   try {
     const currentUser = await getCurrentUser(request);
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Permission check: Only management can create Personal Development Plans
+    if (!isManager(currentUser)) {
+      return NextResponse.json(
+        { error: 'Forbidden: Only management can create Personal Development Plans (PDPs). Staff can view their PDPs in read-only mode.' },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
@@ -92,11 +100,6 @@ export async function POST(request) {
     } = body;
 
     const targetUserId = userId ? parseInt(userId) : currentUser.id;
-
-    // Non-managers can only create PDP for themselves
-    if (!isManager(currentUser) && currentUser.id !== targetUserId) {
-      return NextResponse.json({ error: 'Forbidden: You can only create PDP objectives for yourself.' }, { status: 403 });
-    }
 
     if (!area) {
       return NextResponse.json({ error: 'Development Area is required.' }, { status: 400 });
@@ -127,12 +130,20 @@ export async function POST(request) {
   }
 }
 
-// PUT /api/staff/pdps
+// PUT /api/staff/pdps - Only management can amend PDPs
 export async function PUT(request) {
   try {
     const currentUser = await getCurrentUser(request);
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Permission check: Only management can amend Personal Development Plans
+    if (!isManager(currentUser)) {
+      return NextResponse.json(
+        { error: 'Forbidden: Only management can amend Personal Development Plans (PDPs). Staff cannot alter their PDP records.' },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
@@ -158,10 +169,6 @@ export async function PUT(request) {
 
     if (!existing) {
       return NextResponse.json({ error: 'PDP record not found.' }, { status: 404 });
-    }
-
-    if (!isManager(currentUser) && currentUser.id !== existing.userId) {
-      return NextResponse.json({ error: 'Forbidden: You can only update your own PDP record.' }, { status: 403 });
     }
 
     const updateData = {};
@@ -196,12 +203,20 @@ export async function PUT(request) {
   }
 }
 
-// DELETE /api/staff/pdps
+// DELETE /api/staff/pdps - Only management can delete PDPs
 export async function DELETE(request) {
   try {
     const currentUser = await getCurrentUser(request);
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Permission check: Only management can delete Personal Development Plans
+    if (!isManager(currentUser)) {
+      return NextResponse.json(
+        { error: 'Forbidden: Only management can delete Personal Development Plans (PDPs).' },
+        { status: 403 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -217,10 +232,6 @@ export async function DELETE(request) {
 
     if (!existing) {
       return NextResponse.json({ error: 'PDP record not found.' }, { status: 404 });
-    }
-
-    if (!isManager(currentUser) && currentUser.id !== existing.userId) {
-      return NextResponse.json({ error: 'Forbidden: You can only delete your own PDP record.' }, { status: 403 });
     }
 
     await prisma.staffPdp.delete({

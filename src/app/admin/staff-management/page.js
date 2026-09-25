@@ -953,17 +953,14 @@ export default function StaffManagementPage() {
                     <span>📋 Overview</span>
                   </button>
                   <button
-                    onClick={() => setActiveTableView('driving')}
+                    onClick={() => setActiveTableView('employment')}
                     className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
-                      activeTableView === 'driving'
+                      activeTableView === 'employment'
                         ? 'bg-[#224fa6] text-white shadow-md'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                     }`}
                   >
-                    <span>🚗 Driving Details</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTableView === 'driving' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}`}>
-                      {displayedStaff.filter(s => s.drivingLicenceValid || s.ownCar).length}
-                    </span>
+                    <span>💼 Employment & Pay</span>
                   </button>
                   <button
                     onClick={() => setActiveTableView('compliance')}
@@ -987,6 +984,29 @@ export default function StaffManagementPage() {
                         }).length} Alert
                       </span>
                     )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTableView('driving')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      activeTableView === 'driving'
+                        ? 'bg-[#224fa6] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                    }`}
+                  >
+                    <span>🚗 Driving Details</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTableView === 'driving' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                      {displayedStaff.filter(s => s.drivingLicenceValid || s.ownCar).length}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTableView('health')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      activeTableView === 'health'
+                        ? 'bg-[#224fa6] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                    }`}
+                  >
+                    <span>🏥 Health, NOK & GP</span>
                   </button>
                 </div>
                 <div className="text-xs text-gray-500 flex items-center space-x-3">
@@ -1012,6 +1032,16 @@ export default function StaffManagementPage() {
                             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                           </>
                         )}
+                        {activeTableView === 'employment' && (
+                          <>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Hours PW</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rate of Pay</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Sleeping Nights</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Salary</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Start Date</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Leave / Reason</th>
+                          </>
+                        )}
                         {activeTableView === 'driving' && (
                           <>
                             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Valid Licence</th>
@@ -1031,13 +1061,23 @@ export default function StaffManagementPage() {
                             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Visa Expiry Status</th>
                           </>
                         )}
+                        {activeTableView === 'health' && (
+                          <>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Next of Kin</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Emergency Phone</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Allergies</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Vaccination</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Prescriptions</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">GP Details</th>
+                          </>
+                        )}
                         <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {filteredStaff.length === 0 ? (
                         <tr>
-                          <td colSpan={activeTableView === 'overview' ? 7 : activeTableView === 'driving' ? 8 : 7} className="px-6 py-12 text-center text-gray-500">
+                          <td colSpan={activeTableView === 'driving' ? 8 : activeTableView === 'employment' ? 8 : activeTableView === 'health' ? 8 : 7} className="px-6 py-12 text-center text-gray-500">
                             <div className="flex flex-col items-center justify-center">
                               <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.146-1.283-.423-1.848M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.146-1.283.423-1.848m0 0A9.002 9.002 0 0112 9m6.003 9c-.52-.746-1.229-1.38-2.06-1.896m2.06 1.896a3 3 0 00-5.356-1.857M12 12a3 3 0 100-6 3 3 0 000 6z" />
@@ -1136,6 +1176,42 @@ export default function StaffManagementPage() {
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(member.status)}`}>
                                       {member.status}
                                     </span>
+                                  </td>
+                                </>
+                              )}
+
+                              {/* EMPLOYMENT VIEW */}
+                              {activeTableView === 'employment' && (
+                                <>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    {member.contractedHours ? `${member.contractedHours} hrs/wk` : <span className="text-gray-400">—</span>}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">
+                                    {member.rateOfPay ? `£${Number(member.rateOfPay).toFixed(2)}/hr` : <span className="text-gray-400 font-normal">—</span>}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    {member.sleepingNights ? (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        ✓ Yes {member.costForSleepingNights ? `(£${Number(member.costForSleepingNights).toFixed(2)})` : ''}
+                                      </span>
+                                    ) : (
+                                      <span className="text-gray-400 text-xs">✗ No</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                                    {member.salary ? `£${Number(member.salary).toLocaleString()}` : <span className="text-gray-400 font-normal">—</span>}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-700">
+                                    {member.startDate ? new Date(member.startDate).toLocaleDateString() : <span className="text-gray-400">—</span>}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                                    {member.leaveDate ? (
+                                      <span className="text-red-700 font-medium">Left: {new Date(member.leaveDate).toLocaleDateString()}</span>
+                                    ) : member.reasonForLeaving ? (
+                                      <span>{member.reasonForLeaving}</span>
+                                    ) : (
+                                      <span className="text-gray-400">—</span>
+                                    )}
                                   </td>
                                 </>
                               )}
@@ -1259,6 +1335,45 @@ export default function StaffManagementPage() {
                                         </span>
                                       )}
                                     </div>
+                                  </td>
+                                </>
+                              )}
+
+                              {/* HEALTH & GP VIEW */}
+                              {activeTableView === 'health' && (
+                                <>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    {member.emergencyName ? (
+                                      <div>
+                                        <div className="font-medium text-gray-900">{member.emergencyName}</div>
+                                        {member.nokRelationship && <div className="text-xs text-gray-500">Rel: {member.nokRelationship}</div>}
+                                      </div>
+                                    ) : <span className="text-gray-400">—</span>}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono text-xs">
+                                    {member.emergencyContact || <span className="text-gray-400 font-sans">—</span>}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-xs">
+                                    {member.allergyStatus === 'Allergies' || member.allergies ? (
+                                      <span className="px-2 py-0.5 rounded bg-red-50 text-red-700 font-medium border border-red-200" title={member.allergies || 'Allergies noted'}>
+                                        ⚠️ {member.allergies ? (member.allergies.length > 20 ? member.allergies.substring(0, 20) + '...' : member.allergies) : 'Allergies'}
+                                      </span>
+                                    ) : (
+                                      <span className="text-gray-500">{member.allergyStatus || 'None'}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-700">
+                                    {member.vaccinationStatus || <span className="text-gray-400">—</span>}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-xs">
+                                    {member.paysForPrescriptions ? (
+                                      <span className="text-amber-700 font-medium">Pays Charges</span>
+                                    ) : (
+                                      <span className="text-emerald-700 font-medium">Exempt / No</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600 max-w-xs truncate" title={member.gpDetails || ''}>
+                                    {member.gpDetails || <span className="text-gray-400">—</span>}
                                   </td>
                                 </>
                               )}

@@ -323,6 +323,18 @@ export default function Sidebar({ user }) {
       ],
     },
     {
+      id: 'accidents-incidents',
+      name: 'Accidents & Incidents',
+      permission: 'daily-tasks.manage',
+      path: '/admin/incidents',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      ),
+      hasArrow: false,
+    },
+    {
       id: 'quality-assurance',
       name: 'Quality Assurance',
       permission: 'quality-assurance.view',
@@ -378,6 +390,86 @@ export default function Sidebar({ user }) {
       ],
     },
     {
+      id: 'finances',
+      name: 'Finances & P&L',
+      permission: 'finance.view',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      hasArrow: true,
+      subItems: [
+        {
+          id: 'finances-hub',
+          name: 'Finances Dashboard',
+          permission: 'finance.view',
+          path: '/admin/finances',
+        },
+        {
+          id: 'finances-pnl',
+          name: 'P&L Statement',
+          permission: 'finance.view',
+          path: '/admin/finances?tab=pnl',
+        },
+        {
+          id: 'finances-service-users',
+          name: 'Service User Finances',
+          permission: 'finance.view',
+          path: '/admin/finances?tab=service-users',
+        },
+        {
+          id: 'finances-transactions',
+          name: 'Manual Journal & Entries',
+          permission: 'finance.view',
+          path: '/admin/finances?tab=transactions',
+        },
+        {
+          id: 'finances-analytics',
+          name: 'Performance Trends',
+          permission: 'finance.view',
+          path: '/admin/finances?tab=analytics',
+        },
+      ],
+    },
+    {
+      id: 'wages',
+      name: 'Wages & Timesheets',
+      permission: 'wages.view_all',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      ),
+      hasArrow: true,
+      subItems: [
+        {
+          id: 'wages-hub',
+          name: 'Payroll Overview',
+          permission: 'wages.view_all',
+          path: '/admin/wages',
+        },
+        {
+          id: 'wages-clock-in',
+          name: 'Clock-In Hours',
+          permission: 'wages.view_all',
+          path: '/admin/wages?tab=clock-in',
+        },
+        {
+          id: 'wages-manual',
+          name: 'Manual Adjustments',
+          permission: 'wages.view_all',
+          path: '/admin/wages?tab=manual',
+        },
+        {
+          id: 'wages-amendments',
+          name: 'Amendment Requests',
+          permission: 'wages.view_all',
+          path: '/admin/wages?tab=amendments',
+        },
+      ],
+    },
+    {
       id: 'governance',
       name: 'Governance & Trackers',
       permission: 'governance.view',
@@ -417,6 +509,12 @@ export default function Sidebar({ user }) {
           name: 'SAR Tracker',
           permission: 'governance.view',
           path: '/admin/governance/subject-access-requests',
+        },
+        {
+          id: 'accidents-tracker',
+          name: 'Accidents & Falls Log',
+          permission: 'governance.view',
+          path: '/admin/incidents',
         },
       ],
     },
@@ -520,10 +618,14 @@ export default function Sidebar({ user }) {
 
   // Filter menu items based on user permissions (with permission inheritance)
   const allPermissions = getAllUserPermissions(user);
-  const adminRoles = ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'];
+  const adminRoles = ['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER', 'DEPUTY_MANAGER', 'BUSINESS_DEVELOPMENT_MANAGER', 'SERVICE_LEAD'];
   const isAdminRole = adminRoles.includes(user?.role?.name);
 
   const menuItems = allMenuItems.filter(item => {
+    // Only management and Admin will need to be able to see Finances and Wages oversight
+    if (item.id === 'finances' || item.id === 'wages') {
+      return isAdminRole || user?.role?.name === 'ADMIN';
+    }
     // Emergency reports visible to admin roles
     if (item.id === 'emergency-reports') {
       return isAdminRole || allPermissions.includes(item.permission);

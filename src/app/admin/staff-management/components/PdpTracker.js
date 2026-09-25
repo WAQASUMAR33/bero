@@ -62,6 +62,10 @@ export default function PdpTracker({ currentUser, onViewStaff }) {
 
   const handleSavePdp = async (e) => {
     e.preventDefault();
+    if (!isUserManager) {
+      alert('Permission Denied: Only management can create PDP records.');
+      return;
+    }
     if (!selectedStaffId) return;
     setIsSubmitting(true);
     try {
@@ -96,6 +100,10 @@ export default function PdpTracker({ currentUser, onViewStaff }) {
   };
 
   const handleToggleStatus = async (pdpId, currentProgress) => {
+    if (!isUserManager) {
+      alert('Permission Denied: Only management can amend PDP records.');
+      return;
+    }
     const nextProgress = currentProgress === 'COMPLETED' ? 'IN_PROGRESS' : 'COMPLETED';
     try {
       const token = localStorage.getItem('token');
@@ -133,15 +141,24 @@ export default function PdpTracker({ currentUser, onViewStaff }) {
           <h2 className="text-xl font-bold text-gray-900 tracking-tight">Personal Development Plans (PDP) Tracker</h2>
           <p className="text-xs text-gray-500 mt-1">Collation of identified staff development areas, routes, target dates, and completion progress</p>
         </div>
-        <button
-          onClick={() => setShowLogModal(true)}
-          className="px-4 py-2.5 bg-[#224fa6] hover:bg-[#1a3a75] text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center gap-2 self-start sm:self-auto"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Add Development Goal</span>
-        </button>
+        {isUserManager ? (
+          <button
+            onClick={() => setShowLogModal(true)}
+            className="px-4 py-2.5 bg-[#224fa6] hover:bg-[#1a3a75] text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center gap-2 self-start sm:self-auto"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add Development Goal</span>
+          </button>
+        ) : (
+          <span className="text-xs text-gray-500 bg-gray-100 px-3 py-2 rounded-xl border border-gray-200 flex items-center gap-1.5 font-medium">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            Read-Only (Managed by Management)
+          </span>
+        )}
       </div>
 
       {/* KPI METRIC CARDS */}
@@ -294,15 +311,17 @@ export default function PdpTracker({ currentUser, onViewStaff }) {
                         {p.notes || '—'}
                       </td>
                       <td className="py-3.5 px-4 text-right space-x-1.5">
-                        <button
-                          onClick={() => handleToggleStatus(p.id, p.progress)}
-                          className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-all ${
-                            isCompleted ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'
-                          }`}
-                          title="Toggle Status"
-                        >
-                          {isCompleted ? 'Reopen' : 'Mark Done'}
-                        </button>
+                        {isUserManager && (
+                          <button
+                            onClick={() => handleToggleStatus(p.id, p.progress)}
+                            className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-all ${
+                              isCompleted ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'
+                            }`}
+                            title="Toggle Status"
+                          >
+                            {isCompleted ? 'Reopen' : 'Mark Done'}
+                          </button>
+                        )}
                         <button
                           onClick={() => onViewStaff(p.userId)}
                           className="px-2.5 py-1 bg-gray-100 hover:bg-[#224fa6] hover:text-white rounded text-[11px] font-semibold text-gray-700 transition-all"

@@ -26,10 +26,12 @@ import OutcomesForm from '../../components/OutcomesForm';
 import RiskAssessmentsForm from '../../components/RiskAssessmentsForm';
 import CommunicationLogsForm from '../../components/CommunicationLogsForm';
 import SafeguardingForm from '../../components/SafeguardingForm';
+import ServiceUserIncidentsCard from '../../components/ServiceUserIncidentsCard';
 import FeedbackForms from '../../components/FeedbackForms';
 import MarReviewsForm from '../../components/MarReviewsForm';
 import PersonalPropertyForm from '../../components/PersonalPropertyForm';
 import ExternalLoginsForm from '../../components/ExternalLoginsForm';
+import ServiceUserFinancesCard from '../../components/ServiceUserFinancesCard';
 import AllowanceForm from '../../components/AllowanceForm';
 import SocialVisitInstructionsForm from '../../components/SocialVisitInstructionsForm';
 import MedicineForm from '../../components/MedicineForm';
@@ -1206,6 +1208,12 @@ export default function AdmissionPage() {
             onNotification={setNotification}
           />
 
+          <ServiceUserIncidentsCard
+            serviceSeekerId={serviceSeekerId}
+            serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
+            onNotification={setNotification}
+          />
+
           <FeedbackForms
             serviceSeekerId={serviceSeekerId}
             serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
@@ -1226,6 +1234,12 @@ export default function AdmissionPage() {
 
           <ExternalLoginsForm
             serviceSeekerId={serviceSeekerId}
+            onNotification={setNotification}
+          />
+
+          <ServiceUserFinancesCard
+            serviceSeekerId={serviceSeekerId}
+            serviceUserName={seeker ? `${seeker.firstName} ${seeker.lastName}` : ''}
             onNotification={setNotification}
           />
 

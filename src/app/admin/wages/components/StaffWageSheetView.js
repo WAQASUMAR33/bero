@@ -86,23 +86,23 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-100">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#173a7a] to-[#224fa6] text-white flex items-center justify-center text-xl font-bold shadow-md">
-              {user.name.split(' ').map(n => n[0]).join('')}
+              {(user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Staff').split(' ').filter(Boolean).map(n => n[0]).join('')}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-gray-900">{user.name}</h3>
+                <h3 className="text-xl font-bold text-gray-900">{user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Staff Member'}</h3>
                 <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#173a7a] text-xs font-bold border border-blue-200">
-                  {user.role}
+                  {typeof user?.role === 'string' ? user.role : user?.role?.displayName || user?.role?.name || 'Staff'}
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-3">
-                <span>Employee ID: <strong>{user.employeeNumber}</strong></span>
+                <span>Employee ID: <strong>{user?.employeeNumber || `EMP-${user?.id}`}</strong></span>
                 <span>•</span>
-                <span>Base Rate: <strong>£{user.rateOfPay.toFixed(2)}/hr</strong></span>
+                <span>Base Rate: <strong>£{(user?.rateOfPay != null ? Number(user.rateOfPay) : 12.5).toFixed(2)}/hr</strong></span>
                 <span>•</span>
-                <span>Contracted: <strong>{user.contractedHours} hrs/wk</strong></span>
+                <span>Contracted: <strong>{user?.contractedHours || 0} hrs/wk</strong></span>
                 <span>•</span>
-                <span>Sleeping Night: <strong>£{user.costForSleepingNights.toFixed(2)}/shift</strong></span>
+                <span>Sleeping Night: <strong>£{(user?.costForSleepingNights != null ? Number(user.costForSleepingNights) : 45).toFixed(2)}/shift</strong></span>
               </p>
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
           }`}
         >
           <Clock className="w-4 h-4" />
-          <span>Clock In/Out Timesheet ({detailedShifts.length})</span>
+          <span>Rota & Clock-In Timesheet ({detailedShifts.length})</span>
         </button>
 
         <button
@@ -241,9 +241,9 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
         <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
           <div className="p-4 border-b border-gray-100 flex items-center justify-between">
             <h4 className="font-bold text-xs uppercase tracking-wider text-gray-700">
-              Clock-In System Data ({detailedShifts.length} Shifts)
+              Attended Rota & Clock-In Hours ({detailedShifts.length} Shifts)
             </h4>
-            <span className="text-xs text-gray-500 font-medium">Pulled automatically from mobile & terminal clock-in</span>
+            <span className="text-xs text-gray-500 font-medium">Automatically calculated from rota shift assignments and live clock-in timestamps</span>
           </div>
 
           {detailedShifts.length === 0 ? (
@@ -267,8 +267,17 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
                 <tbody className="divide-y divide-gray-100 font-medium text-gray-800">
                   {detailedShifts.map((shift) => {
                     const shiftDate = new Date(shift.date);
-                    const clockIn = shift.clockInTime ? new Date(shift.clockInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
-                    const clockOut = shift.clockOutTime ? new Date(shift.clockOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
+                    const formatShiftTime = (timeStr) => {
+                      if (!timeStr) return '-';
+                      if (typeof timeStr === 'string' && timeStr.length <= 8 && timeStr.includes(':') && !timeStr.includes('T')) {
+                        return timeStr.slice(0, 5);
+                      }
+                      const d = new Date(timeStr);
+                      return isNaN(d.getTime()) ? timeStr : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    };
+
+                    const clockIn = formatShiftTime(shift.clockInTime);
+                    const clockOut = formatShiftTime(shift.clockOutTime);
 
                     return (
                       <tr key={shift.id} className="hover:bg-blue-50/30 transition-colors">
@@ -277,7 +286,9 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            shift.workType === 'STANDBY' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-blue-50 text-[#173a7a] border border-blue-200'
+                            shift.workType === 'STANDBY' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                            shift.workType === 'SLEEP_IN' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
+                            'bg-blue-50 text-[#173a7a] border border-blue-200'
                           }`}>
                             {shift.workType}
                           </span>
@@ -291,12 +302,16 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
                           {shift.serviceUser || 'Assigned Property'}
                         </td>
                         <td className="py-3 px-4 text-center whitespace-nowrap">
-                          {shift.isLate ? (
+                          {shift.source === 'ROTA_SCHEDULED' ? (
+                            <span className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 text-[10px] font-bold border border-purple-200">
+                              Rota Shift
+                            </span>
+                          ) : shift.isLate ? (
                             <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-[10px] font-bold">Late In</span>
                           ) : shift.isEarly ? (
                             <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold">Early Out</span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">On Time</span>
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">Clock-In</span>
                           )}
                         </td>
                       </tr>

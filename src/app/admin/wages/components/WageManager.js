@@ -210,7 +210,7 @@ export default function WageManager({ title = 'Wages & Timesheets Oversight' }) 
 
   const navTabs = [
     { id: 'overview', label: 'Payroll Overview', icon: Users, badge: `${wageSheets.length} Staff` },
-    { id: 'clock-in', label: 'Clock-In Hours', icon: Clock },
+    { id: 'clock-in', label: 'Rota & Clock-In Hours', icon: Clock },
     { id: 'manual', label: 'Manual Adjustments', icon: DollarSign, badge: `${allManualEntries.length}` },
     { id: 'amendments', label: 'Amendment Requests', icon: FileText, badge: totalStats.pendingAmendments > 0 ? `${totalStats.pendingAmendments} Due` : null, badgeColor: 'bg-amber-500 text-white' },
   ];

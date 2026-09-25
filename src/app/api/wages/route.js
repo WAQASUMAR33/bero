@@ -78,7 +78,7 @@ export async function GET(request) {
         const defaultRate = parseFloat(u.rateOfPay) || 12.50;
         const defaultNightRate = parseFloat(u.costForSleepingNights) || 45.00;
 
-        // 1. Fetch Clock-in-outs
+        // 1. Fetch Clock-in-outs (Live mobile & terminal attendance records)
         const clockRecords = await prisma.clockInOut.findMany({
           where: {
             userId: u.id,
@@ -90,7 +90,11 @@ export async function GET(request) {
           include: {
             shiftAssignment: {
               include: {
-                shift: true
+                shift: {
+                  include: {
+                    shiftType: true
+                  }
+                }
               }
             },
             serviceSeeker: {
@@ -100,7 +104,30 @@ export async function GET(request) {
           orderBy: { date: 'desc' }
         });
 
-        // 2. Fetch Manual Entries
+        // 2. Fetch Rota Shift Assignments (Scheduled & attended rota hours)
+        const rotaAssignments = await prisma.shiftAssignment.findMany({
+          where: {
+            userId: u.id,
+            date: {
+              gte: startDate,
+              lte: endDate
+            }
+          },
+          include: {
+            shift: {
+              include: {
+                shiftType: true,
+                serviceSeeker: {
+                  select: { firstName: true, lastName: true }
+                }
+              }
+            },
+            clockInOuts: true
+          },
+          orderBy: { date: 'desc' }
+        });
+
+        // 3. Fetch Manual Entries
         const manualEntries = await prisma.wageManualEntry.findMany({
           where: {
             userId: u.id,
@@ -112,7 +139,7 @@ export async function GET(request) {
           orderBy: { date: 'desc' }
         });
 
-        // 3. Fetch Amendment Requests
+        // 4. Fetch Amendment Requests
         const amendmentRequests = await prisma.wageAmendmentRequest.findMany({
           where: {
             userId: u.id,
@@ -124,32 +151,36 @@ export async function GET(request) {
           orderBy: { createdAt: 'desc' }
         });
 
-        // 4. Calculate hours
+        // 5. Calculate hours combining Clock-In attendance & Rota shifts
         let regularHours = 0;
         let standbyHours = 0;
         let sleepingNightShifts = 0;
 
-        const detailedShifts = clockRecords.map((cr) => {
+        const clockAssignmentIds = new Set();
+        const detailedShifts = [];
+
+        // Process live clock-in attendance
+        clockRecords.forEach((cr) => {
+          if (cr.shiftAssignmentId) clockAssignmentIds.add(cr.shiftAssignmentId);
+
           let durationHours = 0;
           if (cr.clockInTime && cr.clockOutTime) {
             const diffMs = new Date(cr.clockOutTime).getTime() - new Date(cr.clockInTime).getTime();
             durationHours = Math.max(0, diffMs / (1000 * 60 * 60));
           } else if (cr.shiftAssignment?.shift) {
-            // Estimate based on scheduled start and end time if clocked in
             const s = cr.shiftAssignment.shift;
             if (s.startTime && s.endTime) {
               const [sH, sM] = s.startTime.split(':').map(Number);
               const [eH, eM] = s.endTime.split(':').map(Number);
               let diff = (eH + eM / 60) - (sH + sM / 60);
-              if (diff < 0) diff += 24; // overnight shift
+              if (diff < 0) diff += 24;
               durationHours = diff;
             }
           }
 
           durationHours = Math.round(durationHours * 100) / 100;
-
           const isStandby = cr.workType === 'STANDBY';
-          const isNight = Boolean(u.sleepingNights && (cr.shiftAssignment?.shift?.isSleepIn || durationHours >= 8));
+          const isNight = Boolean(u.sleepingNights && (cr.shiftAssignment?.shift?.isSleepIn || cr.shiftAssignment?.shift?.shiftType?.name?.toLowerCase().includes('sleep') || durationHours >= 8));
 
           if (isNight) sleepingNightShifts += 1;
           if (isStandby) {
@@ -158,19 +189,68 @@ export async function GET(request) {
             regularHours += durationHours;
           }
 
-          return {
-            id: cr.id,
+          detailedShifts.push({
+            id: `clock-${cr.id}`,
             date: cr.date,
             clockInTime: cr.clockInTime,
             clockOutTime: cr.clockOutTime,
-            workType: cr.workType,
+            workType: cr.workType || 'REGULAR',
             durationHours,
             isLate: cr.isLate,
             isEarly: cr.isEarly,
+            source: 'CLOCK_IN',
             serviceUser: cr.serviceSeeker ? `${cr.serviceSeeker.firstName} ${cr.serviceSeeker.lastName}` : null,
             notes: cr.notes
-          };
+          });
         });
+
+        // Process scheduled Rota shifts that don't have separate clock-in records
+        rotaAssignments.forEach((ra) => {
+          if (clockAssignmentIds.has(ra.id) || (ra.clockInOuts && ra.clockInOuts.length > 0)) {
+            return; // Already accounted for in live clock records
+          }
+
+          let durationHours = 0;
+          const s = ra.shift;
+          if (s?.startTime && s?.endTime) {
+            const [sH, sM] = s.startTime.split(':').map(Number);
+            const [eH, eM] = s.endTime.split(':').map(Number);
+            let diff = (eH + eM / 60) - (sH + sM / 60);
+            if (diff < 0) diff += 24;
+            durationHours = diff;
+          } else {
+            durationHours = 7.5; // Standard rota shift default
+          }
+
+          durationHours = Math.round(durationHours * 100) / 100;
+          const shiftTypeName = s?.shiftType?.name || 'REGULAR';
+          const isNight = Boolean(u.sleepingNights && (shiftTypeName.toLowerCase().includes('sleep') || shiftTypeName.toLowerCase().includes('night') || durationHours >= 8));
+          const isStandby = shiftTypeName.toLowerCase().includes('standby');
+
+          if (isNight) sleepingNightShifts += 1;
+          if (isStandby) {
+            standbyHours += durationHours;
+          } else {
+            regularHours += durationHours;
+          }
+
+          detailedShifts.push({
+            id: `rota-${ra.id}`,
+            date: ra.date,
+            clockInTime: s?.startTime || null,
+            clockOutTime: s?.endTime || null,
+            workType: isNight ? 'SLEEP_IN' : (isStandby ? 'STANDBY' : 'ROTA_SHIFT'),
+            durationHours,
+            isLate: false,
+            isEarly: false,
+            source: 'ROTA_SCHEDULED',
+            serviceUser: s?.serviceSeeker ? `${s.serviceSeeker.firstName} ${s.serviceSeeker.lastName}` : 'Scheduled Rota Duty',
+            notes: s?.shiftType?.name ? `Rota Shift (${s.shiftType.name})` : 'Rota Shift'
+          });
+        });
+
+        // Sort combined shifts chronologically descending
+        detailedShifts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         // Sum manual adjustments
         let manualAdjustmentsTotal = 0;
@@ -190,7 +270,9 @@ export async function GET(request) {
         return {
           user: {
             id: u.id,
-            name: `${u.firstName} ${u.lastName}`,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            name: `${u.firstName} ${u.lastName}`.trim(),
             employeeNumber: u.employeeNumber || `EMP-${u.id}`,
             role: u.role?.displayName || u.role?.name || 'Staff',
             rateOfPay: defaultRate,

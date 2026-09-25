@@ -17,15 +17,16 @@ export default function WageManualEntryModal({ isOpen, onClose, onSuccess, initi
     if (initialUserId) {
       setUserId(initialUserId);
     } else if (staffList.length > 0 && !userId) {
-      setUserId(staffList[0].user?.id || staffList[0].id || '');
+      const firstId = staffList[0]?.id || staffList[0]?.user?.id || '';
+      if (firstId) setUserId(firstId);
     }
   }, [initialUserId, staffList, isOpen]);
 
   // When hours changes, auto-suggest amount based on hourly rate if available
   const handleHoursChange = (val) => {
     setHours(val);
-    const selectedStaff = staffList.find(s => (s.user?.id || s.id) === parseInt(userId, 10));
-    const rate = selectedStaff?.user?.rateOfPay || selectedStaff?.rateOfPay || 12.50;
+    const selectedStaff = staffList.find(s => (s?.id || s?.user?.id) === parseInt(userId, 10));
+    const rate = selectedStaff?.rateOfPay || selectedStaff?.user?.rateOfPay || 12.50;
     if (val && parseFloat(val) > 0) {
       setAmount((parseFloat(val) * rate).toFixed(2));
     }
@@ -118,9 +119,13 @@ export default function WageManualEntryModal({ isOpen, onClose, onSuccess, initi
             >
               <option value="">-- Choose Staff Member --</option>
               {staffList.map((s) => {
-                const id = s.user?.id || s.id;
-                const name = s.user?.name || `${s.firstName} ${s.lastName}`;
-                const role = s.user?.role || s.role?.displayName || 'Staff';
+                const id = s?.id || s?.user?.id;
+                const name = s?.name || s?.user?.name || 
+                  (s?.firstName ? `${s.firstName} ${s.lastName || ''}`.trim() : 
+                  (s?.user?.firstName ? `${s.user.firstName} ${s.user.lastName || ''}`.trim() : `Staff #${id}`));
+                const role = (typeof s?.role === 'string' ? s.role : s?.role?.displayName || s?.role?.name) ||
+                             (typeof s?.user?.role === 'string' ? s.user.role : s?.user?.role?.displayName || s?.user?.role?.name) ||
+                             'Staff';
                 return (
                   <option key={id} value={id}>
                     {name} ({role})

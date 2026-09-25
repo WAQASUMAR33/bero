@@ -1,4 +1,5 @@
 'use client';
+import { Shield, Link2, Search, Plus, AlertTriangle, CheckCircle2, FileText, User, Users, Target } from 'lucide-react';
 
 import { useEffect, useMemo, useState } from 'react';
 import { getEvaluationStatus, getCategoryOverallStatus } from '@/lib/evaluationStatus';
@@ -553,7 +554,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
             className="w-full text-xs px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#224fa6]"
           />
           {categorySearch && (
-            <button onClick={() => setCategorySearch('')} className="absolute right-2 top-1.5 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+            <button onClick={() => setCategorySearch('')} className="absolute right-2 top-1.5 text-gray-400 hover:text-gray-600 text-xs">×</button>
           )}
         </div>
 
@@ -659,7 +660,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                   }`}
                   title={`${linkedCount} Linked Risk Assessment${linkedCount > 1 ? 's' : ''}`}
                 >
-                  🔗 {linkedCount}
+                  <Link2 className="w-3 h-3 inline mr-0.5" />{linkedCount}
                 </span>
               )}
             </button>
@@ -671,9 +672,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
       <div className="mb-6 bg-gradient-to-br from-purple-50/70 via-indigo-50/30 to-blue-50/40 border border-purple-200 rounded-xl p-5 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-4 border-b border-purple-100">
           <div className="flex items-center space-x-2.5">
-            <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center text-sm shadow-xs">
-              🛡️
-            </span>
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center text-sm shadow-xs"><Shield className="w-4 h-4 inline" /></span>
             <div>
               <div className="flex items-center gap-2">
                 <h4 className="text-sm font-bold text-gray-900">
@@ -702,7 +701,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
               className="px-3 py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-xs font-semibold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
               title="Jump down to Risk Assessments section to link or manage assessments"
             >
-              <span>➕ Link / Manage Risks</span>
+              <span>Link / Manage Risks</span>
               <span>↓</span>
             </button>
           </div>
@@ -790,7 +789,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                       onClick={() => setViewRiskAssessment(ra)}
                       className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 font-semibold rounded-lg text-xs transition-colors cursor-pointer flex items-center gap-1"
                     >
-                      <span>🔍 View Details</span>
+                      <span>View Details</span>
                     </button>
                   </div>
                 </div>
@@ -1124,7 +1123,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                 const recordStatus = getEvaluationStatus(viewRecord);
                 return recordStatus.status === 'RED' ? (
                   <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
-                    <div className="text-red-600 text-xl leading-none mt-0.5">⚠️</div>
+                    <div className="leading-none mt-0.5"><AlertTriangle className="w-5 h-5 text-red-600" /></div>
                     <div className="flex-1 text-sm text-red-800">
                       <div className="flex items-center justify-between">
                         <p className="font-bold text-red-900">Evaluation Overdue ({recordStatus.sublabel})</p>
@@ -1137,7 +1136,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                   </div>
                 ) : (
                   <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
-                    <div className="text-emerald-600 text-xl leading-none mt-0.5">✅</div>
+                    <div className="leading-none mt-0.5"><CheckCircle2 className="w-5 h-5 text-emerald-600" /></div>
                     <div className="flex-1 text-sm text-emerald-800">
                       <div className="flex items-center justify-between">
                         <p className="font-bold text-emerald-900">Support Plan Up to Date ({recordStatus.label})</p>
@@ -1161,7 +1160,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                   <div className="bg-purple-50/60 border border-purple-200 rounded-xl p-4 shadow-xs">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
-                        <span>🛡️</span> Linked Risk Assessments ({categoryRisks.length})
+                        <span><Shield className="w-4 h-4 inline" /></span> Linked Risk Assessments ({categoryRisks.length})
                       </span>
                       <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-white px-2 py-0.5 rounded border border-purple-200 font-semibold">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -1260,7 +1259,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                               <div>
                                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-blue-100">
                                   <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5 uppercase tracking-wide">
-                                    <span>👤</span> Staff Evaluation
+                                    <User className="w-4 h-4 inline mr-1 text-gray-600" />Staff Evaluation
                                   </span>
                                   <span className="text-xs text-gray-700 font-semibold bg-white px-2 py-0.5 rounded border border-blue-200">
                                     {ev.evaluatorName || 'Staff'}
@@ -1277,7 +1276,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                               <div>
                                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-amber-100">
                                   <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wide">
-                                    <span>🤝</span> Service User Evaluation
+                                    <Users className="w-4 h-4 inline mr-1 text-gray-600" />Service User Evaluation
                                   </span>
                                 </div>
                                 {/* Participation status */}
@@ -1441,9 +1440,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-[#224fa6] text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <span className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-base">
-                  🛡️
-                </span>
+                <span className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-base"><Shield className="w-4 h-4 inline" /></span>
                 <div>
                   <h3 className="text-xl font-semibold">{viewRiskAssessment.riskType}</h3>
                   <p className="text-xs text-purple-100 mt-0.5">
@@ -1466,7 +1463,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                 const raStatus = getEvaluationStatus(viewRiskAssessment);
                 return raStatus.status === 'RED' ? (
                   <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
-                    <div className="text-red-600 text-xl leading-none mt-0.5">⚠️</div>
+                    <div className="leading-none mt-0.5"><AlertTriangle className="w-5 h-5 text-red-600" /></div>
                     <div className="flex-1 text-sm text-red-800">
                       <div className="flex items-center justify-between">
                         <p className="font-bold text-red-900">Evaluation Overdue ({raStatus.sublabel})</p>
@@ -1479,7 +1476,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                   </div>
                 ) : (
                   <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
-                    <div className="text-emerald-600 text-xl leading-none mt-0.5">✅</div>
+                    <div className="leading-none mt-0.5"><CheckCircle2 className="w-5 h-5 text-emerald-600" /></div>
                     <div className="flex-1 text-sm text-emerald-800">
                       <div className="flex items-center justify-between">
                         <p className="font-bold text-emerald-900">Risk Assessment Up to Date ({raStatus.label})</p>
@@ -1496,7 +1493,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
               {/* Linked Plans summary pills */}
               <div className="bg-purple-50/60 border border-purple-200 rounded-xl p-4 shadow-xs">
                 <span className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5 mb-2">
-                  <span>📋</span> Linked into Support Plan(s):
+                  <FileText className="w-3.5 h-3.5 inline mr-1 text-gray-500" />Linked into Support Plan(s):
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {Array.isArray(viewRiskAssessment.extra?.linkedSupportPlans) && viewRiskAssessment.extra.linkedSupportPlans.length > 0 ? (
@@ -1509,7 +1506,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                             : 'bg-white text-purple-900 border-purple-200'
                         }`}
                       >
-                        <span>{key === active ? '🎯 Current Plan:' : '📋'}</span>
+                        <span>{key === active ? "Current Plan:" : ""}</span>
                         <span>{getSupportPlanTitle(key)}</span>
                       </span>
                     ))
@@ -1621,7 +1618,7 @@ export default function OutcomesForm({ serviceSeekerId, onNotification, riskAsse
                 }}
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <span>🛡️ Open in Risk Assessments Section</span>
+                <span>Open in Risk Assessments Section</span>
                 <span>↓</span>
               </button>
               <button

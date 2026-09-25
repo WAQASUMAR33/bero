@@ -383,7 +383,7 @@ export default function CareWorkerDashboard() {
     const quickActions = [
         {
             title: activeShift ? 'Clock Out' : 'Clock In',
-            icon: '⏰',
+            icon: '',
             color: activeShift ? 'bg-red-50 text-red-600' : 'bg-indigo-50 text-indigo-600',
             action: () => {
                 if (activeShift) {
@@ -395,13 +395,13 @@ export default function CareWorkerDashboard() {
                 }
             }
         },
-        { title: 'My Tasks', icon: '📋', color: 'bg-blue-50 text-blue-600', action: () => router.push('/care-worker/tasks') },
-        { title: 'Action Plans', icon: '📝', color: 'bg-amber-50 text-amber-700', action: () => router.push('/care-worker/action-plan') },
-        { title: 'My Rota', icon: '📅', color: 'bg-indigo-50 text-indigo-600', action: () => router.push('/care-worker/rota') },
-        { title: 'Holidays', icon: '✈️', color: 'bg-emerald-50 text-emerald-600', action: () => router.push('/care-worker/holidays') },
-        { title: 'Care Plan', icon: '📄', color: 'bg-sky-50 text-sky-600', action: () => router.push('/care-worker/care-plan') },
-        { title: 'Handover', icon: '🤝', color: 'bg-teal-50 text-teal-600', action: () => router.push('/care-worker/handover') },
-        { title: 'Emergency', icon: '🚨', color: 'bg-red-50 text-red-600', action: () => router.push('/care-worker/emergency') },
+        { title: 'My Tasks', icon: '', color: 'bg-blue-50 text-blue-600', action: () => router.push('/care-worker/tasks') },
+        { title: 'Action Plans', icon: '', color: 'bg-amber-50 text-amber-700', action: () => router.push('/care-worker/action-plan') },
+        { title: 'My Rota', icon: '', color: 'bg-indigo-50 text-indigo-600', action: () => router.push('/care-worker/rota') },
+        { title: 'Holidays', icon: '', color: 'bg-emerald-50 text-emerald-600', action: () => router.push('/care-worker/holidays') },
+        { title: 'Care Plan', icon: '', color: 'bg-sky-50 text-sky-600', action: () => router.push('/care-worker/care-plan') },
+        { title: 'Handover', icon: '', color: 'bg-teal-50 text-teal-600', action: () => router.push('/care-worker/handover') },
+        { title: 'Emergency', icon: '', color: 'bg-red-50 text-red-600', action: () => router.push('/care-worker/emergency') },
     ];
 
     if (!user) return null;
@@ -421,7 +421,7 @@ export default function CareWorkerDashboard() {
                     className="p-2 bg-red-50 text-red-600 rounded-lg border border-red-100 shadow-sm active:scale-95 transition-all"
                     aria-label="Emergency"
                 >
-                    <span className="text-xl animate-pulse">🚨</span>
+                    <span className="text-xl animate-pulse"></span>
                 </button>
             </div>
 

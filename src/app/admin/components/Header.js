@@ -364,7 +364,7 @@ export default function Header({ user }) {
   };
 
   return (
-    <header className="sticky top-0 bg-white shadow-sm border-b border-gray-200 px-6 py-4 z-30">
+    <header className="sticky top-0 bg-white/95 backdrop-blur-md shadow-xs border-b border-gray-200/90 px-6 py-3.5 z-40">
       <div className="flex items-center justify-between">
         {/* Page Title */}
         <div>

@@ -238,7 +238,7 @@ export default function AttendanceHistoryPage() {
 
                                     {/* Mobile bottom row extra info */}
                                     <div className="md:hidden mt-2 flex justify-between items-center text-xs text-gray-500">
-                                        {record.isLate && <span className="text-red-500 font-bold">⚠️ Late Clock-in</span>}
+                                        {record.isLate && <span className="text-red-500 font-bold">Late Clock-in</span>}
                                         {!record.clockOutTime && <span className="text-blue-500 font-medium">Currently clocked in</span>}
                                     </div>
                                 </div>

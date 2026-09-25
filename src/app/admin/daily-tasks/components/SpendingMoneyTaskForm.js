@@ -97,9 +97,9 @@ export default function SpendingMoneyTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Paid Using *</label>
         <div className="flex flex-wrap gap-3">
           {[
-            { value: 'CASH', label: '💵 Cash' },
-            { value: 'BANK_CARD', label: '💳 Bank Card' },
-            { value: 'VOUCHER', label: '🎟️ Voucher' }
+            { value: 'CASH', label: ' Cash' },
+            { value: 'BANK_CARD', label: ' Bank Card' },
+            { value: 'VOUCHER', label: ' Voucher' }
           ].map(method => (
             <button
               key={method.value}
@@ -151,9 +151,9 @@ export default function SpendingMoneyTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
         <div className="flex gap-6">
           {[
-            { value: 'SAD', emoji: '😢', label: 'Sad' },
-            { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-            { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+            { value: 'SAD', emoji: '', label: 'Sad' },
+            { value: 'NEUTRAL', emoji: '', label: 'Neutral' },
+            { value: 'HAPPY', emoji: '', label: 'Happy' }
           ].map(emotion => (
             <button
               key={emotion.value}

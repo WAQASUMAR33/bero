@@ -109,7 +109,7 @@ export default function RepositionTaskForm({
         />
         {formData.photoUrl && (
           <div className="mt-2">
-            <p className="text-xs text-green-600">✓ Photo uploaded</p>
+            <p className="text-xs text-green-600"> Photo uploaded</p>
             <input
               type="text"
               value={formData.photoUrl}
@@ -159,9 +159,9 @@ export default function RepositionTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
         <div className="flex gap-6">
           {[
-            { value: 'SAD', emoji: '😢', label: 'Sad' },
-            { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-            { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+            { value: 'SAD', emoji: '', label: 'Sad' },
+            { value: 'NEUTRAL', emoji: '', label: 'Neutral' },
+            { value: 'HAPPY', emoji: '', label: 'Happy' }
           ].map(emotion => (
             <button
               key={emotion.value}

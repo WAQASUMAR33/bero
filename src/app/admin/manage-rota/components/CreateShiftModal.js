@@ -585,7 +585,7 @@ export default function CreateShiftModal({
             {shift ? 'Edit Shift' : 'Create New Shift'}
           </h2>
           <button onClick={onClose} className="text-white hover:text-gray-200 text-2xl">
-            ✕
+            ×
           </button>
         </div>
 
@@ -1101,7 +1101,7 @@ export default function CreateShiftModal({
                 }}
                 className="text-white hover:text-gray-200 text-2xl"
               >
-                ✕
+                ×
               </button>
             </div>
             <div className="p-6 space-y-4">
@@ -1169,7 +1169,7 @@ export default function CreateShiftModal({
                 }}
                 className="text-white hover:text-gray-200 text-2xl"
               >
-                ✕
+                ×
               </button>
             </div>
             <div className="p-6 space-y-4">
@@ -1261,7 +1261,7 @@ export default function CreateShiftModal({
                 onClick={() => setShowManageShiftTypesModal(false)}
                 className="text-white hover:text-gray-200 text-2xl"
               >
-                ✕
+                ×
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6">
@@ -1356,7 +1356,7 @@ export default function CreateShiftModal({
                 }}
                 className="text-white hover:text-gray-200 text-2xl"
               >
-                ✕
+                ×
               </button>
             </div>
             <div className="p-6">
@@ -1431,7 +1431,7 @@ export default function CreateShiftModal({
                 onClick={() => setShowDeleteShiftModal(false)}
                 className="text-white/80 hover:text-white text-2xl font-light leading-none cursor-pointer"
               >
-                ✕
+                ×
               </button>
             </div>
 
@@ -1446,7 +1446,7 @@ export default function CreateShiftModal({
                   </span>
                 </div>
                 <div className="text-xs text-gray-600 flex items-center gap-2 mt-1">
-                  <span>📅 Date: <strong className="text-gray-800">{formattedTargetDate}</strong></span>
+                  <span>Date: <strong className="text-gray-800">{formattedTargetDate}</strong></span>
                   {isRecurringShift && (
                     <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-medium">
                       Repeats {formData.recurrence}

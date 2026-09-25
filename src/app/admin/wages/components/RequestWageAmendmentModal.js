@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Send, AlertCircle, Clock, Calendar, DollarSign } from 'lucide-react';
+import { X, Send, AlertCircle, Clock, Calendar, DollarSign, FileText } from 'lucide-react';
 
 export default function RequestWageAmendmentModal({ isOpen, onClose, onSuccess }) {
   const [shiftDate, setShiftDate] = useState('');
@@ -58,7 +58,9 @@ export default function RequestWageAmendmentModal({ isOpen, onClose, onSuccess }
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-[#173a7a] via-[#224fa6] to-[#3270e9] p-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="p-2 bg-white/10 rounded-xl backdrop-blur-md text-xl">📝</span>
+            <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md flex items-center justify-center">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
             <div>
               <h3 className="font-bold text-lg">Request Wage Amendment</h3>
               <p className="text-xs text-blue-100">Submit a correction or missed hours request to management</p>

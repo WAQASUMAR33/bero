@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { Shield, Search, CheckCircle2, FileText, FileDown, Plus, X } from 'lucide-react';
+
 
 export default function SafeguardingManager({ showNotification }) {
   const [items, setItems] = useState([]);
@@ -221,7 +223,7 @@ export default function SafeguardingManager({ showNotification }) {
             <p className="text-2xl font-black text-gray-900 mt-0.5">{counts.open}</p>
             <span className="text-[11px] text-gray-400">Open safeguarding alerts</span>
           </div>
-          <span className="p-3 bg-rose-50 text-rose-600 rounded-xl text-xl">🛡️</span>
+          <div className="p-3 bg-rose-50 text-rose-600 rounded-xl"><Shield className="w-5 h-5" /></div>
         </div>
 
         <div className="bg-white border border-amber-200 rounded-xl p-4 shadow-xs flex items-center justify-between">
@@ -230,7 +232,7 @@ export default function SafeguardingManager({ showNotification }) {
             <p className="text-2xl font-black text-gray-900 mt-0.5">{counts.investigating}</p>
             <span className="text-[11px] text-gray-400">LA strategy / enquiry active</span>
           </div>
-          <span className="p-3 bg-amber-50 text-amber-600 rounded-xl text-xl">🔍</span>
+          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl"><Search className="w-5 h-5" /></div>
         </div>
 
         <div className="bg-white border border-emerald-200 rounded-xl p-4 shadow-xs flex items-center justify-between">
@@ -239,7 +241,7 @@ export default function SafeguardingManager({ showNotification }) {
             <p className="text-2xl font-black text-gray-900 mt-0.5">{counts.closed}</p>
             <span className="text-[11px] text-gray-400">Outcomes & lessons signed off</span>
           </div>
-          <span className="p-3 bg-emerald-50 text-emerald-600 rounded-xl text-xl">✅</span>
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><CheckCircle2 className="w-5 h-5" /></div>
         </div>
 
         <div className="bg-white border border-indigo-200 rounded-xl p-4 shadow-xs flex items-center justify-between">
@@ -248,7 +250,7 @@ export default function SafeguardingManager({ showNotification }) {
             <p className="text-2xl font-black text-gray-900 mt-0.5">{counts.total}</p>
             <span className="text-[11px] text-gray-400">Lifetime referrals logged</span>
           </div>
-          <span className="p-3 bg-indigo-50 text-indigo-600 rounded-xl text-xl">📋</span>
+          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><FileText className="w-5 h-5" /></div>
         </div>
       </div>
 
@@ -266,7 +268,7 @@ export default function SafeguardingManager({ showNotification }) {
             />
             {search && (
               <button onClick={() => { setSearch(''); fetchItems(); }} className="absolute right-3 top-2 text-gray-400 hover:text-gray-600 text-xs cursor-pointer">
-                ✕
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -300,7 +302,7 @@ export default function SafeguardingManager({ showNotification }) {
             onClick={handleExportPDF}
             className="px-3.5 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>📄</span>
+            <FileDown className="w-4 h-4" />
             <span>Export PDF</span>
           </button>
           <button
@@ -308,7 +310,7 @@ export default function SafeguardingManager({ showNotification }) {
             onClick={() => { setFormData(initialForm); setShowModal(true); }}
             className="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>➕</span>
+            <Plus className="w-4 h-4" />
             <span>Log Safeguarding Alert</span>
           </button>
         </div>
@@ -323,7 +325,7 @@ export default function SafeguardingManager({ showNotification }) {
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-16 px-4">
-            <span className="text-4xl">🛡️</span>
+            <Shield className="w-10 h-10 text-gray-300 mx-auto" />
             <h3 className="text-base font-bold text-gray-800 mt-3">No safeguarding alerts found</h3>
             <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
               No safeguarding concerns logged matching this filter. Click "Log Safeguarding Alert" to create an entry.

@@ -59,7 +59,7 @@ export default function CareWorkerWagesPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-white/10 rounded-xl backdrop-blur-md text-xl">💷</span>
+              <span className="p-2 bg-white/10 rounded-xl backdrop-blur-md text-xl"></span>
               <h1 className="text-2xl font-bold tracking-tight">My Wages & Timesheet</h1>
             </div>
             <p className="text-blue-100 text-xs sm:text-sm max-w-2xl">
@@ -124,7 +124,7 @@ export default function CareWorkerWagesPage() {
       ) : (
         <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center shadow-xs space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#224fa6] flex items-center justify-center mx-auto text-xl">
-            💷
+
           </div>
           <h3 className="font-bold text-gray-900 text-base">No Wage Records Found</h3>
           <p className="text-xs text-gray-500 max-w-sm mx-auto">

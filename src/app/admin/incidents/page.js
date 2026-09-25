@@ -482,7 +482,7 @@ export default function AccidentsIncidentsPage() {
                               {type}
                             </span>
                             <span className="text-[11px] text-slate-500 block mt-0.5">
-                              📍 {loc}
+                              {loc}
                             </span>
                           </td>
 
@@ -529,7 +529,7 @@ export default function AccidentsIncidentsPage() {
                               {inc.contactsCalled || 'None'}
                             </span>
                             {inc.relativesInformed === 'YES' && (
-                              <span className="text-[11px] text-emerald-700 block mt-0.5 font-medium">✓ Relatives informed</span>
+                              <span className="text-[11px] text-emerald-700 block mt-0.5 font-medium">Relatives informed</span>
                             )}
                           </td>
 
@@ -585,7 +585,7 @@ export default function AccidentsIncidentsPage() {
                     onClick={() => setShowDetailModal(false)}
                     className="p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors cursor-pointer"
                   >
-                    ✕
+                    ×
                   </button>
                 </div>
 
@@ -697,7 +697,7 @@ export default function AccidentsIncidentsPage() {
                     onClick={() => setShowNewModal(false)}
                     className="p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors cursor-pointer"
                   >
-                    ✕
+                    ×
                   </button>
                 </div>
 

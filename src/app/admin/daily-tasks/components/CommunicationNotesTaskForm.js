@@ -57,9 +57,9 @@ export default function CommunicationNotesTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
         <div className="flex gap-6">
           {[
-            { value: 'SAD', emoji: '😢', label: 'Sad' },
-            { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-            { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+            { value: 'SAD', emoji: '', label: 'Sad' },
+            { value: 'NEUTRAL', emoji: '', label: 'Neutral' },
+            { value: 'HAPPY', emoji: '', label: 'Happy' }
           ].map(emotion => (
             <button
               key={emotion.value}

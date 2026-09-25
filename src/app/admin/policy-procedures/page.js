@@ -760,7 +760,7 @@ export default function PolicyProceduresPage() {
                     {formData.fileUrl && (
                       <div className="mt-2 p-2.5 bg-green-50 border border-green-200 rounded-xl">
                         <p className="text-xs text-green-800 break-all">
-                          ✓ File uploaded: <a href={formData.fileUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">{formData.fileUrl}</a>
+                          File uploaded: <a href={formData.fileUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">{formData.fileUrl}</a>
                         </p>
                       </div>
                     )}

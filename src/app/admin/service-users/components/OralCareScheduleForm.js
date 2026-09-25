@@ -1,4 +1,5 @@
 'use client';
+import { Info, Share2, Trash2 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 
@@ -389,12 +390,12 @@ export default function OralCareScheduleForm({ serviceSeekerId, onNotification }
           <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span className="text-white text-lg">ℹ️</span>
+                <Info className="w-4 h-4 text-white" />
                 <h3 className="text-xl font-semibold">
                   {editingId ? 'Edit Oral Care Task' : 'New Oral Care Task'}
                 </h3>
               </div>
-              <span className="text-white text-lg">📤</span>
+              <Share2 className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 overflow-y-auto p-6 bg-white space-y-4">
               <div className="flex items-center space-x-2">
@@ -572,9 +573,7 @@ export default function OralCareScheduleForm({ serviceSeekerId, onNotification }
                 <button
                   type="button"
                   className="text-red-600 hover:text-red-800"
-                >
-                  🗑️
-                </button>
+                ><Trash2 className="w-4 h-4" /></button>
                 <button
                   type="button"
                   onClick={() => {

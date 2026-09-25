@@ -407,7 +407,7 @@ export default function RotaPage() {
                                                     <div className="flex items-start gap-4">
                                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm ${shift.clockedIn ? 'bg-white text-blue-600' : 'bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-[#224fa6]'
                                                             }`}>
-                                                            ⏰
+
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2">
@@ -424,7 +424,7 @@ export default function RotaPage() {
                                                                 {shift.serviceSeeker?.firstName} {shift.serviceSeeker?.lastName}
                                                             </p>
                                                             <div className="text-xs text-gray-400 mt-1 flex gap-2">
-                                                                <span>📍 {shift.serviceSeeker?.address ? shift.serviceSeeker.address.split(',')[0] : 'No Address'}</span>
+                                                                <span> {shift.serviceSeeker?.address ? shift.serviceSeeker.address.split(',')[0] : 'No Address'}</span>
                                                             </div>
                                                         </div>
                                                     </div>

@@ -62,34 +62,34 @@ import EncouragementTaskView from './components/EncouragementTaskView';
 import FollowUpTaskView from './components/FollowUpTaskView';
 
 const TASK_TYPES = [
-  { id: 'bathing', name: 'Bathing', icon: '🛁', color: 'blue' },
-  { id: 'behaviour', name: 'Behaviour', icon: '👤', color: 'purple' },
-  { id: 'bloodtest', name: 'Blood Test', icon: '💉', color: 'red' },
-  { id: 'blood_pressure', name: 'Blood Pressure', icon: '🩺', color: 'red' },
-  { id: 'comfort_check', name: 'Comfort Check', icon: '🛏️', color: 'green' },
-  { id: 'communication_notes', name: 'Communication Notes', icon: '📝', color: 'blue' },
-  { id: 'encouragement', name: 'Encouragement', icon: '💪', color: 'yellow' },
-  { id: 'family_photo_message', name: 'Family Photo/Message', icon: '📷', color: 'pink' },
-  { id: 'follow_up', name: 'Follow Up', icon: '🔄', color: 'indigo' },
-  { id: 'food_drink', name: 'Food/Drink', icon: '🍽️', color: 'orange' },
-  { id: 'general_support', name: 'General Support', icon: '🤝', color: 'teal' },
-  { id: 'house_keeping', name: 'House Keeping', icon: '🧹', color: 'gray' },
-  { id: 'incident_fall', name: 'Incident/Fall', icon: '⚠️', color: 'red' },
-  { id: 'medicine_prn', name: 'Medicine PRN', icon: '💊', color: 'red' },
-  { id: 'muac', name: 'MUAC', icon: '📏', color: 'blue' },
-  { id: 'observation', name: 'Observation', icon: '👁️', color: 'purple' },
-  { id: 'one_to_one', name: 'One to One', icon: '👥', color: 'green' },
-  { id: 'oral_care', name: 'Oral Care', icon: '🦷', color: 'cyan' },
-  { id: 'oxygen', name: 'Oxygen', icon: '💨', color: 'blue' },
-  { id: 'person_centred_task', name: 'Person Centred Task', icon: '❤️', color: 'pink' },
-  { id: 'physical_intervention', name: 'Physical Intervention', icon: '🚨', color: 'red' },
-  { id: 'pulse', name: 'Pulse', icon: '❤️‍🩹', color: 'red' },
-  { id: 're_position', name: 'Re-position', icon: '🔄', color: 'indigo' },
-  { id: 'spending_money', name: 'Spending/Money', icon: '💰', color: 'green' },
-  { id: 'stool', name: 'Stool', icon: '🚽', color: 'brown' },
-  { id: 'temperature', name: 'Temperature', icon: '🌡️', color: 'orange' },
-  { id: 'visit', name: 'Visit', icon: '👋', color: 'blue' },
-  { id: 'weight', name: 'Weight', icon: '⚖️', color: 'purple' },
+  { id: 'bathing', name: 'Bathing', icon: '', color: 'blue' },
+  { id: 'behaviour', name: 'Behaviour', icon: '', color: 'purple' },
+  { id: 'bloodtest', name: 'Blood Test', icon: '', color: 'red' },
+  { id: 'blood_pressure', name: 'Blood Pressure', icon: '', color: 'red' },
+  { id: 'comfort_check', name: 'Comfort Check', icon: '', color: 'green' },
+  { id: 'communication_notes', name: 'Communication Notes', icon: '', color: 'blue' },
+  { id: 'encouragement', name: 'Encouragement', icon: '', color: 'yellow' },
+  { id: 'family_photo_message', name: 'Family Photo/Message', icon: '', color: 'pink' },
+  { id: 'follow_up', name: 'Follow Up', icon: '', color: 'indigo' },
+  { id: 'food_drink', name: 'Food/Drink', icon: '', color: 'orange' },
+  { id: 'general_support', name: 'General Support', icon: '', color: 'teal' },
+  { id: 'house_keeping', name: 'House Keeping', icon: '', color: 'gray' },
+  { id: 'incident_fall', name: 'Incident/Fall', icon: '', color: 'red' },
+  { id: 'medicine_prn', name: 'Medicine PRN', icon: '', color: 'red' },
+  { id: 'muac', name: 'MUAC', icon: '', color: 'blue' },
+  { id: 'observation', name: 'Observation', icon: '', color: 'purple' },
+  { id: 'one_to_one', name: 'One to One', icon: '', color: 'green' },
+  { id: 'oral_care', name: 'Oral Care', icon: '', color: 'cyan' },
+  { id: 'oxygen', name: 'Oxygen', icon: '', color: 'blue' },
+  { id: 'person_centred_task', name: 'Person Centred Task', icon: '', color: 'pink' },
+  { id: 'physical_intervention', name: 'Physical Intervention', icon: '', color: 'red' },
+  { id: 'pulse', name: 'Pulse', icon: '', color: 'red' },
+  { id: 're_position', name: 'Re-position', icon: '', color: 'indigo' },
+  { id: 'spending_money', name: 'Spending/Money', icon: '', color: 'green' },
+  { id: 'stool', name: 'Stool', icon: '', color: 'brown' },
+  { id: 'temperature', name: 'Temperature', icon: '', color: 'orange' },
+  { id: 'visit', name: 'Visit', icon: '', color: 'blue' },
+  { id: 'weight', name: 'Weight', icon: '', color: 'purple' },
 ];
 
 const COLOR_CLASSES = {
@@ -3029,7 +3029,7 @@ export default function DailyTasksPage() {
   const pagedTasks = filteredTasks.slice(startIdx, startIdx + pageSize);
 
   const getTaskTypeInfo = (taskTypeId) => {
-    return TASK_TYPES.find(t => t.id === taskTypeId) || { name: taskTypeId, icon: '📋', color: 'gray' };
+    return TASK_TYPES.find(t => t.id === taskTypeId) || { name: taskTypeId, icon: '', color: 'gray' };
   };
 
   const getTaskIcon = (taskType) => {
@@ -3160,7 +3160,7 @@ export default function DailyTasksPage() {
                   ) : (
                     pagedTasks.map((task, idx) => {
                       const taskInfo = getTaskTypeInfo(task.taskType);
-                      const emotionEmoji = task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐';
+                      const emotionLabel = task.emotion === 'HAPPY' ? 'Happy' : task.emotion === 'SAD' ? 'Sad' : 'Neutral';
                       let subInfo = '';
                       if (task.taskType === 'bathing') subInfo = task.bathingType;
                       else if (task.taskType === 'behaviour') subInfo = task.type;
@@ -3243,7 +3243,7 @@ export default function DailyTasksPage() {
                                   Recorded
                                 </span>
                               )}
-                              <span className="text-lg">{emotionEmoji}</span>
+                              <span className="text-lg">{emotionLabel}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -3290,7 +3290,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 max-h-[85vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900">Select Task Type</h2>
-                  <button onClick={() => setShowTaskTypeModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowTaskTypeModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <p className="text-gray-600 mb-6">Choose the type of daily task you want to record</p>
 
@@ -3328,12 +3328,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🛁
-                    </div>
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Bathing Task</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <BathingTaskForm
                   formData={bathingForm}
@@ -3354,12 +3352,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      👤
-                    </div>
+                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Behaviour Task</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <BehaviourTaskForm
                   formData={behaviourForm}
@@ -3383,12 +3379,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      💉
-                    </div>
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Blood Test</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <BloodTestTaskForm
                   formData={bloodTestForm}
@@ -3409,12 +3403,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🩺
-                    </div>
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Blood Pressure</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <BloodPressureTaskForm
                   formData={bloodPressureForm}
@@ -3435,12 +3427,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🛏️
-                    </div>
+                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Comfort Check</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <ComfortCheckTaskForm
                   formData={comfortCheckForm}
@@ -3461,12 +3451,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      📝
-                    </div>
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Communication Notes</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <CommunicationNotesTaskForm
                   formData={communicationNotesForm}
@@ -3486,12 +3474,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      💪
-                    </div>
+                    <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Encouragement</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <EncouragementTaskForm
                   formData={encouragementForm}
@@ -3568,12 +3554,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      📷
-                    </div>
+                    <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Family Photo/Message</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <FamilyPhotoMessageTaskForm
                   formData={familyPhotoMessageForm}
@@ -3593,12 +3577,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🍽️
-                    </div>
+                    <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Food/Drink</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <FoodDrinkTaskForm
                   formData={foodDrinkForm}
@@ -3618,12 +3600,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-teal-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🤝
-                    </div>
+                    <div className="w-12 h-12 bg-teal-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">General Support</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <GeneralSupportTaskForm
                   formData={generalSupportForm}
@@ -3645,12 +3625,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-gray-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🧹
-                    </div>
+                    <div className="w-12 h-12 bg-gray-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">House Keeping</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <HouseKeepingTaskForm
                   formData={houseKeepingForm}
@@ -3670,12 +3648,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      ⚠️
-                    </div>
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Incident/Fall</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <IncidentFallTaskForm
                   formData={incidentFallForm}
@@ -3700,12 +3676,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🔄
-                    </div>
+                    <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Follow Up</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <FollowUpTaskForm
                   formData={followUpForm}
@@ -3725,12 +3699,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      💊
-                    </div>
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Medicine PRN</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <MedicinePrnTaskForm
                   formData={medicinePrnForm}
@@ -3749,12 +3721,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      📏
-                    </div>
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">MUAC</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <MuacTaskForm
                   formData={muacForm}
@@ -3772,12 +3742,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      👁️
-                    </div>
+                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Observation</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <ObservationTaskForm
                   formData={observationForm}
@@ -3795,12 +3763,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      👥
-                    </div>
+                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">One to One</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <OneToOneTaskForm
                   formData={oneToOneForm}
@@ -3818,12 +3784,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-cyan-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🦷
-                    </div>
+                    <div className="w-12 h-12 bg-cyan-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Oral Care</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <OralCareTaskForm
                   formData={oralCareForm}
@@ -3841,12 +3805,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      💨
-                    </div>
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Oxygen</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <OxygenTaskForm
                   formData={oxygenForm}
@@ -3864,12 +3826,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      ❤️
-                    </div>
+                    <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Person Centred Task</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <PersonCentredTaskForm
                   formData={personCentredForm}
@@ -3891,12 +3851,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🚨
-                    </div>
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Physical Intervention</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <PhysicalInterventionTaskForm
                   formData={physicalInterventionForm}
@@ -3915,12 +3873,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      ❤️‍🩹
-                    </div>
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Pulse</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <PulseTaskForm
                   formData={pulseForm}
@@ -3939,12 +3895,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🔄
-                    </div>
+                    <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Re-position</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <RepositionTaskForm
                   formData={repositionForm}
@@ -3963,12 +3917,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      💰
-                    </div>
+                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Spending/Money</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <SpendingMoneyTaskForm
                   formData={spendingMoneyForm}
@@ -3987,12 +3939,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-amber-700 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🚽
-                    </div>
+                    <div className="w-12 h-12 bg-amber-700 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Stool</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <StoolTaskForm
                   formData={stoolForm}
@@ -4011,12 +3961,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      🌡️
-                    </div>
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Temperature</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <TemperatureTaskForm
                   formData={temperatureForm}
@@ -4035,12 +3983,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      👥
-                    </div>
+                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Visit</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <VisitTaskForm
                   formData={visitForm}
@@ -4059,12 +4005,10 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3">
-                      ⚖️
-                    </div>
+                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-2xl mr-3"></div>
                     <h2 className="text-2xl font-semibold text-gray-900">Weight</h2>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <WeightTaskForm
                   formData={weightForm}
@@ -4114,35 +4058,7 @@ export default function DailyTasksPage() {
                                                                             viewData.taskType === 'follow_up' ? 'bg-indigo-500' :
                                                                               'bg-gray-500'
                       } rounded-xl flex items-center justify-center text-2xl mr-3`}>
-                      {viewData.taskType === 'bathing' ? '🛁' :
-                        viewData.taskType === 'behaviour' ? '👤' :
-                          viewData.taskType === 'bloodtest' ? '💉' :
-                            viewData.taskType === 'blood_pressure' ? '🩺' :
-                              viewData.taskType === 'comfort_check' ? '🛏️' :
-                                viewData.taskType === 'communication_notes' ? '📝' :
-                                  viewData.taskType === 'encouragement' ? '💪' :
-                                    viewData.taskType === 'family_photo_message' ? '📷' :
-                                      viewData.taskType === 'food_drink' ? '🍽️' :
-                                        viewData.taskType === 'general_support' ? '🤝' :
-                                          viewData.taskType === 'house_keeping' ? '🧹' :
-                                            viewData.taskType === 'incident_fall' ? '⚠️' :
-                                              viewData.taskType === 'medicine_prn' ? '💊' :
-                                                viewData.taskType === 'muac' ? '📏' :
-                                                  viewData.taskType === 'observation' ? '👁️' :
-                                                    viewData.taskType === 'one_to_one' ? '👥' :
-                                                      viewData.taskType === 'oral_care' ? '🦷' :
-                                                        viewData.taskType === 'oxygen' ? '💨' :
-                                                          viewData.taskType === 'person_centred_task' ? '❤️' :
-                                                            viewData.taskType === 'physical_intervention' ? '🚨' :
-                                                              viewData.taskType === 'pulse' ? '❤️‍🩹' :
-                                                                viewData.taskType === 're_position' ? '🔄' :
-                                                                  viewData.taskType === 'spending_money' ? '💰' :
-                                                                    viewData.taskType === 'stool' ? '🚽' :
-                                                                      viewData.taskType === 'temperature' ? '🌡️' :
-                                                                        viewData.taskType === 'visit' ? '👥' :
-                                                                          viewData.taskType === 'weight' ? '⚖️' :
-                                                                            viewData.taskType === 'follow_up' ? '🔄' :
-                                                                              '❓'}
+                      
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-900">
                       {viewData.taskType === 'bathing' ? 'Bathing' :
@@ -4176,7 +4092,7 @@ export default function DailyTasksPage() {
                                                                               'Task'} Task Details
                     </h2>
                   </div>
-                  <button onClick={() => setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowViewModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 {viewData.taskType === 'bathing' ? (
                   <BathingTaskView data={viewData} onClose={() => setShowViewModal(false)} />
@@ -4276,7 +4192,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Manage Behaviour Triggers</h3>
-                  <button onClick={() => setShowManageTriggersModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowManageTriggersModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
                 <div className="space-y-3">
                   {Array.isArray(behaviourTriggers) && behaviourTriggers.map(trigger => (
@@ -4323,7 +4239,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Manage Support Types</h3>
-                  <button onClick={() => setShowSupportListModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowSupportListModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
 
                 {/* Add New Support Type */}
@@ -4400,7 +4316,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Manage Incident Types</h3>
-                  <button onClick={() => setShowIncidentTypesModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowIncidentTypesModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
 
                 {/* Add New Incident Type */}
@@ -4482,7 +4398,7 @@ export default function DailyTasksPage() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Manage Incident Locations</h3>
-                  <button onClick={() => setShowIncidentLocationsModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                  <button onClick={() => setShowIncidentLocationsModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
 
                 {/* Add New Location */}
@@ -4562,9 +4478,7 @@ export default function DailyTasksPage() {
                     <h2 className="text-2xl font-semibold text-gray-900">Task Report</h2>
                     <p className="text-sm text-gray-600 mt-1">All past tasks (excluding today)</p>
                   </div>
-                  <button onClick={() => setShowTaskReportModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">
-                    ✕
-                  </button>
+                  <button onClick={() => setShowTaskReportModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                 </div>
 
                 <div className="flex-1 overflow-auto p-6">
@@ -4595,7 +4509,7 @@ export default function DailyTasksPage() {
                         <tbody className="bg-white divide-y divide-gray-200">
                           {allTasksForReport.map((task, idx) => {
                             const taskInfo = getTaskTypeInfo(task.taskType);
-                            const emotionEmoji = task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐';
+                            const emotionLabel = task.emotion === 'HAPPY' ? 'Happy' : task.emotion === 'SAD' ? 'Sad' : 'Neutral';
                             let subInfo = '';
                             if (task.taskType === 'bathing') subInfo = task.bathingType;
                             else if (task.taskType === 'behaviour') subInfo = task.type;
@@ -4660,7 +4574,7 @@ export default function DailyTasksPage() {
                                     {completedStatus}
                                   </span>
                                   {task.emotion && (
-                                    <div className="mt-1 text-lg">{emotionEmoji}</div>
+                                    <div className="mt-1 text-lg">{emotionLabel}</div>
                                   )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

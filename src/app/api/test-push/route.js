@@ -47,7 +47,7 @@ export async function POST(request) {
 
         // Send test notification
         const result = await sendPushToUser(userId, {
-            title: '🔔 Test Notification',
+            title: 'Test Notification',
             message: 'Push notifications are working! This is a test message.',
             type: 'INFO',
             link: '/admin/dashboard'

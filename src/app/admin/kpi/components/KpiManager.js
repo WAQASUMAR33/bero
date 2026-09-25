@@ -654,7 +654,7 @@ export default function KpiManager({ title = 'Key Performance Indicators (KPI) &
                                     : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-300'
                                 }`}
                               >
-                                {isActionAdded ? '✓ Added (Yes)' : 'No'}
+                                {isActionAdded ? 'Added (Yes)' : 'No'}
                               </button>
                             </td>
 
@@ -682,7 +682,7 @@ export default function KpiManager({ title = 'Key Performance Indicators (KPI) &
                 {/* Footer Save Prompt */}
                 <div className="p-4 bg-gray-50/80 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="text-xs text-gray-500">
-                    💡 Tip: Clicking &quot;Added (Yes)&quot; escalates the action directly to the <strong>KPI Action Plan Register</strong>.
+                    <span className="font-semibold text-gray-700">Note:</span> Clicking &quot;Added (Yes)&quot; escalates the action directly to the <strong>KPI Action Plan Register</strong>.
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -834,7 +834,7 @@ export default function KpiManager({ title = 'Key Performance Indicators (KPI) &
                   </div>
 
                   <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-100 text-xs text-blue-900 leading-relaxed">
-                    ✨ Will automatically initialize the 12 core KPI areas (*Occupancy, Live Enquiries, Safeguarding, CQC, RIDDOR, Accidents, Incidents, Near Misses, Complaints, Compliments, P&L, Sickness*).
+                    Will automatically initialize the 12 core KPI areas (*Occupancy, Live Enquiries, Safeguarding, CQC, RIDDOR, Accidents, Incidents, Near Misses, Complaints, Compliments, P&L, Sickness*).
                   </div>
 
                   <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">

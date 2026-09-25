@@ -209,9 +209,9 @@ export default function CareWorkerTasksPage() {
                     <div>
                         <label className="block text-sm font-bold text-gray-700">User Emotion</label>
                         <select name="emotion" defaultValue={task.emotion || 'NEUTRAL'} className="w-full border p-2 rounded-lg">
-                            <option value="HAPPY">Happy 🙂</option>
-                            <option value="NEUTRAL">Neutral 😐</option>
-                            <option value="SAD">Sad ☹️</option>
+                            <option value="HAPPY">Happy</option>
+                            <option value="NEUTRAL">Neutral</option>
+                            <option value="SAD">Sad</option>
                         </select>
                     </div>
                 </div>
@@ -283,7 +283,7 @@ export default function CareWorkerTasksPage() {
         return (
             <div className="max-w-xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-xl text-center border border-gray-100">
                 <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
-                    🛡️
+
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Restricted Access</h2>
                 <p className="text-gray-500 mb-8">
@@ -355,7 +355,7 @@ export default function CareWorkerTasksPage() {
                     {tasksList.length === 0 ? (
                         <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
                             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-gray-300">
-                                ✓
+
                             </div>
                             <h3 className="text-lg font-bold text-gray-900">All Caught Up!</h3>
                             <p className="text-gray-400">No pending tasks for this client.</p>
@@ -373,7 +373,7 @@ export default function CareWorkerTasksPage() {
                                     {/* Icon / Type */}
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0 ${isDone ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-[#224fa6]'
                                         }`}>
-                                        {isDone ? '✓' : '📝'}
+                                        {isDone ? '' : ''}
                                     </div>
 
                                     {/* Details */}
@@ -383,7 +383,7 @@ export default function CareWorkerTasksPage() {
                                                 {getTypeLabel(task.taskTypeKey)}
                                             </span>
                                             <span className="text-xs font-bold text-gray-400 flex items-center gap-1">
-                                                🕒 {task.time || '--:--'}
+                                                 {task.time || '--:--'}
                                             </span>
                                         </div>
                                         <h3 className="font-bold text-gray-900 text-lg">
@@ -420,7 +420,7 @@ export default function CareWorkerTasksPage() {
                                 <h3 className="text-xl font-bold text-gray-900">Update Task</h3>
                                 <p className="text-sm text-gray-500">{getTypeLabel(activeTask.taskTypeKey)}</p>
                             </div>
-                            <button onClick={() => setActiveTask(null)} className="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+                            <button onClick={() => setActiveTask(null)} className="text-gray-400 hover:text-gray-600 font-bold text-xl">×</button>
                         </div>
 
                         {updateError && (

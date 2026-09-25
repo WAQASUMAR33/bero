@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { Mail, Clock, CheckCircle2, FileText, FileDown, Plus, X } from 'lucide-react';
+
 
 export default function SarManager({ showNotification }) {
   const [items, setItems] = useState([]);
@@ -227,7 +229,7 @@ export default function SarManager({ showNotification }) {
             <p className="text-2xl font-black text-gray-900 mt-0.5">{counts.open}</p>
             <span className="text-[11px] text-gray-400">Awaiting processing</span>
           </div>
-          <span className="p-3 bg-rose-50 text-rose-600 rounded-xl text-xl">📩</span>
+          <div className="p-3 bg-rose-50 text-rose-600 rounded-xl"><Mail className="w-5 h-5" /></div>
         </div>
 
         <div className="bg-white border border-amber-200 rounded-xl p-4 shadow-xs flex items-center justify-between">
@@ -236,7 +238,7 @@ export default function SarManager({ showNotification }) {
             <p className="text-2xl font-black text-gray-900 mt-0.5">{counts.inProgress}</p>
             <span className="text-[11px] text-gray-400">Within 30-day statutory clock</span>
           </div>
-          <span className="p-3 bg-amber-50 text-amber-600 rounded-xl text-xl">⏳</span>
+          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl"><Clock className="w-5 h-5" /></div>
         </div>
 
         <div className="bg-white border border-emerald-200 rounded-xl p-4 shadow-xs flex items-center justify-between">
@@ -245,7 +247,7 @@ export default function SarManager({ showNotification }) {
             <p className="text-2xl font-black text-gray-900 mt-0.5">{counts.completed}</p>
             <span className="text-[11px] text-gray-400">Redacted & dispatched</span>
           </div>
-          <span className="p-3 bg-emerald-50 text-emerald-600 rounded-xl text-xl">✅</span>
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><CheckCircle2 className="w-5 h-5" /></div>
         </div>
 
         <div className="bg-white border border-indigo-200 rounded-xl p-4 shadow-xs flex items-center justify-between">
@@ -254,7 +256,7 @@ export default function SarManager({ showNotification }) {
             <p className="text-2xl font-black text-gray-900 mt-0.5">{counts.total}</p>
             <span className="text-[11px] text-gray-400">UK GDPR / DPA 2018 logs</span>
           </div>
-          <span className="p-3 bg-indigo-50 text-indigo-600 rounded-xl text-xl">📑</span>
+          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><FileText className="w-5 h-5" /></div>
         </div>
       </div>
 
@@ -272,7 +274,7 @@ export default function SarManager({ showNotification }) {
             />
             {search && (
               <button onClick={() => { setSearch(''); fetchItems(); }} className="absolute right-3 top-2 text-gray-400 hover:text-gray-600 text-xs cursor-pointer">
-                ✕
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -295,7 +297,7 @@ export default function SarManager({ showNotification }) {
             onClick={handleExportPDF}
             className="px-3.5 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>📄</span>
+            <FileDown className="w-4 h-4" />
             <span>Export PDF</span>
           </button>
           <button
@@ -303,7 +305,7 @@ export default function SarManager({ showNotification }) {
             onClick={() => { setFormData(initialForm); setShowModal(true); }}
             className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>➕</span>
+            <Plus className="w-4 h-4" />
             <span>Log Subject Access Request</span>
           </button>
         </div>
@@ -318,7 +320,7 @@ export default function SarManager({ showNotification }) {
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-16 px-4">
-            <span className="text-4xl">📋</span>
+            <FileText className="w-10 h-10 text-gray-300 mx-auto" />
             <h3 className="text-base font-bold text-gray-800 mt-3">No Subject Access Requests found</h3>
             <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
               No GDPR Subject Access Requests matching this criteria. Click "Log Subject Access Request" to create one.
@@ -375,7 +377,7 @@ export default function SarManager({ showNotification }) {
                         </p>
                         {isOverdue ? (
                           <span className="text-[10px] bg-rose-100 text-rose-800 px-1 py-0.2 rounded font-bold">
-                            ⚠️ OVERDUE
+                            OVERDUE
                           </span>
                         ) : (
                           <span className="text-[10px] text-gray-400">30-day statutory</span>
@@ -398,7 +400,7 @@ export default function SarManager({ showNotification }) {
                       <td className="py-3 px-3 whitespace-nowrap">
                         {item.requestGranted === 'YES' && (
                           <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            ✓ Granted
+                            Granted
                           </span>
                         )}
                         {item.requestGranted === 'PARTIAL' && (
@@ -408,7 +410,7 @@ export default function SarManager({ showNotification }) {
                         )}
                         {item.requestGranted === 'NO' && (
                           <span className="text-[11px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-                            ✕ Declined
+                            Declined
                           </span>
                         )}
                         {item.requestGranted === 'PENDING' && (

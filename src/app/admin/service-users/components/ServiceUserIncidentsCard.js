@@ -1,19 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { 
-  AlertTriangle, 
-  PlusCircle, 
-  ShieldAlert, 
-  Eye, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  UserCheck, 
-  ExternalLink,
-  ChevronRight,
-  X
-} from 'lucide-react';
+import { AlertTriangle, PlusCircle, ShieldAlert, Eye, Calendar, Clock, MapPin, UserCheck, ExternalLink, ChevronRight, X, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ServiceUserIncidentsCard({ serviceSeekerId, serviceUserName, onNotification }) {
@@ -173,9 +161,7 @@ export default function ServiceUserIncidentsCard({ serviceSeekerId, serviceUserN
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-md text-xl">
-            🚨
-          </div>
+          <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-md"><AlertTriangle className="w-5 h-5" /></div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-lg">Accidents & Incidents Tracker</h3>
@@ -202,7 +188,7 @@ export default function ServiceUserIncidentsCard({ serviceSeekerId, serviceUserN
             className="flex items-center gap-1.5 px-4 py-2 bg-white text-red-700 hover:bg-red-50 rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer"
           >
             <PlusCircle className="w-4 h-4 text-red-600" />
-            <span>+ Log Accident / Fall</span>
+            <span>Log Accident / Fall</span>
           </button>
         </div>
       </div>
@@ -236,7 +222,7 @@ export default function ServiceUserIncidentsCard({ serviceSeekerId, serviceUserN
           </div>
         ) : incidents.length === 0 ? (
           <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-xl space-y-2">
-            <p className="text-2xl">🛡️</p>
+            <Shield className="w-8 h-8 text-gray-400 mx-auto" />
             <h4 className="font-bold text-sm text-gray-800">No accidents or falls on record</h4>
             <p className="text-xs text-gray-500 max-w-sm mx-auto">
               No accidents, falls, or safety incidents have been reported for {serviceUserName || 'this resident'}.
@@ -285,7 +271,7 @@ export default function ServiceUserIncidentsCard({ serviceSeekerId, serviceUserN
                       <td className="py-3 px-3 whitespace-nowrap">
                         {isInjured ? (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 ring-1 ring-red-300">
-                            ⚠️ Injured
+                            Injured
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700">
@@ -322,7 +308,7 @@ export default function ServiceUserIncidentsCard({ serviceSeekerId, serviceUserN
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 p-5 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="p-2 bg-white/10 rounded-xl backdrop-blur-md text-xl">🚨</span>
+                <span className="p-2 bg-white/10 rounded-xl backdrop-blur-md"><AlertTriangle className="w-5 h-5" /></span>
                 <div>
                   <h3 className="font-bold text-lg">Log Accident / Incident</h3>
                   <p className="text-xs text-rose-100">Service User: <strong>{serviceUserName}</strong></p>

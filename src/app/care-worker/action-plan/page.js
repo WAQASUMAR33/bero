@@ -180,7 +180,7 @@ export default function CareWorkerActionPlanPage() {
         <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-lg font-medium text-white flex items-center gap-2 animate-in fade-in slide-in-from-top-3 ${
           notification.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'
         }`}>
-          <span>{notification.type === 'error' ? '⚠️' : '✅'}</span>
+          <span>{''}</span>
           <span>{notification.message}</span>
         </div>
       )}
@@ -260,7 +260,7 @@ export default function CareWorkerActionPlanPage() {
       ) : (
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">ℹ️</span>
+            
             <div>
               <p className="text-sm font-bold text-blue-900">Not Currently Clocked In</p>
               <p className="text-xs text-blue-700">Clock in to your scheduled shift to view actions specifically filtered for that resident.</p>
@@ -347,7 +347,7 @@ export default function CareWorkerActionPlanPage() {
       ) : displayedActions.length === 0 ? (
         <div className="bg-white rounded-2xl p-10 text-center border border-gray-200">
           <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-3xl mb-3">
-            🎉
+
           </div>
           <h3 className="text-base font-bold text-gray-900">No Action Plans Found</h3>
           <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
@@ -386,7 +386,7 @@ export default function CareWorkerActionPlanPage() {
                     <div className="flex flex-wrap items-center gap-1.5">
                       {action.serviceSeeker ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                          <span>👤</span>
+                          <span></span>
                           <span>{action.serviceSeeker.firstName} {action.serviceSeeker.lastName}</span>
                         </span>
                       ) : (
@@ -411,7 +411,7 @@ export default function CareWorkerActionPlanPage() {
                           : 'bg-amber-100 text-amber-800'
                       }`}
                     >
-                      {isCompleted ? '✓ Completed' : isInProgress ? 'In Progress' : isOverdue ? 'Overdue' : 'Pending'}
+                      {isCompleted ? 'Completed' : isInProgress ? 'In Progress' : isOverdue ? 'Overdue' : 'Pending'}
                     </span>
                   </div>
 
@@ -437,10 +437,10 @@ export default function CareWorkerActionPlanPage() {
                     <div>
                       {action.dueDate ? (
                         <span className={isOverdue ? 'text-red-600 font-bold' : ''}>
-                          📅 Due: {new Date(action.dueDate).toLocaleDateString('en-GB')}
+                          Due: {new Date(action.dueDate).toLocaleDateString('en-GB')}
                         </span>
                       ) : (
-                        <span>📅 Due: As scheduled</span>
+                        <span>Due: As scheduled</span>
                       )}
                     </div>
                     <div>
@@ -455,7 +455,7 @@ export default function CareWorkerActionPlanPage() {
                 <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
                   {isCompleted ? (
                     <div className="w-full text-center text-xs font-semibold text-emerald-700 bg-emerald-100/60 py-2 rounded-xl flex items-center justify-center gap-1">
-                      <span>✓ Completed {action.completedAt ? new Date(action.completedAt).toLocaleDateString('en-GB') : ''}</span>
+                      <span>Completed {action.completedAt ? new Date(action.completedAt).toLocaleDateString('en-GB') : ''}</span>
                     </div>
                   ) : (
                     <>
@@ -506,7 +506,7 @@ export default function CareWorkerActionPlanPage() {
                 onClick={() => setSelectedAction(null)}
                 className="text-gray-400 hover:text-gray-600 text-xl font-bold p-1"
               >
-                ✕
+
               </button>
             </div>
 
@@ -552,7 +552,7 @@ export default function CareWorkerActionPlanPage() {
                 disabled={submitting || !completionNotes.trim()}
                 className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
               >
-                {submitting ? 'Saving...' : '✓ Confirm & Complete Action'}
+                {submitting ? 'Saving...' : 'Confirm & Complete Action'}
               </button>
             </div>
           </div>

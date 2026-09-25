@@ -13,7 +13,8 @@ import {
   Building,
   User,
   CreditCard,
-  Calendar
+  Calendar,
+  Coins
 } from 'lucide-react';
 import ManualTransactionModal from './ManualTransactionModal';
 
@@ -251,8 +252,8 @@ export default function FinancialTransactionsHub({ onTransactionChange }) {
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center space-y-3">
-            <div className="w-12 h-12 bg-blue-50 text-[#224fa6] rounded-2xl flex items-center justify-center mx-auto text-xl">
-              💷
+            <div className="w-12 h-12 bg-blue-50 text-[#224fa6] rounded-2xl flex items-center justify-center mx-auto">
+              <Coins className="w-6 h-6 text-[#224fa6]" />
             </div>
             <h4 className="font-bold text-gray-900 text-sm">No transactions found</h4>
             <p className="text-xs text-gray-500 max-w-sm mx-auto">
@@ -327,8 +328,8 @@ export default function FinancialTransactionsHub({ onTransactionChange }) {
                         {tx.reference && <p className="text-[10px] text-gray-500 font-mono">{tx.reference}</p>}
                       </td>
                       <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">
-                          ✓ Synced
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Synced
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right whitespace-nowrap">

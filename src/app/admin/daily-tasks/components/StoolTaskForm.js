@@ -76,9 +76,9 @@ export default function StoolTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Urine Passed *</label>
         <div className="flex flex-wrap gap-3">
           {[
-            { value: 'YES', label: '✅ Yes' },
-            { value: 'NO', label: '❌ No' },
-            { value: 'NA', label: '➖ N/A' }
+            { value: 'YES', label: ' Yes' },
+            { value: 'NO', label: ' No' },
+            { value: 'NA', label: ' N/A' }
           ].map(option => (
             <button
               key={option.value}
@@ -113,9 +113,9 @@ export default function StoolTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Completed *</label>
         <div className="flex flex-wrap gap-3">
           {[
-            { value: 'YES', label: '✅ Yes' },
-            { value: 'NO', label: '❌ No' },
-            { value: 'DECLINED', label: '🚫 Declined' }
+            { value: 'YES', label: ' Yes' },
+            { value: 'NO', label: ' No' },
+            { value: 'DECLINED', label: ' Declined' }
           ].map(status => (
             <button
               key={status.value}
@@ -138,9 +138,9 @@ export default function StoolTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
         <div className="flex gap-6">
           {[
-            { value: 'SAD', emoji: '😢', label: 'Sad' },
-            { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-            { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+            { value: 'SAD', emoji: '', label: 'Sad' },
+            { value: 'NEUTRAL', emoji: '', label: 'Neutral' },
+            { value: 'HAPPY', emoji: '', label: 'Happy' }
           ].map(emotion => (
             <button
               key={emotion.value}

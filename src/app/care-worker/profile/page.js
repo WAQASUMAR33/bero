@@ -183,15 +183,15 @@ export default function ProfilePage() {
                         <div className="space-y-4">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Contact Info</h3>
                             <div className="flex items-center gap-3 text-gray-700">
-                                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📧</span>
+                                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"></span>
                                 <span className="flex-1 truncate">{user.email}</span>
                             </div>
                             <div className="flex items-center gap-3 text-gray-700">
-                                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📱</span>
+                                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"></span>
                                 <span className="flex-1">{user.phoneNo || 'Not provided'}</span>
                             </div>
                             <div className="flex items-center gap-3 text-gray-700">
-                                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📍</span>
+                                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"></span>
                                 <span className="flex-1">{user.postalCode || 'No Address'}</span>
                             </div>
                         </div>
@@ -206,14 +206,14 @@ export default function ProfilePage() {
                                 </span>
                             </div>
                             <div className="flex items-center gap-3 text-gray-700">
-                                <span className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">🏢</span>
+                                <span className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600"></span>
                                 <span className="flex-1 flex flex-col">
                                     <span className="text-xs text-gray-400">Region</span>
                                     <span>{user.region?.name || 'Unassigned'}</span>
                                 </span>
                             </div>
                             <div className="flex items-center gap-3 text-gray-700">
-                                <span className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">📅</span>
+                                <span className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600"></span>
                                 <span className="flex-1 flex flex-col">
                                     <span className="text-xs text-gray-400">Start Date</span>
                                     <span>{user.startDate ? new Date(user.startDate).toLocaleDateString() : 'N/A'}</span>
@@ -228,7 +228,7 @@ export default function ProfilePage() {
             <div className="bg-gradient-to-r from-[#1a3a75] to-[#224fa6] rounded-2xl shadow-sm p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h3 className="text-lg font-bold flex items-center gap-2">
-                        <span>📋</span> My Official Staff File & Records
+                        <span></span> My Official Staff File & Records
                     </h3>
                     <p className="text-blue-100 text-xs mt-1 max-w-xl">
                         View your full employment records including DBS & Compliance, Supervisions, Appraisals, Probation, Sponsorship status, Driving information, PDPs, and Wage statements.
@@ -249,7 +249,7 @@ export default function ProfilePage() {
                         href="/care-worker/wages"
                         className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition-all flex items-center gap-2"
                     >
-                        <span>💰</span>
+                        <span></span>
                         <span>My Wages</span>
                     </Link>
                 </div>
@@ -258,7 +258,7 @@ export default function ProfilePage() {
             {/* Emergency Contact */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-red-500">🚑</span> Emergency Contact
+                    <span className="text-red-500"></span> Emergency Contact
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-red-50/50 p-4 rounded-xl border border-red-100">
                     <div>

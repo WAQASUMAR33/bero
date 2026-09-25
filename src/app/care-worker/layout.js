@@ -219,7 +219,7 @@ export default function CareWorkerLayout({ children }) {
                 <div className="p-6 flex items-center justify-center border-b border-gray-200">
                     <Image src="/assets/logo2.png" width={120} height={60} alt="Logo" className="object-contain" />
                 </div>
-                <nav className="flex-1 px-4 py-6 space-y-1">
+                <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto sleek-scrollbar">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (

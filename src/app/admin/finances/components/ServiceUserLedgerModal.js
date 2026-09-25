@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { CreditCard, FileText } from 'lucide-react';
 
 function formatCurrency(val) {
   if (val === undefined || val === null || isNaN(val)) return '£0.00';
@@ -168,7 +169,7 @@ export default function ServiceUserLedgerModal({ serviceSeekerId, onClose, onNot
         {/* Header */}
         <div className="bg-gradient-to-r from-[#224fa6] via-[#2a59be] to-[#3270e9] text-white px-6 py-4 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
-            <span className="p-2 bg-white/10 rounded-xl text-xl">💳</span>
+            <CreditCard className="w-5 h-5 text-white/90" />
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold">
@@ -222,7 +223,7 @@ export default function ServiceUserLedgerModal({ serviceSeekerId, onClose, onNot
                 <div className="lg:col-span-8 bg-white border border-gray-200 rounded-xl p-4 shadow-xs space-y-3">
                   <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                     <h5 className="text-xs font-bold uppercase tracking-wider text-gray-800 flex items-center gap-1.5">
-                      <span>📋</span> Agreement & Payment Responsibilities
+                      <FileText className="w-3.5 h-3.5 text-gray-600" /> Agreement & Payment Responsibilities
                     </h5>
                     <button
                       type="button"

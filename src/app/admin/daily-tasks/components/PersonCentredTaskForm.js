@@ -118,7 +118,7 @@ export default function PersonCentredTaskForm({
           />
           {formData.photoUrl && (
             <div className="mt-2">
-              <p className="text-xs text-green-600">✓ Photo uploaded</p>
+              <p className="text-xs text-green-600"> Photo uploaded</p>
               <input
                 type="text"
                 value={formData.photoUrl}
@@ -168,9 +168,9 @@ export default function PersonCentredTaskForm({
           <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
           <div className="flex gap-6">
             {[
-              { value: 'SAD', emoji: '😢', label: 'Sad' },
-              { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-              { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+              { value: 'SAD', emoji: '', label: 'Sad' },
+              { value: 'NEUTRAL', emoji: '', label: 'Neutral' },
+              { value: 'HAPPY', emoji: '', label: 'Happy' }
             ].map(emotion => (
               <button
                 key={emotion.value}
@@ -215,7 +215,7 @@ export default function PersonCentredTaskForm({
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 bg-gradient-to-r from-[#224fa6] to-[#3270e9] rounded-xl flex items-center justify-center text-white text-xl mr-3">
-                ➕
+
               </div>
               <h3 className="text-xl font-semibold text-gray-900">Add New Task Name</h3>
             </div>

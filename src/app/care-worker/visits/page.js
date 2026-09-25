@@ -392,7 +392,7 @@ export default function VisitsPage() {
                                                 }`}
                                         >
                                             <p className={`font-bold ${reportForm.visitType === type ? 'text-[#224fa6]' : 'text-gray-700'}`}>
-                                                {type === 'FAMILY' ? '👨‍👩‍👧 Family' : '👔 Professional'}
+                                                {type === 'FAMILY' ? 'Family' : 'Professional'}
                                             </p>
                                         </button>
                                     ))}

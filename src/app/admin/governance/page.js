@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Bell, Shield, AlertTriangle, FileText } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
@@ -125,7 +126,7 @@ function GovernanceContent() {
                     : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100 border-transparent'
                 }`}
               >
-                <span className="text-base">🚨</span>
+                <Bell className="w-4 h-4 text-[#224fa6]" />
                 <span>CQC Notifications</span>
               </button>
 
@@ -138,7 +139,7 @@ function GovernanceContent() {
                     : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100 border-transparent'
                 }`}
               >
-                <span className="text-base">🛡️</span>
+                <Shield className="w-4 h-4 text-amber-600" />
                 <span>Safeguarding Tracker</span>
               </button>
 
@@ -151,7 +152,7 @@ function GovernanceContent() {
                     : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100 border-transparent'
                 }`}
               >
-                <span className="text-base">⚠️</span>
+                <AlertTriangle className="w-4 h-4 text-red-600" />
                 <span>RIDDOR Tracker</span>
               </button>
 
@@ -164,7 +165,7 @@ function GovernanceContent() {
                     : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100 border-transparent'
                 }`}
               >
-                <span className="text-base">📋</span>
+                <FileText className="w-4 h-4 text-indigo-600" />
                 <span>SAR (GDPR) Tracker</span>
               </button>
             </div>

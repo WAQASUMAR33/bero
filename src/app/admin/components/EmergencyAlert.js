@@ -1,4 +1,5 @@
 'use client';
+import { VolumeX, X } from 'lucide-react';
 
 import { useState, useEffect, useRef } from 'react';
 
@@ -224,14 +225,14 @@ export default function EmergencyAlert({ user, onClose }) {
                 onClick={stopSound}
                 className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors text-sm font-medium"
               >
-                🔇 Stop Sound
+                Stop Sound
               </button>
             )}
             <button
               onClick={onClose}
               className="text-white hover:text-gray-200 text-2xl font-bold"
             >
-              ✕
+              ×
             </button>
           </div>
         </div>

@@ -650,7 +650,7 @@ export default function ServiceUsersPage() {
               <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900">{editing ? 'Edit' : 'Add'} Service User</h2>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">×</button>
                 </div>
 
                 {/* Progress */}
@@ -714,7 +714,7 @@ export default function ServiceUsersPage() {
                             </p>
                             <FileUpload
                               accept="image/*"
-                              label="📷 Upload Photo"
+                              label="Upload Photo"
                               onUploadComplete={handlePhotoUpload}
                               onError={(error) => {
                                 setNotification({ show: true, message: `Photo upload failed: ${error}`, type: 'error' });
@@ -787,7 +787,7 @@ export default function ServiceUsersPage() {
                           <label className="block text-sm font-medium text-gray-700">Location</label>
                           {formData.latitude && formData.longitude && (
                             <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                              📍 Location set: {parseFloat(formData.latitude).toFixed(4)}, {parseFloat(formData.longitude).toFixed(4)}
+                              Location set: {parseFloat(formData.latitude).toFixed(4)}, {parseFloat(formData.longitude).toFixed(4)}
                             </span>
                           )}
                         </div>

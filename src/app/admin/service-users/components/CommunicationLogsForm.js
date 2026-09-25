@@ -683,7 +683,7 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                       : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                   }`}
                 >
-                  ⚡ Urgent Only
+                  Urgent Only
                 </button>
               )}
 
@@ -697,7 +697,7 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                       : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                   }`}
                 >
-                  ⚠️ Handover Alerts
+                  Handover Alerts
                 </button>
               )}
 
@@ -787,21 +787,21 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                               ? 'bg-amber-100 text-amber-800'
                               : 'bg-emerald-100 text-emerald-800'
                           }`}>
-                            {meta.direction === 'Outgoing' ? '↗ Outgoing' : '↙ Incoming'}
+                            {meta.direction === 'Outgoing' ? 'Outgoing' : 'Incoming'}
                           </span>
                         )}
 
                         {/* Priority Badge */}
                         {meta.priority && meta.priority !== 'Routine' && (
                           <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-100 text-rose-800 border border-rose-200">
-                            ⚡ {meta.priority}
+                            {meta.priority}
                           </span>
                         )}
 
                         {/* Handover Flag Badge */}
                         {meta.handoverFlag && (
                           <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
-                            ⚠️ Handover Alert
+                            Handover Alert
                           </span>
                         )}
                       </div>
@@ -1014,7 +1014,7 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                                   ? 'bg-amber-100 text-amber-800'
                                   : 'bg-emerald-100 text-emerald-800'
                               }`}>
-                                {meta.direction === 'Outgoing' ? '↗ Outgoing' : '↙ Incoming'}
+                                {meta.direction === 'Outgoing' ? 'Outgoing' : 'Incoming'}
                               </span>
                             </div>
                           </td>
@@ -1162,11 +1162,11 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                   meta.direction === 'Outgoing' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                                 }`}>
-                                  {meta.direction === 'Outgoing' ? '↗ Out' : '↙ In'}
+                                  {meta.direction === 'Outgoing' ? 'Out' : 'In'}
                                 </span>
                                 {meta.priority === 'Urgent' && (
                                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
-                                    ⚡ Urgent
+                                    Urgent
                                   </span>
                                 )}
                               </div>
@@ -1333,7 +1333,7 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                           <td className="py-3 px-4 text-center whitespace-nowrap">
                             {meta.handoverFlag ? (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                                ⚠️ Alert
+                                Alert
                               </span>
                             ) : (
                               <span className="text-gray-300 text-xs">Normal</span>
@@ -1577,7 +1577,7 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                           onChange={e => setFormData(prev => ({ ...prev, direction: e.target.value }))}
                           className="text-[#2563eb] focus:ring-[#2563eb]"
                         />
-                        <span>↙ Incoming (Family member reached out)</span>
+                        <span>Incoming (Family member reached out)</span>
                       </label>
                       <label className="flex items-center gap-2 text-xs text-gray-800 font-semibold cursor-pointer">
                         <input
@@ -1588,7 +1588,7 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                           onChange={e => setFormData(prev => ({ ...prev, direction: e.target.value }))}
                           className="text-[#2563eb] focus:ring-[#2563eb]"
                         />
-                        <span>↗ Outgoing (Staff contacted family)</span>
+                        <span>Outgoing (Staff contacted family)</span>
                       </label>
                     </div>
                   </div>
@@ -1800,7 +1800,7 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                         className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500 cursor-pointer"
                       />
                       <span className="text-xs font-bold text-amber-950">
-                        ⚠️ Flag this note for immediate handover attention (Next shift alert)
+                        Flag this note for immediate handover attention (Next shift alert)
                       </span>
                     </label>
                   </div>
@@ -2001,13 +2001,13 @@ export default function CommunicationLogsForm({ serviceSeekerId, serviceUserName
                 {selectedRecord.metadata?.priority && selectedRecord.metadata.priority !== 'Routine' && (
                   <div>
                     <span className="text-gray-500 uppercase font-semibold block text-[10px]">Priority</span>
-                    <span className="font-bold text-rose-700 text-xs sm:text-sm">⚡ {selectedRecord.metadata.priority}</span>
+                    <span className="font-bold text-rose-700 text-xs sm:text-sm">{selectedRecord.metadata.priority}</span>
                   </div>
                 )}
                 {selectedRecord.metadata?.handoverFlag && (
                   <div className="col-span-2">
                     <span className="text-amber-900 font-bold bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-md inline-block">
-                      ⚠️ Handover Flag: Requires Immediate Next Shift Attention
+                      Handover Flag: Requires Immediate Next Shift Attention
                     </span>
                   </div>
                 )}

@@ -944,33 +944,33 @@ export default function StaffManagementPage() {
                 <div className="flex items-center space-x-2 bg-gray-100 p-1.5 rounded-xl border border-gray-200">
                   <button
                     onClick={() => setActiveTableView('overview')}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 cursor-pointer ${
                       activeTableView === 'overview'
                         ? 'bg-[#224fa6] text-white shadow-md'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                     }`}
                   >
-                    <span>📋 Overview</span>
+                    <span>Overview</span>
                   </button>
                   <button
                     onClick={() => setActiveTableView('employment')}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 cursor-pointer ${
                       activeTableView === 'employment'
                         ? 'bg-[#224fa6] text-white shadow-md'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                     }`}
                   >
-                    <span>💼 Employment & Pay</span>
+                    <span>Employment & Pay</span>
                   </button>
                   <button
                     onClick={() => setActiveTableView('compliance')}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 cursor-pointer ${
                       activeTableView === 'compliance'
                         ? 'bg-[#224fa6] text-white shadow-md'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                     }`}
                   >
-                    <span>🛡️ Compliance & Visas</span>
+                    <span>Compliance & Visas</span>
                     {displayedStaff.filter(s => {
                       const dbs = getDbsStatus(s.dbsDate);
                       const visa = getVisaStatus(s.visaExpiryDate, s.sponsorshipStatus);
@@ -987,26 +987,26 @@ export default function StaffManagementPage() {
                   </button>
                   <button
                     onClick={() => setActiveTableView('driving')}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 cursor-pointer ${
                       activeTableView === 'driving'
                         ? 'bg-[#224fa6] text-white shadow-md'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                     }`}
                   >
-                    <span>🚗 Driving Details</span>
+                    <span>Driving Details</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${activeTableView === 'driving' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}`}>
                       {displayedStaff.filter(s => s.drivingLicenceValid || s.ownCar).length}
                     </span>
                   </button>
                   <button
                     onClick={() => setActiveTableView('health')}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 cursor-pointer ${
                       activeTableView === 'health'
                         ? 'bg-[#224fa6] text-white shadow-md'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                     }`}
                   >
-                    <span>🏥 Health, NOK & GP</span>
+                    <span>Health, NOK & GP</span>
                   </button>
                 </div>
                 <div className="text-xs text-gray-500 flex items-center space-x-3">
@@ -1133,7 +1133,7 @@ export default function StaffManagementPage() {
                                         {member.role?.displayName || 'N/A'}
                                       </span>
                                       {member.region?.title && (
-                                        <span className="text-xs text-gray-500 font-medium">📍 {member.region.title}</span>
+                                        <span className="text-xs text-gray-500 font-medium">{member.region.title}</span>
                                       )}
                                     </div>
                                   </td>
@@ -1166,7 +1166,7 @@ export default function StaffManagementPage() {
                                   <td className="px-6 py-4 whitespace-nowrap">
                                     {member.drivingLicenceValid || member.ownCar ? (
                                       <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
-                                        🚗 {member.ownCar ? 'Has Car' : 'Licence Only'}
+                                        {member.ownCar ? 'Has Car' : 'Licence Only'}
                                       </span>
                                     ) : (
                                       <span className="text-xs text-gray-400 font-medium">Non-driver</span>
@@ -1192,10 +1192,10 @@ export default function StaffManagementPage() {
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                     {member.sleepingNights ? (
                                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                        ✓ Yes {member.costForSleepingNights ? `(£${Number(member.costForSleepingNights).toFixed(2)})` : ''}
+                                        Yes {member.costForSleepingNights ? `(£${Number(member.costForSleepingNights).toFixed(2)})` : ''}
                                       </span>
                                     ) : (
-                                      <span className="text-gray-400 text-xs">✗ No</span>
+                                      <span className="text-gray-400 text-xs">No</span>
                                     )}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
@@ -1225,7 +1225,7 @@ export default function StaffManagementPage() {
                                         ? 'bg-green-50 text-green-700 border-green-200' 
                                         : 'bg-gray-100 text-gray-600 border-gray-200'
                                     }`}>
-                                      {member.drivingLicenceValid ? '✓ Valid' : '✗ None'}
+                                      {member.drivingLicenceValid ? 'Valid' : 'None'}
                                     </span>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -1234,7 +1234,7 @@ export default function StaffManagementPage() {
                                         ? 'bg-blue-50 text-blue-700 border-blue-200' 
                                         : 'bg-gray-100 text-gray-600 border-gray-200'
                                     }`}>
-                                      {member.ownCar ? '✓ Yes' : '✗ No'}
+                                      {member.ownCar ? 'Yes' : 'No'}
                                     </span>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -1262,7 +1262,7 @@ export default function StaffManagementPage() {
                                         ? 'bg-green-50 text-green-700 border-green-200' 
                                         : 'bg-amber-50 text-amber-700 border-amber-200'
                                     }`}>
-                                      {member.carInsuranceVerified ? '✓ Verified' : '⚠ Pending'}
+                                      {member.carInsuranceVerified ? 'Verified' : 'Pending'}
                                     </span>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -1271,7 +1271,7 @@ export default function StaffManagementPage() {
                                         ? 'bg-green-50 text-green-700 border-green-200' 
                                         : 'bg-gray-100 text-gray-600 border-gray-200'
                                     }`}>
-                                      {member.businessInsurance ? '✓ Business Class' : '✗ Standard'}
+                                      {member.businessInsurance ? 'Business Class' : 'Standard'}
                                     </span>
                                   </td>
                                 </>
@@ -1356,7 +1356,7 @@ export default function StaffManagementPage() {
                                   <td className="px-6 py-4 whitespace-nowrap text-xs">
                                     {member.allergyStatus === 'Allergies' || member.allergies ? (
                                       <span className="px-2 py-0.5 rounded bg-red-50 text-red-700 font-medium border border-red-200" title={member.allergies || 'Allergies noted'}>
-                                        ⚠️ {member.allergies ? (member.allergies.length > 20 ? member.allergies.substring(0, 20) + '...' : member.allergies) : 'Allergies'}
+                                        {member.allergies ? (member.allergies.length > 20 ? member.allergies.substring(0, 20) + '...' : member.allergies) : 'Allergies'}
                                       </span>
                                     ) : (
                                       <span className="text-gray-500">{member.allergyStatus || 'None'}</span>
@@ -1933,7 +1933,7 @@ export default function StaffManagementPage() {
                         <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
                           <div className="flex items-center justify-between border-b pb-3">
                             <h4 className="text-base font-bold text-gray-900 flex items-center space-x-2">
-                              <span>🛡️ DBS (Disclosure & Barring Service)</span>
+                              <span>DBS (Disclosure & Barring Service)</span>
                             </h4>
                             <span className="text-xs text-gray-500">Valid for 3 years</span>
                           </div>
@@ -1993,7 +1993,7 @@ export default function StaffManagementPage() {
                         <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
                           <div className="flex items-center justify-between border-b pb-3">
                             <h4 className="text-base font-bold text-gray-900 flex items-center space-x-2">
-                              <span>🛂 Right to Work & Visa Status</span>
+                              <span>Right to Work & Visa Status</span>
                             </h4>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -2075,7 +2075,7 @@ export default function StaffManagementPage() {
                       <div className="space-y-6">
                         <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
                           <div className="border-b pb-3">
-                            <h4 className="text-base font-bold text-gray-900">🚗 Driving Eligibility & Vehicle Information</h4>
+                            <h4 className="text-base font-bold text-gray-900">Driving Eligibility & Vehicle Information</h4>
                             <p className="text-xs text-gray-500 mt-0.5">Capture driver licence status and vehicle details for community care runs</p>
                           </div>
 
@@ -2378,12 +2378,12 @@ export default function StaffManagementPage() {
                   {/* Edit Section Tabs */}
                   <div className="flex flex-wrap gap-2 border-b border-gray-200 mb-6 pb-2">
                     {[
-                      { id: 'personal', label: '👤 Personal & Contact' },
-                      { id: 'employment', label: '💼 Employment & Pay' },
-                      { id: 'compliance', label: '🛡️ Compliance & DBS' },
-                      { id: 'driving', label: '🚗 Driving Details' },
-                      { id: 'health', label: '🏥 Health & Emergency' },
-                      { id: 'permissions', label: '🔑 Permissions' }
+                      { id: 'personal', label: 'Personal & Contact' },
+                      { id: 'employment', label: 'Employment & Pay' },
+                      { id: 'compliance', label: 'Compliance & DBS' },
+                      { id: 'driving', label: 'Driving Details' },
+                      { id: 'health', label: 'Health & Emergency' },
+                      { id: 'permissions', label: 'Permissions' }
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -2722,7 +2722,7 @@ export default function StaffManagementPage() {
                     {editActiveTab === 'compliance' && (
                       <div className="space-y-4">
                         <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
-                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">🛡️ DBS Information</h4>
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">DBS Information</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-semibold text-gray-700 mb-1">DBS Check Date</label>
@@ -2762,7 +2762,7 @@ export default function StaffManagementPage() {
                         </div>
 
                         <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
-                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">🛂 Right to Work & Visas</h4>
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">Right to Work & Visas</h4>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                               <label className="block text-sm font-semibold text-gray-700 mb-1">Sponsorship Status</label>
@@ -2827,7 +2827,7 @@ export default function StaffManagementPage() {
                     {editActiveTab === 'driving' && (
                       <div className="space-y-4">
                         <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-4">
-                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">🚗 Driving & Vehicle Information</h4>
+                          <h4 className="text-base font-bold text-gray-900 border-b pb-2">Driving & Vehicle Information</h4>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">

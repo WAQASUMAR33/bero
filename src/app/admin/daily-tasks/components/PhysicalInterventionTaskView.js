@@ -126,7 +126,7 @@ export default function PhysicalInterventionTaskView({ task }) {
             <p className="text-xs font-medium text-gray-500 uppercase mb-1">Emotion</p>
             <div className="flex items-center space-x-2">
               <span className="text-3xl">
-                {task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐'}
+                {task.emotion === 'HAPPY' ? '' : task.emotion === 'SAD' ? '' : ''}
               </span>
               <span className="text-base font-semibold text-gray-900">{task.emotion}</span>
             </div>
@@ -197,7 +197,7 @@ export default function PhysicalInterventionTaskView({ task }) {
         <div className="bg-gray-50 rounded-xl p-3">
           <p className="text-xs font-medium text-gray-500 uppercase mb-2">Signature</p>
           <div className="border-2 border-gray-200 rounded-lg p-4 bg-white">
-            <p className="text-sm text-gray-500">✍️ Signature on file</p>
+            <p className="text-sm text-gray-500"> Signature on file</p>
           </div>
         </div>
       )}

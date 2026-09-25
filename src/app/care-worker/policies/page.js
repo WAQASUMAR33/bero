@@ -110,12 +110,12 @@ export default function PoliciesPage() {
     };
 
     const getFileIcon = (fileName) => {
-        if (!fileName) return '📄';
+        if (!fileName) return '';
         const ext = fileName.split('.').pop()?.toLowerCase();
-        if (ext === 'pdf') return '📕';
-        if (['doc', 'docx'].includes(ext)) return '📘';
-        if (['xls', 'xlsx'].includes(ext)) return '📗';
-        return '📄';
+        if (ext === 'pdf') return 'PDF';
+        if (['doc', 'docx'].includes(ext)) return 'DOC';
+        if (['xls', 'xlsx'].includes(ext)) return 'XLS';
+        return '';
     };
 
     const signedCount = policies.filter(p => p.isSigned).length;

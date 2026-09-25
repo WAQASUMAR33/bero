@@ -107,7 +107,7 @@ export default function SignatureCanvas({ onSave, onClose, existingSignature }) 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-gradient-to-r from-[#224fa6] to-[#3270e9] rounded-xl flex items-center justify-center text-white text-xl mr-3">
-              ✍️
+
             </div>
             <h3 className="text-xl font-semibold text-gray-900">Add Signature</h3>
           </div>
@@ -115,7 +115,7 @@ export default function SignatureCanvas({ onSave, onClose, existingSignature }) 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl"
           >
-            ✕
+
           </button>
         </div>
 

@@ -165,7 +165,7 @@ export default function ContactsForm({ serviceSeekerId, onNotification }) {
   };
 
   const formatTypeIcon = (type) => {
-    return type === 'PROFESSIONAL' ? '👨‍⚕️' : '👨‍👩‍👧‍👦';
+    return type === 'PROFESSIONAL' ? 'Pro' : 'Family';
   };
 
   const handleFileChange = async (e) => {

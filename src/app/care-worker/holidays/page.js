@@ -226,7 +226,7 @@ export default function HolidaysPage() {
                                             color: holiday.holidayType?.color
                                         }}>
                                         {/* Icon based on type maybe, or just calendar */}
-                                        📅
+
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">

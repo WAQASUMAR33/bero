@@ -1,4 +1,5 @@
 'use client';
+import { Settings, Trash2 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 
@@ -524,9 +525,7 @@ export default function BathingForm({ serviceSeekerId, onNotification }) {
                     type="button"
                     onClick={() => setShowBathTypesModal(true)}
                     className="text-gray-600 hover:text-gray-800"
-                  >
-                    ⚙️
-                  </button>
+                  ><Settings className="w-4 h-4" /></button>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -769,9 +768,7 @@ export default function BathingForm({ serviceSeekerId, onNotification }) {
                 <button
                   type="button"
                   className="text-red-600 hover:text-red-800"
-                >
-                  🗑️
-                </button>
+                ><Trash2 className="w-4 h-4" /></button>
                 <button
                   type="button"
                   onClick={() => setShowAddTimeModal(true)}

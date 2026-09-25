@@ -28,7 +28,7 @@ export default function EncouragementTaskView({ task }) {
       {/* Encouragement Message - Prominent Display */}
       <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-6 border-2 border-yellow-200">
         <div className="flex items-center mb-3">
-          <span className="text-3xl mr-2">💪</span>
+          <span className="text-3xl mr-2"></span>
           <p className="text-sm font-medium text-yellow-700 uppercase">Encouragement</p>
         </div>
         <p className="text-lg text-gray-900 font-medium italic">&ldquo;{task.encouragement}&rdquo;</p>
@@ -55,7 +55,7 @@ export default function EncouragementTaskView({ task }) {
             <p className="text-xs font-medium text-gray-500 uppercase mb-1">Emotion</p>
             <div className="flex items-center space-x-2">
               <span className="text-3xl">
-                {task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐'}
+                {task.emotion === 'HAPPY' ? '' : task.emotion === 'SAD' ? '' : ''}
               </span>
               <span className="text-base font-semibold text-gray-900">{task.emotion}</span>
             </div>

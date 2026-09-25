@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, PlusCircle, ArrowDownRight, ArrowUpRight, DollarSign, Calendar, Building, User, FileText } from 'lucide-react';
+import { X, PlusCircle, ArrowDownRight, ArrowUpRight, DollarSign, Calendar, Building, User, FileText, Coins, AlertTriangle, Zap } from 'lucide-react';
 
 export default function ManualTransactionModal({ isOpen, onClose, onSuccess, initialType = 'INCOMING' }) {
   const [type, setType] = useState(initialType);
@@ -162,7 +162,9 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
         {/* Header */}
         <div className="bg-gradient-to-r from-[#173a7a] via-[#224fa6] to-[#3270e9] p-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="p-2 bg-white/10 rounded-xl backdrop-blur-md text-xl">💷</span>
+            <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md flex items-center justify-center">
+              <Coins className="w-5 h-5 text-white" />
+            </div>
             <div>
               <h3 className="font-bold text-lg">Manual Financial Input</h3>
               <p className="text-xs text-blue-100">Log incoming revenues or outgoing expenses (pulls to P&L & Ledgers)</p>
@@ -180,7 +182,7 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs font-semibold text-red-700 flex items-center gap-2">
-              <span>⚠️</span>
+              <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
               <span>{error}</span>
             </div>
           )}
@@ -380,7 +382,7 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
 
           {/* Automatic sync badge */}
           <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-xs text-emerald-800">
-            <span className="text-base">⚡</span>
+            <Zap className="w-4 h-4 shrink-0 text-emerald-700" />
             <span>
               <strong>Automatic Pull-Through:</strong> Saving will immediately credit/debit the <strong>{new Date(date).toLocaleString('default', { month: 'long', year: 'numeric' })} P&L statement</strong>
               {isServiceUserCategory ? ' and post to the service user\'s 52-week ledger.' : '.'}

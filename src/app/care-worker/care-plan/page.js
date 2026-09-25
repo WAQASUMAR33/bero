@@ -210,7 +210,7 @@ export default function CareWorkerCarePlanPage() {
 
                 {/* Resident Action Plans */}
                 {actionPlans.length > 0 && (
-                    <SectionCard title={`Action Plans for ${seeker?.firstName || 'Resident'}`} icon="📋">
+                    <SectionCard title={`Action Plans for ${seeker?.firstName || 'Resident'}`} icon="">
                         <div className="space-y-3">
                             {actionPlans.map(action => (
                                 <div key={action.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -219,7 +219,7 @@ export default function CareWorkerCarePlanPage() {
                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                                 action.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                                             }`}>
-                                                {action.status === 'COMPLETED' ? '✓ Completed' : 'Pending Action'}
+                                                {action.status === 'COMPLETED' ? 'Completed' : 'Pending Action'}
                                             </span>
                                             <span className="text-xs font-bold text-slate-900">{action.item || action.title}</span>
                                         </div>
@@ -239,7 +239,7 @@ export default function CareWorkerCarePlanPage() {
 
                 {/* Profile Summary */}
                 {seeker && (
-                    <SectionCard title="Client Profile" icon="👤">
+                    <SectionCard title="Client Profile" icon="">
                         <div className="grid grid-cols-2 gap-4">
                             <SummaryRow label="Full Name" value={`${seeker.firstName} ${seeker.lastName}`} />
                             <SummaryRow label="Preferred Name" value={seeker.preferredName} />
@@ -255,7 +255,7 @@ export default function CareWorkerCarePlanPage() {
 
                 {/* Emergency & Medical - Critical */}
                 {admission && (
-                    <SectionCard title="Medical & Emergency" icon="🏥">
+                    <SectionCard title="Medical & Emergency" icon="">
                         <div className="space-y-4">
                             {admission.advancedCarePlanUrl && (
                                 <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center justify-between">
@@ -299,7 +299,7 @@ export default function CareWorkerCarePlanPage() {
 
                 {/* Diet & Hydration */}
                 {admission && (
-                    <SectionCard title="Dietary Needs" icon="🍽️">
+                    <SectionCard title="Dietary Needs" icon="">
                         <div className="grid grid-cols-2 gap-4">
                             <SummaryRow label="Main Diet" value={admission.mainDiet} />
                             <SummaryRow label="Special Diet" value={admission.specialDiet} />
@@ -314,7 +314,7 @@ export default function CareWorkerCarePlanPage() {
 
                 {/* Risk Assessments */}
                 {riskAssessments.length > 0 && (
-                    <SectionCard title="Active Risks" icon="⚠️">
+                    <SectionCard title="Active Risks" icon="">
                         <div className="space-y-3">
                             {riskAssessments.map(risk => (
                                 <div key={risk.id} className="bg-amber-50 p-3 rounded-lg border border-amber-100/50">
@@ -331,7 +331,7 @@ export default function CareWorkerCarePlanPage() {
 
                 {/* Contacts */}
                 {contacts.length > 0 && (
-                    <SectionCard title="Key Contacts" icon="📞">
+                    <SectionCard title="Key Contacts" icon="">
                         <div className="space-y-3">
                             {contacts.map(contact => (
                                 <div key={contact.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">

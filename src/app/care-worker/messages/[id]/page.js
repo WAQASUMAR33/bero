@@ -228,7 +228,7 @@ export default function ChatPage() {
                                                 {/* Timestamp - visible on hover or if last in group */}
                                                 <div className={`text-[10px] text-slate-400 mt-1 px-1 transition-opacity ${isMe ? 'text-right' : 'text-left'} ${isLastInGroup ? 'opacity-100' : 'opacity-0 h-0 group-hover:opacity-100 group-hover:h-auto'}`}>
                                                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    {isMe && <span className="ml-1 font-bold">✓</span>}
+                                                    {isMe && <span className="ml-1 font-bold"></span>}
                                                 </div>
                                             </div>
                                         </div>

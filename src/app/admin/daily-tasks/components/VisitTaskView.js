@@ -2,7 +2,7 @@
 
 export default function VisitTaskView({ task }) {
   const getVisitTypeIcon = (type) => {
-    return type === 'FAMILY' ? '👨‍👩‍👧‍👦' : '👔';
+    return type === 'FAMILY' ? '‍‍‍' : '';
   };
 
   const getRoleDisplay = (role) => {
@@ -72,7 +72,7 @@ export default function VisitTaskView({ task }) {
           <div className="bg-gray-50 rounded-xl p-3">
             <p className="text-xs font-medium text-gray-500 uppercase mb-1">Announced</p>
             <div className="flex items-center space-x-2">
-              <span className="text-2xl">{task.announced === 'YES' ? '✅' : '❌'}</span>
+              <span className="text-2xl">{task.announced === 'YES' ? '' : ''}</span>
               <span className="text-base font-semibold text-gray-900">{task.announced}</span>
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function VisitTaskView({ task }) {
           <div className="bg-gray-50 rounded-xl p-3">
             <p className="text-xs font-medium text-gray-500 uppercase mb-1">Completed</p>
             <div className="flex items-center space-x-2">
-              <span className="text-2xl">{task.completed === 'YES' ? '✅' : '❌'}</span>
+              <span className="text-2xl">{task.completed === 'YES' ? '' : ''}</span>
               <span className="text-base font-semibold text-gray-900">{task.completed}</span>
             </div>
           </div>

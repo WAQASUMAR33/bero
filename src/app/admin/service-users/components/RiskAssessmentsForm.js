@@ -1,4 +1,5 @@
 'use client';
+import { FileText, Link2, AlertTriangle, CheckCircle2, Pencil, Target, User, Users } from 'lucide-react';
 
 import { useEffect, useMemo, useState } from 'react';
 import { getEvaluationStatus, getCategoryOverallStatus } from '@/lib/evaluationStatus';
@@ -869,7 +870,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
               className="w-full text-xs px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#224fa6]"
             />
             {tabSearch && (
-              <button onClick={() => setTabSearch('')} className="absolute right-2 top-1.5 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+              <button onClick={() => setTabSearch('')} className="absolute right-2 top-1.5 text-gray-400 hover:text-gray-600 text-xs">×</button>
             )}
           </div>
 
@@ -1072,7 +1073,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                         {Array.isArray(r.extra?.linkedSupportPlans) && r.extra.linkedSupportPlans.length > 0 ? (
                           <div className="flex flex-wrap gap-1 max-w-xs">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold bg-blue-50 text-[#224fa6] border border-blue-200 text-xs">
-                              🔗 {r.extra.linkedSupportPlans.length} Plan{r.extra.linkedSupportPlans.length > 1 ? 's' : ''}
+                              <Link2 className="w-3 h-3 inline mr-0.5" />{r.extra.linkedSupportPlans.length} Plan{r.extra.linkedSupportPlans.length > 1 ? 's' : ''}
                             </span>
                             <span className="text-[11px] text-gray-500 truncate max-w-[130px]" title={r.extra.linkedSupportPlans.map(k => getSupportPlanTitle(k)).join(', ')}>
                               {r.extra.linkedSupportPlans.map(k => getSupportPlanTitle(k)).join(', ')}
@@ -1488,9 +1489,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                             <span className="text-sm">{cat.icon}</span>
                             <span className="truncate flex-1" title={cat.title}>{cat.title}</span>
                             {isSelected && (
-                              <span className="text-[10px] font-bold bg-[#224fa6] text-white px-1.5 py-0.2 rounded">
-                                ✓
-                              </span>
+                              <span className="text-[10px] font-bold bg-[#224fa6] text-white px-1.5 py-0.2 rounded"><CheckCircle2 className="w-4 h-4 inline text-emerald-600" /></span>
                             )}
                           </div>
                         );
@@ -1590,7 +1589,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200"
                                     title={getSupportPlanTitle(key)}
                                   >
-                                    <span>📋</span>
+                                    <FileText className="w-3.5 h-3.5 inline text-gray-500" />
                                     <span className="truncate max-w-[120px]">{getSupportPlanTitle(key)}</span>
                                   </span>
                                 ))}
@@ -1652,7 +1651,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                 const recordStatus = getEvaluationStatus(viewRecord);
                 return recordStatus.status === 'RED' ? (
                   <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
-                    <div className="text-red-600 text-xl leading-none mt-0.5">⚠️</div>
+                    <div className="leading-none mt-0.5"><AlertTriangle className="w-5 h-5 text-red-600" /></div>
                     <div className="flex-1 text-sm text-red-800">
                       <div className="flex items-center justify-between">
                         <p className="font-bold text-red-900">Evaluation Overdue ({recordStatus.sublabel})</p>
@@ -1665,7 +1664,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                   </div>
                 ) : (
                   <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl flex items-start space-x-3 shadow-xs">
-                    <div className="text-emerald-600 text-xl leading-none mt-0.5">✅</div>
+                    <div className="leading-none mt-0.5"><CheckCircle2 className="w-5 h-5 text-emerald-600" /></div>
                     <div className="flex-1 text-sm text-emerald-800">
                       <div className="flex items-center justify-between">
                         <p className="font-bold text-emerald-900">Assessment Up to Date ({recordStatus.label})</p>
@@ -1682,7 +1681,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
               <div className="bg-purple-50/60 border border-purple-200 rounded-xl p-4 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
-                    <span>📋</span> Linked Support Plans ({Array.isArray(viewRecord.extra?.linkedSupportPlans) ? viewRecord.extra.linkedSupportPlans.length : 0})
+                    <FileText className="w-3.5 h-3.5 inline text-gray-500" /> Linked Support Plans ({Array.isArray(viewRecord.extra?.linkedSupportPlans) ? viewRecord.extra.linkedSupportPlans.length : 0})
                   </span>
                   <button
                     type="button"
@@ -1693,7 +1692,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                     }}
                     className="text-xs font-semibold text-[#224fa6] hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <span>✏️ Edit Links</span>
+                    <span>Edit Links</span>
                   </button>
                 </div>
                 {Array.isArray(viewRecord.extra?.linkedSupportPlans) && viewRecord.extra.linkedSupportPlans.length > 0 ? (
@@ -1703,7 +1702,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                         key={key}
                         className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-white text-purple-900 border border-purple-200 shadow-2xs"
                       >
-                        <span>🎯</span>
+                        <Target className="w-4 h-4 inline text-blue-500" />
                         <span>{getSupportPlanTitle(key)}</span>
                       </span>
                     ))}
@@ -1810,7 +1809,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                               <div>
                                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-blue-100">
                                   <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5 uppercase tracking-wide">
-                                    <span>👤</span> Staff Evaluation
+                                    <User className="w-4 h-4 inline mr-1 text-gray-600" />Staff Evaluation
                                   </span>
                                   <span className="text-xs text-gray-700 font-semibold bg-white px-2 py-0.5 rounded border border-blue-200">
                                     {ev.evaluatorName || 'Staff'}
@@ -1827,7 +1826,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                               <div>
                                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-amber-100">
                                   <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wide">
-                                    <span>🤝</span> Service User Evaluation
+                                    <Users className="w-4 h-4 inline mr-1 text-gray-600" />Service User Evaluation
                                   </span>
                                 </div>
                                 {/* Participation status */}
@@ -2007,7 +2006,7 @@ export default function RiskAssessmentsForm({ serviceSeekerId, serviceUserName, 
                 }}
                 className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
-                <span>✏️</span>
+                <Pencil className="w-3.5 h-3.5 inline text-gray-500" />
                 <span>Edit Assessment</span>
               </button>
               <button

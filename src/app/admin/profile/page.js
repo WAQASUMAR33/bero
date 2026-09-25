@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Notification from '../components/Notification';
 import FileUpload from '../components/FileUpload';
+import { User, Lock } from 'lucide-react';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -149,8 +150,8 @@ export default function ProfilePage() {
   };
 
   const tabs = [
-    { id: 'profile', name: 'Profile', icon: '👤' },
-    { id: 'security', name: 'Security', icon: '🔒' }
+    { id: 'profile', name: 'Profile', icon: User },
+    { id: 'security', name: 'Security', icon: Lock }
   ];
 
   if (isLoading) {
@@ -187,19 +188,22 @@ export default function ProfilePage() {
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Settings</h3>
                 <nav className="space-y-2">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${activeTab === tab.id
-                          ? 'bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white shadow-lg'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-[#224fa6]'
-                        }`}
-                    >
-                      <span className="text-xl">{tab.icon}</span>
-                      <span className="font-medium">{tab.name}</span>
-                    </button>
-                  ))}
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 cursor-pointer ${activeTab === tab.id
+                            ? 'bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white shadow-lg'
+                            : 'text-gray-700 hover:bg-gray-50 hover:text-[#224fa6]'
+                          }`}
+                      >
+                        <Icon className="w-5 h-5 shrink-0" />
+                        <span className="font-medium">{tab.name}</span>
+                      </button>
+                    );
+                  })}
                 </nav>
               </div>
             </div>

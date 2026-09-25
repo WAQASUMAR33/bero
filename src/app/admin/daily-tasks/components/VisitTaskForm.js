@@ -54,8 +54,8 @@ export default function VisitTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Visit Type *</label>
         <div className="flex gap-4">
           {[
-            { value: 'FAMILY', label: '👨‍👩‍👧‍👦 Family' },
-            { value: 'PROFESSIONAL', label: '👔 Professional' }
+            { value: 'FAMILY', label: '‍‍‍ Family' },
+            { value: 'PROFESSIONAL', label: ' Professional' }
           ].map(type => (
             <button
               key={type.value}
@@ -78,8 +78,8 @@ export default function VisitTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Announced *</label>
         <div className="flex gap-4">
           {[
-            { value: 'YES', label: '✅ Yes' },
-            { value: 'NO', label: '❌ No' }
+            { value: 'YES', label: ' Yes' },
+            { value: 'NO', label: ' No' }
           ].map(option => (
             <button
               key={option.value}
@@ -185,8 +185,8 @@ export default function VisitTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Completed *</label>
         <div className="flex gap-4">
           {[
-            { value: 'YES', label: '✅ Yes' },
-            { value: 'NO', label: '❌ No' }
+            { value: 'YES', label: ' Yes' },
+            { value: 'NO', label: ' No' }
           ].map(status => (
             <button
               key={status.value}

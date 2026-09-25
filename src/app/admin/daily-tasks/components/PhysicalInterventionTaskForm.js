@@ -453,9 +453,9 @@ export default function PhysicalInterventionTaskForm({
           <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
           <div className="flex gap-6">
             {[
-              { value: 'SAD', emoji: '😢', label: 'Sad' },
-              { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-              { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+              { value: 'SAD', emoji: '', label: 'Sad' },
+              { value: 'NEUTRAL', emoji: '', label: 'Neutral' },
+              { value: 'HAPPY', emoji: '', label: 'Happy' }
             ].map(emotion => (
               <button
                 key={emotion.value}
@@ -482,10 +482,10 @@ export default function PhysicalInterventionTaskForm({
             onClick={() => setShowSignatureModal(true)}
             className="px-6 py-2 border-2 border-[#224fa6] text-[#224fa6] rounded-lg hover:bg-blue-50 transition-all"
           >
-            ✍️ {formData.signatureUrl ? 'Edit Signature' : 'Add Signature'}
+             {formData.signatureUrl ? 'Edit Signature' : 'Add Signature'}
           </button>
           {formData.signatureUrl && (
-            <p className="mt-2 text-sm text-green-600">✓ Signature added</p>
+            <p className="mt-2 text-sm text-green-600"> Signature added</p>
           )}
         </div>
 

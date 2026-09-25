@@ -1,4 +1,5 @@
 'use client';
+import { Coins, BarChart2 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import ServiceUserLedgerModal from '../../finances/components/ServiceUserLedgerModal';
@@ -50,7 +51,7 @@ export default function ServiceUserFinancesCard({ serviceSeekerId, serviceUserNa
       {/* Header */}
       <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="p-1.5 bg-white/10 rounded-lg text-lg">💷</span>
+          <Coins className="w-5 h-5 text-white/90" />
           <div>
             <h2 className="text-lg font-bold">Service User Finances & 52-Week Ledger</h2>
             <p className="text-xs text-blue-100">Weekly accounting, rent, utilities, and care package ledger</p>
@@ -62,7 +63,7 @@ export default function ServiceUserFinancesCard({ serviceSeekerId, serviceUserNa
           onClick={() => setShowLedgerModal(true)}
           className="px-4 py-2 bg-white text-[#224fa6] hover:bg-blue-50 font-bold rounded-lg text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
         >
-          <span>📊</span>
+          <BarChart2 className="w-4 h-4 text-[#224fa6]" />
           <span>Open Full 52-Week Ledger</span>
         </button>
       </div>

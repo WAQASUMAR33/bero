@@ -392,9 +392,7 @@ export default function PnlManager({ onNotification }) {
                     }`}>
                       {formatCurrency(totals.ebitdarm)}
                     </td>
-                    <td className="py-3 px-2 text-center text-gray-400">
-                      ✓
-                    </td>
+                    <td className="py-3 px-2 text-center"><span className="inline-block w-2 h-2 rounded-full bg-emerald-400"></span></td>
                   </tr>
                 </tfoot>
               )}

@@ -782,7 +782,7 @@ export default function AdmissionPage() {
                         <label className="block text-sm font-semibold text-gray-800 mb-1.5">Profile Photo</label>
                         <FileUpload
                           accept="image/*"
-                          label="📷 Upload / Change Photo"
+                          label="Upload / Change Photo"
                           onUploadComplete={(url) => {
                             setBasicInfo(prev => ({ ...prev, photoUrl: url }));
                             setNotification({ show: true, message: 'Photo uploaded successfully', type: 'success' });

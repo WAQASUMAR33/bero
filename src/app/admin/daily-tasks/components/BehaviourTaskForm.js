@@ -102,7 +102,7 @@ export default function BehaviourTaskForm({
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 whitespace-nowrap"
             title="Manage Triggers"
           >
-            ⚙️
+
           </button>
         </div>
       </div>
@@ -179,9 +179,9 @@ export default function BehaviourTaskForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">Emotion *</label>
         <div className="flex gap-6">
           {[
-            { value: 'SAD', emoji: '😢', label: 'Sad' },
-            { value: 'NEUTRAL', emoji: '😐', label: 'Neutral' },
-            { value: 'HAPPY', emoji: '😊', label: 'Happy' }
+            { value: 'SAD', emoji: '', label: 'Sad' },
+            { value: 'NEUTRAL', emoji: '', label: 'Neutral' },
+            { value: 'HAPPY', emoji: '', label: 'Happy' }
           ].map(emotion => (
             <button
               key={emotion.value}

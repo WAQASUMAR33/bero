@@ -88,7 +88,7 @@ export async function POST(request) {
         await prisma.notification.createMany({
           data: adminUsers.map(admin => ({
             userId: admin.id,
-            title: '🚨 EMERGENCY ALERT',
+            title: 'EMERGENCY ALERT',
             message: notificationMessage,
             type: 'ERROR',
             link: '/admin/emergency-reports',
@@ -102,7 +102,7 @@ export async function POST(request) {
         console.log('[API] Sending push notifications...');
         try {
           const pushResult = await sendPushToRoles(['ADMIN', 'DIRECTOR', 'HR', 'REGISTER_MANAGER'], {
-            title: '🚨 EMERGENCY ALERT',
+            title: 'EMERGENCY ALERT',
             message: notificationMessage,
             type: 'ERROR',
             link: '/admin/emergency-reports'

@@ -260,7 +260,7 @@ export default function Chat({ conversation, currentUser, onBack }) {
                             {formatTime(message.createdAt)}
                             {isOwnMessage && (
                               <span className="ml-1">
-                                {message.isRead ? '✓✓' : '✓'}
+                                {message.isRead ? "Seen" : "Sent"}
                               </span>
                             )}
                           </p>

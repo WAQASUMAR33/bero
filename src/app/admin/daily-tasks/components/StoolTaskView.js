@@ -17,16 +17,16 @@ export default function StoolTaskView({ task }) {
   };
 
   const getUrineIcon = (urine) => {
-    if (urine === 'YES') return '✅';
-    if (urine === 'NO') return '❌';
-    if (urine === 'NA') return '➖';
-    return '❓';
+    if (urine === 'YES') return '';
+    if (urine === 'NO') return '';
+    if (urine === 'NA') return '';
+    return '';
   };
 
   const getCompletionBadge = (completion) => {
-    if (completion === 'YES') return { color: 'bg-green-100 text-green-700', text: '✅ Yes' };
-    if (completion === 'NO') return { color: 'bg-red-100 text-red-700', text: '❌ No' };
-    if (completion === 'DECLINED') return { color: 'bg-orange-100 text-orange-700', text: '🚫 Declined' };
+    if (completion === 'YES') return { color: 'bg-green-100 text-green-700', text: ' Yes' };
+    if (completion === 'NO') return { color: 'bg-red-100 text-red-700', text: ' No' };
+    if (completion === 'DECLINED') return { color: 'bg-orange-100 text-orange-700', text: ' Declined' };
     return { color: 'bg-gray-100 text-gray-700', text: completion };
   };
 
@@ -90,7 +90,7 @@ export default function StoolTaskView({ task }) {
             <p className="text-xs font-medium text-gray-500 uppercase mb-1">Emotion</p>
             <div className="flex items-center space-x-2">
               <span className="text-3xl">
-                {task.emotion === 'HAPPY' ? '😊' : task.emotion === 'SAD' ? '😢' : '😐'}
+                {task.emotion === 'HAPPY' ? '' : task.emotion === 'SAD' ? '' : ''}
               </span>
               <span className="text-base font-semibold text-gray-900">{task.emotion}</span>
             </div>

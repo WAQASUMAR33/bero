@@ -121,7 +121,7 @@ export default function PushNotificationToggle({ className = '' }) {
             {/* Success tooltip */}
             {showTooltip && (
                 <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg shadow-lg whitespace-nowrap z-50">
-                    Push notifications enabled! 🔔
+                    Push notifications enabled
                     <div className="absolute -top-1 right-4 w-2 h-2 bg-green-600 rotate-45"></div>
                 </div>
             )}

@@ -85,7 +85,9 @@ export default function WageManualEntryModal({ isOpen, onClose, onSuccess, initi
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-[#173a7a] via-[#224fa6] to-[#3270e9] p-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="p-2 bg-white/10 rounded-xl backdrop-blur-md text-xl">✍️</span>
+            <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md flex items-center justify-center">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
             <div>
               <h3 className="font-bold text-lg">Manual Wage Adjustment</h3>
               <p className="text-xs text-blue-100">Add overtime, bonus, holiday pay, or shift hours adjustment</p>

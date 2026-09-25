@@ -13,7 +13,8 @@ import {
   Trash2, 
   Printer, 
   User, 
-  FileText 
+  FileText,
+  Lock 
 } from 'lucide-react';
 import WageManualEntryModal from './WageManualEntryModal';
 import RequestWageAmendmentModal from './RequestWageAmendmentModal';
@@ -122,7 +123,7 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#224fa6] hover:bg-[#1a3d82] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
-                <span>+ Manual Adjustment</span>
+                <span>Manual Adjustment</span>
               </button>
             ) : (
               <button
@@ -140,7 +141,7 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
         {!isManager && (
           <div className="mt-4 p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-base">🔒</span>
+              <Lock className="w-4 h-4 text-blue-700 shrink-0" />
               <span><strong>Staff View (Read-Only):</strong> You can review your clock-in hours, rates, and breakdown. To request corrections or missed hours, click "Request Amendment".</span>
             </div>
             <button
@@ -337,7 +338,7 @@ export default function StaffWageSheetView({ wageSheet, isManager = false, onDat
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-[#224fa6] text-white rounded-xl text-xs font-bold hover:bg-[#1a3d82] transition-colors cursor-pointer"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
-                <span>+ Add Entry</span>
+                <span>Add Entry</span>
               </button>
             )}
           </div>

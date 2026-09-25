@@ -1,4 +1,5 @@
 'use client';
+import { Settings, Info, Share2, Eye } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 
@@ -222,7 +223,7 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }) 
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold">Add External Login</h3>
                 <div className="flex items-center space-x-2">
-                  <button type="button" onClick={openProfileModal} title="Create Login" className="text-white/80 hover:text-white transition-colors">⚙️</button>
+                  <button type="button" onClick={openProfileModal} title="Create Login" className="text-white/80 hover:text-white transition-colors"><Settings className="w-4 h-4" /></button>
                   <button type="button" onClick={() => setShowModal(false)} className="text-white/80 hover:text-white text-2xl leading-none transition-colors">×</button>
                 </div>
               </div>
@@ -254,12 +255,12 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }) 
           <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-lg">
             <div className="bg-gradient-to-r from-[#224fa6] to-[#3270e9] text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span className="text-white text-lg">ℹ️</span>
+                <Info className="w-4 h-4 text-white" />
                 <h3 className="text-xl font-semibold">Add Login</h3>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-white text-lg">📤</span>
-                <button type="button" onClick={() => setShowTypeModal(true)} title="Manage Login Types" className="text-white hover:text-gray-200">⚙️</button>
+                <Share2 className="w-4 h-4 text-white" />
+                <button type="button" onClick={() => setShowTypeModal(true)} title="Manage Login Types" className="text-white hover:text-gray-200"><Settings className="w-4 h-4" /></button>
               </div>
             </div>
             <div className="p-6 bg-white space-y-4">
@@ -270,7 +271,7 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }) 
                     <option value="">Please Select</option>
                     {loginTypes.map(t => (<option key={t} value={t}>{t}</option>))}
                   </select>
-                  <button type="button" onClick={() => setShowTypeModal(true)} title="Manage Types" className="text-gray-600 hover:text-gray-800">⚙️</button>
+                  <button type="button" onClick={() => setShowTypeModal(true)} title="Manage Types" className="text-gray-600 hover:text-gray-800"><Settings className="w-4 h-4" /></button>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -289,7 +290,7 @@ export default function ExternalLoginsForm({ serviceSeekerId, onNotification }) 
                 <label className="block text-sm font-medium text-gray-700 w-32">Password:</label>
                 <div className="flex-1 relative">
                   <input type={showPassword ? 'text' : 'password'} value={profileData.password} onChange={e => setProfileData(prev => ({ ...prev, password: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900" placeholder="Enter password" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800">👁️</button>
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"><Eye className="w-4 h-4" /></button>
                 </div>
               </div>
               <div className="flex items-center space-x-2">

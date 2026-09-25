@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Plus, Play, Calendar, Clock } from 'lucide-react';
 
 export default function AuditsManager({ user, onNotification }) {
   const [data, setData] = useState(null);
@@ -530,7 +531,7 @@ export default function AuditsManager({ user, onNotification }) {
                   viewMode === 'matrix' ? 'bg-white text-[#224fa6] shadow-2xs font-bold' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                📊 Matrix View
+                Matrix View
               </button>
               <button
                 type="button"
@@ -539,7 +540,7 @@ export default function AuditsManager({ user, onNotification }) {
                   viewMode === 'cards' ? 'bg-white text-[#224fa6] shadow-2xs font-bold' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                🗂️ Cards View
+                Cards View
               </button>
             </div>
 
@@ -548,7 +549,7 @@ export default function AuditsManager({ user, onNotification }) {
               onClick={() => setShowAddAuditModal(true)}
               className="px-4 py-2 bg-gradient-to-r from-[#224fa6] to-indigo-600 hover:from-blue-800 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
             >
-              <span>➕ Add Custom Audit</span>
+              <><Plus className="w-4 h-4" /><span>Add Custom Audit</span></>
             </button>
           </div>
         </div>
@@ -612,13 +613,13 @@ export default function AuditsManager({ user, onNotification }) {
                   const latestSub = audit.submissions?.[0];
                   const rag = audit.ragStatus || 'DUE';
                   let ragBadge = 'bg-amber-100 text-amber-800 border-amber-300';
-                  let ragLabel = '🟡 Due';
+                  let ragLabel = 'Due';
                   if (rag === 'GREEN') {
                     ragBadge = 'bg-emerald-100 text-emerald-800 border-emerald-300';
-                    ragLabel = '🟢 Completed';
+                    ragLabel = 'Completed';
                   } else if (rag === 'RED') {
                     ragBadge = 'bg-red-100 text-red-800 border-red-300 animate-pulse';
-                    ragLabel = '🔴 Overdue';
+                    ragLabel = 'Overdue';
                   }
 
                   return (
@@ -684,8 +685,7 @@ export default function AuditsManager({ user, onNotification }) {
                           onClick={() => openRunAudit(audit)}
                           className="px-2.5 py-1 bg-[#224fa6] hover:bg-blue-800 text-white font-bold rounded-lg text-[10px] shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1"
                         >
-                          <span>▶️</span>
-                          <span>Run Audit</span>
+                          <Play className="w-3 h-3" /><span>Run Audit</span>
                         </button>
                         <button
                           type="button"
@@ -693,7 +693,7 @@ export default function AuditsManager({ user, onNotification }) {
                           title="Allocate / Reschedule Audit"
                           className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-[10px] border border-gray-300 transition-all cursor-pointer ml-1"
                         >
-                          🗓️ Schedule
+                          Schedule
                         </button>
                       </td>
                     </tr>
@@ -711,13 +711,13 @@ export default function AuditsManager({ user, onNotification }) {
               const targetScore = audit.targetScore || 90;
               const rag = audit.ragStatus || 'DUE';
               let ragBadge = 'bg-amber-100 text-amber-800 border-amber-300';
-              let ragLabel = '🟡 Due';
+              let ragLabel = 'Due';
               if (rag === 'GREEN') {
                 ragBadge = 'bg-emerald-100 text-emerald-800 border-emerald-300';
-                ragLabel = '🟢 Completed';
+                ragLabel = 'Completed';
               } else if (rag === 'RED') {
                 ragBadge = 'bg-red-100 text-red-800 border-red-300 animate-pulse';
-                ragLabel = '🔴 Overdue';
+                ragLabel = 'Overdue';
               }
 
               return (
@@ -768,14 +768,14 @@ export default function AuditsManager({ user, onNotification }) {
                       onClick={() => openRunAudit(audit)}
                       className="flex-1 px-3 py-2 bg-[#224fa6] hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                     >
-                      <span>▶️ Run Audit</span>
+                      <><Play className="w-3 h-3" /><span>Run Audit</span></>
                     </button>
                     <button
                       type="button"
                       onClick={() => openReassignModal(audit)}
                       className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold border border-gray-300 transition-colors cursor-pointer"
                     >
-                      🗓️ Schedule
+                      Schedule
                     </button>
                   </div>
                 </div>
@@ -790,7 +790,7 @@ export default function AuditsManager({ user, onNotification }) {
         <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
           <div>
             <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <span>🕒</span>
+              <Clock className="w-4 h-4 text-gray-500" />
               <span>Recent Audit Records & Findings Log</span>
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">Full historical audit submission results with evaluator details</p>
@@ -1151,7 +1151,7 @@ export default function AuditsManager({ user, onNotification }) {
                             : 'bg-[#224fa6] hover:bg-blue-800 text-white shadow-2xs'
                         }`}
                       >
-                        {status === 'added' ? '✓ Added to Plan' : status === 'loading' ? 'Adding...' : '+ Add to Action Plan'}
+                        {status === 'added' ? 'Added to Plan' : status === 'loading' ? 'Adding...' : 'Add to Action Plan'}
                       </button>
                     </div>
                   );

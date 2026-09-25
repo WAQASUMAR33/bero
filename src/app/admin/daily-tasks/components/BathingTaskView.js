@@ -92,7 +92,7 @@ export default function BathingTaskView({ data, onClose }) {
             <p className="text-xs font-medium text-gray-500 uppercase mb-1">Emotion</p>
             <div className="flex items-center space-x-2">
               <span className="text-3xl">
-                {data.emotion === 'HAPPY' ? '😊' : data.emotion === 'SAD' ? '😢' : '😐'}
+                {data.emotion === 'HAPPY' ? '' : data.emotion === 'SAD' ? '' : ''}
               </span>
               <span className="text-base font-semibold text-gray-900">{data.emotion}</span>
             </div>

@@ -1,4 +1,5 @@
 'use client';
+import { Trash2 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 
@@ -248,9 +249,7 @@ export default function PositioningHandlingForm({ serviceSeekerId, onNotificatio
                 selected.forEach((r) => deleteRecord(r.id));
               }}
               className="text-red-600 hover:text-red-800"
-            >
-              🗑️
-            </button>
+            ><Trash2 className="w-4 h-4" /></button>
             <button
               type="button"
               onClick={openAdd}

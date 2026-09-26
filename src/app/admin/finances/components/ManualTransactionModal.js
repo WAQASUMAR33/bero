@@ -19,32 +19,40 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch service seekers & regions/properties for dropdowns
+  // ── Reset ALL fields every time the modal opens ──
   useEffect(() => {
     if (!isOpen) return;
 
+    // Reset form fields to fresh state
+    setType(initialType);
+    setCategory(initialType === 'INCOMING' ? 'SERVICE_USER_FEES' : 'ELECTRICITY');
+    setDate(new Date().toISOString().split('T')[0]);
+    setAmount('');
+    setServiceSeekerId('');
+    setDescription('');
+    setPaymentMethod('Bank Transfer');
+    setReference('');
+    setError('');
+
+    // Fetch dropdown data
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        // Fetch service users
         const suRes = await fetch('/api/service-seekers', { headers });
         if (suRes.ok) {
           const suData = await suRes.json();
-          const list = Array.isArray(suData) ? suData : (suData.data || []);
-          setServiceUsers(list);
+          setServiceUsers(Array.isArray(suData) ? suData : (suData.data || []));
         }
 
-        // Fetch regions/houses
         const regRes = await fetch('/api/regions', { headers });
         if (regRes.ok) {
           const regData = await regRes.json();
           const list = regData.success ? regData.data : (Array.isArray(regData) ? regData : []);
           setRegions(list);
-          if (list.length > 0 && !houseName) {
-            setHouseName(list[0].name);
-          }
+          // Default house name from first region only on first open when empty
+          if (list.length > 0) setHouseName(list[0].name);
         }
       } catch (err) {
         console.error('Error fetching dropdown data:', err);
@@ -52,12 +60,8 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
     };
 
     fetchData();
-  }, [isOpen]);
-
-  useEffect(() => {
-    setType(initialType);
-    setCategory(initialType === 'INCOMING' ? 'SERVICE_USER_FEES' : 'ELECTRICITY');
-  }, [initialType, isOpen]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, initialType]);
 
   const handleTypeChange = (newType) => {
     setType(newType);

@@ -18,6 +18,7 @@ export default function FinanceManager({ title = 'Finances & P&L Statement' }) {
   const [user, setUser] = useState(null);
   const [showQuickManualModal, setShowQuickManualModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [txRefreshKey, setTxRefreshKey] = useState(0);
 
   const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(tabParam || 'pnl');
@@ -201,9 +202,12 @@ export default function FinanceManager({ title = 'Finances & P&L Statement' }) {
             {activeTab === 'pnl' && <PnlManager onNotification={setNotification} />}
             {activeTab === 'service-users' && <ServiceUserFinancesHub onNotification={setNotification} />}
             {activeTab === 'transactions' && (
-              <FinancialTransactionsHub onTransactionChange={() => {
-                setNotification({ show: true, message: 'Financial ledger updated and synced with P&L', type: 'success' });
-              }} />
+              <FinancialTransactionsHub
+                refreshKey={txRefreshKey}
+                onTransactionChange={() => {
+                  setNotification({ show: true, message: 'Financial ledger updated and synced with P&L', type: 'success' });
+                }}
+              />
             )}
             {activeTab === 'analytics' && <FinanceAnalyticsView onNotification={setNotification} />}
           </div>
@@ -213,8 +217,12 @@ export default function FinanceManager({ title = 'Finances & P&L Statement' }) {
       <ManualTransactionModal
         isOpen={showQuickManualModal}
         onClose={() => setShowQuickManualModal(false)}
-        onSuccess={() => {
-          setNotification({ show: true, message: 'Financial transaction posted and synced with P&L statement & resident ledger!', type: 'success' });
+        onSuccess={(data) => {
+          setShowQuickManualModal(false);
+          setTxRefreshKey(k => k + 1);
+          // Navigate to transactions tab so user sees the new entry
+          handleTabChange('transactions');
+          setNotification({ show: true, message: 'Entry posted! Synced with P&L & resident ledger.', type: 'success' });
         }}
       />
 

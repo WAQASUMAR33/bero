@@ -11,16 +11,17 @@ function formatAmount(val) {
   return val.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function FinancialTransactionsHub({ onTransactionChange }) {
+export default function FinancialTransactionsHub({ onTransactionChange, refreshKey = 0 }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [initialType, setInitialType] = useState('INCOMING');
 
+  const currentYear = String(new Date().getFullYear());
   const [filterType, setFilterType] = useState('ALL');
   const [filterCategory, setFilterCategory] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
-  const [yearFilter, setYearFilter] = useState('2026');
+  const [yearFilter, setYearFilter] = useState(currentYear);
 
   const fetchTransactions = async () => {
     try {
@@ -39,6 +40,12 @@ export default function FinancialTransactionsHub({ onTransactionChange }) {
   };
 
   useEffect(() => { fetchTransactions(); }, [yearFilter]);
+
+  // Refetch when parent signals a new entry was posted externally
+  useEffect(() => {
+    if (refreshKey > 0) fetchTransactions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this transaction? It will reverse the P&L entry.')) return;
@@ -181,9 +188,9 @@ export default function FinancialTransactionsHub({ onTransactionChange }) {
             onChange={(e) => setYearFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-xl text-xs font-medium bg-white focus:outline-none cursor-pointer"
           >
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-            <option value="2027">2027</option>
+            {[parseInt(currentYear) - 1, parseInt(currentYear), parseInt(currentYear) + 1].map(y => (
+              <option key={y} value={String(y)}>{y}</option>
+            ))}
           </select>
         </div>
 
@@ -358,7 +365,20 @@ export default function FinancialTransactionsHub({ onTransactionChange }) {
         isOpen={showAddModal}
         initialType={initialType}
         onClose={() => setShowAddModal(false)}
-        onSuccess={() => { fetchTransactions(); if (onTransactionChange) onTransactionChange(); }}
+        onSuccess={(data) => {
+          // Switch to the year of the posted entry so it's immediately visible
+          if (data?.transaction?.date) {
+            const postedYear = String(new Date(data.transaction.date).getFullYear());
+            if (postedYear !== yearFilter) {
+              setYearFilter(postedYear); // triggers useEffect refetch automatically
+            } else {
+              fetchTransactions();
+            }
+          } else {
+            fetchTransactions();
+          }
+          if (onTransactionChange) onTransactionChange();
+        }}
       />
     </div>
   );

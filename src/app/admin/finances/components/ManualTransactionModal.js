@@ -157,8 +157,8 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
   const isServiceUserCategory = type === 'INCOMING' && ['SERVICE_USER_FEES', 'SERVICE_USER_RENT', 'SERVICE_USER_UTILITIES'].includes(category);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#173a7a] via-[#224fa6] to-[#3270e9] p-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">

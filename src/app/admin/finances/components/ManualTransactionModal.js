@@ -157,8 +157,8 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
   const isServiceUserCategory = type === 'INCOMING' && ['SERVICE_USER_FEES', 'SERVICE_USER_RENT', 'SERVICE_USER_UTILITIES'].includes(category);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-3">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh] animate-in slide-in-from-bottom sm:fade-in sm:zoom-in-95 duration-200">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#173a7a] via-[#224fa6] to-[#3270e9] p-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -178,8 +178,8 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        {/* Form — scrollable body */}
+        <form id="manual-tx-form" onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs font-semibold text-red-700 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
@@ -389,38 +389,40 @@ export default function ManualTransactionModal({ isOpen, onClose, onSuccess, ini
             </span>
           </div>
 
-          {/* Actions */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white shadow-md transition-all cursor-pointer ${
-                type === 'INCOMING'
-                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200'
-                  : 'bg-[#224fa6] hover:bg-[#1a3d82] shadow-blue-200'
-              } disabled:opacity-50`}
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Posting Entry...</span>
-                </>
-              ) : (
-                <>
-                  <PlusCircle className="w-4 h-4" />
-                  <span>Post Financial Entry</span>
-                </>
-              )}
-            </button>
-          </div>
         </form>
+
+        {/* Sticky Footer */}
+        <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="manual-tx-form"
+            disabled={isSubmitting}
+            className={`flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl text-sm font-bold text-white shadow-md transition-all cursor-pointer ${
+              type === 'INCOMING'
+                ? 'bg-emerald-600 hover:bg-emerald-700'
+                : 'bg-[#224fa6] hover:bg-[#1a3d82]'
+            } disabled:opacity-50`}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Posting...</span>
+              </>
+            ) : (
+              <>
+                <PlusCircle className="w-4 h-4" />
+                <span>Post Financial Entry</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

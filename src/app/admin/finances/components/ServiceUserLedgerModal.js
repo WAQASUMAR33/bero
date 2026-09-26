@@ -164,8 +164,8 @@ export default function ServiceUserLedgerModal({ serviceSeekerId, onClose, onNot
   ];
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[96vh] overflow-hidden flex flex-col animate-in fade-in">
+    <div className="fixed inset-0 backdrop-blur-md bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-3 lg:p-4">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95dvh] sm:max-h-[96vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom sm:fade-in">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#224fa6] via-[#2a59be] to-[#3270e9] text-white px-6 py-4 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">

@@ -9,6 +9,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import AuditsManager from './components/AuditsManager';
 import ActionPlansManager from './components/ActionPlansManager';
+import LessonsLearntManager from './components/LessonsLearntManager';
 
 export default function QualityAssurancePage() {
   const [user, setUser] = useState(null);
@@ -68,7 +69,7 @@ export default function QualityAssurancePage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
-      if (tabParam && ['audits', 'actions', 'feedback'].includes(tabParam)) {
+      if (tabParam && ['audits', 'actions', 'feedback', 'lessons'].includes(tabParam)) {
         setActiveTab(tabParam);
       }
     }
@@ -412,6 +413,21 @@ export default function QualityAssurancePage() {
                 </svg>
                 <span>Feedback Monitoring</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('lessons')}
+                className={`px-5 py-3 text-sm font-semibold rounded-t-xl transition-all flex items-center gap-2 border-b-2 ${
+                  activeTab === 'lessons'
+                    ? 'bg-white text-[#224fa6] border-[#224fa6] shadow-sm'
+                    : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100 border-transparent'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span>Lessons Learnt</span>
+              </button>
             </div>
           </div>
 
@@ -648,6 +664,11 @@ export default function QualityAssurancePage() {
               </div>
             </>
             )
+          )}
+
+          {/* TAB 4: LESSONS LEARNT */}
+          {activeTab === 'lessons' && (
+            <LessonsLearntManager user={user} onNotification={showNotification} />
           )}
 
           {/* Add/Edit Entry Modal */}

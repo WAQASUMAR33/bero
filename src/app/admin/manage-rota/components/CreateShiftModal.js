@@ -138,7 +138,7 @@ export default function CreateShiftModal({
       });
       setSelectedStaffIds(
         Array.isArray(shift.assignments)
-          ? [...new Set(shift.assignments.map((assignment) => assignment.user.id))]
+          ? [...new Set(shift.assignments.map((assignment) => assignment.user?.id || assignment.userId).filter(Boolean))]
           : []
       );
     } else {
@@ -366,9 +366,9 @@ export default function CreateShiftModal({
     e.preventDefault();
     const normalisedRequiredStaff = getRequiredStaffCount();
 
-    if (normalisedRequiredStaff > 0 && selectedStaffIds.length !== normalisedRequiredStaff) {
+    if (normalisedRequiredStaff > 0 && selectedStaffIds.length > normalisedRequiredStaff) {
       showNotification(
-        `Please select exactly ${normalisedRequiredStaff} ${normalisedRequiredStaff === 1 ? 'staff member' : 'staff members'} for this shift.`,
+        `You cannot assign more than ${normalisedRequiredStaff} ${normalisedRequiredStaff === 1 ? 'staff member' : 'staff members'} for this shift.`,
         'error'
       );
       return;
@@ -763,13 +763,38 @@ export default function CreateShiftModal({
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Assign Staff</h3>
-                  <p className="text-sm text-gray-600">
-                    Select staff members to cover this shift. Staff with conflicting shifts or approved holidays are not selectable.
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900">Assign Staff</h3>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">Optional</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    You can create shifts without assigning staff. Shifts without staff show in <span className="text-red-600 font-semibold">RED</span>. Once filled, they show in <span className="text-emerald-600 font-semibold">GREEN</span>.
                   </p>
                 </div>
-                <div className="text-sm text-gray-600 font-medium whitespace-nowrap">
-                  {selectedStaffIds.length}/{requiredStaffCount} selected
+                <div className="flex items-center gap-2 flex-wrap">
+                  {selectedStaffIds.length === 0 ? (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+                      🔴 Unassigned (0/{requiredStaffCount})
+                    </span>
+                  ) : selectedStaffIds.length < requiredStaffCount ? (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                      ⚠️ Partially Filled ({selectedStaffIds.length}/{requiredStaffCount})
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      🟢 Fully Staffed ({selectedStaffIds.length}/{requiredStaffCount})
+                    </span>
+                  )}
+                  {selectedStaffIds.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStaffIds([])}
+                      className="px-2.5 py-1 rounded-lg text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors"
+                      title="Clear staff selection (make shift unassigned)"
+                    >
+                      Clear Selection
+                    </button>
+                  )}
                 </div>
               </div>
 

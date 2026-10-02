@@ -143,7 +143,7 @@ export async function POST(request) {
         repeats: repeats || 'NO',
         issueDate: new Date(issueDate),
         completed: completed || 'NO',
-        photoUrls: photoUrls ? JSON.stringify(photoUrls) : null,
+        photoUrls: photoUrls ? (typeof photoUrls === 'string' ? photoUrls : JSON.stringify(photoUrls)) : null,
         createdById: decoded.userId,
         updatedById: decoded.userId
       },

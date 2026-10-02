@@ -87,7 +87,9 @@ export async function PUT(request, { params }) {
     if (repeats !== undefined) updateData.repeats = repeats;
     if (issueDate !== undefined) updateData.issueDate = new Date(issueDate);
     if (completed !== undefined) updateData.completed = completed;
-    if (photoUrls !== undefined) updateData.photoUrls = photoUrls ? JSON.stringify(photoUrls) : null;
+    if (photoUrls !== undefined) {
+      updateData.photoUrls = photoUrls ? (typeof photoUrls === 'string' ? photoUrls : JSON.stringify(photoUrls)) : null;
+    }
 
     const updatedIssue = await prisma.maintenanceIssue.update({
       where: { id },
@@ -112,7 +114,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({
       success: true,
-      data: issue
+      data: updatedIssue
     });
   } catch (error) {
     console.error('PUT /maintenance-issues/[id] error:', error);

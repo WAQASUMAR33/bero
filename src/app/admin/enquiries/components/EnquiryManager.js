@@ -21,7 +21,8 @@ import {
   Edit3, 
   Trash2, 
   UserCheck, 
-  Users
+  Users,
+  XCircle
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
@@ -32,9 +33,9 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('LIVE'); // 'ALL', 'LIVE', 'HELD', 'CLOSED'
+  const [activeTab, setActiveTab] = useState('LIVE'); // 'ALL', 'LIVE', 'HELD', 'CLOSED', 'CLOSED_NOT_ADMITTED'
   const [records, setRecords] = useState([]);
-  const [counts, setCounts] = useState({ live: 0, held: 0, closed: 0, total: 0 });
+  const [counts, setCounts] = useState({ live: 0, held: 0, closed: 0, closedNotAdmitted: 0, total: 0 });
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
@@ -88,7 +89,7 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
   // Sync tab from URL search parameters if provided
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['ALL', 'LIVE', 'HELD', 'CLOSED'].includes(tabParam.toUpperCase())) {
+    if (tabParam && ['ALL', 'LIVE', 'HELD', 'CLOSED', 'CLOSED_NOT_ADMITTED'].includes(tabParam.toUpperCase())) {
       setActiveTab(tabParam.toUpperCase());
     }
   }, [searchParams]);
@@ -125,7 +126,7 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
       const result = await res.json();
       if (result.success) {
         setRecords(result.data.enquiries || []);
-        setCounts(result.data.counts || { live: 0, held: 0, closed: 0, total: 0 });
+        setCounts(result.data.counts || { live: 0, held: 0, closed: 0, closedNotAdmitted: 0, total: 0 });
         setProperties(result.data.properties || []);
       } else {
         showNotification(result.error || 'Failed to fetch enquiries', 'error');
@@ -180,17 +181,27 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
   const handleQuickStatusChange = async (recordId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
+      const payload = { status: newStatus };
+      if (newStatus === 'CLOSED_NOT_ADMITTED') {
+        payload.accepted = false;
+      } else if (newStatus === 'CLOSED') {
+        payload.accepted = true;
+      }
+
       const res = await fetch(`/api/enquiries/${recordId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify(payload)
       });
       const json = await res.json();
       if (json.success) {
-        showNotification(`Status updated to ${newStatus}`, 'success');
+        const readableStatus = newStatus === 'CLOSED_NOT_ADMITTED' 
+          ? 'Closed - Not Admitted' 
+          : (newStatus === 'CLOSED' ? 'Closed & Admitted' : newStatus);
+        showNotification(`Status updated to ${readableStatus}`, 'success');
         fetchRecords();
       } else {
         showNotification(json.error || 'Failed to update status', 'error');
@@ -311,7 +322,9 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
         e.hoursAllocatedPerDay ? `${e.hoursAllocatedPerDay} hrs` : '—',
         e.costingProposed ? `£${e.costingProposed}` : '—',
         e.referer || '—',
-        e.status,
+        e.status === 'CLOSED_NOT_ADMITTED' || e.status === 'CLOSED - NOT ADMITTED'
+          ? 'Closed - Not Admitted'
+          : (e.status === 'CLOSED' ? 'Closed - Admitted' : e.status),
         e.accepted ? 'Yes' : 'No'
       ]);
 
@@ -406,7 +419,7 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
           </div>
 
           {/* Executive KPI Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 mb-6">
             <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Live Active Enquiries</span>
@@ -437,6 +450,17 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
               </div>
               <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
                 <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-rose-700">Closed - Not Admitted</span>
+                <p className="text-2xl font-black text-gray-900 mt-1">{counts.closedNotAdmitted ?? 0}</p>
+                <span className="text-[11px] text-gray-400">Not placed / declined</span>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+                <XCircle className="w-5 h-5" />
               </div>
             </div>
 
@@ -529,7 +553,8 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
                     {filteredRecords.map(rec => {
                       let statusBadge = 'bg-emerald-50 text-emerald-800 border-emerald-200';
                       if (rec.status === 'HELD') statusBadge = 'bg-amber-50 text-amber-800 border-amber-200';
-                      else if (rec.status === 'CLOSED') statusBadge = 'bg-gray-100 text-gray-800 border-gray-200';
+                      else if (rec.status === 'CLOSED_NOT_ADMITTED' || rec.status === 'CLOSED - NOT ADMITTED') statusBadge = 'bg-rose-50 text-rose-800 border-rose-200';
+                      else if (rec.status === 'CLOSED') statusBadge = 'bg-blue-50 text-blue-800 border-blue-200';
 
                       return (
                         <tr key={rec.id} className="hover:bg-blue-50/30 transition-colors">
@@ -590,13 +615,14 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
 
                           <td className="py-3 px-3 whitespace-nowrap">
                             <select
-                              value={rec.status}
+                              value={rec.status === 'CLOSED - NOT ADMITTED' ? 'CLOSED_NOT_ADMITTED' : rec.status}
                               onChange={e => handleQuickStatusChange(rec.id, e.target.value)}
                               className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border cursor-pointer ${statusBadge}`}
                             >
                               <option value="LIVE">LIVE</option>
                               <option value="HELD">HELD</option>
-                              <option value="CLOSED">CLOSED</option>
+                              <option value="CLOSED">CLOSED - ADMITTED</option>
+                              <option value="CLOSED_NOT_ADMITTED">CLOSED - NOT ADMITTED</option>
                             </select>
                           </td>
 
@@ -756,13 +782,21 @@ export default function EnquiryManager({ title = 'Enquiries & Referrals Manageme
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1">Pipeline Status</label>
                       <select
-                        value={formData.status}
-                        onChange={e => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                        value={formData.status === 'CLOSED - NOT ADMITTED' ? 'CLOSED_NOT_ADMITTED' : formData.status}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setFormData(prev => ({
+                            ...prev,
+                            status: val,
+                            accepted: val === 'CLOSED_NOT_ADMITTED' ? false : (val === 'CLOSED' ? true : prev.accepted)
+                          }));
+                        }}
                         className="w-full text-xs border border-gray-300 rounded-xl px-3 py-2.5 text-gray-900 bg-white"
                       >
-                        <option value="LIVE">LIVE</option>
-                        <option value="HELD">HELD</option>
-                        <option value="CLOSED">CLOSED</option>
+                        <option value="LIVE">LIVE (Active Pipeline)</option>
+                        <option value="HELD">HELD (Pending / Review)</option>
+                        <option value="CLOSED">CLOSED (Admitted)</option>
+                        <option value="CLOSED_NOT_ADMITTED">CLOSED - NOT ADMITTED</option>
                       </select>
                     </div>
                   </div>

@@ -124,6 +124,23 @@ enum QualityAssuranceStatus {
   IN_PROGRESS
 }
 
+enum LessonLearntCategory {
+  CLINICAL
+  OPERATIONAL
+  STAFF
+  COMPLIANCE
+  SAFEGUARDING
+  HEALTH_AND_SAFETY
+  MEDICATION
+  OTHER
+}
+
+enum LessonLearntStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
 enum MaintenanceIssueType {
   MAINTENANCE
   HEALTH_AND_SAFETY
@@ -357,6 +374,17 @@ model User {
   conductedQaAudits        QaAuditSubmission[]          @relation("QaAuditConductedBy")
   assignedQaActions        QaActionItem[]               @relation("QaActionItemStaff")
   createdQaActions         QaActionItem[]               @relation("QaActionItemCreatedBy")
+
+  // Lesson Learnt relations
+  createdLessonsLearnt     LessonLearnt[]               @relation("LessonLearntCreatedBy")
+  updatedLessonsLearnt     LessonLearnt[]               @relation("LessonLearntUpdatedBy")
+
+  // Staff Area relations
+  createdNewsletters           StaffNewsletter[]            @relation("NewsletterCreatedBy")
+  createdBlogPosts             StaffBlogPost[]              @relation("BlogPostCreatedBy")
+  blogLikes                    StaffBlogLike[]              @relation("BlogLikeUser")
+  createdFormalNotifications   StaffFormalNotification[]    @relation("FormalNotifCreatedBy")
+  notificationAcknowledgements StaffNotificationAck[]       @relation("NotifAckUser")
 }
 
 model Team {
@@ -2766,6 +2794,33 @@ model QualityAssurance {
   @@index([createdById])
 }
 
+model LessonLearnt {
+  id               Int                    @id @default(autoincrement())
+  dateOfEvent      DateTime
+  category         LessonLearntCategory
+  title            String                 // Brief title of the event/incident
+  description      String?                @db.Text // What happened
+  lessonLearnt     String?                @db.Text // The key lesson learnt
+  actionsTaken     String?                @db.Text // What actions were taken
+  changesMade      String?                @db.Text // Changes made to practice/policy
+  responsiblePerson String?               // Who is responsible for implementing change
+  reviewDate       DateTime?              // When this will be reviewed
+  status           LessonLearntStatus     @default(OPEN)
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  createdById      Int
+  updatedById      Int
+
+  // Relations
+  createdBy User @relation("LessonLearntCreatedBy", fields: [createdById], references: [id])
+  updatedBy User @relation("LessonLearntUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([dateOfEvent])
+  @@index([category])
+  @@index([status])
+  @@index([createdById])
+}
+
 // Policy and Procedures Models
 model Policy {
   id           Int       @id @default(autoincrement())
@@ -3553,5 +3608,88 @@ model WageAmendmentRequest {
 
   @@index([userId])
   @@index([status])
+}
+
+// ==========================================
+// STAFF AREA MODELS
+// ==========================================
+
+model StaffNewsletter {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  fileUrl     String   @db.Text
+  fileName    String
+  fileSize    String?
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById Int
+  createdBy   User     @relation("NewsletterCreatedBy", fields: [createdById], references: [id])
+
+  @@index([createdById])
+  @@index([publishedAt])
+}
+
+model StaffBlogPost {
+  id          Int             @id @default(autoincrement())
+  title       String
+  content     String          @db.LongText
+  excerpt     String?         @db.Text
+  coverImage  String?         @db.Text
+  publishedAt DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  createdById Int
+  createdBy   User            @relation("BlogPostCreatedBy", fields: [createdById], references: [id])
+  likes       StaffBlogLike[]
+
+  @@index([createdById])
+  @@index([publishedAt])
+}
+
+model StaffBlogLike {
+  id        Int           @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  createdAt DateTime      @default(now())
+  post      StaffBlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation("BlogLikeUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model StaffFormalNotification {
+  id                Int                    @id @default(autoincrement())
+  title             String
+  body              String                 @db.LongText
+  priority          String                 @default("NORMAL") // NORMAL, HIGH, URGENT
+  targetType        String                 @default("ALL") // ALL, ROLE, INDIVIDUAL, CUSTOM
+  sentByRoles       String?                @db.Text // JSON array of role names / displayNames
+  sentToUserIds     String?                @db.Text // JSON array of user IDs
+  acknowledgeByDate DateTime?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  createdById       Int
+  createdBy         User                   @relation("FormalNotifCreatedBy", fields: [createdById], references: [id])
+  acknowledgements  StaffNotificationAck[]
+
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model StaffNotificationAck {
+  id             Int                     @id @default(autoincrement())
+  notificationId Int
+  userId         Int
+  readAt         DateTime                @default(now())
+  notification   StaffFormalNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user           User                    @relation("NotifAckUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+  @@index([notificationId])
+  @@index([userId])
 }
 

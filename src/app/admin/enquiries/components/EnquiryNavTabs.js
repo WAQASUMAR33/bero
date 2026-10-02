@@ -1,18 +1,19 @@
 'use client';
 
-import { Layers, Activity, PauseCircle, CheckCircle2 } from 'lucide-react';
+import { Layers, Activity, PauseCircle, CheckCircle2, XCircle } from 'lucide-react';
 
 const TABS = [
   { id: 'ALL', label: 'All Enquiries', icon: Layers },
   { id: 'LIVE', label: 'Live Pipeline', icon: Activity, countKey: 'live' },
   { id: 'HELD', label: 'Held / Pending', icon: PauseCircle, countKey: 'held' },
-  { id: 'CLOSED', label: 'Closed & Admitted', icon: CheckCircle2, countKey: 'closed' }
+  { id: 'CLOSED', label: 'Closed & Admitted', icon: CheckCircle2, countKey: 'closed' },
+  { id: 'CLOSED_NOT_ADMITTED', label: 'Closed - Not Admitted', icon: XCircle, countKey: 'closedNotAdmitted' }
 ];
 
 export default function EnquiryNavTabs({ activeTab, onTabChange, counts = {} }) {
   return (
     <div className="mb-6 bg-white p-1.5 sm:p-2 rounded-2xl border border-gray-200/90 shadow-xs w-full">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1.5 sm:gap-2 w-full">
         {TABS.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

@@ -84,7 +84,14 @@ export async function GET(request) {
     const where = {};
 
     if (statusParam && statusParam.toUpperCase() !== 'ALL') {
-      where.status = statusParam.toUpperCase();
+      const upperStatus = statusParam.toUpperCase();
+      if (upperStatus === 'CLOSED_NOT_ADMITTED' || upperStatus === 'CLOSED - NOT ADMITTED') {
+        where.status = {
+          in: ['CLOSED_NOT_ADMITTED', 'CLOSED - NOT ADMITTED']
+        };
+      } else {
+        where.status = upperStatus;
+      }
     }
 
     if (property && property !== 'all') {
@@ -109,11 +116,20 @@ export async function GET(request) {
       ]
     });
 
-    // Counts for live, held, closed tabs
-    const [liveCount, heldCount, closedCount] = await Promise.all([
+    // Counts for live, held, closed, closedNotAdmitted tabs
+    const [liveCount, heldCount, closedCount, closedNotAdmittedCount, totalEnquiriesCount] = await Promise.all([
       prisma.enquiry.count({ where: { status: 'LIVE' } }),
       prisma.enquiry.count({ where: { status: 'HELD' } }),
       prisma.enquiry.count({ where: { status: 'CLOSED' } }),
+      prisma.enquiry.count({
+        where: {
+          OR: [
+            { status: 'CLOSED_NOT_ADMITTED' },
+            { status: 'CLOSED - NOT ADMITTED' }
+          ]
+        }
+      }),
+      prisma.enquiry.count(),
     ]);
 
     // Unique properties list for filters
@@ -131,7 +147,8 @@ export async function GET(request) {
           live: liveCount,
           held: heldCount,
           closed: closedCount,
-          total: liveCount + heldCount + closedCount,
+          closedNotAdmitted: closedNotAdmittedCount,
+          total: totalEnquiriesCount,
         },
         properties: uniqueProperties,
       }

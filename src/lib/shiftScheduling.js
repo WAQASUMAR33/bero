@@ -21,9 +21,10 @@ export function getRecurrenceIncrementDays(recurrence) {
   return RECURRENCE_DAY_MAP[recurrence] ?? 0;
 }
 
-export function generateOccurrences(fromDateInput, untilDateInput, recurrence, limit = 60) {
+export function generateOccurrences(fromDateInput, untilDateInput, recurrence, limit) {
   if (!fromDateInput) return [];
 
+  const maxLimit = limit ?? (untilDateInput ? 365 : 60);
   const occurrences = [];
   const fromDate = new Date(fromDateInput);
   if (Number.isNaN(fromDate.getTime())) return occurrences;
@@ -34,7 +35,7 @@ export function generateOccurrences(fromDateInput, untilDateInput, recurrence, l
   let current = new Date(fromDate);
   let iterations = 0;
 
-  while (iterations < limit) {
+  while (iterations < maxLimit) {
     const occurrence = new Date(current);
     occurrence.setHours(0, 0, 0, 0);
     occurrences.push(occurrence);

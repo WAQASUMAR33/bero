@@ -131,7 +131,19 @@ export async function PUT(request, { params }) {
         ? [...new Set(body.assignedUserIds.map((value) => parseInt(value, 10)).filter((value) => Number.isInteger(value)))]
         : [];
 
-      await prisma.shiftAssignment.deleteMany({ where: { shiftId } });
+      // Disconnect from ClockInOut if any, to avoid foreign key issues
+      const existingAssignments = await prisma.shiftAssignment.findMany({
+        where: { shiftId },
+        select: { id: true }
+      });
+      const assignmentIds = existingAssignments.map(a => a.id);
+      if (assignmentIds.length > 0) {
+        await prisma.clockInOut.updateMany({
+          where: { shiftAssignmentId: { in: assignmentIds } },
+          data: { shiftAssignmentId: null }
+        }).catch(() => {});
+        await prisma.shiftAssignment.deleteMany({ where: { shiftId } });
+      }
 
       if (uniqueAssignedUserIds.length > 0) {
         const assignmentData = buildShiftAssignmentData({
@@ -144,6 +156,31 @@ export async function PUT(request, { params }) {
 
         if (assignmentData.length > 0) {
           await prisma.shiftAssignment.createMany({ data: assignmentData, skipDuplicates: true });
+        }
+
+        // Send notifications to newly assigned staff
+        if (uniqueAssignedUserIds.length <= 50) {
+          try {
+            const serviceSeekerName = shift.serviceSeeker?.preferredName ||
+              `${shift.serviceSeeker?.firstName} ${shift.serviceSeeker?.lastName}`;
+            const shiftDate = new Date(shift.fromDate).toLocaleDateString('en-GB', {
+              weekday: 'short', day: 'numeric', month: 'short'
+            });
+
+            await prisma.notification.createMany({
+              data: uniqueAssignedUserIds.map(userId => ({
+                userId: userId,
+                title: 'Shift Assignment Updated',
+                message: `You have been assigned to a shift for ${serviceSeekerName} on ${shiftDate} (${shift.startTime} - ${shift.endTime}).`,
+                type: 'INFO',
+                link: '/care-worker/rota',
+                isRead: false
+              })),
+              skipDuplicates: true
+            });
+          } catch (notifError) {
+            console.error('Failed to notify staff in PUT /shifts/[id]:', notifError);
+          }
         }
       }
     }

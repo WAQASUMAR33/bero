@@ -429,7 +429,7 @@ export default function AuditsManager({ user, onNotification }) {
             <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Previous Month</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-2xl font-black text-gray-800">
-                {stats.previousMonthScore !== null ? `${stats.previousMonthScore}%` : '—'}
+                {stats.previousMonthScore != null ? `${stats.previousMonthScore}%` : '—'}
               </span>
             </div>
             <p className="text-[11px] text-gray-400 mt-0.5">Benchmark from preceding period</p>

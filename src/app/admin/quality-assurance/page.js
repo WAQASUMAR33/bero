@@ -68,9 +68,9 @@ export default function QualityAssurancePage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex text-gray-900">
       <Sidebar user={user} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col lg:ml-64 min-w-0">
         <Header user={user} />
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {/* Top Page Header */}

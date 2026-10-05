@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import CareWorkerYouSaidWeDid from './components/CareWorkerYouSaidWeDid';
 
 export default function CareWorkerStaffAreaPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('notifications'); // 'notifications', 'blog', 'newsletters'
+  const [activeTab, setActiveTab] = useState('notifications'); // 'notifications', 'blog', 'newsletters', 'yousaidwedid'
   const [notificationSubTab, setNotificationSubTab] = useState('unread'); // 'unread' | 'read'
   
   // Data states
@@ -26,8 +27,24 @@ export default function CareWorkerStaffAreaPage() {
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
   };
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['notifications', 'blog', 'newsletters', 'yousaidwedid'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
   }, []);
 
   const fetchData = async () => {
@@ -220,7 +237,7 @@ export default function CareWorkerStaffAreaPage() {
       {/* Main Tabs */}
       <div className="bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100 flex flex-wrap gap-1">
         <button
-          onClick={() => setActiveTab('notifications')}
+          onClick={() => handleTabChange('notifications')}
           className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
             activeTab === 'notifications'
               ? 'bg-[#224fa6] text-white shadow-md'
@@ -245,7 +262,7 @@ export default function CareWorkerStaffAreaPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('blog')}
+          onClick={() => handleTabChange('blog')}
           className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
             activeTab === 'blog'
               ? 'bg-[#224fa6] text-white shadow-md'
@@ -268,7 +285,7 @@ export default function CareWorkerStaffAreaPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('newsletters')}
+          onClick={() => handleTabChange('newsletters')}
           className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
             activeTab === 'newsletters'
               ? 'bg-[#224fa6] text-white shadow-md'
@@ -288,6 +305,20 @@ export default function CareWorkerStaffAreaPage() {
               {newsletters.length}
             </span>
           )}
+        </button>
+
+        <button
+          onClick={() => handleTabChange('yousaidwedid')}
+          className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+            activeTab === 'yousaidwedid'
+              ? 'bg-[#224fa6] text-white shadow-md'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          You Said, We Did
         </button>
       </div>
 
@@ -701,6 +732,11 @@ export default function CareWorkerStaffAreaPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* TAB 4: YOU SAID, WE DID */}
+          {activeTab === 'yousaidwedid' && (
+            <CareWorkerYouSaidWeDid onShowToast={showToast} />
           )}
         </>
       )}

@@ -15,8 +15,11 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const status = searchParams.get('status');
+    const role = searchParams.get('role');
+    const howRaised = searchParams.get('howRaised');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const search = searchParams.get('search');
 
     const where = {};
     
@@ -27,6 +30,14 @@ export async function GET(request) {
     if (status && status !== 'all') {
       where.status = status;
     }
+
+    if (role && role !== 'all') {
+      where.role = role;
+    }
+
+    if (howRaised && howRaised !== 'all') {
+      where.howRaised = howRaised;
+    }
     
     if (startDate || endDate) {
       where.date = {};
@@ -36,6 +47,18 @@ export async function GET(request) {
       if (endDate) {
         where.date.lte = new Date(endDate);
       }
+    }
+
+    if (search && search.trim()) {
+      const q = search.trim();
+      where.OR = [
+        { person: { contains: q } },
+        { from: { contains: q } },
+        { role: { contains: q } },
+        { howRaised: { contains: q } },
+        { youSaid: { contains: q } },
+        { weDid: { contains: q } }
+      ];
     }
 
     const entries = await prisma.qualityAssurance.findMany({
@@ -87,11 +110,12 @@ export async function POST(request) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
     const body = await request.json();
-    const { date, type, from, youSaid, weDid, lessonsLearnt, status } = body;
+    const { date, type, from, person, role, howRaised, youSaid, weDid, lessonsLearnt, status } = body;
 
-    if (!date || !type || !from) {
+    const personName = person || from || '';
+    if (!date || !personName) {
       return NextResponse.json(
-        { success: false, error: 'Date, type, and from are required' },
+        { success: false, error: 'Date and Person are required' },
         { status: 400 }
       );
     }
@@ -99,8 +123,11 @@ export async function POST(request) {
     const entry = await prisma.qualityAssurance.create({
       data: {
         date: new Date(date),
-        type,
-        from,
+        type: type || 'SUGGESTION',
+        from: personName,
+        person: personName,
+        role: role || null,
+        howRaised: howRaised || null,
         youSaid: youSaid || null,
         weDid: weDid || null,
         lessonsLearnt: lessonsLearnt || null,

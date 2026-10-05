@@ -26,7 +26,7 @@ const PAGE_TITLES = {
   '/admin/enquiries': 'Enquiries & Referrals',
   '/admin/investigations': 'Internal Investigations & Audits',
   '/admin/kpi': 'Key Performance Indicators (KPI) & Monthly Evaluations',
-  '/admin/quality-assurance': 'Feedback Monitoring',
+  '/admin/quality-assurance': 'Quality Assurance & Continuous Improvement',
   '/admin/maintenance': 'Maintenance Issues',
   '/admin/emergency-reports': 'Emergency Reports',
   '/admin/clock-in-out': 'Clock In / Out Records',

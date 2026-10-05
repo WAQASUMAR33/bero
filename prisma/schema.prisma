@@ -2773,8 +2773,11 @@ model Holiday {
 model QualityAssurance {
   id            Int                    @id @default(autoincrement())
   date          DateTime
-  type          QualityAssuranceType
+  type          QualityAssuranceType   @default(SUGGESTION)
   from          String // Who it's from (service user name, external person, etc.)
+  person        String?                // Person name from the sheet
+  role          String?                // Role: Service User, Relative, Staff, Professional, Visitor, etc.
+  howRaised     String?                // How was this raised: Residents Meeting, Survey, Verbal, etc.
   youSaid       String?                @db.Text // What they said
   weDid         String?                @db.Text // What we did
   lessonsLearnt String?                @db.Text // Lessons learnt
@@ -2792,6 +2795,7 @@ model QualityAssurance {
   @@index([type])
   @@index([status])
   @@index([createdById])
+  @@index([role])
 }
 
 model LessonLearnt {

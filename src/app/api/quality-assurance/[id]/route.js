@@ -70,11 +70,12 @@ export async function PUT(request, { params }) {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
     const body = await request.json();
-    const { date, type, from, youSaid, weDid, lessonsLearnt, status } = body;
+    const { date, type, from, person, role, howRaised, youSaid, weDid, lessonsLearnt, status } = body;
 
-    if (!date || !type || !from) {
+    const personName = person || from || '';
+    if (!date || !personName) {
       return NextResponse.json(
-        { success: false, error: 'Date, type, and from are required' },
+        { success: false, error: 'Date and Person are required' },
         { status: 400 }
       );
     }
@@ -83,8 +84,11 @@ export async function PUT(request, { params }) {
       where: { id },
       data: {
         date: new Date(date),
-        type,
-        from,
+        type: type || 'SUGGESTION',
+        from: personName,
+        person: personName,
+        role: role || null,
+        howRaised: howRaised || null,
         youSaid: youSaid || null,
         weDid: weDid || null,
         lessonsLearnt: lessonsLearnt || null,

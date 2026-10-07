@@ -15,15 +15,22 @@ const ROLES = [
 ];
 
 const RAISED_CHANNELS = [
-  'Residents Meeting',
-  'Family Meeting',
+  'Residents Meeting / House Meeting',
+  'Family Meeting / Relative Visit',
   '1:1 Review / Keyworker Session',
   'Verbal / In-Person Conversation',
   'Survey / Feedback Questionnaire',
   'Suggestion Box',
   'Phone Call',
   'Email / Written Letter',
-  'Care Plan Review',
+  'Care Plan / Support Plan Review',
+  'Staff Meeting',
+  'Supervision / Appraisal',
+  'Complaint / Formal Grievance',
+  'Compliment',
+  'General Comment / Concern',
+  'Healthcare Professional / MDT Meeting',
+  'Audit / Inspection Feedback',
   'Other'
 ];
 
@@ -103,6 +110,17 @@ export default function YouSaidWeDidManager({ user, serviceSeekers = [], onNotif
     fetchEntries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterRole, filterHowRaised, filterStatus, filterStartDate, filterEndDate]);
+
+  // Combine default channels with any existing channel methods in entries
+  const allChannels = useMemo(() => {
+    const set = new Set(RAISED_CHANNELS);
+    entries.forEach(e => {
+      if (e.howRaised && e.howRaised.trim()) {
+        set.add(e.howRaised.trim());
+      }
+    });
+    return Array.from(set);
+  }, [entries]);
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this record?')) return;
@@ -251,6 +269,43 @@ export default function YouSaidWeDidManager({ user, serviceSeekers = [], onNotif
     }
   };
 
+  // Export Excel matching sheets/You Said, We Did.xlsx
+  const handleExportExcel = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      if (filterStatus !== 'all') params.append('status', filterStatus);
+      if (filterRole !== 'all') params.append('role', filterRole);
+      if (filterHowRaised !== 'all') params.append('howRaised', filterHowRaised);
+      if (filterStartDate) params.append('startDate', filterStartDate);
+      if (filterEndDate) params.append('endDate', filterEndDate);
+
+      onNotification('Preparing Excel export...', 'info');
+
+      const res = await fetch(`/api/quality-assurance/export?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to generate Excel export');
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `You_Said_We_Did_Register_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      onNotification('Excel file exported successfully!', 'success');
+    } catch (err) {
+      console.error('Excel export error:', err);
+      onNotification('Error exporting Excel sheet', 'error');
+    }
+  };
+
   const handleResetFilters = () => {
     setSearchTerm('');
     setFilterRole('all');
@@ -279,10 +334,22 @@ export default function YouSaidWeDidManager({ user, serviceSeekers = [], onNotif
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
+            onClick={handleExportExcel}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 shadow-sm transition-all"
+            title="Download full register in Excel (.xlsx) with active dropdown lists"
+          >
+            <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Export to Excel (.xlsx)</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleExportPDF}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
           >
-            <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <span>Save as PDF</span>
@@ -403,7 +470,7 @@ export default function YouSaidWeDidManager({ user, serviceSeekers = [], onNotif
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-800"
             >
               <option value="all">All Channels</option>
-              {RAISED_CHANNELS.map(ch => (
+              {allChannels.map(ch => (
                 <option key={ch} value={ch}>{ch}</option>
               ))}
             </select>
@@ -616,6 +683,7 @@ export default function YouSaidWeDidManager({ user, serviceSeekers = [], onNotif
         <YouSaidWeDidModal
           entry={selectedEntry}
           serviceSeekers={serviceSeekers}
+          allChannels={allChannels}
           isSubmitting={isSubmitting}
           onClose={() => {
             setShowModal(false);
@@ -644,12 +712,12 @@ export default function YouSaidWeDidManager({ user, serviceSeekers = [], onNotif
 }
 
 // Add / Edit Entry Modal Component
-function YouSaidWeDidModal({ entry, serviceSeekers, isSubmitting, onClose, onSave }) {
+function YouSaidWeDidModal({ entry, serviceSeekers, allChannels = [], isSubmitting, onClose, onSave }) {
   const [formData, setFormData] = useState({
     date: entry ? new Date(entry.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     person: entry?.person || entry?.from || '',
     role: entry?.role || 'Service User / Resident',
-    howRaised: entry?.howRaised || 'Residents Meeting',
+    howRaised: entry?.howRaised || 'Residents Meeting / House Meeting',
     type: entry?.type || 'SUGGESTION',
     youSaid: entry?.youSaid || '',
     weDid: entry?.weDid || '',
@@ -657,6 +725,9 @@ function YouSaidWeDidModal({ entry, serviceSeekers, isSubmitting, onClose, onSav
   });
 
   const [useResidentPicker, setUseResidentPicker] = useState(false);
+  const [isCustomChannel, setIsCustomChannel] = useState(
+    Boolean(entry?.howRaised && !allChannels.includes(entry.howRaised))
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -793,22 +864,53 @@ function YouSaidWeDidModal({ entry, serviceSeekers, isSubmitting, onClose, onSav
           {/* Row 3: How was this raised? & Category/Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                How was this raised?
-              </label>
-              <input
-                type="text"
-                list="raised-channels-list"
-                value={formData.howRaised}
-                onChange={(e) => setFormData({ ...formData, howRaised: e.target.value })}
-                placeholder="e.g. Residents Meeting, Verbal, Survey"
-                className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
-              />
-              <datalist id="raised-channels-list">
-                {RAISED_CHANNELS.map(ch => (
-                  <option key={ch} value={ch} />
-                ))}
-              </datalist>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-gray-700">
+                  How was this raised? <span className="text-rose-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomChannel(!isCustomChannel)}
+                  className="text-[11px] text-[#224fa6] hover:underline font-medium"
+                >
+                  {isCustomChannel ? 'Pick from list' : '+ Add custom method'}
+                </button>
+              </div>
+
+              {isCustomChannel ? (
+                <div className="space-y-1">
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    placeholder="Type custom method (e.g. WhatsApp, Town Hall)..."
+                    value={formData.howRaised}
+                    onChange={(e) => setFormData({ ...formData, howRaised: e.target.value })}
+                    className="w-full px-3.5 py-2.5 text-sm border border-blue-400 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-blue-50/20 text-gray-900"
+                  />
+                  <p className="text-[11px] text-gray-500 italic">This will be saved and added to your available options.</p>
+                </div>
+              ) : (
+                <select
+                  value={allChannels.includes(formData.howRaised) ? formData.howRaised : '__custom__'}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__custom__') {
+                      setIsCustomChannel(true);
+                      setFormData({ ...formData, howRaised: '' });
+                    } else {
+                      setFormData({ ...formData, howRaised: val });
+                    }
+                  }}
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                >
+                  <option value="">Select how this was raised...</option>
+                  {allChannels.map(ch => (
+                    <option key={ch} value={ch}>{ch}</option>
+                  ))}
+                  <option value="__custom__">+ Add / Type Custom Method...</option>
+                </select>
+              )}
             </div>
 
             <div>

@@ -12,13 +12,22 @@ const ROLES = [
 ];
 
 const CHANNELS = [
-  'Verbal / In-Person Conversation',
-  'Residents Meeting',
-  'Family Meeting / Visit',
+  'Residents Meeting / House Meeting',
+  'Family Meeting / Relative Visit',
   '1:1 Review / Keyworker Session',
+  'Verbal / In-Person Conversation',
   'Survey / Feedback Questionnaire',
   'Suggestion Box',
   'Phone Call',
+  'Email / Written Letter',
+  'Care Plan / Support Plan Review',
+  'Staff Meeting',
+  'Supervision / Appraisal',
+  'Complaint / Formal Grievance',
+  'Compliment',
+  'General Comment / Concern',
+  'Healthcare Professional / MDT Meeting',
+  'Audit / Inspection Feedback',
   'Other'
 ];
 
@@ -43,6 +52,7 @@ export default function CareWorkerYouSaidWeDid({ onShowToast }) {
   });
 
   const [useResidentPicker, setUseResidentPicker] = useState(false);
+  const [isCustomChannel, setIsCustomChannel] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -460,18 +470,49 @@ export default function CareWorkerYouSaidWeDid({ onShowToast }) {
 
               {/* How was this raised? */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  How was this raised?
-                </label>
-                <select
-                  value={formData.howRaised}
-                  onChange={(e) => setFormData({ ...formData, howRaised: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
-                >
-                  {CHANNELS.map(ch => (
-                    <option key={ch} value={ch}>{ch}</option>
-                  ))}
-                </select>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-gray-700">
+                    How was this raised?
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomChannel(!isCustomChannel)}
+                    className="text-[11px] text-[#224fa6] hover:underline font-medium"
+                  >
+                    {isCustomChannel ? 'Pick from list' : '+ Add custom method'}
+                  </button>
+                </div>
+
+                {isCustomChannel ? (
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    placeholder="Type custom method (e.g. WhatsApp, Town Hall)..."
+                    value={formData.howRaised}
+                    onChange={(e) => setFormData({ ...formData, howRaised: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-blue-400 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-blue-50/20 text-gray-900"
+                  />
+                ) : (
+                  <select
+                    value={CHANNELS.includes(formData.howRaised) ? formData.howRaised : '__custom__'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '__custom__') {
+                        setIsCustomChannel(true);
+                        setFormData({ ...formData, howRaised: '' });
+                      } else {
+                        setFormData({ ...formData, howRaised: val });
+                      }
+                    }}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#224fa6] focus:border-transparent bg-white text-gray-900"
+                  >
+                    {CHANNELS.map(ch => (
+                      <option key={ch} value={ch}>{ch}</option>
+                    ))}
+                    <option value="__custom__">+ Add / Type Custom Method...</option>
+                  </select>
+                )}
               </div>
 
               {/* What did they say? (You Said) */}

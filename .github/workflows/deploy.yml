@@ -2,7 +2,7 @@ name: Deploy to CloudPanel VPS
 
 on:
   push:
-    branches: [ main ] # Change to 'master' if your default branch is master
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -20,3 +20,8 @@ jobs:
           script: |
             cd htdocs/beerusys.co.uk
             git pull origin main
+            npm install
+            npx prisma generate
+            npm run build
+            # If using PM2 to manage your Next.js server, restart it here:
+            # pm2 restart beerusys

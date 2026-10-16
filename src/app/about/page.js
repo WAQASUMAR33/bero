@@ -26,7 +26,7 @@ export default function AboutPage() {
                         transition={{ delay: 0.1 }}
                         className="text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto"
                     >
-                        Business, Employee & Enterprise Resource Unification. <br />
+                        Hellooooooooooo, Employee & Enterprise Resource Unification. <br />
                         Our mission is to simplify care management so you can focus on what truly matters: people.
                     </motion.p>
                 </div>
